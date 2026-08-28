@@ -1,0 +1,56 @@
+{
+  "name": "MatchHistory",
+  "type": "object",
+  "properties": {
+    "player1_id": {
+      "type": "string"
+    },
+    "player2_id": {
+      "type": "string"
+    },
+    "player1_name": {
+      "type": "string"
+    },
+    "player2_name": {
+      "type": "string"
+    },
+    "player1_team_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "player2_team_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "winner_id": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player1_id",
+    "player2_id",
+    "winner_id",
+    "mode"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

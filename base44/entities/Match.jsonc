@@ -1,0 +1,128 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "player1_id": {
+      "type": "string"
+    },
+    "player2_id": {
+      "type": "string"
+    },
+    "player1_name": {
+      "type": "string"
+    },
+    "player2_name": {
+      "type": "string"
+    },
+    "player1_team": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "player2_team": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "game_state": {
+      "type": "object"
+    },
+    "player1_actions": {
+      "type": "object"
+    },
+    "player2_actions": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "in_progress",
+        "done"
+      ],
+      "default": "waiting"
+    },
+    "winner": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "competitive",
+        "friendly",
+        "private"
+      ]
+    },
+    "room_code": {
+      "type": "string"
+    },
+    "player1_last_seen": {
+      "type": "number"
+    },
+    "player2_last_seen": {
+      "type": "number"
+    },
+    "disconnect_winner": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player1_id",
+    "status",
+    "mode"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.player1_id": "{{user.id}}"
+        },
+        {
+          "data.player2_id": "{{user.id}}"
+        },
+        {
+          "data.status": "waiting"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {},
+    "update": {
+      "$or": [
+        {
+          "data.player1_id": "{{user.id}}"
+        },
+        {
+          "data.player2_id": "{{user.id}}"
+        },
+        {
+          "data.status": "waiting"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.player1_id": "{{user.id}}",
+          "data.status": "waiting"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
