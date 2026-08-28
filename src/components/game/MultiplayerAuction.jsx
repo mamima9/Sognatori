@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,7 +9,6 @@ import {
   createMatchHistory,
 } from "@/lib/matchService";
 import { ROSTER } from "@/lib/sognatoriData";
-import { Image } from "@/components/ui/image";
 import { FactionBadge } from "./HealthBar";
 import { TimerBar } from "./Timer";
 import { useAuth } from "@/lib/AuthContext";
@@ -20,8 +21,7 @@ import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 const BID_OPTIONS = [1, 5, 10];
 const AUCTION_SECONDS = 60;
 
-const LOGO =
-  "https://media.base44.com/images/public/6a88c0790ad6d8971067dd2b/970a32337_bannerLOGOSOGNATORI.png";
+const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
 export default function MultiplayerAuction({ matchId, onAbandon }) {
   const [match, setMatch] = useState(null);

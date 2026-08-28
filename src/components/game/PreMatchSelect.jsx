@@ -6,7 +6,7 @@ import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
-const LOGO = "https://media.base44.com/images/public/6a88c0790ad6d8971067dd2b/970a32337_bannerLOGOSOGNATORI.png";
+const LOGO = "/images/bannerLOGOSOGNATORI.png";
 const TIMER_SECONDS = 60;
 
 export default function PreMatchSelect({ playerTeam, enemyTeam, onComplete, onBack, onAbandon }) {

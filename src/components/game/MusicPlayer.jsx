@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const BATTLE_TRACKS = [
-  "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/485504222_002Sognatori-DreamArena.mp3",
-  "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/d4c4fcd75_SognatoriAwakes.mp3",
-  "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/c0f7fd73e_SognatoriOverture.mp3",
-  "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/f2aec43ba_DreamCreaturePath.mp3",
-  "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/7ec7a8548_LanternDeer.mp3",
-];
+const BATTLE_TRACKS =  [
+  "/audio/001 Sognatori - Arrivederci Roma.mp3",
+  "/audio/002Sognatori - Dream Arena.mp3",
+  "/audio/Dream Creature Path.mp3",
+  "/audio/Dream Creature Path (1).mp3",
+  "/audio/Lantern Deer.mp3",
+  "/audio/Lantern Deer (1).mp3",
+  "/audio/Sognatori Awakes.mp3",
+  "/audio/Sognatori Awakes (1).mp3",
+  "/audio/Sognatori Overture.mp3",
+  "/audio/Sognatori Overture (1).mp3",
+  ];
 
 export default function MusicPlayer() {
   const [muted, setMuted] = useState(false);

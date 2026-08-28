@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,7 +9,7 @@ import { SognatoreImage, FactionBadge } from "@/components/game/HealthBar";
 import { useLanguage } from "@/lib/i18n";
 
 const LOGO =
-  "https://media.base44.com/images/public/6a88c0790ad6d8971067dd2b/970a32337_bannerLOGOSOGNATORI.png";
+  "/images/bannerLOGOSOGNATORI.png";
 
 export default function Rankings() {
   const { t } = useLanguage();

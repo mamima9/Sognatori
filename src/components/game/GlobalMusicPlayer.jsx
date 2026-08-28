@@ -1,14 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const TRACKS = [
-  { name: "Dream Arena", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/485504222_002Sognatori-DreamArena.mp3" },
-  { name: "Sognatori Awakes", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/d4c4fcd75_SognatoriAwakes.mp3" },
-  { name: "Sognatori Overture", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/c0f7fd73e_SognatoriOverture.mp3" },
-  { name: "Dream Creature Path", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/f2aec43ba_DreamCreaturePath.mp3" },
-  { name: "Lantern Deer", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/7ec7a8548_LanternDeer.mp3" },
-  { name: "Arrivederci Roma", url: "https://media.base44.com/files/public/6a88c0790ad6d8971067dd2b/5b7ae5b69_001Sognatori-ArrivederciRoma.mp3" },
-];
+const TRACKS = [{
+    name: "Dream Arena",
+    url: "/audio/002Sognatori - Dream Arena.mp3",
+  },
+  {
+    name: "Sognatori Awakes",
+    url: "/audio/Sognatori Awakes.mp3",
+  },
+  {
+    name: "Sognatori Overture",
+    url: "/audio/Sognatori Overture.mp3",
+  },
+  {
+    name: "Dream Creature Path",
+    url: "/audio/Dream Creature Path.mp3",
+  },
+  {
+    name: "Lantern Deer",
+    url: "/audio/Lantern Deer.mp3",
+  },
+  {
+    name: "Arrivederci Roma",
+    url: "/audio/001 Sognatori - Arrivederci Roma.mp3",
+  },
+  ];
 
 export default function GlobalMusicPlayer() {
   const [trackIdx, setTrackIdx] = useState(() => Math.floor(Math.random() * TRACKS.length));

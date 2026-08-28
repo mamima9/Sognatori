@@ -33,7 +33,7 @@ export default function Home() {
           <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen flex flex-col items-center justify-center px-6 py-10">
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 100 }} className="mb-4">
               <img
-                src="https://media.base44.com/images/public/6a88c0790ad6d8971067dd2b/970a32337_bannerLOGOSOGNATORI.png"
+                src="/images/bannerLOGOSOGNATORI.png"
                 alt="Sognatori"
                 className="h-24 sm:h-32 object-contain drop-shadow-2xl"
               />
