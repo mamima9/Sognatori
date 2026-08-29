@@ -1,0 +1,42 @@
+name: Fix multiplayer Image constructor
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, 'Fix Image constructor crash')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace broken Image tags
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('src/components/game/MultiplayerAuction.jsx')
+          text = path.read_text(encoding='utf-8')
+
+          text = text.replace('<Image', '<img')
+          text = re.sub(r'\s+fittingType\s*=\s*["\']fit["\']', '', text)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/game/MultiplayerAuction.jsx
+          git rm .github/workflows/fix-multiplayer-image.yml
+          git diff --cached --quiet || git commit -m "Fix Image constructor crash"
+          git push
