@@ -1032,11 +1032,10 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
                 key={s.id}
                 className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/40"
               >
-                <Image
+                <img
                   src={s.img}
                   alt={s.nome}
                   className="w-full h-full"
-                  fittingType="fit"
                 />
               </div>
             ))}
@@ -1076,11 +1075,10 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
                 key={s.id}
                 className="w-8 h-8 rounded-lg overflow-hidden border border-rose-500/40"
               >
-                <Image
+                <img
                   src={s.img}
                   alt={s.nome}
                   className="w-full h-full"
-                  fittingType="fit"
                 />
               </div>
             ))}
@@ -1297,11 +1295,10 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
                     className="rounded-xl bg-white/5 border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/10 transition p-2 flex flex-col items-center gap-1"
                   >
                     <div className="w-14 h-14 rounded-lg overflow-hidden">
-                      <Image
+                      <img
                         src={s.img}
                         alt={s.nome}
                         className="w-full h-full"
-                        fittingType="fit"
                       />
                     </div>
 
@@ -1353,11 +1350,10 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
               <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/5 p-4 flex gap-4 items-center">
 
                 <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-white/5">
-                  <Image
+                  <img
                     src={currentLot.img}
                     alt={currentLot.nome}
                     className="w-full h-full"
-                    fittingType="fit"
                   />
                 </div>
 
