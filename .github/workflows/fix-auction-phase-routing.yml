@@ -1,0 +1,44 @@
+name: Fix auction phase routing
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, 'Fix auction phase routing')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fix phase routing order
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/Multiplayer.jsx')
+          s = p.read_text(encoding='utf-8')
+          old = '''        // ------------------------------------------------\n        // SECOND PLAYER JOINED\n        // ------------------------------------------------\n\n        if (m.player1_id && m.player2_id) {\n          setScreen("auction");\n          return;\n        }\n\n        // ------------------------------------------------\n        // MATCH ALREADY HAS GAME STATE\n        // ------------------------------------------------'''
+          new = '''        // ------------------------------------------------\n        // MATCH ALREADY HAS GAME STATE\n        // ------------------------------------------------\n\n        // IMPORTANT: check the phase BEFORE the generic\n        // "both players joined" condition. Otherwise, after\n        // finishAuction() writes phase="prematch", polling\n        // sees two players and immediately forces the screen\n        // back to "auction" forever.\n'''
+          if old not in s:
+              raise SystemExit('Expected block not found')
+          s = s.replace(old, new, 1)
+
+          marker = '''        if (m.status === "done") {\n          setScreen("battle");\n        }'''
+          insertion = '''        if (m.status === "done") {\n          setScreen("battle");\n          return;\n        }\n\n        // Only if there is no phase yet do two joined players\n        // enter the auction. The host will initialize it.\n        if (m.player1_id && m.player2_id) {\n          setScreen("auction");\n          return;\n        }'''
+          if marker not in s:
+              raise SystemExit('Status marker not found')
+          s = s.replace(marker, insertion, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/Multiplayer.jsx
+          git rm .github/workflows/fix-auction-phase-routing.yml
+          git diff --cached --quiet || git commit -m "Fix auction phase routing"
+          git push
