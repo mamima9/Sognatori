@@ -26,8 +26,24 @@ export async function updateMatch(matchId, updates) {
 }
 
 export function subscribeToMatch(matchId, callback) {
+  if (!matchId || typeof callback !== "function") {
+    return () => {};
+  }
+
+  // Ogni subscription riceve un topic UNICO.
+  // Evita conflitti quando Lobby/Auction vengono montati
+  // durante lo stesso cambio di schermata.
+  const uniqueId =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const channelName = `match-${matchId}-${uniqueId}`;
+
+  let active = true;
+
   const channel = supabase
-    .channel(`match-${matchId}`)
+    .channel(channelName)
     .on(
       "postgres_changes",
       {
@@ -37,15 +53,37 @@ export function subscribeToMatch(matchId, callback) {
         filter: `id=eq.${matchId}`,
       },
       (payload) => {
-        if (payload.new) {
+        if (!active) return;
+
+        if (payload?.new) {
           callback(payload.new);
         }
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR") {
+        console.error(
+          "Realtime match subscription error:",
+          matchId
+        );
+      }
+    });
 
+  // Cleanup idempotente: può essere chiamato più volte
+  // senza tentare di riutilizzare una subscription già chiusa.
   return () => {
-    supabase.removeChannel(channel);
+    if (!active) return;
+
+    active = false;
+
+    try {
+      supabase.removeChannel(channel);
+    } catch (error) {
+      console.warn(
+        "Realtime channel cleanup warning:",
+        error
+      );
+    }
   };
 }
 
