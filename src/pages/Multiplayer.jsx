@@ -201,8 +201,9 @@ export default function Multiplayer() {
     if (!matchId) return;
 
     // Realtime viene gestito dall'Auction/Battle.
-    // Qui ci serve solo aspettare che il player 2 entri.
-    if (screen !== "lobby") return;
+    // Il polling resta attivo anche durante l'asta per rilevare
+    // immediatamente il passaggio finale a prematch/battle.
+    if (screen !== "lobby" && screen !== "auction") return;
 
     let mounted = true;
 
