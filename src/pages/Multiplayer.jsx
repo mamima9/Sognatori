@@ -225,17 +225,15 @@ export default function Multiplayer() {
         setMatch(m);
 
         // ------------------------------------------------
-        // SECOND PLAYER JOINED
-        // ------------------------------------------------
-
-        if (m.player1_id && m.player2_id) {
-          setScreen("auction");
-          return;
-        }
-
-        // ------------------------------------------------
         // MATCH ALREADY HAS GAME STATE
         // ------------------------------------------------
+
+        // IMPORTANT: check the phase BEFORE the generic
+        // "both players joined" condition. Otherwise, after
+        // finishAuction() writes phase="prematch", polling
+        // sees two players and immediately forces the screen
+        // back to "auction" forever.
+
 
         if (m.game_state) {
           const phase = m.game_state.phase;
@@ -262,6 +260,14 @@ export default function Multiplayer() {
 
         if (m.status === "done") {
           setScreen("battle");
+          return;
+        }
+
+        // Only if there is no phase yet do two joined players
+        // enter the auction. The host will initialize it.
+        if (m.player1_id && m.player2_id) {
+          setScreen("auction");
+          return;
         }
       } catch (e) {
         console.error("Fetch match failed:", e);
