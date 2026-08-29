@@ -9,8 +9,7 @@ import MultiplayerAuction from "@/components/game/MultiplayerAuction";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 
-const LOGO =
-  "/images/bannerLOGOSOGNATORI.png";
+const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
 const ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -122,7 +121,8 @@ export default function Multiplayer() {
             .from("matches")
             .update({
               player2_id: user.id,
-              player2_name: user.user_metadata?.full_name || user.email,
+              player2_name:
+                user.user_metadata?.full_name || user.email,
             })
             .eq("id", m.id)
             .eq("status", "waiting")
@@ -136,8 +136,10 @@ export default function Multiplayer() {
         }
 
         setMatch(updatedMatch);
-        setMatchId(m.id);
+        setMatchId(updatedMatch.id);
         setMode(selectedMode);
+
+        // Il giocatore 2 entra direttamente nell'asta.
         setScreen("auction");
       }
 
@@ -182,11 +184,25 @@ export default function Multiplayer() {
   };
 
   // --------------------------------------------------
-  // LOAD MATCH + REALTIME
+  // LOAD MATCH + LOBBY POLLING
+  // --------------------------------------------------
+  //
+  // IMPORTANTE:
+  // Qui NON usiamo Supabase Realtime.
+  //
+  // MultiplayerAuction gestisce il proprio canale Realtime.
+  // Evitiamo così il conflitto di subscription che causava:
+  //
+  // "cannot add 'postgres_changes' callbacks ... after subscribe()"
+  //
   // --------------------------------------------------
 
   useEffect(() => {
     if (!matchId) return;
+
+    // Realtime viene gestito dall'Auction/Battle.
+    // Qui ci serve solo aspettare che il player 2 entri.
+    if (screen !== "lobby") return;
 
     let mounted = true;
 
@@ -207,10 +223,18 @@ export default function Multiplayer() {
 
         setMatch(m);
 
-        if (m.status === "done") {
-          setScreen("battle");
+        // ------------------------------------------------
+        // SECOND PLAYER JOINED
+        // ------------------------------------------------
+
+        if (m.player1_id && m.player2_id) {
+          setScreen("auction");
           return;
         }
+
+        // ------------------------------------------------
+        // MATCH ALREADY HAS GAME STATE
+        // ------------------------------------------------
 
         if (m.game_state) {
           const phase = m.game_state.phase;
@@ -221,53 +245,39 @@ export default function Multiplayer() {
             phase === "auction_select"
           ) {
             setScreen("auction");
-          } else if (
+            return;
+          }
+
+          if (
             phase === "prematch" ||
             phase === "select" ||
             phase === "animating" ||
             phase === "switch"
           ) {
             setScreen("battle");
+            return;
           }
-        } else if (m.player1_id && m.player2_id) {
-          setScreen("auction");
+        }
+
+        if (m.status === "done") {
+          setScreen("battle");
         }
       } catch (e) {
         console.error("Fetch match failed:", e);
       }
     };
 
+    // Prima verifica immediatamente.
     fetchMatch();
 
-    // ------------------------------------------------
-    // SUPABASE REALTIME
-    // ------------------------------------------------
-
-    const channel = supabase
-      .channel(`match-${matchId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "matches",
-          filter: `id=eq.${matchId}`,
-        },
-        () => {
-          fetchMatch();
-        }
-      )
-      .subscribe();
-
-    // Fallback polling
-    const pollInterval = setInterval(fetchMatch, 3000);
+    // Poi controlla la lobby ogni 1.5 secondi.
+    const pollInterval = setInterval(fetchMatch, 1500);
 
     return () => {
       mounted = false;
       clearInterval(pollInterval);
-      supabase.removeChannel(channel);
     };
-  }, [matchId]);
+  }, [matchId, screen]);
 
   // --------------------------------------------------
   // CANCEL MATCH
@@ -279,7 +289,10 @@ export default function Multiplayer() {
     if (match.status === "waiting") {
       try {
         // Player 1 created the room -> delete it
-        if (match.player1_id === user?.id && !match.player2_id) {
+        if (
+          match.player1_id === user?.id &&
+          !match.player2_id
+        ) {
           await supabase
             .from("matches")
             .delete()
@@ -319,7 +332,10 @@ export default function Multiplayer() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
       <AnimatePresence mode="wait">
 
-        {/* MENU */}
+        {/* ==================================================
+            MENU
+        ================================================== */}
+
         {screen === "menu" && (
           <motion.div
             key="menu"
@@ -358,6 +374,7 @@ export default function Multiplayer() {
             <div className="flex flex-col gap-3 w-full max-w-xs">
 
               {/* COMPETITIVE */}
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
@@ -374,6 +391,7 @@ export default function Multiplayer() {
               </motion.button>
 
               {/* FRIENDLY */}
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
@@ -390,6 +408,7 @@ export default function Multiplayer() {
               </motion.button>
 
               {/* PRIVATE */}
+
               <div className="px-6 py-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30">
                 <div className="font-bold mb-2">
                   🔒 {t("mode.private")}
@@ -440,7 +459,10 @@ export default function Multiplayer() {
           </motion.div>
         )}
 
-        {/* AUCTION */}
+        {/* ==================================================
+            AUCTION
+        ================================================== */}
+
         {screen === "auction" && matchId && (
           <motion.div
             key="auction"
@@ -459,7 +481,10 @@ export default function Multiplayer() {
           </motion.div>
         )}
 
-        {/* LOBBY */}
+        {/* ==================================================
+            LOBBY
+        ================================================== */}
+
         {screen === "lobby" && (
           <motion.div
             key="lobby"
@@ -509,7 +534,10 @@ export default function Multiplayer() {
           </motion.div>
         )}
 
-        {/* BATTLE */}
+        {/* ==================================================
+            BATTLE
+        ================================================== */}
+
         {screen === "battle" && matchId && (
           <motion.div
             key="battle"
