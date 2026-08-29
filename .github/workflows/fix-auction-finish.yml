@@ -1,0 +1,40 @@
+name: Fix multiplayer auction transition
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, 'Fix auction to battle transition')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix auction transition polling
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/Multiplayer.jsx')
+          s = p.read_text(encoding='utf-8')
+          old = '''    // Realtime viene gestito dall'Auction/Battle.\n    // Qui ci serve solo aspettare che il player 2 entri.\n    if (screen !== "lobby") return;'''
+          new = '''    // Realtime viene gestito dall'Auction/Battle.\n    // Il polling resta attivo anche durante l'asta per rilevare\n    // immediatamente il passaggio finale a prematch/battle.\n    if (screen !== "lobby" && screen !== "auction") return;'''
+          if old not in s:
+              raise SystemExit('Expected polling guard not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/Multiplayer.jsx
+          git rm .github/workflows/fix-auction-finish.yml
+          git diff --cached --quiet || git commit -m "Fix auction to battle transition"
+          git push
