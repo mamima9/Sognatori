@@ -1,0 +1,35 @@
+name: Fix battle roster normalization
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, 'Fix battle roster normalization')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize battle roster objects
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('src/components/game/MultiplayerBattleArena.jsx')
+          s=p.read_text(encoding='utf-8')
+          old='''  const player1Team = (match?.player1_team_ids || [])\n    .map((id) =>\n      ROSTER.find((s) => String(s.id) === String(id))\n    )\n    .filter(Boolean);\n\n  const player2Team = (match?.player2_team_ids || [])\n    .map((id) =>\n      ROSTER.find((s) => String(s.id) === String(id))\n    )\n    .filter(Boolean);'''
+          new='''  // Normalize both legacy DB formats: IDs or serialized Sognatore objects.\n  // The auction can persist either form depending on the match version.\n  const resolveTeam = (ids, legacyTeam) => {\n    const source = Array.isArray(ids) && ids.length ? ids : (Array.isArray(legacyTeam) ? legacyTeam : []);\n\n    return source\n      .map((entry) => {\n        if (entry && typeof entry === "object") {\n          const id = entry.id ?? entry.sognatoreId ?? entry.sognatore_id;\n          const roster = id != null ? ROSTER.find((s) => String(s.id) === String(id)) : null;\n          return roster ? { ...roster, ...entry, nome: entry.nome ?? roster.nome, tipo: entry.tipo ?? roster.tipo, att: entry.att ?? roster.att, dif: entry.dif ?? roster.dif, vel: entry.vel ?? roster.vel, abilKey: entry.abilKey ?? roster.abilKey, img: entry.img ?? roster.img } : entry;\n        }\n\n        return ROSTER.find((s) => String(s.id) === String(entry));\n      })\n      .map((s) => {\n        if (!s) return null;\n        const roster = ROSTER.find((r) => String(r.id) === String(s.id));\n        if (!roster) return s;\n        return {\n          ...roster,\n          ...s,\n          nome: s.nome ?? roster.nome,\n          tipo: s.tipo ?? roster.tipo,\n          att: Number.isFinite(Number(s.att)) ? Number(s.att) : roster.att,\n          dif: Number.isFinite(Number(s.dif)) ? Number(s.dif) : roster.dif,\n          vel: Number.isFinite(Number(s.vel)) ? Number(s.vel) : roster.vel,\n          abilKey: s.abilKey ?? roster.abilKey,\n          img: s.img ?? roster.img,\n        };\n      })\n      .filter(Boolean);\n  };\n\n  const player1Team = resolveTeam(match?.player1_team_ids, match?.player1_team);\n  const player2Team = resolveTeam(match?.player2_team_ids, match?.player2_team);'''
+          if old not in s:
+              raise SystemExit('Target roster block not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/game/MultiplayerBattleArena.jsx
+          git rm .github/workflows/fix-battle-roster-normalization.yml
+          git diff --cached --quiet || git commit -m "Fix battle roster normalization"
+          git push
