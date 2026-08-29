@@ -1,0 +1,53 @@
+name: Fix results summary and disconnect classification
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, 'Fix results summary and disconnect classification')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply results fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/components/game/MultiplayerBattleArena.jsx')
+          s = p.read_text(encoding='utf-8')
+
+          # 1) A normal match must explicitly clear any disconnect marker.
+          old = '''        status: "done",\n\n        winner,\n      });'''
+          new = '''        status: "done",\n\n        winner,\n        // Normal KO victory: this is NOT a disconnect result.\n        disconnect_winner: null,\n      });'''
+          if old not in s:
+              raise SystemExit('Normal finish block not found')
+          s = s.replace(old, new, 1)
+
+          # 2) Disconnect detection must only use an actual heartbeat.\n          # Do not fall back to battleStartTime: that can manufacture a\n          # false disconnect simply because the other client has not yet\n          # written its first heartbeat.\n          old = '''    const oppLastSeen = match[`${oppSide}_last_seen`];\n    const battleStart = match.game_state?.battleStartTime;\n\n    const reference = oppLastSeen || battleStart;\n\n    if (!reference) return;\n\n    if (now - reference > 120000) {'''
+          new = '''    const oppLastSeen = match[`${oppSide}_last_seen`];\n\n    // A disconnect can only be declared after the opponent has actually\n    // sent at least one heartbeat and that heartbeat has become stale.\n    // Never use battleStartTime as evidence of a disconnect.\n    if (!oppLastSeen) return;\n\n    if (now - oppLastSeen > 120000) {'''
+          if old not in s:
+              raise SystemExit('Disconnect reference block not found')
+          s = s.replace(old, new, 1)
+
+          # 3) After opening the summary, hide the Summary button so only\n          # Exit remains, exactly as requested.\n          old = '''        <div className="flex gap-3 mb-6">\n          <button\n            onClick={onEnd}\n            className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold hover:brightness-110 transition"\n          >\n            {t("battle.exit")}\n          </button>\n\n          <button\n            onClick={() =>\n              setShowSummary(\n                (s) => !s\n              )\n            }\n            className="px-6 py-3 rounded-full bg-white/10 font-bold hover:bg-white/20 transition"\n          >\n            📋{" "}\n            {t(\n              "battle.summary"\n            )}\n          </button>\n        </div>'''
+          new = '''        <div className="flex gap-3 mb-6">\n          <button\n            onClick={onEnd}\n            className="px-8 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold hover:brightness-110 transition"\n          >\n            {t("battle.exit")}\n          </button>\n\n          {!showSummary && (\n            <button\n              onClick={() => setShowSummary(true)}\n              className="px-6 py-3 rounded-full bg-white/10 font-bold hover:bg-white/20 transition"\n            >\n              📋{" "}\n              {t("battle.summary")}\n            </button>\n          )}\n        </div>'''
+          if old not in s:
+              raise SystemExit('Summary button block not found')
+          s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/game/MultiplayerBattleArena.jsx
+          git rm .github/workflows/fix-results-summary-disconnect.yml
+          git diff --cached --quiet || git commit -m "Fix results summary and disconnect classification"
+          git push
