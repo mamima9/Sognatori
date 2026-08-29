@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -36,17 +38,6 @@ export default function Home() {
                 src="/images/bannerLOGOSOGNATORI.png"
                 alt="Sognatori"
                 className="h-24 sm:h-32 object-contain drop-shadow-2xl"
-              />
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 shadow-xl mb-5">
-              <video
-                src="https://media.base44.com/videos/public/6a88c0790ad6d8971067dd2b/806277199_videointroduttivo5.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full"
               />
             </motion.div>
 
@@ -148,7 +139,7 @@ export default function Home() {
         {screen === "result" && (
           <motion.div key="result" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="min-h-screen flex flex-col items-center justify-center text-center px-6">
             <div className="text-7xl mb-4">{result === "win" ? "🏆" : "💀"}</div>
-            <img src="https://media.base44.com/images/public/6a88c0790ad6d8971067dd2b/970a32337_bannerLOGOSOGNATORI.png" alt="Sognatori" className="h-16 object-contain mb-3" />
+            <img src="/images/bannerLOGOSOGNATORI.png" alt="Sognatori" className="h-16 object-contain mb-3" />
             <h2 className="text-4xl font-black mb-2">{result === "win" ? t('home.victory') : t('home.defeat')}</h2>
             <p className="text-slate-400 mb-8 text-sm">{result === "win" ? t('home.victoryMsg') : t('home.defeatMsg')}</p>
             <div className="flex gap-3">
