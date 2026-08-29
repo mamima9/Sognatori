@@ -1,0 +1,79 @@
+name: Force fix auction phase
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch phase routing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/Multiplayer.jsx')
+          s = p.read_text(encoding='utf-8')
+          old = '''        // ------------------------------------------------
+        // SECOND PLAYER JOINED
+        // ------------------------------------------------
+
+        if (m.player1_id && m.player2_id) {
+          setScreen("auction");
+          return;
+        }
+
+        // ------------------------------------------------
+        // MATCH ALREADY HAS GAME STATE
+        // ------------------------------------------------
+'''
+          new = '''        // ------------------------------------------------
+        // MATCH ALREADY HAS GAME STATE
+        // ------------------------------------------------
+'''
+          if old in s:
+              s = s.replace(old, new, 1)
+          else:
+              print('old block already absent or changed')
+
+          marker = '''        if (m.status === "done") {
+          setScreen("battle");
+        }
+'''
+          replacement = '''        if (m.status === "done") {
+          setScreen("battle");
+          return;
+        }
+
+        // Only enter the auction when both players are present AND
+        // there is not already a phase telling us to continue.
+        if (m.player1_id && m.player2_id && !m.game_state?.phase) {
+          setScreen("auction");
+          return;
+        }
+'''
+          if marker in s:
+              s = s.replace(marker, replacement, 1)
+          else:
+              print('status block already patched or changed')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit patch and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/Multiplayer.jsx
+          git rm .github/workflows/force-fix-auction-phase.yml
+          if git diff --cached --quiet; then
+            git commit --allow-empty -m "Fix auction phase routing"
+          else
+            git commit -m "Fix auction phase routing"
+          fi
+          git push
