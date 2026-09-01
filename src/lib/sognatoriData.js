@@ -162,7 +162,7 @@ export const ROSTER = [
     dif: 11,
     vel: 11.7,
     abilKey: "fourmori_buff",
-    abil: "Airdrop",
+    abil: "TDM",
     abilDesc: "Se il suo attacco va a segno, gli alleati ricevono +6 VEL",
     costo: 24,
     theme: "Airdrop, Supporto",
