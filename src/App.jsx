@@ -42,6 +42,7 @@ const AuthenticatedApp = () => {
   return (
     <>
       <Routes>
+        <Route path="/sognatori" element={<SognatoriStats />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
