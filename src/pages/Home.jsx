@@ -25,6 +25,9 @@ export default function Home() {
     t("rule.6"),
     t("rule.7"),
     t("rule.8"),
+    t("rule.9"),
+    t("rule.10"),
+    t("rule.11"),
   ];
 
   return (

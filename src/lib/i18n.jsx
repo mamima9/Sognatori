@@ -21,14 +21,17 @@ export const translations = {
     'home.victoryMsg': 'Hai eliminato tutti gli Sognatori avversari!',
     'home.defeatMsg': 'Il tuo team è stato sconfitto. Riprova!',
     'home.language': 'Lingua',
-    'rule.1': '20 PS per ogni Sognatore',
-    'rule.2': '11 Fazioni con relazioni tra tipi',
-    'rule.3': 'Danno = ATT − DIF + 4 + bonus tipo',
-    'rule.4': 'Mosse: Attacco, Protezione, Switch',
-    'rule.5': 'Priorità: Switch → Protezione → Attacco (velocità)',
-    'rule.6': 'Niente protezione 2 volte di fila',
-    'rule.7': 'Asta con 100 crediti, 4 Sognatori a testa',
-    'rule.8': 'Vince chi elimina tutti gli avversari',
+    'rule.1': ' Tutti i sognatori hanno 20 punti vita e un massimo di 20 punti vita',
+    'rule.2': '11 fazioni con affinità diverse tra loro diverse : +5 → sofferente ,0 → INDIFFERENTE, -3 → ARGINATO , 15 → INVIOLABILE',
+    'rule.3': 'Statistiche : ATT, DIF, VEL + abilità',
+    'rule.4': 'Danno = ATT − DIF + 4 + affinità'
+    'rule.5': 'Mosse: Attacco, Protezione, Switch',
+    'rule.6': 'Priorità: Switch → Protezione → Attacco A parità di priorità, agisce prima chi ha più VEL. ',
+    'rule.7': 'Niente protezione 2 volte di fila',
+    'rule.8': 'Composizione Team : Ogni team ha 4 Sognatori, 2 in campo e 2 in panchina',
+   'rule.9': ' Scelta Sognatori : Asta con 100 crediti a giocatore'
+   'rule.10': 'L’asta parte da 1 ad inizio puoi scegliere se modalità asta random o modalità asta con scelta del sognatore'
+    'rule.11': ' Vince chi ribalta tutti i sognatori avversari!',
     'mode.competitive': 'Competitiva',
     'mode.friendly': 'Amichevole',
     'mode.private': 'Privata',
@@ -220,14 +223,27 @@ export const translations = {
     'home.victoryMsg': 'You eliminated all opposing Sognatori!',
     'home.defeatMsg': 'Your team was defeated. Try again!',
     'home.language': 'Language',
-    'rule.1': '20 HP per Sognatore',
-    'rule.2': '11 Factions with type relationships',
-    'rule.3': 'Damage = ATK − DEF + 4 + type bonus',
-    'rule.4': 'Moves: Attack, Protect, Switch',
-    'rule.5': 'Priority: Switch → Protect → Attack (speed)',
-    'rule.6': 'No protect twice in a row',
-    'rule.7': 'Auction with 100 credits, 4 Sognatori each',
-    'rule.8': 'Win by eliminating all opponents',
+   'rule.1': 'All Dreamers have 20 Health Points (HP), with a maximum of 20 HP.',
+
+'rule.2': '11 Factions, with different affinities: +5 → SUFFERING, 0 → INDIFFERENT, -3 → RESISTED, -15 → INVULNERABLE.',
+
+'rule.3': 'Stats: ATK, DEF, SPD + one ability.',
+
+'rule.4': 'Damage calculation: ATK − DEF + 4 + affinity between Factions.',
+
+'rule.5': 'Moves: Attack, Protect and Switch.',
+
+'rule.6': 'Priority: Switch → Protect → Attack. If priority is equal, the Sognatore with higher SPD acts first.',
+
+'rule.7': 'You cannot use Protect twice in a row with the same Sognatore.',
+
+'rule.8': 'Team Composition: each Team has 4 Sognatori, 2 active and 2 on the bench.',
+
+'rule.9': 'Sognatore Selection: Auction with 100 credits per player.',
+
+'rule.10': 'The auction starts at 1 credit. You can choose between Random Auction and Sognatore Selection Auction.',
+
+'rule.11': 'Victory Condition: the winner is the player who ROLLS OVER all opposing Sognatori!',
     'mode.competitive': 'Competitive',
     'mode.friendly': 'Friendly',
     'mode.private': 'Private',
