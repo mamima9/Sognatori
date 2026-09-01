@@ -79,7 +79,7 @@ export const ROSTER = [
     vel: 14,
     abilKey: "deb_aura",
     abil: "Spedizione",
-    abilDesc: "Quando entra in campo, per 4 turni tutti i Robot alleati ricevono +2 ATT",
+    abilDesc: "Quando entra in campo,  tutti i Robot alleati ricevono +2 ATT",
     costo: 30,
     theme: "Spedizione, Supporto, Referral",
     img: "/images/6. DEB.png",
