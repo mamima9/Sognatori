@@ -14,7 +14,8 @@ export function initBattleSognatore(t) {
     abilityNullified: false,
     typeOverride: null,
     blockFirstAttack: false,
-    fainted: false
+debRobotBuff: 0,
+fainted: false
   };
 }
 
@@ -91,8 +92,19 @@ export function onEntry(s, allies, enemies, lang = 'it') {
       enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) log.push(m.debuffAtt(e.nome)); });
       break;
     case "deb_aura":
-      allies.forEach(a => { if (a && !a.fainted && a.id !== s.id && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) log.push(m.auraBuff(a.nome)); });
-      break;
+  s.robotAttackBuffTurns = 4;
+
+  allies.forEach(a => {
+    if (
+      a &&
+      !a.fainted &&
+      a.tipo === "Robot" &&
+      applyMod(a, "att", 2, allies)
+    ) {
+      log.push(m.auraBuff(a.nome));
+    }
+  });
+  break;
     case "cillymbu_aura":
       allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
       log.push(m.alliesBuff(s.nome));
