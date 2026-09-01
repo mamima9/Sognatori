@@ -85,6 +85,17 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}
                   className="px-6 py-3.5 rounded-full bg-white/10 font-bold text-sm hover:bg-white/20 transition border border-white/20"
                 >
+<Link to="/sognatori">
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.96 }}
+    className="px-6 py-3.5 rounded-full bg-white/10 font-bold text-sm hover:bg-white/20 transition border border-white/20"
+  >
+    🧬 Sognatori
+  </motion.button>
+</Link>
+
+
                   🏆 {t('home.rankings')}
                 </motion.button>
               </Link>

@@ -19,6 +19,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import GlobalMusicPlayer from '@/components/game/GlobalMusicPlayer';
 import { LanguageProvider } from '@/lib/i18n';
+import SognatoriStats from '@/pages/SognatoriStats';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
