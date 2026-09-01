@@ -88,7 +88,7 @@ export const translations = {
     'battle.starter': 'TITOLARE',
     'battle.confirmFormation': 'Conferma formazione',
     'battle.formationConfirmed': 'Formazione confermata — in attesa dell\'avversario...',
-    'battle.typeChart': 'Tabella Tipi',
+    'battle.typeChart': 'Tabella Fazioni',
     'battle.typeChartDesc': 'Riga = Attaccante · Colonna = Difensore',
     'battle.enemyBench': 'PANCHINA AVVERSARIO',
     'battle.yourBench': 'LA TUA PANCHINA',
