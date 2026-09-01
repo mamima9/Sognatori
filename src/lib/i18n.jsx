@@ -24,13 +24,13 @@ export const translations = {
     'rule.1': ' Tutti i sognatori hanno 20 punti vita e un massimo di 20 punti vita',
     'rule.2': '11 fazioni con affinità diverse tra loro diverse : +5 → sofferente ,0 → INDIFFERENTE, -3 → ARGINATO , 15 → INVIOLABILE',
     'rule.3': 'Statistiche : ATT, DIF, VEL + abilità',
-    'rule.4': 'Danno = ATT − DIF + 4 + affinità'
+    'rule.4': 'Danno = ATT − DIF + 4 + affinità',
     'rule.5': 'Mosse: Attacco, Protezione, Switch',
     'rule.6': 'Priorità: Switch → Protezione → Attacco A parità di priorità, agisce prima chi ha più VEL. ',
     'rule.7': 'Niente protezione 2 volte di fila',
     'rule.8': 'Composizione Team : Ogni team ha 4 Sognatori, 2 in campo e 2 in panchina',
-   'rule.9': ' Scelta Sognatori : Asta con 100 crediti a giocatore'
-   'rule.10': 'L’asta parte da 1 ad inizio puoi scegliere se modalità asta random o modalità asta con scelta del sognatore'
+   'rule.9': ' Scelta Sognatori : Asta con 100 crediti a giocatore',
+   'rule.10': 'L’asta parte da 1 ad inizio puoi scegliere se modalità asta random o modalità asta con scelta del sognatore',
     'rule.11': ' Vince chi ribalta tutti i sognatori avversari!',
     'mode.competitive': 'Competitiva',
     'mode.friendly': 'Amichevole',
@@ -199,10 +199,10 @@ export const translations = {
     'rankings.losses': 'S',
     'rankings.picks': 'picks',
     'rankings.topTeammates': 'Compagni più frequenti:',
-    'typechart.superEffective': '+5 Superefficace',
-    'typechart.resisted': '-3 Resistito',
-    'typechart.immune': '✕ Immune',
-    'typechart.neutral': '· Neutro',
+    'typechart.superEffective': '+5 Sofferente',
+    'typechart.resisted': '-3 Arginato',
+    'typechart.immune': '✕ Inviolabile',
+    'typechart.neutral': '· Indifferente',
     'common.home': 'Home',
   },
   en: {
@@ -411,9 +411,9 @@ export const translations = {
     'rankings.losses': 'L',
     'rankings.picks': 'picks',
     'rankings.topTeammates': 'Most frequent teammates:',
-    'typechart.superEffective': '+5 Super effective',
+    'typechart.superEffective': '+5 Vulnerable',
     'typechart.resisted': '-3 Resisted',
-    'typechart.immune': '✕ Immune',
+    'typechart.immune': '✕ Invulnerable',
     'typechart.neutral': '· Neutral',
     'common.home': 'Home'
   }
