@@ -104,30 +104,22 @@ export function onEntry(s, allies, enemies, lang = 'it') {
     case "sparkly_debuff":
       enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) log.push(m.debuffAtt(e.nome)); });
       break;
-<<<<<<< HEAD
-  
-      case "deb_aura":
-  s.debRobotBuff = 4;
-
-  allies.forEach(a => {
-    if (
-      a &&
-      !a.fainted &&
-      a.tipo === "Robot"
-    ) {
-      a.statMods.att = (a.statMods.att || 0) + 2;
-      a.debRobotBuff = 4;
-
-      log.push(m.auraBuff(a.nome));
-    }
-  });
-  break;
-    
-=======
     case "deb_aura":
-      allies.forEach(a => { if (a && !a.fainted && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) log.push(m.auraBuff(a.nome)); });
+      s.debRobotBuff = 4;
+
+      allies.forEach(a => {
+        if (
+          a &&
+          !a.fainted &&
+          a.tipo === "Robot"
+        ) {
+          a.statMods.att = (a.statMods.att || 0) + 2;
+          a.debRobotBuff = 4;
+
+          log.push(m.auraBuff(a.nome));
+        }
+      });
       break;
->>>>>>> 3f67a52183a0c61e5e5ac67354cf3c0327b73dd1
     case "cillymbu_aura":
       allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
       log.push(m.alliesBuff(s.nome));

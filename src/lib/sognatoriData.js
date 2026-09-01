@@ -1,6 +1,5 @@
 // Roster ufficiale Sognatori — statistiche e abilità esatte
 export const ROSTER = [
-<<<<<<< HEAD
   {
     id: "adlimago",
     nome: "Adli",
@@ -248,7 +247,7 @@ export const ROSTER = [
     vel: 5.3,
     abilKey: "long_stable",
     abil: "Airdrop Claim",
-    abilDesc: "Le diminuzioni di statistiche diventano aumenti",,
+    abilDesc: "Le diminuzioni di statistiche diventano aumenti",
     costo: 25,
     theme: "Airdrop, Claim, Halving",
     img: "/images/18 -LONG.jpg",
@@ -337,30 +336,4 @@ export const ROSTER = [
     theme: "Liquidity pool, Opensea, Double spending, Unstaking",
     img: "/images/24 - PIRIMAR.png",
   },
-=======
-  { id: "adlimago", nome: "Adli", tipo: "Mago", att: 10, dif: 15, vel: 8, abilKey: "adli_shield", abil: "Rituale", abilDesc: "Se deve difendersi da un Umano, prende +5 DIF", costo: 30, theme: "Rituale", img: "/images/1. ADLI.png" },
-  { id: "cancucc", nome: "Cancucc", tipo: "Dolce", att: 15, dif: 9, vel: 16, abilKey: "cancucc_immune", abil: "Pane e Abbracci", abilDesc: "Non può subire cali di statistica di ATT e DIF", costo: 28, theme: "Pane e abbracci, Carpaccio, Slurpo", img: "/images/2. CANCUCC.jpg" },
-  { id: "eroe", nome: "Eroe", tipo: "Nuvola", att: 17, dif: 9, vel: 15, abilKey: "eroe_splash", abil: "FOMO Cumulonembo", abilDesc: "Quando attacca, infligge 3 danni all'alleato avversario", costo: 34, theme: "FOMO, Cumulonembo", img: "/images/3. EROE.png" },
-  { id: "nuvobetta", nome: "Nuvobetta", tipo: "Nuvola", att: 14, dif: 12, vel: 11, abilKey: "nuvobetta_heal", abil: "Majorette", abilDesc: "Quando attacca, recupera 1 HP e il suo alleato recupera 2 HP", costo: 26, theme: "Majorette", img: "/images/4. NUVOBETTA.jpg" },
-  { id: "scroccospell", nome: "Scroccospell", tipo: "Mago", att: 12, dif: 8, vel: 17, abilKey: "scrocco_slow", abil: "Rug Pull", abilDesc: "Quando attacca, gli avversari colpiti ricevono -4 VEL", costo: 28, theme: "Rug pull", img: "/images/5. SCROCCOSPELL.png" },
-  { id: "deb", nome: "Deb", tipo: "Robot", att: 14, dif: 11, vel: 14, abilKey: "deb_aura", abil: "Spedizione", abilDesc: "Quando entra in campo, tutti i Robot alleati ricevono +2 ATT permanentemente", costo: 30, theme: "Spedizione, Supporto, Referral", img: "/images/6. DEB.png" },
-  { id: "aragostino", nome: "Aragostino", tipo: "Marino", att: 15, dif: 12, vel: 9, abilKey: "aragostino_fullhp", abil: "Cold Storage", abilDesc: "Riceve +3 ATT solo quando ha 20 HP", costo: 29, theme: "Cold storage, Fork", img: "/images/7. ARAGOSTINO.png" },
-  { id: "sparkly", nome: "Sparkly", tipo: "Umano", att: 12, dif: 9, vel: 6, abilKey: "sparkly_debuff", abil: "FUD", abilDesc: "Quando entra in campo, gli avversari ricevono -3 ATT", costo: 22, theme: "FUD", img: "/images/8. Sparkly.jpg" },
-  { id: "nina", nome: "Nina", tipo: "Luce", att: 15, dif: 12, vel: 9.1, abilKey: "nina_regen", abil: "Apoteosi", abilDesc: "Recupera 2 HP ogni turno", costo: 36, theme: "Apoteosi, Sigillo divino, Genesis block", img: "/images/9. NINA.jpg" },
-  { id: "taomarco", nome: "Tao Marco", tipo: "Umano", att: 17, dif: 13, vel: 5.5, abilKey: "taomarco_lock", abil: "Errare Swap", abilDesc: "Il bersaglio del suo attacco non può effettuare switch nel turno successivo", costo: 27, theme: "Errare, Swap", img: "/images/10 TAOMARCO.png" },
-  { id: "riwupido", nome: "Riwupido", tipo: "Luce", att: 11, dif: 12, vel: 11.2, abilKey: "riwupido_nullify", abil: "Sigillo Divino", abilDesc: "Quando entra in campo, annulla le abilità dei Robot avversari", costo: 25, theme: "Sigillo, Luce purificatrice", img: "/images/11. RIWUPIDO.png" },
-  { id: "fourmori", nome: "Fourmori", tipo: "Umano", att: 9, dif: 11, vel: 11.7, abilKey: "fourmori_buff", abil: "Airdrop", abilDesc: "Se il suo attacco va a segno, gli alleati ricevono +6 VEL", costo: 24, theme: "Airdrop, Supporto", img: "/images/12-Fourmori.png" },
-  { id: "ginza", nome: "Ginza", tipo: "Umano", att: 12, dif: 15, vel: 7, abilKey: "ginza_guard", abil: "Protezione Alleata", abilDesc: "Il suo alleato non può subire cali di statistiche", costo: 26, theme: "Protezione, Guardiano", img: "/images/13 - GINZA.png" },
-  { id: "dragociocco", nome: "Dragociocco", tipo: "Dolce", att: 14, dif: 10, vel: 14.1, abilKey: "dragociocco_antislurpo", abil: "Antislurpo", abilDesc: "Non può essere attaccato dagli Orsi", costo: 28, theme: "Antislurpo, Cioccobotta, Uova proiettile", img: "/images/14 - DRAGO CIOCCO.jpg" },
-  { id: "lari", nome: "Lari", tipo: "Nuvola", att: 9, dif: 9, vel: 8.5, abilKey: "lari_typechange", abil: "Nuvole Rosa", abilDesc: "Chi subisce un suo attacco diventa di tipo Nuvola", costo: 22, theme: "Nuvole rosa", img: "/images/15- LARI.png" },
-  { id: "uesditti", nome: "Uesditti", tipo: "Mago", att: 7, dif: 7, vel: 18, abilKey: "uesditti_debuff", abil: "DeFi Depeg", abilDesc: "L'avversario colpito riceve -4 DIF", costo: 30, theme: "DeFi, Depeg", img: "/images/16 - UESDITTI.png" },
-  { id: "fierononno", nome: "Fiero Nonno", tipo: "Nuvola", att: 10, dif: 10, vel: 10, abilKey: "fierononno_swap", abil: "HODL Testnet", abilDesc: "Se l'alleato protegge, scambia la sua posizione con quella dell'alleato", costo: 23, theme: "HODL, Testnet", img: "/images/17 -FIERONONNO.png" },
-  { id: "long", nome: "Long", tipo: "Robot", att: 14, dif: 12, vel: 5.3, abilKey: "long_stable", abil: "Airdrop Claim", abilDesc: "Non subisce cali di statistiche e riceve +6 ATT", costo: 25, theme: "Airdrop, Claim, Halving", img: "/images/18 -LONG.jpg" },
-  { id: "pepe", nome: "Pepe", tipo: "Demone", att: 13, dif: 7, vel: 9.2, abilKey: "pepe_memecoin", abil: "Memecoin", abilDesc: "Quando entra in campo, la statistica più bassa dell'alleato riceve +4", costo: 24, theme: "Memecoin, Fede collettiva", img: "/images/19  - PEPE.png" },
-  { id: "cillymbu", nome: "Cillymbu", tipo: "Natura", att: 10, dif: 10, vel: 3, abilKey: "cillymbu_aura", abil: "Stoccata di Bambù", abilDesc: "Gli alleati ricevono +3 ATT", costo: 21, theme: "Stoccata di bambù", img: "/images/20 - CILLYMBU.jpg" },
-  { id: "pequeno", nome: "Pequeno", tipo: "Natura", att: 11, dif: 7, vel: 9, abilKey: "pequeno_block", abil: "Seed Phrase", abilDesc: "Quando entra in campo, blocca il primo attacco del Sognatore avversario più veloce", costo: 23, theme: "Seed phrase, L2", img: "/images/21 - PEQUENO.png" },
-  { id: "cenere", nome: "Cenere", tipo: "Demone", att: 13, dif: 12, vel: 9.3, abilKey: "cenere_scoppio", abil: "White Paper Infuocato", abilDesc: "Prima di essere esausto, infligge 3 danni a entrambi gli avversari", costo: 31, theme: "White paper infuocato, Buyback and burn", img: "/images/22- CENERE.jpg" },
-  { id: "icepadel", nome: "Icepadel", tipo: "Marino", att: 13, dif: 9, vel: 9.4, abilKey: "icepadel_priority", abil: "Padellata", abilDesc: "Attacca con priorità +1", costo: 27, theme: "Padellata", img: "/images/23- ICEPADEL.png" },
-  { id: "pirimar", nome: "Pirimar", tipo: "Marino", att: 12, dif: 8, vel: 7.2, abilKey: "pirimar_lpool", abil: "Liquidity Pool", abilDesc: "Se il suo attacco va a segno, recupera 6 HP", costo: 29, theme: "Liquidity pool, Opensea, Double spending, Unstaking", img: "/images/24 - PIRIMAR.png" },
->>>>>>> 3f67a52183a0c61e5e5ac67354cf3c0327b73dd1
 ];
