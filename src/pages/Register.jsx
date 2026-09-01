@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,12 @@ export default function Register() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
     setMessage("");
 
@@ -40,12 +40,11 @@ export default function Register() {
         },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (data.session) {
-        window.location.href = returnTo;
+        // Avoid a full reload after immediate registration/login.
+        navigate(returnTo, { replace: true });
       } else {
         setMessage(
           "Account created. Check your email to confirm your account."
@@ -95,13 +94,11 @@ export default function Register() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-
           <div className="relative">
             <Mail
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-
             <Input
               id="email"
               type="email"
@@ -118,13 +115,11 @@ export default function Register() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-
           <div className="relative">
             <Lock
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-
             <Input
               id="password"
               type="password"
@@ -140,13 +135,11 @@ export default function Register() {
 
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
-
           <div className="relative">
             <Lock
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-
             <Input
               id="confirm"
               type="password"
