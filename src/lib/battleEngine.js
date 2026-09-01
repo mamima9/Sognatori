@@ -93,7 +93,6 @@ export function calcDamage(attacker, defender) {
   return { dmg: Math.max(1, raw), bonus, immune: false, efficacy };
 }
 
-// Effetti ingresso (switch-in o inizio battaglia)
 export function onEntry(s, allies, enemies, lang = 'it') {
   if (!s || s.fainted) return [];
   const log = [];
@@ -105,6 +104,7 @@ export function onEntry(s, allies, enemies, lang = 'it') {
     case "sparkly_debuff":
       enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) log.push(m.debuffAtt(e.nome)); });
       break;
+<<<<<<< HEAD
   
       case "deb_aura":
   s.debRobotBuff = 4;
@@ -123,6 +123,11 @@ export function onEntry(s, allies, enemies, lang = 'it') {
   });
   break;
     
+=======
+    case "deb_aura":
+      allies.forEach(a => { if (a && !a.fainted && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) log.push(m.auraBuff(a.nome)); });
+      break;
+>>>>>>> 3f67a52183a0c61e5e5ac67354cf3c0327b73dd1
     case "cillymbu_aura":
       allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
       log.push(m.alliesBuff(s.nome));
@@ -166,14 +171,12 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
 
   for (let act of all) {
     if (act.attacker.fainted) continue;
-    // Retarget if original target is fainted
     if (!act.target || act.target.fainted) {
       const newTarget = (act.enemies || []).find(e => e && !e.fainted);
       if (!newTarget) continue;
       act = { ...act, target: newTarget };
     }
 
-    // Pequeno: blocca primo attacco
     if (act.attacker.blockFirstAttack) {
       act.attacker.blockFirstAttack = false;
       log.push(`${act.attacker.nome} è bloccato! (Seed Phrase)`);
@@ -188,7 +191,6 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
     if (immune) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log.push(`${msg}: immunità! (0 danni)`); continue; }
 
     events.push({ targetId: act.target.id, efficacy, dmg });
-
     act.target.hp = Math.max(0, act.target.hp - dmg);
     if (bonus === 5) msg += " — Superefficace!";
     else if (bonus === -3) msg += " — Non molto efficace...";
@@ -263,7 +265,6 @@ export function processAction(act, lang = 'it') {
   const events = [];
   const m = bm(lang);
   if (!act || act.attacker.fainted) return { log, events };
-  // Retarget if original target is fainted — attack goes to the other living Sognatore
   if (!act.target || act.target.fainted) {
     const newTarget = (act.enemies || []).find(e => e && !e.fainted);
     if (!newTarget) return { log, events };
@@ -276,7 +277,6 @@ export function processAction(act, lang = 'it') {
     return { log, events };
   }
 
-  // Fiero Nonno (HODL Testnet): if target is protected, an ally with fierononno_swap deviates the attack to itself
   if (act.target.protectedThisTurn) {
     const fiero = (act.enemies || []).find(e => e && !e.fainted && !e.abilityNullified && e.abilKey === "fierononno_swap" && e.id !== act.target.id);
     if (fiero) {
@@ -366,7 +366,6 @@ export function applyEndOfTurn(allActive, lang = 'it') {
   return log;
 }
 
-// Dual-language versions: apply state mutations ONCE, produce both it + en logs.
 export function onEntryDual(s, allies, enemies, mIt, mEn) {
   const log_it = [], log_en = [];
   if (!s || s.fainted) return { log_it, log_en };
@@ -377,7 +376,7 @@ export function onEntryDual(s, allies, enemies, mIt, mEn) {
       enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) { log_it.push(mIt.debuffAtt(e.nome)); log_en.push(mEn.debuffAtt(e.nome)); } });
       break;
     case "deb_aura":
-      allies.forEach(a => { if (a && !a.fainted && a.id !== s.id && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) { log_it.push(mIt.auraBuff(a.nome)); log_en.push(mEn.auraBuff(a.nome)); } });
+      allies.forEach(a => { if (a && !a.fainted && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) { log_it.push(mIt.auraBuff(a.nome)); log_en.push(mEn.auraBuff(a.nome)); } });
       break;
     case "cillymbu_aura":
       allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
@@ -418,7 +417,6 @@ export function processActionDual(act, mIt, mEn) {
     log_it.push(mIt.blocked(act.attacker.nome)); log_en.push(mEn.blocked(act.attacker.nome));
     return { log_it, log_en, events };
   }
-  // Fiero Nonno (HODL Testnet): if target is protected, an ally with fierononno_swap deviates the attack to itself
   if (act.target.protectedThisTurn) {
     const fiero = (act.enemies || []).find(e => e && !e.fainted && !e.abilityNullified && e.abilKey === "fierononno_swap" && e.id !== act.target.id);
     if (fiero) {
@@ -429,17 +427,14 @@ export function processActionDual(act, mIt, mEn) {
   const { dmg, bonus, immune, antislurpo, efficacy } = calcDamage(act.attacker, act.target);
   let msgIt = mIt.attacks(act.attacker.nome, act.target.nome);
   let msgEn = mEn.attacks(act.attacker.nome, act.target.nome);
-
   if (antislurpo) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log_it.push(mIt.antislurpo(msgIt)); log_en.push(mEn.antislurpo(msgEn)); return { log_it, log_en, events }; }
   if (act.target.protectedThisTurn) { events.push({ targetId: act.target.id, efficacy: "protected", dmg: 0 }); log_it.push(mIt.protected(msgIt)); log_en.push(mEn.protected(msgEn)); return { log_it, log_en, events }; }
   if (immune) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log_it.push(mIt.immune(msgIt)); log_en.push(mEn.immune(msgEn)); return { log_it, log_en, events }; }
-
   events.push({ targetId: act.target.id, efficacy, dmg });
   act.target.hp = Math.max(0, act.target.hp - dmg);
   if (bonus === 5) { msgIt += mIt.superEffective; msgEn += mEn.superEffective; }
   else if (bonus === -3) { msgIt += mIt.notEffective; msgEn += mEn.notEffective; }
   msgIt += mIt.damage(dmg); msgEn += mEn.damage(dmg);
-
   const abil = act.attacker.abilityNullified ? null : act.attacker.abilKey;
   switch (abil) {
     case "scrocco_slow":
@@ -475,7 +470,6 @@ export function processActionDual(act, mIt, mEn) {
       msgIt += mIt.lock; msgEn += mEn.lock;
       break;
   }
-
   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
     if (tAbil === "cenere_scoppio") {
@@ -511,9 +505,7 @@ export function aiChooseActions(enemyActive, playerActive, enemyBench) {
   return enemyActive.map(s => {
     if (!s || s.fainted) return null;
     const benchAlive = enemyBench.filter(b => b && !b.fainted);
-    if (s.hp <= 4 && benchAlive.length > 0) {
-      return { type: "switch", benchIdx: enemyBench.findIndex(b => b && !b.fainted) };
-    }
+    if (s.hp <= 4 && benchAlive.length > 0) return { type: "switch", benchIdx: enemyBench.findIndex(b => b && !b.fainted) };
     if (s.hp < 12 && !s.protectedLastTurn && Math.random() < 0.3) return { type: "protect" };
     const targets = playerActive.filter(t => t && !t.fainted);
     if (targets.length === 0) return null;
