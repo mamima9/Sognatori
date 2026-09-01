@@ -247,7 +247,7 @@ export const ROSTER = [
     vel: 5.3,
     abilKey: "long_stable",
     abil: "Airdrop Claim",
-    abilDesc: "Non subisce cali di statistiche e riceve +6 ATT",
+    abilDesc: "Le diminuzioni di statistiche diventano aumenti",,
     costo: 25,
     theme: "Airdrop, Claim, Halving",
     img: "/images/18 -LONG.jpg",

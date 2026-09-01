@@ -26,8 +26,11 @@ export function getType(s) {
 export function effAtt(s) {
   let a = s.att + (s.statMods.att || 0);
   const abil = s.abilityNullified ? null : s.abilKey;
-  if (abil === "aragostino_fullhp" && s.hp >= s.hpMax) a += 3;
-  if (abil === "long_stable") a += 6;
+
+  if (abil === "aragostino_fullhp" && s.hp >= s.hpMax) {
+    a += 3;
+  }
+
   return Math.max(0, a);
 }
 
@@ -48,14 +51,25 @@ export function getPriority(s) {
 function isDebuffImmune(target, allies) {
   if (!target) return false;
   const abil = target.abilityNullified ? null : target.abilKey;
-  if (abil === "cancucc_immune" || abil === "long_stable") return true;
+  if (abil === "cancucc_immune" ) return true;
   if (allies && allies.some(a => a && !a.fainted && a.abilKey === "ginza_guard" && !a.abilityNullified && a.id !== target.id)) return true;
   return false;
 }
 
 function applyMod(target, stat, amount, allies) {
   if (!target || target.fainted) return false;
+
+  // LONG: ogni diminuzione diventa un aumento
+  if (
+    amount < 0 &&
+    target.abilKey === "long_stable" &&
+    !target.abilityNullified
+  ) {
+    amount = Math.abs(amount);
+  }
+
   if (amount < 0 && isDebuffImmune(target, allies)) return false;
+
   target.statMods[stat] = (target.statMods[stat] || 0) + amount;
   return true;
 }
@@ -91,20 +105,24 @@ export function onEntry(s, allies, enemies, lang = 'it') {
     case "sparkly_debuff":
       enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) log.push(m.debuffAtt(e.nome)); });
       break;
-    case "deb_aura":
-  s.robotAttackBuffTurns = 4;
+  
+      case "deb_aura":
+  s.debRobotBuff = 4;
 
   allies.forEach(a => {
     if (
       a &&
       !a.fainted &&
-      a.tipo === "Robot" &&
-      applyMod(a, "att", 2, allies)
+      a.tipo === "Robot"
     ) {
+      a.statMods.att = (a.statMods.att || 0) + 2;
+      a.debRobotBuff = 4;
+
       log.push(m.auraBuff(a.nome));
     }
   });
   break;
+    
     case "cillymbu_aura":
       allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
       log.push(m.alliesBuff(s.nome));
