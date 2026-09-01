@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const returnTo = safeReturnTo();
 
@@ -27,11 +28,11 @@ export default function Login() {
         password,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      window.location.href = returnTo;
+      // Navigate inside React Router instead of forcing a full page reload.
+      // This avoids the temporary white screen after a successful login.
+      navigate(returnTo, { replace: true });
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -70,13 +71,11 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-
           <div className="relative">
             <Mail
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-
             <Input
               id="email"
               type="email"
@@ -94,7 +93,6 @@ export default function Login() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-
             <Link
               to="/forgot-password"
               className="text-xs text-primary hover:underline"
@@ -108,7 +106,6 @@ export default function Login() {
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-
             <Input
               id="password"
               type="password"
