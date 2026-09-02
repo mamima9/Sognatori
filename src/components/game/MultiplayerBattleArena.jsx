@@ -1052,28 +1052,80 @@ useEffect(() => {
       enemyAttacks
     );
 
-    for (const act of ordered) {
-      const {
-        log_it,
-        log_en,
-      } = processActionDual(
-        act,
-        m_it,
-        m_en
-      );
+   /*
+ * ESECUZIONE MOSSE UNA ALLA VOLTA
+ * Ogni mossa viene:
+ * 1. calcolata
+ * 2. salvata su Supabase
+ * 3. mostrata nell'event window
+ * 4. lasciata visibile per 4 secondi
+ */
 
-      newLogIt.push(
-        ...log_it
-      );
+const turnLogStart =
+  (gs.log_it || []).length;
 
-      newLogEn.push(
-        ...log_en
-      );
-    }
+for (const act of ordered) {
+  const {
+    log_it,
+    log_en,
+  } = processActionDual(
+    act,
+    m_it,
+    m_en
+  );
 
-    /*
-     * FINE TURNO
-     */
+  newLogIt.push(
+    ...log_it
+  );
+
+  newLogEn.push(
+    ...log_en
+  );
+
+  /*
+   * Salviamo SUBITO lo stato dopo questa singola mossa.
+   * In questo modo gli HP vengono aggiornati insieme
+   * alla descrizione della mossa.
+   */
+
+  await updateMatch(match.id, {
+    game_state: {
+      ...gs,
+
+      player1_active: p1Active,
+      player2_active: p2Active,
+
+      player1_bench: p1Bench,
+      player2_bench: p2Bench,
+
+      phase: "animating",
+
+      log_it: newLogIt,
+      log_en: newLogEn,
+
+      lastTurnLog_it:
+        newLogIt.slice(turnLogStart),
+
+      lastTurnLog_en:
+        newLogEn.slice(turnLogStart),
+
+      turn:
+        (gs.turn || 0,
+    },
+  });
+
+  /*
+   * La mossa rimane visibile 4 secondi,
+   * poi parte quella successiva.
+   */
+  await sleep(4000);
+}
+
+/*
+ * ============================================================
+ * FINE TURNO
+ * ============================================================
+ */
 
     const endDual =
       applyEndOfTurnDual(
