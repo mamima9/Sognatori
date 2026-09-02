@@ -1,4 +1,4 @@
-import React from import React from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import HealthBar, { FactionBadge, SognatoreImage } from "./HealthBar";
 import { getType } from "@/lib/battleEngine";
