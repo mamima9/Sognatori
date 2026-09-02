@@ -699,14 +699,14 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
                   {currentTurn}
                 </div>
 
-              <div className="space-y-1 max-h-[320px] overflow-y-auto pr-1">
+             <div className="space-y-1">
   {animLogs
     .filter(l => !l.startsWith("__TURN_"))
     .slice(-8)
     .map((l, i, arr) => (
       <div
         key={i}
-        className={`min-w-[calc(50%-4px)] snap-start rounded-xl px-3 py-2 text-[11px] font-semibold leading-snug ${
+        className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
           i === arr.length - 1
             ? "bg-white/10 text-white"
             : "bg-black/20 text-slate-400"
