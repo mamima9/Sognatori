@@ -306,7 +306,6 @@ useEffect(() => {
  * DISCONNECT
  * ============================================================
  */
-
 useEffect(() => {
   if (
     disconnectRef.current ||
@@ -320,55 +319,37 @@ useEffect(() => {
   const oppLastSeen =
     match[`${oppSide}_last_seen`];
 
-  const battleStart =
-    match.game_state?.battleStartTime;
-
   /*
-   * Se abbiamo un heartbeat dell'avversario,
-   * usiamo quello.
+   * NON usiamo più battleStartTime come
+   * riferimento per dichiarare una disconnessione.
    *
-   * battleStartTime viene usato solo come fallback
-   * quando il match è appena iniziato e l'avversario
-   * non ha ancora inviato il primo heartbeat.
+   * Se l'avversario non ha ancora mandato
+   * un heartbeat, aspettiamo semplicemente.
    */
-
-  const reference =
-    oppLastSeen || battleStart;
-
-  if (!reference) return;
-
-  const elapsed =
-    Date.now() - Number(reference);
-
-  /*
-   * ==========================================================
-   * GRACE PERIOD
-   * ==========================================================
-   *
-   * 0 - 30 sec:
-   * tutto normale
-   *
-   * 30 - 45 sec:
-   * connessione potenzialmente persa,
-   * ma NON dichiariamo ancora la sconfitta.
-   *
-   * > 45 sec:
-   * disconnessione reale.
-   */
-
-  const DISCONNECT_TIMEOUT =45000;
-
-  if (elapsed <= DISCONNECT_TIMEOUT) {
+  if (!oppLastSeen) {
     return;
   }
 
-  /*
-   * Protezione ulteriore:
-   * se il timestamp è palesemente futuro,
-   * non considerarlo una disconnessione.
-   */
+  const elapsed =
+    Date.now() - Number(oppLastSeen);
 
-  if (Number(reference) > Date.now() + 10000) {
+  /*
+   * 45 secondi senza heartbeat = disconnessione reale.
+   */
+  const DISCONNECT_TIMEOUT = 180000;
+
+  /*
+   * Timestamp non valido o futuro:
+   * non dichiarare nessuna disconnessione.
+   */
+  if (
+    !Number.isFinite(Number(oppLastSeen)) ||
+    Number(oppLastSeen) > Date.now() + 10000
+  ) {
+    return;
+  }
+
+  if (elapsed <= DISCONNECT_TIMEOUT) {
     return;
   }
 
@@ -427,12 +408,6 @@ useEffect(() => {
         error
       );
 
-      /*
-       * Se l'aggiornamento fallisce, permettiamo
-       * un nuovo tentativo invece di bloccare
-       * definitivamente il match.
-       */
-
       disconnectRef.current = false;
     }
   };
@@ -447,9 +422,6 @@ useEffect(() => {
   player1Team,
   player2Team,
 ]);
-
-
-     
 
   /*
    * ============================================================
