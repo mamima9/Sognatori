@@ -11,7 +11,7 @@ export default function AbandonButton({ onAbandon, confirmMessage }) {
   return (
     <button
       onClick={handleClick}
-      className="fixed bottom-2 right-4 z-[99] text-xs px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold backdrop-blur border border-red-500/30 shadow-lg md:bottom-4 md:right-4"
+ className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[99] text-xs px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold backdrop-blur border border-red-500/30 shadow-lg md:bottom-4 md:left-auto md:right-4 md:translate-x-0"
     >
       🏳️ {t('battle.abandon')}
     </button>
