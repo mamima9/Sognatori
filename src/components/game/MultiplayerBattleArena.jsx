@@ -2424,49 +2424,31 @@ const oppSubmitted =
                 {gs.turn}
               </div>
 
-              <div className="space-y-1 max-h-20 overflow-hidden">
-                {(
-                  (
-                    lang ===
-                    "en"
-                      ? gs.lastTurnLog_en
-                      : gs.lastTurnLog_it
-                  ) || []
-                )
-                  .filter(
-                    (l) =>
-                      !l.startsWith(
-                        "__TURN_"
-                      )
-                  )
-                  .slice(
-                    Math.max(
-                      0,
-                      animStep - 3
-                    ),
-                    animStep + 1
-                  )
-                  .map(
-                    (
-                      l,
-                      i,
-                      arr
-                    ) => (
-                      <div
-                        key={i}
-                        className={`text-xs font-semibold leading-snug ${
-                          i ===
-                          arr.length -
-                            1
-                            ? "text-white"
-                            : "text-slate-400"
-                        }`}
-                      >
-                        {l}
-                      </div>
-                    )
-                  )}
-              </div>
+              <div className="space-y-1">
+  {(
+    (
+      lang === "en"
+        ? gs.lastTurnLog_en
+        : gs.lastTurnLog_it
+    ) || []
+  )
+    .filter(
+      (l) => !l.startsWith("__TURN_")
+    )
+    .slice(-8)
+    .map((l, i, arr) => (
+      <div
+        key={i}
+        className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
+          i === arr.length - 1
+            ? "bg-white/10 text-white"
+            : "bg-black/20 text-slate-400"
+        }`}
+      >
+        {l}
+      </div>
+    ))}
+</div>
 
               <div className="mt-2 flex justify-center gap-1">
                 {(
