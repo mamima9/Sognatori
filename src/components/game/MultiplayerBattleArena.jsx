@@ -257,86 +257,172 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const mySide = isHost ? "player1" : "player2";
   const oppSide = isHost ? "player2" : "player1";
 
-  /*
-   * ============================================================
-   * HEARTBEAT
-   * ============================================================
-   */
+/*
+ * ============================================================
+ * HEARTBEAT
+ * ============================================================
+ */
 
-  useEffect(() => {
-    if (
-      !matchId ||
-      !match ||
-      match.status !== "in_progress"
-    ) {
-      return;
-    }
+useEffect(() => {
+  if (
+    !matchId ||
+    !match ||
+    match.status !== "in_progress"
+  ) {
+    return;
+  }
 
-    const key = `${mySide}_last_seen`;
+  const key = `${mySide}_last_seen`;
 
-    const beat = () => {
-      updateMatch(matchId, {
+  let stopped = false;
+
+  const beat = async () => {
+    if (stopped) return;
+
+    try {
+      await updateMatch(matchId, {
         [key]: Date.now(),
-      }).catch((error) => {
-        console.error("Heartbeat error:", error);
       });
-    };
+    } catch (error) {
+      // Un singolo errore di heartbeat NON significa disconnessione.
+      console.warn(
+        "Heartbeat temporaneamente fallito:",
+        error
+      );
+    }
+  };
 
-    beat();
+  // Primo heartbeat immediato
+  beat();
 
-    const interval = setInterval(beat, 15000);
+  // Heartbeat frequente
+  const [now, setNow] = useState(Date.now());
 
-    return () => clearInterval(interval);
-  }, [matchId, match?.status, mySide]);
+useEffect(() => {
+  const interval = setInterval(() => {
+    setNow(Date.now());
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, []);
+}, [
+  matchId,
+  match?.status,
+  mySide,
+]);
+   
+/*
+ * ============================================================
+ * DISCONNECT
+ * ============================================================
+ */
+
+useEffect(() => {
+  if (
+    disconnectRef.current ||
+    !match ||
+    match.status !== "in_progress" ||
+    !currentUser
+  ) {
+    return;
+  }
+
+  const oppLastSeen =
+    match[`${oppSide}_last_seen`];
+
+  const battleStart =
+    match.game_state?.battleStartTime;
 
   /*
-   * ============================================================
-   * DISCONNECT
-   * ============================================================
+   * Se abbiamo un heartbeat dell'avversario,
+   * usiamo quello.
+   *
+   * battleStartTime viene usato solo come fallback
+   * quando il match è appena iniziato e l'avversario
+   * non ha ancora inviato il primo heartbeat.
    */
 
-  useEffect(() => {
-    if (
-      disconnectRef.current ||
-      !match ||
-      match.status !== "in_progress" ||
-      !currentUser
-    ) {
-      return;
-    }
+  const reference =
+    oppLastSeen || battleStart;
 
-    const oppLastSeen = match[`${oppSide}_last_seen`];
-    const battleStart = match.game_state?.battleStartTime;
+  if (!reference) return;
 
-    const reference = oppLastSeen || battleStart;
+  const elapsed =
+    Date.now() - Number(reference);
 
-    if (!reference) return;
+  /*
+   * ==========================================================
+   * GRACE PERIOD
+   * ==========================================================
+   *
+   * 0 - 30 sec:
+   * tutto normale
+   *
+   * 30 - 45 sec:
+   * connessione potenzialmente persa,
+   * ma NON dichiariamo ancora la sconfitta.
+   *
+   * > 45 sec:
+   * disconnessione reale.
+   */
 
-    if (now - reference > 120000) {
-      disconnectRef.current = true;
+  const DISCONNECT_TIMEOUT = 45000;
 
-      const winner = mySide;
+  if (elapsed <= DISCONNECT_TIMEOUT) {
+    return;
+  }
 
-      updateMatch(match.id, {
+  /*
+   * Protezione ulteriore:
+   * se il timestamp è palesemente futuro,
+   * non considerarlo una disconnessione.
+   */
+
+  if (Number(reference) > Date.now() + 10000) {
+    return;
+  }
+
+  disconnectRef.current = true;
+
+  const winner = mySide;
+
+  const finishDisconnect = async () => {
+    try {
+      await updateMatch(match.id, {
         game_state: {
           ...match.game_state,
           phase: "done",
         },
+
         status: "done",
+
         winner,
+
         disconnect_winner: winner,
-      }).catch((error) => {
-        console.error("Errore aggiornamento disconnect:", error);
       });
 
-      createMatchHistory({
-        player1_id: match.player1_id,
-        player2_id: match.player2_id,
-        player1_name: match.player1_name,
-        player2_name: match.player2_name,
+      await createMatchHistory({
+        player1_id:
+          match.player1_id,
 
-        player1_team_ids: player1Team.map((s) => s.id),
-        player2_team_ids: player2Team.map((s) => s.id),
+        player2_id:
+          match.player2_id,
+
+        player1_name:
+          match.player1_name,
+
+        player2_name:
+          match.player2_name,
+
+        player1_team_ids:
+          player1Team.map(
+            (s) => s.id
+          ),
+
+        player2_team_ids:
+          player2Team.map(
+            (s) => s.id
+          ),
 
         winner_id:
           winner === "player1"
@@ -344,19 +430,36 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
             : match.player2_id,
 
         mode: match.mode,
-      }).catch((error) => {
-        console.error("Errore match history:", error);
       });
+    } catch (error) {
+      console.error(
+        "Errore gestione disconnessione:",
+        error
+      );
+
+      /*
+       * Se l'aggiornamento fallisce, permettiamo
+       * un nuovo tentativo invece di bloccare
+       * definitivamente il match.
+       */
+
+      disconnectRef.current = false;
     }
-  }, [
-    now,
-    match,
-    currentUser,
-    mySide,
-    oppSide,
-    player1Team,
-    player2Team,
-  ]);
+  };
+
+  finishDisconnect();
+}, [
+  now,
+  match,
+  currentUser,
+  mySide,
+  oppSide,
+  player1Team,
+  player2Team,
+]);
+
+
+     
 
   /*
    * ============================================================
