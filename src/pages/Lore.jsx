@@ -22,9 +22,9 @@ const FACTION_ICONS = {
 
 const SOGNATORI_LORE = {
   adlimago: {
-    it: `Adli è un antico sognatore che custodisce i segreti dell'equilibrio tra potere e conoscenza.
+    it: `Adli è un antico sognatore che custodisce i segreti del mondo dei sognatori.
 
-Con i suoi rituali può piegare il flusso del tempo e confondere i suoi avversari.`,
+Tratta i suoi rituali come opere d'arte`,
     en: `Adli is an ancient Dreamer who guards the secrets of the balance between power and knowledge.
 
 With his rituals, he can bend the flow of time and confuse his opponents.`,
@@ -121,7 +121,7 @@ He is still a great grumbler, but now he protects humans from above.`,
   lari: {
     it: `Lari è una sognatrice nata da una divinità protettrice delle dimore.
 
-In cambio di adorazione protegge i cieli circostanti da fulmini, tornado e inondazioni.
+In cambio di adorazione protegge i cieli circostanti da fulmini, tornadi e inondazioni.
 
 Cambia il colore delle nuvole in base al suo umore.`,
     en: `Lari is a female Dreamer born from a deity who protects homes.
@@ -174,7 +174,7 @@ Her call announces great changes.`,
   sparkly: {
     it: `Sparkly è un umano nato in una sera di stelle cadenti.
 
-Non cerca il potere né la gloria, osserva e si meraviglia del mondo dei Sognatori.`,
+Non cerca né il potere né la gloria, osserva e si meraviglia del mondo dei Sognatori.`,
     en: `Sparkly is a human born on a night of shooting stars.
 
 He seeks neither power nor glory. He simply observes and marvels at the world of the Dreamers.`,
