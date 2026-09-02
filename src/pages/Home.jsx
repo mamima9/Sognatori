@@ -33,8 +33,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
 
-      {/* Language selector */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+     {/* Language selector — solo fuori dalla battaglia */}
+{screen !== "battle" && (
+  <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
         <span className="text-[10px] text-slate-400 uppercase tracking-widest">
           {t("home.language")}
         </span>
@@ -61,6 +62,7 @@ export default function Home() {
           EN
         </button>
       </div>
+)}
 
       <AnimatePresence mode="wait">
 
@@ -154,7 +156,7 @@ export default function Home() {
                 </motion.button>
               </Link>
 
-              {/* TIPI */}
+              {/* AFFINITà */}
               <Link to="/typechart">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
