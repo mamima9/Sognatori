@@ -295,16 +295,7 @@ useEffect(() => {
   // Primo heartbeat immediato
   beat();
 
-  // Heartbeat frequente
-  const [now, setNow] = useState(Date.now());
-
-useEffect(() => {
-  const interval = setInterval(() => {
-    setNow(Date.now());
-  }, 5000);
-
-  return () => clearInterval(interval);
-}, []);
+// Heartbeat frequente
 }, [
   matchId,
   match?.status,
@@ -366,7 +357,7 @@ useEffect(() => {
    * disconnessione reale.
    */
 
-  const DISCONNECT_TIMEOUT = 45000;
+  const DISCONNECT_TIMEOUT =45000;
 
   if (elapsed <= DISCONNECT_TIMEOUT) {
     return;
