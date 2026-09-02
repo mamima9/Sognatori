@@ -1094,9 +1094,8 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
               >
                 {t("battle.confirm")}
               </button>
-
+</div>
             </div>
-
         )}
 
         {phase === "animating" && (
