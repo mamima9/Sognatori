@@ -652,29 +652,29 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
 
       <div className="relative flex-1 px-4 pt-5 pb-3 max-w-4xl mx-auto w-full">
 
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
-            {t("battle.vgc")}
-          </span>
+     <div className="flex items-center gap-3 mb-2">
+  <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
+    {t("battle.vgc")}
+  </span>
 
-          <button
-            onClick={() =>
-              setShowTypeChart(true)
-            }
-            className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
-          >
-            📊 {t("battle.types")}
-          </button>
+  <button
+    onClick={() => setShowTypeChart(true)}
+    className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+  >
+    📊 {t("battle.types")}
+  </button>
 
-          <button
-            onClick={() =>
-              setShowBench(true)
-            }
-            className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
-          >
-            🪑 {t("battle.bench")}
-          </button>
-        </div>
+  <button
+    onClick={() => setShowBench(true)}
+    className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+  >
+    🪑 {t("battle.bench")}
+  </button>
+
+  <AbandonButton
+    onAbandon={() => onEnd("abandon")}
+  />
+</div>
 
         {phase === "animating" &&
           animLogs.length > 0 && (
