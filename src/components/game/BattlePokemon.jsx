@@ -7,17 +7,17 @@ import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
 const EFFICACY = {
   it: {
-    se: { label: "SUPEREFFICACE!", bg: "#16a34a" },
-    res: { label: "RESISTITO", bg: "#f97316" },
-    immune: { label: "IMMUNE!", bg: "#475569" },
-    protected: { label: "PROTETTO", bg: "#2563eb" },
+    se: { label: "SOFFERENTE!", bg: "#16a34a" },
+    res: { label: "ARGINATO", bg: "#f97316" },
+    immune: { label: "INVIOLABILE!", bg: "#475569" },
+    protected: { label: "INDIFFERENTE", bg: "#2563eb" },
     neutral: null,
   },
   en: {
-    se: { label: "SUPER EFFECTIVE!", bg: "#16a34a" },
+    se: { label: "VULNERABLE!", bg: "#16a34a" },
     res: { label: "RESISTED", bg: "#f97316" },
-    immune: { label: "IMMUNE!", bg: "#475569" },
-    protected: { label: "PROTECTED", bg: "#2563eb" },
+    immune: { label: "INVULNERABLE!", bg: "#475569" },
+    protected: { label: "NEUTRAL", bg: "#2563eb" },
     neutral: null,
   },
 };
