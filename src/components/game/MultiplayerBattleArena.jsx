@@ -1110,7 +1110,7 @@ for (const act of ordered) {
         newLogEn.slice(turnLogStart),
 
       turn:
-        (gs.turn || 0,
+        gs.turn || 0,
     },
   });
 
