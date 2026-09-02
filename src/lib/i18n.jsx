@@ -22,7 +22,7 @@ export const translations = {
     'home.defeatMsg': 'Il tuo team è stato sconfitto. Riprova!',
     'home.language': 'Lingua',
     'rule.1': ' Tutti i sognatori hanno 20 punti vita. (E un massimo di 20 punti vita)',
-    'rule.2': 'Esistono 11 fazioni con affinità tra loro diverse. (Vedi tabella fazioni)',
+    'rule.2': 'Esistono 11 fazioni con affinità tra loro diverse. (Vedi tabella affinità)',
     'rule.3': 'Ogni sognatore ha 3 statistiche : ATT, DIF, VEL , più le abilità',
     'rule.4': 'Formula del danno = ATT − DIF + 4 + affinità',
     'rule.5': 'Mosse =  Attacco, Protezione, Switch',
@@ -88,7 +88,7 @@ export const translations = {
     'battle.starter': 'TITOLARE',
     'battle.confirmFormation': 'Conferma formazione',
     'battle.formationConfirmed': 'Formazione confermata — in attesa dell\'avversario...',
-    'battle.typeChart': 'Tabella Fazioni',
+    'battle.typeChart': 'Tabella Affinità',
     'battle.typeChartDesc': 'Riga = Attaccante · Colonna = Difensore',
     'battle.enemyBench': 'PANCHINA AVVERSARIO',
     'battle.yourBench': 'LA TUA PANCHINA',
@@ -210,7 +210,7 @@ export const translations = {
     'home.multiplayer': 'Multiplayer',
     'home.vsAI': 'vs AI',
     'home.lore': 'Lore',
-    'home.types': 'Factions',
+    'home.types': 'Affinity',
     'home.rankings': 'Rankings',
     'home.login': 'Login',
     'home.register': 'Register',
@@ -225,7 +225,7 @@ export const translations = {
     'home.language': 'Language',
   'rule.1': 'All Dreamers have 20 Health Points (HP), with a maximum of 20 HP.',
 
-'rule.2': 'There are 11 Factions, each with different affinities. (See Faction Chart)',
+'rule.2': 'There are 11 Factions, each with different affinities. (See Affinity Chart)',
 
 'rule.3': 'Each Dreamer has 3 stats: ATK, DEF, SPD, plus their abilities.',
 
