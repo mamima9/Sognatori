@@ -28,42 +28,16 @@ const TRACKS = [
   },
 ];
 
-const DEFAULT_POSITION = {
-  x: 50,
-  y: 82,
-};
-
 export default function GlobalMusicPlayer() {
   const [trackIdx, setTrackIdx] = useState(
     () => Math.floor(Math.random() * TRACKS.length)
   );
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.25);
-
   const [showPlaylist, setShowPlaylist] = useState(false);
-
-  const [playlistPosition, setPlaylistPosition] = useState(() => {
-    try {
-      const saved = localStorage.getItem(
-        "sognatori-playlist-position"
-      );
-
-      return saved
-        ? JSON.parse(saved)
-        : DEFAULT_POSITION;
-    } catch {
-      return DEFAULT_POSITION;
-    }
-  });
 
   const audioRef = useRef(null);
   const playingRef = useRef(false);
-
-  const draggingRef = useRef(false);
-  const dragOffsetRef = useRef({
-    x: 0,
-    y: 0,
-  });
 
   const current = TRACKS[trackIdx];
 
@@ -71,7 +45,8 @@ export default function GlobalMusicPlayer() {
     playingRef.current = playing;
   }, [playing]);
 
-  // AUDIO
+  // Create audio element when track changes
+  // Auto-advance to next track when the current one ends
   useEffect(() => {
     const audio = new Audio(current.url);
 
@@ -79,17 +54,14 @@ export default function GlobalMusicPlayer() {
     audio.volume = volume;
 
     audio.onended = () => {
-      setTrackIdx(
-        (i) => (i + 1) % TRACKS.length
-      );
+      setTrackIdx((i) => (i + 1) % TRACKS.length);
     };
 
     audioRef.current = audio;
 
+    // Continue playing automatically when changing track
     if (playingRef.current) {
-      audio.play().catch(() =>
-        setPlaying(false)
-      );
+      audio.play().catch(() => setPlaying(false));
     }
 
     return () => {
@@ -102,14 +74,13 @@ export default function GlobalMusicPlayer() {
     // eslint-disable-next-line
   }, [trackIdx]);
 
-  // VOLUME
+  // Update volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // PLAY / PAUSE
   const togglePlay = () => {
     const audio = audioRef.current;
 
@@ -126,134 +97,15 @@ export default function GlobalMusicPlayer() {
     }
   };
 
-  // SELECT TRACK
   const selectTrack = (idx) => {
     setTrackIdx(idx);
     setShowPlaylist(false);
   };
 
-  // START DRAG
-  const handlePointerDown = (e) => {
-    e.preventDefault();
-
-    draggingRef.current = true;
-
-    const rect =
-      e.currentTarget.getBoundingClientRect();
-
-    dragOffsetRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-
-    e.currentTarget.setPointerCapture?.(
-      e.pointerId
-    );
-  };
-
-  // DRAG
-  const handlePointerMove = (e) => {
-    if (!draggingRef.current) return;
-
-    const x =
-      e.clientX -
-      dragOffsetRef.current.x;
-
-    const y =
-      e.clientY -
-      dragOffsetRef.current.y;
-
-    const maxX =
-      window.innerWidth -
-      e.currentTarget.offsetWidth;
-
-    const maxY =
-      window.innerHeight -
-      e.currentTarget.offsetHeight;
-
-    const boundedX = Math.max(
-      0,
-      Math.min(x, maxX)
-    );
-
-    const boundedY = Math.max(
-      0,
-      Math.min(y, maxY)
-    );
-
-    const newPosition = {
-      x: boundedX,
-      y: boundedY,
-    };
-
-    setPlaylistPosition(newPosition);
-
-    localStorage.setItem(
-      "sognatori-playlist-position",
-      JSON.stringify(newPosition)
-    );
-  };
-
-  // END DRAG
-  const handlePointerUp = () => {
-    draggingRef.current = false;
-  };
-
   return (
-    <>
-      {/* =========================
-          PLAYLIST MOVIBILE
-      ========================== */}
-
-      <div
-        className="fixed z-[101]"
-        style={{
-          left: playlistPosition.x,
-          top: playlistPosition.y,
-          touchAction: "none",
-        }}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      >
-        <button
-          onPointerDown={handlePointerDown}
-          onClick={() =>
-            !draggingRef.current &&
-            setShowPlaylist((s) => !s)
-          }
-          className="
-            px-3
-            h-8
-            rounded-full
-            bg-slate-900/95
-            backdrop-blur
-            border
-            border-white/10
-            shadow-lg
-            hover:bg-slate-800
-            flex
-            items-center
-            justify-center
-            gap-1.5
-            text-xs
-            text-slate-300
-            cursor-grab
-            active:cursor-grabbing
-            select-none
-          "
-          aria-label="Apri playlist"
-        >
-          <span className="truncate max-w-[120px]">
-            {current.name}
-          </span>
-
-          <span className="text-[8px]">
-            ▾
-          </span>
-        </button>
-
-        {/* PLAYLIST MENU */}
+    <div className="w-full flex justify-center px-4 py-4">
+      <div className="relative">
+        {/* PLAYLIST */}
         <AnimatePresence>
           {showPlaylist && (
             <motion.div
@@ -279,6 +131,7 @@ export default function GlobalMusicPlayer() {
                 -translate-x-1/2
                 mb-2
                 w-64
+                max-w-[calc(100vw-2rem)]
                 rounded-2xl
                 bg-slate-900/95
                 backdrop-blur
@@ -286,9 +139,10 @@ export default function GlobalMusicPlayer() {
                 border-white/10
                 shadow-2xl
                 overflow-hidden
+                z-50
               "
             >
-              {/* TITLE */}
+              {/* PLAYLIST TITLE */}
               <div
                 className="
                   px-3
@@ -305,14 +159,12 @@ export default function GlobalMusicPlayer() {
                 Playlist
               </div>
 
-              {/* TRACKS */}
+              {/* TRACK LIST */}
               <div className="max-h-60 overflow-y-auto">
                 {TRACKS.map((t, i) => (
                   <button
                     key={i}
-                    onClick={() =>
-                      selectTrack(i)
-                    }
+                    onClick={() => selectTrack(i)}
                     className={`
                       w-full
                       text-left
@@ -332,9 +184,7 @@ export default function GlobalMusicPlayer() {
                     `}
                   >
                     <span className="text-xs">
-                      {i === trackIdx && playing
-                        ? "▶"
-                        : "♪"}
+                      {i === trackIdx && playing ? "▶" : "♪"}
                     </span>
 
                     <span className="truncate flex-1">
@@ -367,9 +217,7 @@ export default function GlobalMusicPlayer() {
                   step="0.05"
                   value={volume}
                   onChange={(e) =>
-                    setVolume(
-                      parseFloat(e.target.value)
-                    )
+                    setVolume(parseFloat(e.target.value))
                   }
                   className="flex-1 h-1 accent-amber-400"
                 />
@@ -377,109 +225,128 @@ export default function GlobalMusicPlayer() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* MUSIC PLAYER */}
+        <div
+          className="
+            flex
+            items-center
+            gap-1
+            rounded-full
+            bg-slate-900/95
+            backdrop-blur
+            border
+            border-white/10
+            shadow-lg
+            px-2
+            py-1.5
+            max-w-full
+          "
+        >
+          {/* PREVIOUS */}
+          <button
+            onClick={() =>
+              setTrackIdx(
+                (i) => (i - 1 + TRACKS.length) % TRACKS.length
+              )
+            }
+            className="
+              w-7
+              h-7
+              flex-shrink-0
+              rounded-full
+              hover:bg-white/10
+              flex
+              items-center
+              justify-center
+              text-xs
+              text-slate-300
+              transition
+            "
+            aria-label="Brano precedente"
+          >
+            ⏮
+          </button>
+
+          {/* PLAY / PAUSE */}
+          <button
+            onClick={togglePlay}
+            className="
+              w-8
+              h-8
+              flex-shrink-0
+              rounded-full
+              bg-gradient-to-r
+              from-amber-500
+              to-orange-500
+              flex
+              items-center
+              justify-center
+              text-sm
+              hover:brightness-110
+              transition
+            "
+            aria-label={playing ? "Pausa" : "Riproduci"}
+          >
+            {playing ? "⏸" : "▶"}
+          </button>
+
+          {/* NEXT */}
+          <button
+            onClick={() =>
+              setTrackIdx(
+                (i) => (i + 1) % TRACKS.length
+              )
+            }
+            className="
+              w-7
+              h-7
+              flex-shrink-0
+              rounded-full
+              hover:bg-white/10
+              flex
+              items-center
+              justify-center
+              text-xs
+              text-slate-300
+              transition
+            "
+            aria-label="Brano successivo"
+          >
+            ⏭
+          </button>
+
+          {/* CURRENT TRACK / PLAYLIST */}
+          <button
+            onClick={() => setShowPlaylist((s) => !s)}
+            className="
+              ml-1
+              px-2
+              h-7
+              min-w-0
+              max-w-[150px]
+              rounded-full
+              hover:bg-white/10
+              flex
+              items-center
+              justify-center
+              gap-1
+              text-xs
+              text-slate-300
+              transition
+            "
+            aria-label="Apri playlist"
+          >
+            <span className="truncate">
+              {current.name}
+            </span>
+
+            <span className="text-[8px] flex-shrink-0">
+              ▾
+            </span>
+          </button>
+        </div>
       </div>
-
-      {/* =========================
-          MUSIC CONTROLS
-      ========================== */}
-
-      <div
-        className="
-          fixed
-          bottom-2
-          left-1/2
-          -translate-x-1/2
-          z-[100]
-          flex
-          items-center
-          gap-1
-          rounded-full
-          bg-slate-900/90
-          backdrop-blur
-          border
-          border-white/10
-          shadow-lg
-          px-2
-          py-1.5
-        "
-      >
-        {/* PREVIOUS */}
-        <button
-          onClick={() =>
-            setTrackIdx(
-              (i) =>
-                (i - 1 + TRACKS.length) %
-                TRACKS.length
-            )
-          }
-          className="
-            w-7
-            h-7
-            rounded-full
-            hover:bg-white/10
-            flex
-            items-center
-            justify-center
-            text-xs
-            text-slate-300
-            transition
-          "
-          aria-label="Brano precedente"
-        >
-          ⏮
-        </button>
-
-        {/* PLAY / PAUSE */}
-        <button
-          onClick={togglePlay}
-          className="
-            w-8
-            h-8
-            rounded-full
-            bg-gradient-to-r
-            from-amber-500
-            to-orange-500
-            flex
-            items-center
-            justify-center
-            text-sm
-            hover:brightness-110
-            transition
-          "
-          aria-label={
-            playing
-              ? "Pausa"
-              : "Riproduci"
-          }
-        >
-          {playing ? "⏸" : "▶"}
-        </button>
-
-        {/* NEXT */}
-        <button
-          onClick={() =>
-            setTrackIdx(
-              (i) =>
-                (i + 1) % TRACKS.length
-            )
-          }
-          className="
-            w-7
-            h-7
-            rounded-full
-            hover:bg-white/10
-            flex
-            items-center
-            justify-center
-            text-xs
-            text-slate-300
-            transition
-          "
-          aria-label="Brano successivo"
-        >
-          ⏭
-        </button>
-      </div>
-    </>
+    </div>
   );
 }

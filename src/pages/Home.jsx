@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import Auction from "@/components/game/Auction";
@@ -9,12 +9,15 @@ import PreMatchSelect from "@/components/game/PreMatchSelect";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 
-export default function Home() {
+export default function Home({ onAuctionChange }) {
   const { isAuthenticated, user, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [result, setResult] = useState(null);
+  useEffect(() => {
+  onAuctionChange?.(screen === "auction");
+}, [screen, onAuctionChange]);
 
   const RULES = [
     t("rule.1"),
@@ -32,37 +35,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
-
-     {/* Language selector — solo fuori dalla battaglia */}
-{screen !== "battle" && (
-  <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-        <span className="text-[10px] text-slate-400 uppercase tracking-widest">
-          {t("home.language")}
-        </span>
-
-        <button
-          onClick={() => setLang("it")}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition ${
-            lang === "it"
-              ? "bg-amber-500 text-slate-950"
-              : "bg-white/10 text-slate-300 hover:bg-white/20"
-          }`}
-        >
-          IT
-        </button>
-
-        <button
-          onClick={() => setLang("en")}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition ${
-            lang === "en"
-              ? "bg-amber-500 text-slate-950"
-              : "bg-white/10 text-slate-300 hover:bg-white/20"
-          }`}
-        >
-          EN
-        </button>
-      </div>
-)}
 
       <AnimatePresence mode="wait">
 
