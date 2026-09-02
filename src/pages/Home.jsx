@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import Auction from "@/components/game/Auction";
@@ -9,15 +9,13 @@ import PreMatchSelect from "@/components/game/PreMatchSelect";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 
-export default function Home({ onAuctionChange }) {
+export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [result, setResult] = useState(null);
-  useEffect(() => {
-  onAuctionChange?.(screen === "auction");
-}, [screen, onAuctionChange]);
+
 
   const RULES = [
     t("rule.1"),
@@ -47,6 +45,35 @@ export default function Home({ onAuctionChange }) {
             exit={{ opacity: 0 }}
             className="min-h-screen flex flex-col items-center justify-center px-6 py-10"
           >
+
+            {/* LINGUA */}
+<div className="absolute top-4 right-4 z-50 flex items-center gap-1 rounded-full bg-slate-900/90 backdrop-blur border border-white/10 shadow-lg px-2 py-1.5">
+  <span className="text-[9px] text-slate-400 uppercase tracking-widest mr-1">
+    {t("home.language")}
+  </span>
+
+  <button
+    onClick={() => setLang("it")}
+    className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
+      lang === "it"
+        ? "bg-amber-500 text-slate-950"
+        : "bg-white/10 text-slate-300 hover:bg-white/20"
+    }`}
+  >
+    IT
+  </button>
+
+  <button
+    onClick={() => setLang("en")}
+    className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
+      lang === "en"
+        ? "bg-amber-500 text-slate-950"
+        : "bg-white/10 text-slate-300 hover:bg-white/20"
+    }`}
+  >
+    EN
+  </button>
+</div>
 
             {/* LOGO */}
             <motion.div
