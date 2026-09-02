@@ -15,7 +15,6 @@ import { SognatoreImage } from "./HealthBar";
 import TypeChartTable from "./TypeChartTable";
 import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
-import GlobalMusicPlayer from "./GlobalMusicPlayer";
 import { useLanguage } from "@/lib/i18n";
 import { bm } from "@/lib/battleMessages";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
@@ -1098,58 +1097,6 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
 
             </div>
 
-            {/* AREA INFERIORE: PLAYLIST + LINGUA + ABBANDONA */}
-            <div className="col-span-2 mt-10 pt-6">
-
-              {/* Playlist al centro */}
-              <div className="flex justify-center mb-8">
-                <GlobalMusicPlayer />
-              </div>
-
-              {/* IT/EN a sinistra — Abbandona a destra */}
-              <div className="flex items-center justify-between">
-
-                <div className="flex items-center gap-1">
-
-                  <button
-                    onClick={() =>
-                      setLang("it")
-                    }
-                    className={`px-2 py-1 rounded text-[10px] font-bold transition ${
-                      lang === "it"
-                        ? "bg-amber-500 text-slate-950"
-                        : "bg-white/10 text-slate-400 hover:bg-white/20"
-                    }`}
-                  >
-                    🇮🇹 IT
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setLang("en")
-                    }
-                    className={`px-2 py-1 rounded text-[10px] font-bold transition ${
-                      lang === "en"
-                        ? "bg-amber-500 text-slate-950"
-                        : "bg-white/10 text-slate-400 hover:bg-white/20"
-                    }`}
-                  >
-                    EN
-                  </button>
-
-                </div>
-
-                <AbandonButton
-                  onAbandon={() =>
-                    onEnd("abandon")
-                  }
-                />
-
-              </div>
-
-            </div>
-
-          </div>
         )}
 
         {phase === "animating" && (
