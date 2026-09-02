@@ -692,17 +692,17 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
                 transition={{
                   duration: 0.3
                 }}
-                className="bg-slate-900/90 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 max-w-[90%] text-center shadow-2xl"
+                className="bg-slate-900/95 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 w-full max-w-4xl text-center shadow-2xl"
               >
                 <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-1">
                   {t("battle.turn")}{" "}
                   {currentTurn}
                 </div>
 
-               <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1">
+              <div className="space-y-1 max-h-[320px] overflow-y-auto pr-1">
   {animLogs
     .filter(l => !l.startsWith("__TURN_"))
-    .slice(-4)
+    .slice(-8)
     .map((l, i, arr) => (
       <div
         key={i}
