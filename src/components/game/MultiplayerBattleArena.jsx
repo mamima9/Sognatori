@@ -1664,20 +1664,20 @@ useEffect(() => {
     });
   };
 
-  const prematchTimeLeft =
-    useCountdown(
-      match?.game_state?.phase ===
-        "prematch" &&
-        !match?.[
-          `${mySide}_actions`
-        ]
-        ? TURN_SECONDS
-        : 0,
+const prematchTimeLeft =
+  useCountdown(
+    match?.game_state?.phase ===
+      "prematch" &&
+      !match?.[
+        `${mySide}_actions`
+      ]
+      ? TURN_SECONDS
+      : 0,
 
-      handlePrematchExpire,
+    handlePrematchExpire,
 
-      "prematch"
-    );
+    `prematch-${match?.id}-${match?.game_state?.battleStartTime || "new"}-${mySide}`
+  );
 
   /*
    * ============================================================
@@ -2083,15 +2083,19 @@ useEffect(() => {
         ? player1Team
         : player2Team;
 
-    const mySubmitted =
-      !!match[
-        `${mySide}_actions`
-      ];
+   const myStarterActions =
+  match[`${mySide}_actions`];
 
-    const oppSubmitted =
-      !!match[
-        `${oppSide}_actions`
-      ];
+const oppStarterActions =
+  match[`${oppSide}_actions`];
+
+const mySubmitted =
+  Array.isArray(myStarterActions?.starters) &&
+  myStarterActions.starters.length === 2;
+
+const oppSubmitted =
+  Array.isArray(oppStarterActions?.starters) &&
+  oppStarterActions.starters.length === 2;
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white px-4 py-6 max-w-3xl mx-auto">
