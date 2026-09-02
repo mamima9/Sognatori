@@ -172,32 +172,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
    * ============================================================
    */
 
-  useEffect(() => {
-    const gs = match?.game_state;
 
-    if (!gs || gs.phase !== "animating") {
-      setAnimStep(0);
-      return;
-    }
-
-    const logs =
-      (lang === "en"
-        ? gs.lastTurnLog_en
-        : gs.lastTurnLog_it) || [];
-
-    if (animStep >= logs.length - 1) return;
-
-    const timer = setTimeout(() => {
-      setAnimStep((s) => s + 1);
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, [
-    animStep,
-    match?.game_state?.phase,
-    match?.game_state?.turn,
-    lang,
-  ]);
 
   /*
    * ============================================================
@@ -1081,50 +1056,10 @@ for (const act of ordered) {
   newLogEn.push(
     ...log_en
   );
-
-  /*
-   * Salviamo SUBITO lo stato dopo questa singola mossa.
-   * In questo modo gli HP vengono aggiornati insieme
-   * alla descrizione della mossa.
-   */
-
-  await updateMatch(match.id, {
-    game_state: {
-      ...gs,
-
-      player1_active: p1Active,
-      player2_active: p2Active,
-
-      player1_bench: p1Bench,
-      player2_bench: p2Bench,
-
-      phase: "animating",
-
-      log_it: newLogIt,
-      log_en: newLogEn,
-
-      lastTurnLog_it:
-        newLogIt.slice(turnLogStart),
-
-      lastTurnLog_en:
-        newLogEn.slice(turnLogStart),
-
-      turn:
-        gs.turn || 0,
-    },
-  });
-
-  /*
-   * La mossa rimane visibile 4 secondi,
-   * poi parte quella successiva.
-   */
-  await sleep(4000);
 }
 
 /*
- * ============================================================
  * FINE TURNO
- * ============================================================
  */
 
     const endDual =

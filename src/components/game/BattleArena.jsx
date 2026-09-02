@@ -703,7 +703,7 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
   {animLogs
     .filter(l => !l.startsWith("__TURN_"))
     .slice(-8)
-    .map((l, i, arr) => (
+.map((l, i, arr) => (
       <div
         key={i}
         className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
