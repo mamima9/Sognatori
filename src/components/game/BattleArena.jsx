@@ -699,35 +699,23 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
                   {currentTurn}
                 </div>
 
-                <div className="space-y-1 max-h-20 overflow-hidden">
-                  {animLogs
-                    .filter(
-                      l =>
-                        !l.startsWith(
-                          "__TURN_"
-                        )
-                    )
-                    .slice(-4)
-                    .map(
-                      (
-                        l,
-                        i,
-                        arr
-                      ) => (
-                        <div
-                          key={i}
-                          className={`text-xs font-semibold leading-snug ${
-                            i ===
-                            arr.length - 1
-                              ? "text-white"
-                              : "text-slate-400"
-                          }`}
-                        >
-                          {l}
-                        </div>
-                      )
-                    )}
-                </div>
+               <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1">
+  {animLogs
+    .filter(l => !l.startsWith("__TURN_"))
+    .slice(-4)
+    .map((l, i, arr) => (
+      <div
+        key={i}
+        className={`min-w-[calc(50%-4px)] snap-start rounded-xl px-3 py-2 text-[11px] font-semibold leading-snug ${
+          i === arr.length - 1
+            ? "bg-white/10 text-white"
+            : "bg-black/20 text-slate-400"
+        }`}
+      >
+        {l}
+      </div>
+    ))}
+</div>
               </motion.div>
             </div>
           )}
@@ -827,9 +815,9 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
 
                 return (
                   <div
-                    key={i}
-                    className="rounded-xl bg-white/5 p-2"
-                  >
+  key={i}
+  className="rounded-xl bg-white/5 p-2 min-h-[190px] flex flex-col"
+>
 
                     <div className="text-xs font-semibold flex items-center gap-1">
 
@@ -1192,12 +1180,12 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
           }
         >
 
-          <div
-            className="bg-slate-900 rounded-2xl border border-white/10 p-4 max-w-md w-full max-h-[85vh] overflow-y-auto"
-            onClick={e =>
-              e.stopPropagation()
-            }
-          >
+         <div
+  className="bg-gradient-to-b from-amber-950/90 via-slate-900 to-amber-950/90 rounded-3xl border border-amber-500/30 p-5 max-w-4xl w-full min-h-[360px] max-h-[85vh] overflow-y-auto shadow-2xl"
+  onClick={e =>
+    e.stopPropagation()
+  }
+>
 
             <div className="flex justify-between items-center mb-3">
 
