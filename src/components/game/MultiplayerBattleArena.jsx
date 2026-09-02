@@ -80,6 +80,34 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [animStep, setAnimStep] = useState(0);
+  useEffect(() => {
+  const gs = match?.game_state;
+
+  if (!gs || gs.phase !== "animating") {
+    setAnimStep(0);
+    return;
+  }
+
+  const logs =
+    (lang === "en"
+      ? gs.lastTurnLog_en
+      : gs.lastTurnLog_it) || [];
+
+  if (logs.length === 0) return;
+
+  if (animStep >= logs.length - 1) return;
+
+  const timer = setTimeout(() => {
+    setAnimStep((prev) => prev + 1);
+  }, 4000);
+
+  return () => clearTimeout(timer);
+}, [
+  animStep,
+  match?.game_state?.phase,
+  match?.game_state?.turn,
+  lang,
+]);
   const [turnKey, setTurnKey] = useState(0);
   const [myStarters, setMyStarters] = useState([]);
   const [switchChoices, setSwitchChoices] = useState({});
@@ -588,10 +616,14 @@ useEffect(() => {
       match.game_state.lastTurnLog ||
       [];
 
-    const animMs = Math.max(
-      16000,
-      logs.length * 4000
-    );
+    const visibleLogs = logs.filter(
+  (l) => !l.startsWith("__TURN_")
+);
+
+const animMs = Math.max(
+  4000,
+  visibleLogs.length * 4000
+);
 
     const timer = setTimeout(
       () => handleAnimationEnd(),
@@ -845,6 +877,10 @@ useEffect(() => {
 
     const entered = [];
 
+// Eventi di danno/efficacia del turno.
+// Ogni evento viene collegato alla riga del log che lo genera.
+const turnEvents = [];
+
     /*
      * SWITCH PLAYER 1
      */
@@ -1063,18 +1099,21 @@ useEffect(() => {
  * 4. lasciata visibile per 4 secondi
  */
 
-const turnLogStart =
-  (gs.log_it || []).length;
-
 for (const act of ordered) {
   const {
     log_it,
     log_en,
+    events,
   } = processActionDual(
     act,
     m_it,
     m_en
   );
+
+  const relativeLogIndex =
+    newLogIt.length -
+    (gs.log_it || []).length -
+    1;
 
   newLogIt.push(
     ...log_it
@@ -1083,6 +1122,15 @@ for (const act of ordered) {
   newLogEn.push(
     ...log_en
   );
+
+  if (Array.isArray(events)) {
+    events.forEach((event) => {
+      turnEvents.push({
+        ...event,
+        logIndex: relativeLogIndex,
+      });
+    });
+  }
 }
 
 /*
@@ -1129,10 +1177,12 @@ for (const act of ordered) {
           newLogIt.slice(prevLen),
 
         lastTurnLog_en:
-          newLogEn.slice(prevLen),
+  newLogEn.slice(prevLen),
 
-        turn:
-          (gs.turn || 0) + 1,
+turnEvents,
+
+turn:
+  (gs.turn || 0) + 1,
       },
 
       player1_actions: null,
@@ -2449,6 +2499,7 @@ const oppSubmitted =
     .filter(
       (l) => !l.startsWith("__TURN_")
     )
+    .slice(0, animStep + 1)
     .slice(-8)
     .map((l, i, arr) => (
       <div
@@ -2463,6 +2514,7 @@ const oppSubmitted =
       </div>
     ))}
 </div>
+
 
               <div className="mt-2 flex justify-center gap-1">
                 {(
