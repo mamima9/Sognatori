@@ -257,12 +257,6 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const mySide = isHost ? "player1" : "player2";
   const oppSide = isHost ? "player2" : "player1";
 
-/*
- * ============================================================
- * HEARTBEAT
- * ============================================================
- */
-
 useEffect(() => {
   if (
     !matchId ||
@@ -284,7 +278,6 @@ useEffect(() => {
         [key]: Date.now(),
       });
     } catch (error) {
-      // Un singolo errore di heartbeat NON significa disconnessione.
       console.warn(
         "Heartbeat temporaneamente fallito:",
         error
@@ -295,7 +288,13 @@ useEffect(() => {
   // Primo heartbeat immediato
   beat();
 
-// Heartbeat frequente
+  // Heartbeat ogni 5 secondi
+  const interval = setInterval(beat, 5000);
+
+  return () => {
+    stopped = true;
+    clearInterval(interval);
+  };
 }, [
   matchId,
   match?.status,
