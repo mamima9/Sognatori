@@ -8,7 +8,7 @@ export const translations = {
     'home.multiplayer': 'Multiplayer',
     'home.vsAI': 'Contro AI',
     'home.lore': 'Lore',
-    'home.types': 'Fazioni',
+    'home.types': 'Affinità',
     'home.rankings': 'Classifica',
     'home.login': 'Login',
     'home.register': 'Registrati',

@@ -80,7 +80,7 @@ export default function GlobalMusicPlayer() {
   };
 
   return (
-    <div className="fixed bottom-2 left-4 z-[100]">
+   <div className="relative z-[100]">
       <AnimatePresence>
         {showPlaylist && (
           <motion.div
