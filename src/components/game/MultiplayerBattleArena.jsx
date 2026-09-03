@@ -977,24 +977,49 @@ const cloneBattleState = (list) =>
      */
 
     entered.forEach(
-      ({ s, allies, enemies }) => {
-        const d = onEntryDual(
-          s,
-          allies,
-          enemies,
-          m_it,
-          m_en
-        );
-
-        newLogIt.push(
-          ...d.log_it
-        );
-
-        newLogEn.push(
-          ...d.log_en
-        );
-      }
+  ({ s, allies, enemies }) => {
+    const d = onEntryDual(
+      s,
+      allies,
+      enemies,
+      m_it,
+      m_en
     );
+
+    newLogIt.push(
+      ...d.log_it
+    );
+
+    newLogEn.push(
+      ...d.log_en
+    );
+
+    if (
+      d.log_it.length > 0 ||
+      d.log_en.length > 0
+    ) {
+      turnFrames.push({
+        log_it: [...d.log_it],
+        log_en: [...d.log_en],
+
+        player1_active:
+          cloneBattleState(p1Active),
+
+        player2_active:
+          cloneBattleState(p2Active),
+
+        player1_bench:
+          cloneBattleState(p1Bench),
+
+        player2_bench:
+          cloneBattleState(p2Bench),
+
+        events: [],
+        section: "start",
+      });
+    }
+  }
+);
 
   
     /*
