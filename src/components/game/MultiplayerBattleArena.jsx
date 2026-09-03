@@ -1170,7 +1170,7 @@ turnFrames.push({
   events: frameEvents,
   section: "actions",
 });
-
+}
 /*
  * FINE TURNO
  */
@@ -2580,82 +2580,7 @@ const oppBench =
     </motion.div>
   </div>
 )}
-              animate={{
-                opacity: 1,
-                scale: 1,
-              }}
-              transition={{
-                duration: 0.3,
-              }}
-              className="bg-slate-900/90 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 max-w-[90%] text-center shadow-2xl"
-            >
-              <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-                {t(
-                  "battle.turn"
-                )}{" "}
-                {gs.turn}
-              </div>
-
-              <div className="space-y-1">
-  {(
-    (
-      lang === "en"
-        ? gs.lastTurnLog_en
-        : gs.lastTurnLog_it
-    ) || []
-  )
-    .filter(
-      (l) => !l.startsWith("__TURN_")
-    )
-    .slice(0, animStep + 1)
-    .slice(-8)
-    .map((l, i, arr) => (
-      <div
-        key={i}
-        className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
-          i === arr.length - 1
-            ? "bg-white/10 text-white"
-            : "bg-black/20 text-slate-400"
-        }`}
-      >
-        {l}
-      </div>
-    ))}
-</div>
-
-
-              <div className="mt-2 flex justify-center gap-1">
-                {(
-                  (
-                    lang ===
-                    "en"
-                      ? gs.lastTurnLog_en
-                      : gs.lastTurnLog_it
-                  ) || []
-                )
-                  .filter(
-                    (l) =>
-                      !l.startsWith(
-                        "__TURN_"
-                      )
-                  )
-                  .map(
-                    (_, i) => (
-                      <div
-                        key={i}
-                        className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                          i <=
-                          animStep
-                            ? "bg-amber-400"
-                            : "bg-white/20"
-                        }`}
-                      />
-                    )
-                  )}
-              </div>
-            </motion.div>
-          </div>
-        )}
+         
 
         <div className="relative rounded-3xl bg-gradient-to-b from-rose-950/30 via-slate-900/40 to-emerald-950/30 border border-white/10 p-3 sm:p-4 flex-1 flex flex-col justify-between min-h-[300px]">
           <div>
