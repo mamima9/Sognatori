@@ -864,14 +864,9 @@ useEffect(() => {
       `__TURN_${turnNum}__`
     );
 
-    const entered = [];
-   
-const startTurnLogIt = [];
-const startTurnLogEn = [];
-// Eventi di danno/efficacia del turno.
-// Ogni evento viene collegato alla riga del log che lo genera.
+   const entered = [];
 const turnEvents = [];
-const turnFrames = [];
+
 
 const cloneBattleState = (list) =>
   JSON.parse(JSON.stringify(list));
@@ -1001,19 +996,7 @@ const cloneBattleState = (list) =>
       }
     );
 
-    // Abilità attivate all'inizio del turno
-if (startTurnLogIt.length > 0 || startTurnLogEn.length > 0) {
-  turnFrames.push({
-    log_it: [...startTurnLogIt],
-    log_en: [...startTurnLogEn],
-    player1_active: cloneBattleState(p1Active),
-    player2_active: cloneBattleState(p2Active),
-    player1_bench: cloneBattleState(p1Bench),
-    player2_bench: cloneBattleState(p2Bench),
-    events: [],
-    section: "start",
-  });
-}
+  
     /*
      * PROTECT PLAYER 1
      */
