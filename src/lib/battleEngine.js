@@ -278,7 +278,21 @@ export function processAction(act, lang = 'it') {
   let msg = m.attacks(act.attacker.nome, act.target.nome);
 
   if (antislurpo) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log.push(m.antislurpo(msg)); return { log, events }; }
-  if (act.target.protectedThisTurn) { events.push({ targetId: act.target.id, efficacy: "protected", dmg: 0 }); log.push(m.protected(msg)); return { log, events }; }
+if (act.target.protectedThisTurn) {
+  events.push({
+    targetId: act.target.id,
+    efficacy: "protected",
+    dmg: 0
+  });
+
+  log.push(
+    lang === "en"
+      ? `${act.attacker.nome} attacks ${act.target.nome}, but ${act.target.nome} is protected.`
+      : `${act.attacker.nome} attacca ${act.target.nome}, ma ${act.target.nome} si protegge.`
+  );
+
+  return { log, events };
+}
   if (immune) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log.push(m.immune(msg)); return { log, events }; }
 
   events.push({ targetId: act.target.id, efficacy, dmg });
