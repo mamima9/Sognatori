@@ -10,7 +10,7 @@ export function bm(lang) {
     damage: (d) => en ? ` (${d} damage)` : ` (${d} danni)`,
     blocked: (n) => en ? `${n} is blocked! (Seed Phrase)` : `${n} è bloccato! (Seed Phrase)`,
     protected: (m) => en ? `${m} — protected! (0 damage)` : `${m} — protetto! (0 danni)`,
-    immune: (m) => en ? `${m}: invulnerable! (0 damage)` : `${m}: invulnerabile! (0 danni)`,
+    immune: (m) => en ? `${m}: invulnerable! (0 damage)` : `${m}: inviolabile! (0 danni)`,
     antislurpo: (m) => en ? `${m}: Antislurpo! Dragociocco cannot be attacked by Bears` : `${m}: Antislurpo! Dragociocco non può essere attaccato dagli Orsi`,
     ko: (n) => en ? ` ${n} is KO!` : ` ${n} è KO!`,
     koEnter: (out, inc) => en ? `${out} is KO! ${inc} enters!` : `${out} è KO! Entra ${inc}!`,
