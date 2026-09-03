@@ -934,9 +934,17 @@ const cloneBattleState = (list) =>
       .filter((i) => i !== null);
 
     p2Slots.forEach((i) => {
-      const act = p2A[i];
-        const inc =
-          p2Bench[act.benchIdx];
+  const act = p2A[i];
+
+  if (
+    !act ||
+    act.type !== "switch" ||
+    !p2Active[i] ||
+    p2Active[i].cannotSwitch
+  ) return;
+
+  const inc =
+    p2Bench[act.benchIdx];
 
         const out =
           p2Active[i];
