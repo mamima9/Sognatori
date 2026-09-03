@@ -886,8 +886,8 @@ const cloneBattleState = (list) =>
       if (
         act &&
         act.type === "switch" &&
-         !p1Active[i].cannotSwitch
-        p1Active[i]
+         p1Active[i] &&
+  !p1Active[i].cannotSwitch
       ) {
         const inc =
           p1Bench[act.benchIdx];
@@ -934,13 +934,6 @@ const cloneBattleState = (list) =>
 
     p2Slots.forEach((i) => {
       const act = p2A[i];
-
-      if (
-        act &&
-        act.type === "switch" &&
-         !p1Active[i].cannotSwitch
-        p2Active[i]
-      ) {
         const inc =
           p2Bench[act.benchIdx];
 
