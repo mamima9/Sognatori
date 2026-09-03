@@ -33,7 +33,7 @@ export function bm(lang) {
     heal: en ? " · +2 HP ally" : " · +2 PS alleato",
     velBuff: en ? " · allies +6 SPD" : " · alleati +6 VEL",
     splash: en ? " · 3 damage to opponent ally" : " · 3 danni all'alleato avversario",
-    splashKo: (n) => ` (${n} ROLLS OVER!)`,
+    splashKo: (n) => ` (${n} RIBALTATO!)`,
     lock: en ? " · (cannot switch)" : " · (non può switchare)",
     explode: (n) => en ? `${n} explodes: 3 damage to all opponents!` : `${n} esplode: 3 danni a tutti gli avversari!`,
     regen: (n, h) => en ? `${n} recovers ${h} HP (Apotheosis)` : `${n} recupera ${h} PS (Apoteosi)`,
