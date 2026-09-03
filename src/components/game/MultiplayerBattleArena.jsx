@@ -865,21 +865,7 @@ useEffect(() => {
     );
 
     const entered = [];
-    // ✨ ABILITÀ A INIZIO TURNO
-for (const s of [...p1Active, ...p2Active]) {
-  if (!s || s.fainted) continue;
-
-  const abil = s.abilityNullified ? null : s.abilKey;
-  if (!abil) continue;
-
-  const allies = p1Active.includes(s) ? p1Active : p2Active;
-  const enemies = p1Active.includes(s) ? p2Active : p1Active;
-
-  const r = onEntryDual(s, allies, enemies, m_it, m_en);
-
-  startTurnLogIt.push(...r.log_it);
-  startTurnLogEn.push(...r.log_en);
-}
+   
 const startTurnLogIt = [];
 const startTurnLogEn = [];
 // Eventi di danno/efficacia del turno.
@@ -2521,53 +2507,42 @@ const oppBench =
             </button>
           </div>
         </div>
-{(() => {
-  const isTurnZero = (gs.turn || 0) === 0;
 
-  if (isTurnZero) {
-    const initialLogs =
-      (lang === "en"
-        ? gs.lastTurnLog_en
-        : gs.lastTurnLog_it) || [];
+        {gs.phase === "animating" && animFrame && (
+  <div className="flex justify-center mb-2">
+    <motion.div
+      key={`${gs.turn}-${animStep}`}
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-slate-900/90 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 max-w-[90%] text-center shadow-2xl"
+    >
+      <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-2">
+        {animFrame.section === "start"
+          ? "✨ INIZIO TURNO"
+          : animFrame.section === "end"
+          ? "🌟 FINE TURNO"
+          : "⚔️ AZIONI"}
+      </div>
 
-    const visibleLogs = initialLogs.filter(
-      (l) => !l.startsWith("__TURN_")
-    );
-
-    return (
-      gs.phase === "select" &&
-      visibleLogs.length > 0
-    );
-  }
-
-  const frames = Array.isArray(gs.turnFrames)
-    ? gs.turnFrames
-    : [];
-
-  const visibleLogs = frames
-    .slice(0, animStep + 1)
-    .flatMap((frame) =>
-      lang === "en"
-        ? frame.log_en || []
-        : frame.log_it || []
-    )
-    .filter(
-      (l) => !l.startsWith("__TURN_")
-    );
-
-  return (
-    gs.phase === "animating" &&
-    visibleLogs.length > 0
-  );
-})() &&
- (
-          <div className="flex justify-center mb-2">
-            <motion.div
-              key={animStep}
-              initial={{
-                opacity: 0,
-                scale: 0.85,
-              }}
+      <div className="space-y-1">
+        {(lang === "en"
+          ? animFrame.log_en || []
+          : animFrame.log_it || []
+        )
+          .filter((l) => !l.startsWith("__TURN_"))
+          .map((l, i) => (
+            <div
+              key={i}
+              className="rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug bg-white/10 text-white"
+            >
+              {l}
+            </div>
+          ))}
+      </div>
+    </motion.div>
+  </div>
+)}
               animate={{
                 opacity: 1,
                 scale: 1,
