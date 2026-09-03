@@ -13,10 +13,7 @@ const LOGO = "/images/bannerLOGOSOGNATORI.png";
 const ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 const generateRoomCode = () =>
-  Array.from(
-    { length: 6 },
-    () => ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)]
-  ).join("");
+  Array.from({ length: 6 }, () => ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)]).join("");
 
 export default function Multiplayer() {
   const { user } = useAuth();
@@ -42,10 +39,7 @@ export default function Multiplayer() {
           .eq("player1_id", user.id)
           .lt("created_at", fiveMinAgo);
 
-        if (fetchError) {
-          console.error("Cleanup error:", fetchError);
-          return;
-        }
+        if (fetchError) return;
 
         for (const m of waiting || []) {
           await supabase
@@ -62,6 +56,12 @@ export default function Multiplayer() {
 
     cleanup();
   }, [user]);
+
+  // ============================================================
+  // MATCHMAKING
+  // Competitive è volutamente IDENTICO ad Amichevole.
+  // Cambia solo il valore mode salvato nel match.
+  // ============================================================
 
   const findMatch = async (selectedMode, code = "") => {
     setError("");
@@ -138,6 +138,10 @@ export default function Multiplayer() {
       setError(t("multiplayer.error"));
     }
   };
+
+  // ============================================================
+  // POLLING MATCH
+  // ============================================================
 
   useEffect(() => {
     if (!matchId) return;
@@ -238,18 +242,17 @@ export default function Multiplayer() {
             </Link>
 
             <img src={LOGO} alt="Sognatori" className="h-16 object-contain mb-6" />
-
             <h2 className="text-2xl font-bold mb-2">{t("multiplayer.title")}</h2>
             <p className="text-sm text-slate-400 mb-8 text-center max-w-sm">{t("multiplayer.subtitle")}</p>
 
             {error && <div className="text-red-400 text-sm mb-4">{error}</div>}
 
             <div className="flex flex-col gap-3 w-full max-w-xs">
-              {/* COMPETITIVE — nuova modalità, clonata dalla logica AMICHEVOLE */}
+              {/* COMPETITIVE — CLONE DI AMICHEVOLE */}
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => findMatch("competitive_v2")}
+                onClick={() => findMatch("competitive")}
                 className="px-6 py-4 rounded-2xl bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:border-red-500/50 transition text-left"
               >
                 <div className="font-bold">⚔️ {t("mode.competitive")}</div>
@@ -340,7 +343,9 @@ export default function Multiplayer() {
               </div>
             )}
 
-            <div className="text-slate-400 text-sm mb-6">{match?.player2_id ? "✓ " + (match.player2_name || "Player 2") : "In attesa del secondo giocatore..."}</div>
+            <div className="text-slate-400 text-sm mb-6">
+              {match?.player2_id ? "✓ " + (match.player2_name || "Player 2") : "In attesa del secondo giocatore..."}
+            </div>
             <button onClick={cancelMatch} className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm transition">
               {t("common.cancel")}
             </button>
