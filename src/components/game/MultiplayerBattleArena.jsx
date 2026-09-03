@@ -587,9 +587,12 @@ useEffect(() => {
 
     if (resolvingRef.current) return;
 
-    resolvingRef.current = true;
+resolvingRef.current = true;
 
-    resolveTurn();
+resolveTurn().catch((error) => {
+  console.error("Errore risoluzione turno:", error);
+  resolvingRef.current = false;
+});
   }, [match, isHost]);
 
   /*
