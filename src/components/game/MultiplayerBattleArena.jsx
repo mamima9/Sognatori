@@ -80,34 +80,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [animStep, setAnimStep] = useState(0);
-  useEffect(() => {
-  const gs = match?.game_state;
 
-  if (!gs || gs.phase !== "animating") {
-    setAnimStep(0);
-    return;
-  }
-
-  const logs =
-    (lang === "en"
-      ? gs.lastTurnLog_en
-      : gs.lastTurnLog_it) || [];
-
-  if (logs.length === 0) return;
-
-  if (animStep >= logs.length - 1) return;
-
-  const timer = setTimeout(() => {
-    setAnimStep((prev) => prev + 1);
-  }, 4000);
-
-  return () => clearTimeout(timer);
-}, [
-  animStep,
-  match?.game_state?.phase,
-  match?.game_state?.turn,
-  lang,
-]);
   const [turnKey, setTurnKey] = useState(0);
   const [myStarters, setMyStarters] = useState([]);
   const [switchChoices, setSwitchChoices] = useState({});
