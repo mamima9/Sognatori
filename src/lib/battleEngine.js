@@ -417,7 +417,11 @@ export function processActionDual(act, mIt, mEn) {
   let msgIt = mIt.attacks(act.attacker.nome, act.target.nome);
   let msgEn = mEn.attacks(act.attacker.nome, act.target.nome);
   if (antislurpo) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log_it.push(mIt.antislurpo(msgIt)); log_en.push(mEn.antislurpo(msgEn)); return { log_it, log_en, events }; }
-  if (act.target.protectedThisTurn) { events.push({ targetId: act.target.id, efficacy: "protected", dmg: 0 }); log_it.push(mIt.protected(msgIt)); log_en.push(mEn.protected(msgEn)); return { log_it, log_en, events }; }
+if (act.target.protectedThisTurn) {
+  log_it.push(mIt.protected(msgIt));
+  log_en.push(mEn.protected(msgEn));
+  return { log_it, log_en, events };
+}
   if (immune) { events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 }); log_it.push(mIt.immune(msgIt)); log_en.push(mEn.immune(msgEn)); return { log_it, log_en, events }; }
   events.push({ targetId: act.target.id, efficacy, dmg });
   act.target.hp = Math.max(0, act.target.hp - dmg);

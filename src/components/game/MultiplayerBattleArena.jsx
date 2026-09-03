@@ -82,7 +82,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [animStep, setAnimStep] = useState(0);
 const [animFrame, setAnimFrame] = useState(null);
   const [turnKey, setTurnKey] = useState(0);
-  useEffect(() => {
+useEffect(() => {
   const gs = match?.game_state;
 
   if (
@@ -96,7 +96,9 @@ const [animFrame, setAnimFrame] = useState(null);
 
   const frame = gs.turnFrames[animStep];
 
-  setAnimFrame(frame || null);
+  if (frame) {
+    setAnimFrame(frame);
+  }
 }, [
   match?.game_state?.phase,
   match?.game_state?.turn,
@@ -2457,6 +2459,24 @@ const oppBench =
           </div>
         </div>
 {(() => {
+  const isTurnZero = (gs.turn || 0) === 0;
+
+  if (isTurnZero) {
+    const initialLogs =
+      (lang === "en"
+        ? gs.lastTurnLog_en
+        : gs.lastTurnLog_it) || [];
+
+    const visibleLogs = initialLogs.filter(
+      (l) => !l.startsWith("__TURN_")
+    );
+
+    return (
+      gs.phase === "select" &&
+      visibleLogs.length > 0
+    );
+  }
+
   const frames = Array.isArray(gs.turnFrames)
     ? gs.turnFrames
     : [];
@@ -2476,7 +2496,8 @@ const oppBench =
     gs.phase === "animating" &&
     visibleLogs.length > 0
   );
-})() && (
+})() &&
+ (
           <div className="flex justify-center mb-2">
             <motion.div
               key={animStep}
