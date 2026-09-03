@@ -1126,25 +1126,25 @@ for (const act of ordered) {
     });
   });
 
-  turnFrames.push({
-    log_it: [...log_it],
-    log_en: [...log_en],
+turnFrames.push({
+  log_it: [...log_it],
+  log_en: [...log_en],
 
-    player1_active:
-      cloneBattleState(p1Active),
+  player1_active:
+    cloneBattleState(p1Active),
 
-    player2_active:
-      cloneBattleState(p2Active),
+  player2_active:
+    cloneBattleState(p2Active),
 
-    player1_bench:
-      cloneBattleState(p1Bench),
+  player1_bench:
+    cloneBattleState(p1Bench),
 
-    player2_bench:
-      cloneBattleState(p2Bench),
+  player2_bench:
+    cloneBattleState(p2Bench),
 
-    events: frameEvents,
-  });
-}
+  events: frameEvents,
+  section: "actions",
+});
 
 /*
  * FINE TURNO
