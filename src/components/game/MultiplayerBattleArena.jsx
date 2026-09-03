@@ -1412,6 +1412,8 @@ turn:
     const newLogEn = [
       ...(gs.log_en || []),
     ];
+const entryLogIt = [];
+const entryLogEn = [];
 
     const applySide = (
       actions,
@@ -1466,24 +1468,22 @@ turn:
                 )}`
               );
 
-              const d =
-                onEntryDual(
-                  inc,
-                  active,
-                  oppActive,
-                  m_it,
-                  m_en
-                );
+             const d =
+  onEntryDual(
+    inc,
+    active,
+    oppActive,
+    m_it,
+    m_en
+  );
 
-              newLogIt.push(
-                ...d.log_it
-              );
+entryLogIt.push(
+  ...d.log_it
+);
 
-              newLogEn.push(
-                ...d.log_en
-              );
-            }
-          }
+entryLogEn.push(
+  ...d.log_en
+);
 
           else if (
             act &&
@@ -1550,49 +1550,78 @@ turn:
     p2Active = r2.active;
     p2Bench = r2.bench;
 
-  
+ 
   const prevLen =
-      (gs.log_it || []).length;
+  (gs.log_it || []).length;
 
+const hasEntryAnimation =
+  entryLogIt.length > 0 ||
+  entryLogEn.length > 0;
 
-    await updateMatch(match.id, {
-      game_state: {
-        ...gs,
+if (hasEntryAnimation) {
+  newLogIt.push(...entryLogIt);
+  newLogEn.push(...entryLogEn);
+}
 
-        player1_active:
-          p1Active,
+await updateMatch(match.id, {
+  game_state: {
+    ...gs,
 
-        player2_active:
-          p2Active,
+    player1_active: p1Active,
+    player2_active: p2Active,
 
-        player1_bench:
-          p1Bench,
+    player1_bench: p1Bench,
+    player2_bench: p2Bench,
 
-        player2_bench:
-          p2Bench,
+    phase: hasEntryAnimation
+      ? "animating"
+      : "select",
 
-        phase: "select",
+    log_it: newLogIt,
+    log_en: newLogEn,
 
-        log_it: newLogIt,
-        log_en: newLogEn,
+    lastTurnLog_it:
+      newLogIt.slice(prevLen),
 
-        lastTurnLog_it:
-          newLogIt.slice(prevLen),
+    lastTurnLog_en:
+      newLogEn.slice(prevLen),
 
-        lastTurnLog_en:
-          newLogEn.slice(prevLen),
-      },
+    turnFrames: hasEntryAnimation
+      ? [
+          {
+            log_it: entryLogIt,
+            log_en: entryLogEn,
 
-      player1_actions: null,
-      player2_actions: null,
-    });
+            player1_active: JSON.parse(
+              JSON.stringify(p1Active)
+            ),
+            player2_active: JSON.parse(
+              JSON.stringify(p2Active)
+            ),
+            player1_bench: JSON.parse(
+              JSON.stringify(p1Bench)
+            ),
+            player2_bench: JSON.parse(
+              JSON.stringify(p2Bench)
+            ),
 
-    setTurnKey(
-      (k) => k + 1
-    );
+            events: [],
+            section: "start",
+          },
+        ]
+      : [],
+  },
 
-    resolvingRef.current = false;
-  };
+  player1_actions: null,
+  player2_actions: null,
+});
+
+setTurnKey(
+  (k) => k + 1
+);
+
+resolvingRef.current = false;
+};
 
   /*
    * ============================================================
