@@ -188,13 +188,7 @@ const [animFrame, setAnimFrame] = useState(null);
     }
   }, [match?.game_state?.phase]);
 
-  /*
-   * ============================================================
-   * ANIMAZIONE TURNO
-   * ============================================================
-   */
-
-useEffect(() => {
+  useEffect(() => {
   const gs = match?.game_state;
 
   if (!gs || gs.phase !== "animating") {
@@ -202,14 +196,13 @@ useEffect(() => {
     return;
   }
 
-  const logs =
-    (lang === "en"
-      ? gs.lastTurnLog_en
-      : gs.lastTurnLog_it) || [];
+  const frames = Array.isArray(gs.turnFrames)
+    ? gs.turnFrames
+    : [];
 
-  if (logs.length === 0) return;
+  if (frames.length === 0) return;
 
-  if (animStep >= logs.length - 1) return;
+  if (animStep >= frames.length - 1) return;
 
   const timer = setTimeout(() => {
     setAnimStep((prev) => prev + 1);
@@ -220,9 +213,7 @@ useEffect(() => {
   animStep,
   match?.game_state?.phase,
   match?.game_state?.turn,
-  lang,
 ]);
-
   /*
    * ============================================================
    * CARICA PARTITA + REALTIME SUPABASE
@@ -590,49 +581,38 @@ useEffect(() => {
   }, [match, isHost]);
 
   /*
-   * ============================================================
-   * HOST: FINE ANIMAZIONE
-   * ============================================================
-   */
+ * ============================================================
+ * HOST: FINE ANIMAZIONE
+ * ============================================================
+ */
+useEffect(() => {
+  if (
+    !isHost ||
+    !match ||
+    !match.game_state ||
+    match.game_state.phase !== "animating"
+  ) {
+    return;
+  }
 
-  useEffect(() => {
-    if (
-      !isHost ||
-      !match ||
-      !match.game_state ||
-      match.game_state.phase !== "animating"
-    ) {
-      return;
-    }
+  const frames = Array.isArray(match.game_state.turnFrames)
+    ? match.game_state.turnFrames
+    : [];
 
-    const logs =
-      match.game_state.lastTurnLog_it ||
-      match.game_state.lastTurnLog ||
-      [];
+  const animMs = Math.max(4000, frames.length * 4000);
 
-    const visibleLogs = logs.filter(
-  (l) => !l.startsWith("__TURN_")
-);
+  const timer = setTimeout(() => {
+    handleAnimationEnd();
+  }, animMs);
 
-const animMs = Math.max(
-  4000,
-  visibleLogs.length * 4000
-);
+  return () => clearTimeout(timer);
 
-    const timer = setTimeout(
-      () => handleAnimationEnd(),
-      animMs
-    );
-
-    return () => clearTimeout(timer);
-
-    // eslint-disable-next-line
-  }, [
-    match?.game_state?.phase,
-    match?.game_state?.turn,
-    isHost,
-  ]);
-
+  // eslint-disable-next-line
+}, [
+  match?.game_state?.phase,
+  match?.game_state?.turn,
+  isHost,
+]);
   /*
    * ============================================================
    * HOST: SWITCH
@@ -1601,90 +1581,90 @@ turn:
    * ============================================================
    */
 
-  const handleTimerExpire = () => {
+ const handleTimerExpire = () => {
+  if (
+    !match ||
+    match.game_state?.phase !==
+      "select"
+  ) {
+    return;
+  }
+
+  const gs =
+    match.game_state;
+
+  const myActive =
+    gs[`${mySide}_active`];
+
+  const oppActive =
+    gs[`${oppSide}_active`];
+
+  const slots =
+    myActive
+      .map((s, i) =>
+        s && !s.fainted
+          ? i
+          : null
+      )
+      .filter(
+        (i) => i !== null
+      );
+
+  const auto = {};
+
+  slots.forEach((i) => {
+    const targets =
+      oppActive.filter(
+        (e) =>
+          e && !e.fainted
+      );
+
     if (
-      !match ||
-      match.game_state?.phase !==
-        "select"
+      targets.length > 0
     ) {
-      return;
+      auto[i] = {
+        type: "attack",
+        targetId:
+          targets[
+            Math.floor(
+              Math.random() *
+                targets.length
+            )
+          ].id,
+      };
     }
 
-    const gs =
-      match.game_state;
+    else {
+      auto[i] = {
+        type: "protect",
+      };
+    }
+  });
 
-    const myActive =
-      gs[`${mySide}_active`];
+  setMyActions(auto);
 
-    const oppActive =
-      gs[`${oppSide}_active`];
+  const key =
+    `${mySide}_actions`;
 
-    const slots =
-      myActive
-        .map((s, i) =>
-          s && !s.fainted
-            ? i
-            : null
-        )
-        .filter(
-          (i) => i !== null
-        );
+  updateMatch(match.id, {
+    [key]: auto,
+  });
+};
 
-    const auto = {};
+const timeLeft =
+  useCountdown(
+    match?.game_state?.phase ===
+      "select" &&
+      !match?.[
+        `${mySide}_actions`
+      ]
+      ? TURN_SECONDS
+      : 0,
 
-    slots.forEach((i) => {
-      const targets =
-        oppActive.filter(
-          (e) =>
-            e && !e.fainted
-        );
+    handleTimerExpire,
 
-      if (
-        targets.length > 0
-      ) {
-        auto[i] = {
-          type: "attack",
-          targetId:
-            targets[
-              Math.floor(
-                Math.random() *
-                  targets.length
-              )
-            ].id,
-        };
-      }
-
-      else {
-        auto[i] = {
-          type: "protect",
-        };
-      }
-    });
-
-    setMyActions(auto);
-
-    const key =
-      `${mySide}_actions`;
-
-    updateMatch(match.id, {
-      [key]: auto,
-    });
-  };
-
-  const timeLeft =
-    useCountdown(
-      match?.game_state?.phase ===
-        "select" &&
-        !match?.[
-          `${mySide}_actions`
-        ]
-        ? TURN_SECONDS
-        : 0,
-
-      handleTimerExpire,
-
-      `${match?.game_state?.phase}-${turnKey}`
-    );
+    `${match?.game_state?.phase}-${turnKey}`
+  );
 
   /*
    * ============================================================
@@ -2393,6 +2373,11 @@ const oppBench =
     ? animFrame[`${oppSide}_bench`]
     : gs[`${oppSide}_bench`];
 
+  const popupFor = (s) =>
+  animFrame?.events?.find(
+    (event) => event.targetId === s?.id
+  ) || null;  
+
   const mySubmitted =
     !!match[
       `${mySide}_actions`
@@ -2471,28 +2456,27 @@ const oppBench =
             </button>
           </div>
         </div>
+{(() => {
+  const frames = Array.isArray(gs.turnFrames)
+    ? gs.turnFrames
+    : [];
 
-        {(() => {
-          const ttl =
-            (lang === "en"
-              ? gs.lastTurnLog_en
-              : gs.lastTurnLog_it) ||
-            [];
+  const visibleLogs = frames
+    .slice(0, animStep + 1)
+    .flatMap((frame) =>
+      lang === "en"
+        ? frame.log_en || []
+        : frame.log_it || []
+    )
+    .filter(
+      (l) => !l.startsWith("__TURN_")
+    );
 
-          const shown =
-            ttl.filter(
-              (l) =>
-                !l.startsWith(
-                  "__TURN_"
-                )
-            );
-
-          return (
-            gs.phase ===
-              "animating" &&
-            shown.length > 0
-          );
-        })() && (
+  return (
+    gs.phase === "animating" &&
+    visibleLogs.length > 0
+  );
+})() && (
           <div className="flex justify-center mb-2">
             <motion.div
               key={animStep}
@@ -2595,6 +2579,7 @@ const oppBench =
                       }
                       s={s}
                       side="enemy"
+                      popup={popupFor(s)}
                     />
                   ) : null
               )}
@@ -2614,6 +2599,7 @@ const oppBench =
                       }
                       s={s}
                       side="player"
+                      popup={popupFor(s)}
                     />
                   ) : null
               )}
