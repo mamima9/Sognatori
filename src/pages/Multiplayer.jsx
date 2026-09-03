@@ -91,7 +91,9 @@ export default function Multiplayer() {
       );
 
       if (joinable.length > 0) {
-        const m = joinable[Math.floor(Math.random() * joinable.length)];
+        const m = [...joinable].sort(
+  (a, b) => new Date(b.created_at) - new Date(a.created_at)
+)[0];
 
         const { data: updatedMatch, error: updateError } = await supabase
           .from("matches")
