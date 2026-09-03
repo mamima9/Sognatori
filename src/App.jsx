@@ -22,6 +22,7 @@ import GlobalMusicPlayer from '@/components/game/GlobalMusicPlayer';
 import { LanguageProvider } from '@/lib/i18n';
 import { useLanguage } from '@/lib/i18n';
 import SognatoriStats from '@/pages/SognatoriStats';
+import TestRandom from '@/pages/TestRandom';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -44,10 +45,7 @@ const AuthenticatedApp = () => {
   // Render the main app
  return (
     <>
-    
-     
-
-      <Routes>
+     <Routes>
       <Route path="/sognatori" element={<SognatoriStats />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -59,6 +57,7 @@ const AuthenticatedApp = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/multiplayer" element={<Multiplayer />} />
           <Route path="/rankings" element={<Rankings />} />
+          <Route path="/test-random" element={<TestRandom />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
@@ -67,9 +66,7 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
-
   return (
     <LanguageProvider>
       <AuthProvider>
