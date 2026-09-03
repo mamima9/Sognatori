@@ -886,6 +886,7 @@ const cloneBattleState = (list) =>
       if (
         act &&
         act.type === "switch" &&
+         !p1Active[i].cannotSwitch
         p1Active[i]
       ) {
         const inc =
@@ -937,6 +938,7 @@ const cloneBattleState = (list) =>
       if (
         act &&
         act.type === "switch" &&
+         !p1Active[i].cannotSwitch
         p2Active[i]
       ) {
         const inc =

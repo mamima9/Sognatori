@@ -212,7 +212,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
         break;
       case "eroe_splash": {
         const ea = act.enemies.find(e => e && !e.fainted && e.id !== act.target.id);
-        if (ea) { ea.hp = Math.max(0, ea.hp - 3); msg += " · 3 danni all'alleato avversario"; if (ea.hp === 0) { ea.fainted = true; msg += ` (${ea.nome} KO!)`; } }
+        if (ea && !ea.protectedThisTurn) { ea.hp = Math.max(0, ea.hp - 3); msg += " · 3 danni all'alleato avversario"; if (ea.hp === 0) { ea.fainted = true; msg += ` (${ea.nome} RIBALTATO!)`; } }
         break;
       }
       case "taomarco_lock":
@@ -228,7 +228,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
         msg += ` · ${act.target.nome} esplode: 3 danni a tutti gli avversari!`;
       }
       act.target.fainted = true;
-      msg += ` ${act.target.nome} è KO!`;
+      msg += ` ${act.target.nome} è RIBALTATO!`;
     }
     log.push(msg);
   }
@@ -328,7 +328,7 @@ if (act.target.protectedThisTurn) {
       break;
     case "eroe_splash": {
       const ea = act.enemies.find(e => e && !e.fainted && e.id !== act.target.id);
-      if (ea) { ea.hp = Math.max(0, ea.hp - 3); msg += m.splash; if (ea.hp === 0) { ea.fainted = true; msg += m.splashKo(ea.nome); } }
+      if (ea && !ea.protectedThisTurn) { ea.hp = Math.max(0, ea.hp - 3); msg += m.splash; if (ea.hp === 0) { ea.fainted = true; msg += m.splashKo(ea.nome); } }
       break;
     }
     case "taomarco_lock":
@@ -469,7 +469,7 @@ if (act.target.protectedThisTurn) {
       break;
     case "eroe_splash": {
       const ea = act.enemies.find(e => e && !e.fainted && e.id !== act.target.id);
-      if (ea) { ea.hp = Math.max(0, ea.hp - 3); msgIt += mIt.splash; msgEn += mEn.splash; if (ea.hp === 0) { ea.fainted = true; msgIt += mIt.splashKo(ea.nome); msgEn += mEn.splashKo(ea.nome); } }
+      if (ea && !ea.protectedThisTurn) { ea.hp = Math.max(0, ea.hp - 3); msgIt += mIt.splash; msgEn += mEn.splash; if (ea.hp === 0) { ea.fainted = true; msgIt += mIt.splashKo(ea.nome); msgEn += mEn.splashKo(ea.nome); } }
       break;
     }
     case "taomarco_lock":
@@ -480,9 +480,23 @@ if (act.target.protectedThisTurn) {
   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
     if (tAbil === "cenere_scoppio") {
-      act.enemies.forEach(e => { if (e && !e.fainted) { e.hp = Math.max(0, e.hp - 3); if (e.hp === 0) e.fainted = true; } });
-      msgIt += ` · ${mIt.explode(act.target.nome)}`; msgEn += ` · ${mEn.explode(act.target.nome)}`;
+  act.enemies.forEach(e => {
+    if (e && !e.fainted) {
+      e.hp = Math.max(0, e.hp - 3);
+
+      events.push({
+        targetId: e.id,
+        efficacy: "neutral",
+        dmg: 3
+      });
+
+      if (e.hp === 0) e.fainted = true;
     }
+  });
+
+  msgIt += ` · ${mIt.explode(act.target.nome)}`;
+  msgEn += ` · ${mEn.explode(act.target.nome)}`;
+}
     act.target.fainted = true;
     msgIt += mIt.ko(act.target.nome); msgEn += mEn.ko(act.target.nome);
   }
