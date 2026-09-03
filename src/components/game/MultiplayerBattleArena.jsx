@@ -1483,8 +1483,10 @@ entryLogIt.push(
 
 entryLogEn.push(
   ...d.log_en
-); }
+);
 
+            }
+          }
           else if (
             act &&
             act.type === "play_down"
