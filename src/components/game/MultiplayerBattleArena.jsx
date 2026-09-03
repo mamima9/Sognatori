@@ -865,6 +865,21 @@ useEffect(() => {
     );
 
     const entered = [];
+    // ✨ ABILITÀ A INIZIO TURNO
+for (const s of [...p1Active, ...p2Active]) {
+  if (!s || s.fainted) continue;
+
+  const abil = s.abilityNullified ? null : s.abilKey;
+  if (!abil) continue;
+
+  const allies = p1Active.includes(s) ? p1Active : p2Active;
+  const enemies = p1Active.includes(s) ? p2Active : p1Active;
+
+  const r = onEntryDual(s, allies, enemies, m_it, m_en);
+
+  startTurnLogIt.push(...r.log_it);
+  startTurnLogEn.push(...r.log_en);
+}
 const startTurnLogIt = [];
 const startTurnLogEn = [];
 // Eventi di danno/efficacia del turno.
