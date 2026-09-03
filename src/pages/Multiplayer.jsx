@@ -352,11 +352,20 @@ export default function Multiplayer() {
           </motion.div>
         )}
 
-        {screen === "battle" && matchId && (
-          <motion.div key="battle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <MultiplayerBattleArena matchId={matchId} />
-          </motion.div>
-        )}
+     {screen === "battle" && matchId && (
+  <motion.div key="battle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <MultiplayerBattleArena
+      matchId={matchId}
+      onEnd={() => {
+        setScreen("menu");
+        setMatchId(null);
+        setMatch(null);
+        setMode(null);
+        setRoomCode("");
+      }}
+    />
+  </motion.div>
+)}
       </AnimatePresence>
     </div>
   );
