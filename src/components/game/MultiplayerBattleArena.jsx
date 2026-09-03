@@ -866,7 +866,7 @@ useEffect(() => {
 
    const entered = [];
 const turnEvents = [];
-
+const turnFrames = [];
 
 const cloneBattleState = (list) =>
   JSON.parse(JSON.stringify(list));
@@ -1483,7 +1483,7 @@ entryLogIt.push(
 
 entryLogEn.push(
   ...d.log_en
-);
+); }
 
           else if (
             act &&
