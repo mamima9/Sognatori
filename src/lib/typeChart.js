@@ -23,14 +23,22 @@ const TYPE_DATA = {
 };
 
 export const chart = {};
-FACTIONS.forEach((a) => {
-  chart[a] = {};
-  FACTIONS.forEach((d) => {
-    const data = TYPE_DATA[a];
-    if (data.imm.includes(d)) chart[a][d] = -15;
-    else if (data.res.includes(d)) chart[a][d] = -3;
-    else if (data.se.includes(d)) chart[a][d] = 5;
-    else chart[a][d] = 0;
+
+FACTIONS.forEach((attacker) => {
+  chart[attacker] = {};
+
+  FACTIONS.forEach((defender) => {
+    const defenderData = TYPE_DATA[defender];
+
+    if (defenderData.imm.includes(attacker)) {
+      chart[attacker][defender] = -15;
+    } else if (defenderData.se.includes(attacker)) {
+      chart[attacker][defender] = 5;
+    } else if (defenderData.res.includes(attacker)) {
+      chart[attacker][defender] = -3;
+    } else {
+      chart[attacker][defender] = 0;
+    }
   });
 });
 
