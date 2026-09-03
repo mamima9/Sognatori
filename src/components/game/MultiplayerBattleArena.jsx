@@ -1184,6 +1184,26 @@ for (const act of ordered) {
       ...endDual.log_en
     );
 
+
+// 🌟 FRAME FINE TURNO
+if (
+  endDual.log_it.length > 0 ||
+  endDual.log_en.length > 0
+) {
+  turnFrames.push({
+    log_it: [...endDual.log_it],
+    log_en: [...endDual.log_en],
+
+    player1_active: cloneBattleState(p1Active),
+    player2_active: cloneBattleState(p2Active),
+    player1_bench: cloneBattleState(p1Bench),
+    player2_bench: cloneBattleState(p2Bench),
+
+    events: [],
+    section: "end",
+  });
+}
+
     const prevLen =
       (gs.log_it || []).length + 1;
 
@@ -1220,6 +1240,7 @@ turn:
 
     resolvingRef.current = false;
   };
+    
 
   /*
    * ============================================================
@@ -1520,8 +1541,10 @@ turn:
     p2Active = r2.active;
     p2Bench = r2.bench;
 
-    const prevLen =
+  
+  const prevLen =
       (gs.log_it || []).length;
+
 
     await updateMatch(match.id, {
       game_state: {
