@@ -76,6 +76,16 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const m_en = bm("en");
 
   const [myActions, setMyActions] = useState({});
+  useEffect(() => {
+  if (
+    match?.game_state?.phase === "select"
+  ) {
+    setMyActions({});
+  }
+}, [
+  match?.game_state?.phase,
+  match?.game_state?.turn,
+]);
   const [showTypeChart, setShowTypeChart] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
@@ -1552,16 +1562,14 @@ turn:
   };
 
   const submitActions = async () => {
-    const key =
-      `${mySide}_actions`;
+  const key = `${mySide}_actions`;
 
-    await updateMatch(
-      match.id,
-      {
-        [key]: myActions,
-      }
-    );
-  };
+  await updateMatch(match.id, {
+    [key]: myActions,
+  });
+
+  setMyActions({});
+};
 
   const submitSwitchChoices = async (
     choices
