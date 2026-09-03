@@ -80,8 +80,29 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [animStep, setAnimStep] = useState(0);
-
+const [animFrame, setAnimFrame] = useState(null);
   const [turnKey, setTurnKey] = useState(0);
+  useEffect(() => {
+  const gs = match?.game_state;
+
+  if (
+    !gs ||
+    gs.phase !== "animating" ||
+    !Array.isArray(gs.turnFrames)
+  ) {
+    setAnimFrame(null);
+    return;
+  }
+
+  const frame = gs.turnFrames[animStep];
+
+  setAnimFrame(frame || null);
+}, [
+  match?.game_state?.phase,
+  match?.game_state?.turn,
+  match?.game_state?.turnFrames,
+  animStep,
+]);
   const [myStarters, setMyStarters] = useState([]);
   const [switchChoices, setSwitchChoices] = useState({});
   const [now, setNow] = useState(Date.now());
@@ -2353,16 +2374,24 @@ const oppSubmitted =
    */
 
   const myActive =
-    gs[`${mySide}_active`];
+  animFrame
+    ? animFrame[`${mySide}_active`]
+    : gs[`${mySide}_active`];
 
-  const myBench =
-    gs[`${mySide}_bench`];
+const myBench =
+  animFrame
+    ? animFrame[`${mySide}_bench`]
+    : gs[`${mySide}_bench`];
 
-  const oppActive =
-    gs[`${oppSide}_active`];
+const oppActive =
+  animFrame
+    ? animFrame[`${oppSide}_active`]
+    : gs[`${oppSide}_active`];
 
-  const oppBench =
-    gs[`${oppSide}_bench`];
+const oppBench =
+  animFrame
+    ? animFrame[`${oppSide}_bench`]
+    : gs[`${oppSide}_bench`];
 
   const mySubmitted =
     !!match[
