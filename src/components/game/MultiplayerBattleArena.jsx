@@ -919,8 +919,9 @@ const cloneBattleState = (list) =>
           allies: p1Active,
           enemies: p2Active,
         });
-      }
+      }  
     });
+
 
     /*
      * SWITCH PLAYER 2
@@ -964,7 +965,6 @@ const cloneBattleState = (list) =>
           allies: p2Active,
           enemies: p1Active,
         });
-      }
     });
 
     /*
