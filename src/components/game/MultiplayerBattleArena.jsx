@@ -853,7 +853,10 @@ const animMs = Math.max(
 // Eventi di danno/efficacia del turno.
 // Ogni evento viene collegato alla riga del log che lo genera.
 const turnEvents = [];
+const turnFrames = [];
 
+const cloneBattleState = (list) =>
+  JSON.parse(JSON.stringify(list));
     /*
      * SWITCH PLAYER 1
      */
@@ -1096,14 +1099,37 @@ for (const act of ordered) {
     ...log_en
   );
 
-  if (Array.isArray(events)) {
-    events.forEach((event) => {
-      turnEvents.push({
+  const frameEvents = Array.isArray(events)
+    ? events.map((event) => ({
         ...event,
-        logIndex: relativeLogIndex,
-      });
+      }))
+    : [];
+
+  frameEvents.forEach((event) => {
+    turnEvents.push({
+      ...event,
+      logIndex: relativeLogIndex,
     });
-  }
+  });
+
+  turnFrames.push({
+    log_it: [...log_it],
+    log_en: [...log_en],
+
+    player1_active:
+      cloneBattleState(p1Active),
+
+    player2_active:
+      cloneBattleState(p2Active),
+
+    player1_bench:
+      cloneBattleState(p1Bench),
+
+    player2_bench:
+      cloneBattleState(p2Bench),
+
+    events: frameEvents,
+  });
 }
 
 /*
@@ -1153,7 +1179,7 @@ for (const act of ordered) {
   newLogEn.slice(prevLen),
 
 turnEvents,
-
+turnFrames,
 turn:
   (gs.turn || 0) + 1,
       },
