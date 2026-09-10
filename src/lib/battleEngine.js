@@ -15,6 +15,7 @@ export function initBattleSognatore(t) {
     typeOverride: null,
     blockFirstAttack: false,
     fainted: false
+    cenereTriggered: false
   };
 }
 
@@ -83,10 +84,38 @@ function applyMod(target, stat, amount, allies) {
   return true;
 }
 
-function triggerCenereExplosion(cenere, enemies, events) {
-  if (!cenere || cenere.abilKey !== "cenere_scoppio") {
+function triggerCenereAbility(cenere, enemies, events, previousHp) {
+  if (
+    !cenere ||
+    cenere.fainted ||
+    cenere.abilKey !== "cenere_scoppio" ||
+    cenere.cenereTriggered ||
+    previousHp >= 5 ||
+    cenere.hp >= 5
+  ) {
     return false;
   }
+
+  cenere.cenereTriggered = true;
+
+  enemies.forEach(e => {
+    if (e && !e.fainted) {
+      e.hp = Math.max(0, e.hp - 3);
+
+      events.push({
+        targetId: e.id,
+        efficacy: "neutral",
+        dmg: 3
+      });
+
+      if (e.hp === 0) {
+        e.fainted = true;
+      }
+    }
+  });
+
+  return true;
+}
 
   enemies.forEach(e => {
     if (e && !e.fainted) {
@@ -295,13 +324,6 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
     ? null
     : ea.abilKey;
 
-  if (eaAbil === "cenere_scoppio") {
-    triggerCenereExplosion(
-      ea,
-      act.enemies,
-      events
-    );
-
     msg += ` · ${ea.nome} esplode!`;
   }
 
@@ -507,13 +529,6 @@ if (ea.hp === 0) {
   const eaAbil = ea.abilityNullified
     ? null
     : ea.abilKey;
-
-  if (eaAbil === "cenere_scoppio") {
-    triggerCenereExplosion(
-      ea,
-      act.enemies,
-      events
-    );
 
  msg += ` · ${act.target.nome} esplode!`;
   }
@@ -773,11 +788,34 @@ if (act.target?.protectedThisTurn) {
   }
 
   events.push({
-    targetId: act.target.id,
-    efficacy,
-    dmg
-  });
-act.target.hp = Math.max(0, act.target.hp - dmg);
+  targetId: act.target.id,
+  efficacy,
+  dmg
+});
+
+const previousHp = act.target.hp;
+
+act.target.hp = Math.max(
+  0,
+  act.target.hp - dmg
+);
+
+if (
+  act.target.abilKey === "cenere_scoppio" &&
+  !act.target.abilityNullified
+) {
+  const triggered = triggerCenereAbility(
+    act.target,
+    act.enemies,
+    events,
+    previousHp
+  );
+
+  if (triggered) {
+    msgIt += ` · ${mIt.explode(act.target.nome)}`;
+    msgEn += ` · ${mEn.explode(act.target.nome)}`;
+  }
+}
 
 
   if (bonus === 5) {
@@ -892,13 +930,6 @@ act.target.hp = Math.max(0, act.target.hp - dmg);
   const eaAbil = ea.abilityNullified
     ? null
     : ea.abilKey;
-
-  if (eaAbil === "cenere_scoppio") {
-    triggerCenereExplosion(
-      ea,
-      act.enemies,
-      events
-    );
 
     msgIt += ` · ${mIt.explode(ea.nome)}`;
     msgEn += ` · ${mEn.explode(ea.nome)}`;

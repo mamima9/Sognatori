@@ -23,7 +23,7 @@ const ABILITY_EN = {
   pepe_memecoin: { name: "Memecoin", desc: "On entry, the ally's lowest base stat gains +4." },
   cillymbu_aura: { name: "Bamboo Thrust", desc: "Ally gain +3 ATT." },
   pequeno_block: { name: "Seed Phrase", desc: "On entry, blocks the first attack of the fastest opposing Sognatore." },
-  cenere_scoppio: { name: "Burning White Paper", desc: "Before fainting, deals 3 damage to both opponents." },
+  cenere_scoppio: { name: "Burning White Paper", desc:"When it drops below 5 HP, it deals 3 damage to each opponent" },
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };
