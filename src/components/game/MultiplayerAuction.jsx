@@ -20,7 +20,7 @@ import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
 const BID_OPTIONS = [1, 5, 10];
 const AUCTION_SECONDS = 60;
-
+const COIN = "/images/moneta-sognatori.png";
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
 export default function MultiplayerAuction({ matchId, onAbandon }) {
@@ -49,10 +49,17 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
   useEffect(() => {
     if (!matchId) return;
 
-    const fetchMatch = () =>
-  getMatch(matchId)
-    .then(setMatch)
-    .catch(() => {});
+    const fetchMatch = async () => {
+  try {
+    const freshMatch = await getMatch(matchId);
+
+    if (freshMatch?.id === matchId) {
+      setMatch({ ...freshMatch });
+    }
+  } catch (error) {
+    console.error("Fetch match failed:", error);
+  }
+};
 
     fetchMatch();
 
@@ -1019,8 +1026,11 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
           </div>
 
           <div className="text-lg font-bold">
-            🪙 {myCredits}
-          </div>
+  <span className="inline-flex items-center gap-1">
+    <img src={COIN} alt="" className="w-5 h-5 object-contain" />
+    {myCredits}
+  </span>
+</div>
 
           <div className="text-[11px] text-slate-400">
             {myTeam.length}/4
@@ -1062,8 +1072,11 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
           </div>
 
           <div className="text-lg font-bold">
-            🪙 {oppCredits}
-          </div>
+  <span className="inline-flex items-center gap-1">
+    <img src={COIN} alt="" className="w-5 h-5 object-contain" />
+    {oppCredits}
+  </span>
+</div>
 
           <div className="text-[11px] text-slate-400">
             {oppTeam.length}/4
@@ -1424,9 +1437,12 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
                   )}
                 </div>
 
-                <div className="text-3xl font-bold text-amber-400">
-                  🪙 {gs.currentBid}
-                </div>
+              <div className="text-3xl font-bold text-amber-400">
+  <span className="inline-flex items-center gap-2 justify-center">
+    <img src={COIN} alt="" className="w-8 h-8 object-contain" />
+    {gs.currentBid}
+  </span>
+</div>
 
                 <div className="text-xs text-slate-400">
                   {gs.currentBidder ===

@@ -59,7 +59,7 @@ export default function SognatoriStats() {
             </h1>
 
             <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-              Scopri statistiche, tipi e abilità di tutti i Sognatori
+              Scopri statistiche, affinità e abilità di tutti i Sognatori
               disponibili.
             </p>
 

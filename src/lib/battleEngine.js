@@ -246,7 +246,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
             applyMod(a, "vel", 6, act.allies);
           }
         });
-        msg += " · alleati +6 VEL";
+        msg += " · alleato +6 VEL";
         break;
 
       case "eroe_splash": {

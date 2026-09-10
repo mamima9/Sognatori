@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ROSTER } from "@/lib/sognatoriData";
 import { FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
-import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
+const COIN = "/images/moneta-sognatori.png";
 const BID_OPTIONS = [1, 5, 10];
 
 /**
@@ -475,7 +475,6 @@ export default function Auction({ onComplete, onBack }) {
     return (
       <div className="min-h-screen px-4 py-6 max-w-5xl mx-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
         <div className="flex justify-between items-center mb-4">
-          <AbandonButton onAbandon={onBack} />
 
           <h2 className="text-lg font-bold text-amber-400">
             {t("auction.pickTitle")}
