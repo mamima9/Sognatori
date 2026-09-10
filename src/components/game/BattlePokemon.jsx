@@ -88,19 +88,19 @@ export default function BattlePokemon({ s, side, popup }) {
       </div>
 
       <motion.div
-        animate={
-          fainted
-            ? {
-                opacity: 0.2,
-                scale: 0.8,
-                rotate: 15
-              }
-            : {
-                opacity: 1,
-                scale: 1,
-                rotate: 0
-              }
-        }
+       animate={
+  fainted
+    ? {
+        opacity: 0.45,
+        scale: 0.9,
+        rotate: 90,
+      }
+    : {
+        opacity: 1,
+        scale: 1,
+        rotate: 0,
+      }
+}
         className={fainted ? "grayscale" : ""}
       >
         <SognatoreImage
@@ -137,14 +137,14 @@ export default function BattlePokemon({ s, side, popup }) {
         </div>
 
         <div className="mt-1">
-          <HealthBar
-            hp={s.hp}
-            hpMax={s.hpMax}
-          />
+         <HealthBar
+  hp={Math.max(0, Math.min(s.hpMax, s.hp))}
+  hpMax={s.hpMax}
+/>
         </div>
 
         <div className="text-[10px] text-slate-300 mt-0.5">
-          {s.hp}/{s.hpMax}
+         {Math.max(0, Math.min(s.hpMax, s.hp))}/{s.hpMax}
         </div>
       </div>
     </motion.div>
