@@ -19,6 +19,7 @@ import {
   applyEndOfTurnDual,
   onEntryDual,
   calcDamage,
+  resetStatsOnBench,
 } from "@/lib/battleEngine";
 
 import BattlePokemon from "./BattlePokemon";
@@ -895,10 +896,11 @@ const cloneBattleState = (list) =>
         const out =
           p1Active[i];
 
-        if (!inc || !out) return;
+     if (!inc || !out) return;
 
-        p1Active[i] = inc;
-        p1Bench[act.benchIdx] = out;
+resetStatsOnBench(out);
+p1Active[i] = inc;
+p1Bench[act.benchIdx] = out;
 
         newLogIt.push(
           m_it.switchLog(
@@ -949,10 +951,11 @@ const cloneBattleState = (list) =>
         const out =
           p2Active[i];
 
-        if (!inc || !out) return;
+       if (!inc || !out) return;
 
-        p2Active[i] = inc;
-        p2Bench[act.benchIdx] = out;
+resetStatsOnBench(out);
+p2Active[i] = inc;
+p2Bench[act.benchIdx] = out;
 
         newLogIt.push(
           m_it.switchLog(
@@ -1447,15 +1450,16 @@ const entryLogEn = [];
             const out =
               active[idx];
 
-            if (
-              out &&
-              out.fainted &&
-              inc &&
-              !inc.fainted
-            ) {
-              active[idx] = inc;
-              bench[act.benchIdx] =
-                out;
+           if (
+  out &&
+  out.fainted &&
+  inc &&
+  !inc.fainted
+) {
+  resetStatsOnBench(out);
+  active[idx] = inc;
+  bench[act.benchIdx] =
+    out;
 
               newLogIt.push(
                 `${sideName}: ${m_it.koEnter(
