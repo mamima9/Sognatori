@@ -237,8 +237,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
     }
 
     events.push({ targetId: act.target.id, efficacy, dmg });
-    act.target.hp = Math.max(0, act.target.hp - dmg);
-
+   
     if (bonus === 5) msg += " — Superefficace!";
     else if (bonus === -3) msg += " — Non molto efficace...";
 
@@ -375,7 +374,9 @@ export function processAction(act, lang = 'it') {
   const events = [];
   const m = bm(lang);
 
-  if (!act || act.attacker.fainted) return { log, events };
+  if (!act || act.attacker.fainted || act.attacker.hp <= 0) {
+  return { log, events };
+}
 
   if (!act.target || act.target.fainted) {
     const newTarget = (act.enemies || []).find(e => e && !e.fainted);
@@ -437,7 +438,7 @@ export function processAction(act, lang = 'it') {
   }
 
   events.push({ targetId: act.target.id, efficacy, dmg });
-  act.target.hp = Math.max(0, act.target.hp - dmg);
+  
 
   if (bonus === 5) msg += m.superEffective;
   else if (bonus === -3) msg += m.notEffective;
@@ -660,7 +661,7 @@ export function onEntryDual(s, allies, enemies, mIt, mEn) {
 export function processActionDual(act, mIt, mEn) {
   const log_it = [], log_en = [], events = [];
 
-  if (!act || act.attacker.fainted) {
+ if (!act || act.attacker.fainted || act.attacker.hp <= 0) {
     return { log_it, log_en, events };
   }
 
@@ -775,7 +776,6 @@ export function processActionDual(act, mIt, mEn) {
     dmg
   });
 
-  act.target.hp = Math.max(0, act.target.hp - dmg);
 
   if (bonus === 5) {
     msgIt += mIt.superEffective;
