@@ -8,6 +8,7 @@ import {
   calcDamage,
   orderActions,
   processAction
+  resetStatsOnBench
 } from "@/lib/battleEngine";
 import BattlePokemon from "./BattlePokemon";
 import BenchCard from "./BenchCard";
@@ -152,6 +153,7 @@ let eBench = enemyBench.map(s => s ? {
       if (act && act.type === "switch" && pActive[i]) {
         const inc = pBench[act.benchIdx];
         const out = pActive[i];
+        resetStatsOnBench(out);
 
         pActive[i] = inc;
         pBench[act.benchIdx] = out;
@@ -170,7 +172,7 @@ let eBench = enemyBench.map(s => s ? {
       if (a && a.type === "switch" && eActive[i]) {
         const inc = eBench[a.benchIdx];
         const out = eActive[i];
-
+resetStatsOnBench(out);
         eActive[i] = inc;
         eBench[a.benchIdx] = out;
 
@@ -542,7 +544,7 @@ let eBench = enemyBench.map(s => s ? {
 
     const out =
       playerActive[slot];
-
+resetStatsOnBench(out);
     const newActive = [
       ...playerActive
     ];

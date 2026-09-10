@@ -18,6 +18,16 @@ export function initBattleSognatore(t) {
   };
 }
 
+export function resetStatsOnBench(s) {
+  if (!s) return;
+
+  s.statMods = {
+    att: 0,
+    dif: 0,
+    vel: 0
+  };
+}
+
 export function getType(s) {
   return s.typeOverride || s.tipo;
 }
