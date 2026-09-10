@@ -959,7 +959,7 @@ act.target.hp = Math.max(0, act.target.hp - dmg);
     log_en,
     events
   };
-}export function processActionDual
+}
 
 export function applyEndOfTurnDual(allActive, mIt, mEn) {
   const log_it = [], log_en = [];
