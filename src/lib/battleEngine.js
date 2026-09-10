@@ -686,44 +686,45 @@ export function processActionDual(act, mIt, mEn) {
   }
 
   // FIERO NONNO:
-  // se l'attacco colpisce un alleato protetto,
-  // Fiero scambia fisicamente posizione con lui
-  // e diventa il bersaglio dell'attacco.
-  if (act.target.protectedThisTurn) {
-    const targetIndex = (act.enemies || []).findIndex(
-      e => e && e.id === act.target.id
+// se un alleato protegge, Fiero scambia fisicamente
+// la propria posizione con quella dell'alleato
+// e diventa il bersaglio dell'attacco.
+if (act.target?.protectedThisTurn) {
+  const enemies = act.enemies || [];
+
+  const targetIndex = enemies.findIndex(
+    e => e && e.id === act.target.id
+  );
+
+  const fieroIndex = enemies.findIndex(
+    e =>
+      e &&
+      !e.fainted &&
+      !e.abilityNullified &&
+      e.abilKey === "fierononno_swap" &&
+      e.id !== act.target.id
+  );
+
+  if (targetIndex !== -1 && fieroIndex !== -1) {
+    const protectedTarget = enemies[targetIndex];
+    const fiero = enemies[fieroIndex];
+
+    // Scambio reale delle posizioni
+    enemies[targetIndex] = fiero;
+    enemies[fieroIndex] = protectedTarget;
+
+    // L'attacco ora colpisce Fiero
+    act.target = fiero;
+
+    log_it.push(
+      mIt.fieroSwap(protectedTarget.nome, fiero.nome)
     );
 
-    const fieroIndex = (act.enemies || []).findIndex(
-      e =>
-        e &&
-        !e.fainted &&
-        !e.abilityNullified &&
-        e.abilKey === "fierononno_swap" &&
-        e.id !== act.target.id
+    log_en.push(
+      mEn.fieroSwap(protectedTarget.nome, fiero.nome)
     );
-
-    if (fieroIndex !== -1 && targetIndex !== -1) {
-      const protectedTarget = act.enemies[targetIndex];
-      const fiero = act.enemies[fieroIndex];
-
-      act.enemies[targetIndex] = fiero;
-      act.enemies[fieroIndex] = protectedTarget;
-
-      log_it.push(
-        mIt.fieroSwap(protectedTarget.nome, fiero.nome)
-      );
-
-      log_en.push(
-        mEn.fieroSwap(protectedTarget.nome, fiero.nome)
-      );
-
-      act = {
-        ...act,
-        target: fiero
-      };
-    }
   }
+}
 
   const { dmg, bonus, immune, antislurpo, efficacy } =
     calcDamage(act.attacker, act.target);
@@ -777,6 +778,7 @@ export function processActionDual(act, mIt, mEn) {
     dmg
   });
 act.target.hp = Math.max(0, act.target.hp - dmg);
+
 
   if (bonus === 5) {
     msgIt += mIt.superEffective;
@@ -957,7 +959,7 @@ act.target.hp = Math.max(0, act.target.hp - dmg);
     log_en,
     events
   };
-}
+}export function processActionDual
 
 export function applyEndOfTurnDual(allActive, mIt, mEn) {
   const log_it = [], log_en = [];
