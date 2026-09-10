@@ -1593,7 +1593,7 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
               key={i}
               className="text-[11px] text-slate-300 bg-white/5 rounded-md px-2 py-1"
             >
-              {l.split("🪙").map((part, index) => (
+             {String(l ?? "").split("🪙").map((part, index) => (
   <React.Fragment key={index}>
     {index > 0 && (
       <img
