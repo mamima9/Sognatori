@@ -526,7 +526,7 @@ if (ea.hp === 0) {
           break;
     }
 
-    case "taomarco_def_buff":
+    case "taomarco_defeat_buff":
       if (dmg > 0) {
         applyMod(act.attacker, "dif", 1, act.allies);
         msg += " · +1 DIF";
@@ -912,7 +912,7 @@ act.target.hp = Math.max(0, act.target.hp - dmg);
       break;
     }
 
-    case "taomarco_def_buff":
+    case "taomarco_defeat_buff":
       if (dmg > 0) {
         applyMod(
           act.attacker,

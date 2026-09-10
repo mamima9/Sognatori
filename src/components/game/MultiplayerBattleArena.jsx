@@ -107,9 +107,24 @@ useEffect(() => {
 
   const frame = gs.turnFrames[animStep];
 
-  if (frame) {
-    setAnimFrame(frame);
-  }
+if (frame) {
+  setAnimFrame({
+    ...frame,
+    player1_active: frame.player1_active
+      ? frame.player1_active.map((s) => ({ ...s }))
+      : [],
+    player2_active: frame.player2_active
+      ? frame.player2_active.map((s) => ({ ...s }))
+      : [],
+    player1_bench: frame.player1_bench
+      ? frame.player1_bench.map((s) => ({ ...s }))
+      : [],
+    player2_bench: frame.player2_bench
+      ? frame.player2_bench.map((s) => ({ ...s }))
+      : [],
+  });
+}
+
 }, [
   match?.game_state?.phase,
   match?.game_state?.turn,
@@ -751,8 +766,8 @@ const initialTurnFrames =
     ? [
         {
           section: "start",
-          logsIt: entryLogsIt,
-          logsEn: entryLogsEn,
+          log_it: entryLogsIt,
+          log_en: entryLogsEn,
           events: []
         }
       ]
