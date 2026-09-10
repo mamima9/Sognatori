@@ -578,35 +578,35 @@ useEffect(() => {
       }
     });
 
-    const gs = {
-      player1_active: p1Active,
-      player2_active: p2Active,
-      player1_bench: p1Bench,
-      player2_bench: p2Bench,
+ const gs = {
+  player1_active: p1Active,
+  player2_active: p2Active,
+  player1_bench: p1Bench,
+  player2_bench: p2Bench,
 
-      phase: "select",
+  phase: "select",
 
-      log_it: logsIt,
-      log_en: logsEn,
+  log_it: logsIt,
+  log_en: logsEn,
 
-      lastTurnLog_it: logsIt,
-      lastTurnLog_en: logsEn,
+  lastTurnLog_it: logsIt,
+  lastTurnLog_en: logsEn,
 
-      turn: 1,
-      battleStartTime: Date.now(),
-    };
+  turn: 1,
+  battleStartTime: Date.now(),
+};
 
-    updateMatch(match.id, {
-      game_state: gs,
-      status: "in_progress",
-    }).catch((error) => {
-      console.error("Errore inizializzazione partita:", error);
-    });
-  } [
-    match,
-    player1Team,
-    player2Team,
-  ]);
+updateMatch(match.id, {
+  game_state: gs,
+  status: "in_progress",
+}).catch((error) => {
+  console.error("Errore inizializzazione partita:", error);
+});
+}, [
+  match,
+  player1Team,
+  player2Team,
+]);
 
   /*
    * ============================================================
