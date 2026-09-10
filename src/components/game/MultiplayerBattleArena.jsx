@@ -458,13 +458,62 @@ useEffect(() => {
    */
 
   useEffect(() => {
-    if (
-      !match ||
-      match.status !== "waiting" ||
-      !match.player2_id
-    ) {
-      return;
-    }
+  if (!match || !match.player2_id) {
+    return;
+  }
+
+  if (
+    player1Team.length === 0 ||
+    player2Team.length === 0
+  ) {
+    return;
+  }
+
+  // Se la partita è già stata inizializzata, non fare nulla
+  if (match.game_state) {
+    return;
+  }
+
+  const p1Active = player1Team
+    .slice(0, 2)
+    .map(initBattleSognatore);
+
+  const p1Bench = player1Team
+    .slice(2)
+    .map(initBattleSognatore);
+
+  const p2Active = player2Team
+    .slice(0, 2)
+    .map(initBattleSognatore);
+
+  const p2Bench = player2Team
+    .slice(2)
+    .map(initBattleSognatore);
+
+  const gs = {
+    player1_active: p1Active,
+    player2_active: p2Active,
+    player1_bench: p1Bench,
+    player2_bench: p2Bench,
+    phase: "select",
+    turn: 1,
+    battleStartTime: Date.now(),
+  };
+
+  updateMatch(match.id, {
+    game_state: gs,
+    status: "in_progress",
+  }).catch((error) => {
+    console.error(
+      "Errore inizializzazione partita:",
+      error
+    );
+  });
+}, [
+  match,
+  player1Team,
+  player2Team,
+]);
 
     if (
       player1Team.length === 0 ||
@@ -753,43 +802,59 @@ useEffect(() => {
       .map((i) => initBattleSognatore(p2Team[i]))
       .filter(Boolean);
 
-    const logsIt = [m_it.battleStart];
-    const logsEn = [m_en.battleStart];
+    const logsIt = [];
+const logsEn = [];
+const entryLogsIt = [];
+const entryLogsEn = [];
 
-    p1Active.forEach((s) => {
-      if (s) {
-        const d = onEntryDual(
-          s,
-          p1Active,
-          p2Active,
-          m_it,
-          m_en
-        );
+p1Active.forEach(s => {
+  const d = onEntryDual(
+    s,
+    p1Active,
+    p2Active,
+    mIt,
+    mEn
+  );
 
-        logsIt.push(...d.log_it);
-        logsEn.push(...d.log_en);
-      }
-    });
+  logsIt.push(...d.log_it);
+  logsEn.push(...d.log_en);
 
-    p2Active.forEach((s) => {
-      if (s) {
-        const d = onEntryDual(
-          s,
-          p2Active,
-          p1Active,
-          m_it,
-          m_en
-        );
+  entryLogsIt.push(...d.log_it);
+  entryLogsEn.push(...d.log_en);
+});
 
-        logsIt.push(...d.log_it);
-        logsEn.push(...d.log_en);
-      }
-    });
+p2Active.forEach(s => {
+  const d = onEntryDual(
+    s,
+    p2Active,
+    p1Active,
+    mIt,
+    mEn
+  );
+
+  logsIt.push(...d.log_it);
+  logsEn.push(...d.log_en);
+
+  entryLogsIt.push(...d.log_it);
+  entryLogsEn.push(...d.log_en);
+});
+
+const initialTurnFrames =
+  entryLogsIt.length > 0 || entryLogsEn.length > 0
+    ? [
+        {
+          section: "start",
+          logsIt: entryLogsIt,
+          logsEn: entryLogsEn,
+          events: []
+        }
+      ]
+    : [];
 
     const gs = {
       ...match.game_state,
 
-      phase: "select",
+      phase: initialTurnFrames.length > 0 ? "animating" : "select",
 
       player1_active: p1Active,
       player2_active: p2Active,
@@ -802,7 +867,7 @@ useEffect(() => {
 
       lastTurnLog_it: logsIt,
       lastTurnLog_en: logsEn,
-
+turnFrames: initialTurnFrames,
       turn: 1,
       battleStartTime: Date.now(),
     };
@@ -856,7 +921,7 @@ useEffect(() => {
 
     const turnNum =
   gs.turn || 1;
-  
+
     newLogIt.push(
       `__TURN_${turnNum}__`
     );

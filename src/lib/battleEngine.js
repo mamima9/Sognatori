@@ -438,7 +438,7 @@ export function processAction(act, lang = 'it') {
   }
 
   events.push({ targetId: act.target.id, efficacy, dmg });
-  
+  act.target.hp = Math.max(0, act.target.hp - dmg);
 
   if (bonus === 5) msg += m.superEffective;
   else if (bonus === -3) msg += m.notEffective;
