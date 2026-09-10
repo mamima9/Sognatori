@@ -275,11 +275,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
         break;
       }
 
-      case "taomarco_lock":
-        act.target.cannotSwitch = true;
-        msg += " · (non può switchare)";
-        break;
-    }
+     
 
     if (act.target.hp === 0) {
       const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
@@ -479,11 +475,13 @@ export function processAction(act, lang = 'it') {
       break;
     }
 
-    case "taomarco_lock":
-      act.target.cannotSwitch = true;
-      msg += m.lock;
-      break;
-  }
+  if (
+  abil === "taomarco_def_buff" &&
+  dmg > 0
+) {
+  applyMod(act.attacker, "dif", 1, act.allies);
+  msg += " · +1 DIF";
+}
 
   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
@@ -682,47 +680,6 @@ export function processActionDual(act, mIt, mEn) {
     }
   }
 
-  // FIERO NONNO:
-  // se l'attacco colpisce un alleato protetto,
-  // Fiero scambia fisicamente posizione con lui
-  // e diventa il bersaglio dell'attacco.
-  if (act.target.protectedThisTurn) {
-    const targetIndex = (act.enemies || []).findIndex(
-      e => e && e.id === act.target.id
-    );
-
-    const fieroIndex = (act.enemies || []).findIndex(
-      e =>
-        e &&
-        !e.fainted &&
-        !e.abilityNullified &&
-        e.abilKey === "fierononno_swap" &&
-        e.id !== act.target.id
-    );
-
-    if (fieroIndex !== -1 && targetIndex !== -1) {
-      const protectedTarget = act.enemies[targetIndex];
-      const fiero = act.enemies[fieroIndex];
-
-      act.enemies[targetIndex] = fiero;
-      act.enemies[fieroIndex] = protectedTarget;
-
-      log_it.push(
-        mIt.fieroSwap(protectedTarget.nome, fiero.nome)
-      );
-
-      log_en.push(
-        mEn.fieroSwap(protectedTarget.nome, fiero.nome)
-      );
-
-      act = {
-        ...act,
-        target: fiero
-      };
-    }
-  }
-
-
   const { dmg, bonus, immune, antislurpo, efficacy } =
     calcDamage(act.attacker, act.target);
 
@@ -896,11 +853,18 @@ export function processActionDual(act, mIt, mEn) {
       break;
     }
 
-    case "taomarco_lock":
-      act.target.cannotSwitch = true;
+    case "taomarco_def_buff":
+      if (dmg > 0) {
+        applyMod(
+          act.attacker,
+          "dif",
+          1,
+          act.allies
+        );
 
-      msgIt += mIt.lock;
-      msgEn += mEn.lock;
+        msgIt += " · +1 DIF";
+        msgEn += " · +1 DEF";
+      }
       break;
   }
 

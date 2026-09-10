@@ -1,14 +1,17 @@
 const ABILITY_EN = {
   adli_shield: { name: "Ritual", desc: "If it has to defend against a Human, it gets +5 DEF." },
   cancucc_immune: { name: "Bread and Hugs", desc: "Cannot suffer ATT or DEF drops." },
-  eroe_splash: { name: "FOMO Cumulonimbus", desc: "When attacking, it also deals 3 damage to the opponent's ally." },
-  nuvobetta_heal: { name: "Majorette", desc: "When attacking, recovers 1 HP and its ally recovers 2 HP." },
-  scrocco_slow: { name: "Rug Pull", desc: "When attacking, hit opponents lose 4 SPD." },
+  eroe_splash: { name: "FOMO Cumulonimbus", desc: "When it deals damage, it also deals 3 damage to the opponent's ally." },
+  nuvobetta_heal: { name: "Majorette", desc: "When it deals damage, recovers 1 HP and its ally recovers 2 HP." },
+  scrocco_slow: { name: "Rug Pull", desc: "When it deals damage, hit opponents lose 4 SPD." },
   deb_aura: { name: "Expedition", desc: "On entry, all allied Robots gain +2 ATT." },
   aragostino_fullhp: { name: "Cold Storage", desc: "Gets +3 ATT only when at 20 HP." },
   sparkly_debuff: { name: "FUD", desc: "On entry, opponents lose 3 ATT." },
   nina_regen: { name: "Apotheosis", desc: "Recovers 2 HP every turn." },
-  taomarco_lock: { name: "Errare Swap", desc: "The target cannot switch during the next turn." },
+  taomarco_def_buff: {
+  name: "Errare Swap",
+  desc: "When it deals damage, it gains +1 DEF."
+},
   riwupido_nullify: { name: "Divine Seal", desc: "On entry, nullifies the abilities of opposing Robots." },
   fourmori_buff: { name: "TDM", desc: "If its attack hits, ally gain +6 SPD." },
   ginza_guard: { name: "Ally Protection", desc: "Its ally cannot suffer stat drops." },
