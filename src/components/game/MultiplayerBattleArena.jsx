@@ -719,8 +719,8 @@ p1Active.forEach(s => {
     s,
     p1Active,
     p2Active,
-    mIt,
-    mEn
+    m_it,
+    m_en
   );
 
   logsIt.push(...d.log_it);
@@ -735,8 +735,8 @@ p2Active.forEach(s => {
     s,
     p2Active,
     p1Active,
-    mIt,
-    mEn
+    m_it,
+    m_en
   );
 
   logsIt.push(...d.log_it);
