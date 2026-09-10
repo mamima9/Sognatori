@@ -118,11 +118,25 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
       playerActive,
       enemyBench
     );
+let pActive = playerActive.map(s => s ? {
+  ...s,
+  statMods: { ...s.statMods }
+} : s);
 
-    let pActive = [...playerActive];
-    let pBench = [...playerBench];
-    let eActive = [...enemyActive];
-    let eBench = [...enemyBench];
+let pBench = playerBench.map(s => s ? {
+  ...s,
+  statMods: { ...s.statMods }
+} : s);
+
+let eActive = enemyActive.map(s => s ? {
+  ...s,
+  statMods: { ...s.statMods }
+} : s);
+
+let eBench = enemyBench.map(s => s ? {
+  ...s,
+  statMods: { ...s.statMods }
+} : s);
 
     const slots = pActive
       .map((s, i) => (s && !s.fainted ? i : null))
