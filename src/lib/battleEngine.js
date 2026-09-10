@@ -237,6 +237,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
     }
 
     events.push({ targetId: act.target.id, efficacy, dmg });
+
    
     if (bonus === 5) msg += " — Superefficace!";
     else if (bonus === -3) msg += " — Non molto efficace...";
@@ -775,7 +776,7 @@ export function processActionDual(act, mIt, mEn) {
     efficacy,
     dmg
   });
-
+act.target.hp = Math.max(0, act.target.hp - dmg);
 
   if (bonus === 5) {
     msgIt += mIt.superEffective;
