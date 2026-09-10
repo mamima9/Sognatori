@@ -542,10 +542,11 @@ if (tAbil === "cenere_scoppio") {
   );
 
   msg += ` · ${m.explode(act.target.nome)}`;
-}
+  }
+} 
 
-  log.push(msg);
-  return { log, events };
+log.push(msg);
+return { log, events };
 }
 
 export function applyEndOfTurn(allActive, lang = 'it') {

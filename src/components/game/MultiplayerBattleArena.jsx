@@ -855,8 +855,8 @@ useEffect(() => {
     ];
 
     const turnNum =
-      (gs.turn || 0) + 1;
-
+  gs.turn || 1;
+  
     newLogIt.push(
       `__TURN_${turnNum}__`
     );
