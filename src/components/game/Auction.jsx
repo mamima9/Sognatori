@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ROSTER } from "@/lib/sognatoriData";
 import { FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
+import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
@@ -562,7 +563,10 @@ export default function Auction({ onComplete, onBack }) {
           </div>
 
           <div className="text-lg font-bold">
-            🪙 {playerCredits}
+            <span className="inline-flex items-center gap-1">
+  <img src={COIN} alt="" className="w-5 h-5 object-contain" />
+  {playerCredits}
+</span>
           </div>
 
           <div className="text-[11px] text-slate-400">
@@ -590,9 +594,12 @@ export default function Auction({ onComplete, onBack }) {
             {t("auction.opponent")}
           </div>
 
-          <div className="text-lg font-bold">
-            🪙 {aiCredits}
-          </div>
+       <div className="text-lg font-bold">
+  <span className="inline-flex items-center gap-1">
+    <img src={COIN} alt="" className="w-5 h-5 object-contain" />
+    {aiCredits}
+  </span>
+</div>
 
           <div className="text-[11px] text-slate-400">
             {aiTeam.length}/4
@@ -677,8 +684,11 @@ export default function Auction({ onComplete, onBack }) {
               </div>
 
               <div className="text-3xl font-bold text-amber-400">
-                🪙 {currentBid}
-              </div>
+  <span className="inline-flex items-center gap-2 justify-center">
+    <img src={COIN} alt="" className="w-8 h-8 object-contain" />
+    {currentBid}
+  </span>
+</div>
 
               <div className="text-xs text-slate-400">
                 {currentBidder === "player"
@@ -778,21 +788,37 @@ export default function Auction({ onComplete, onBack }) {
               {log.sog.nome}
             </span>
 
-            <span
-              className={
-                log.winner === "player"
-                  ? "text-emerald-400"
-                  : log.winner === "ai"
-                    ? "text-rose-400"
-                    : "text-slate-500"
-              }
-            >
-              {log.winner === "player"
-                ? `${t("battle.youShort")} — ${log.price}🪙`
-                : log.winner === "ai"
-                  ? `${t("battle.aiShort")} — ${log.price}🪙`
-                  : t("battle.skipped")}
-            </span>
+           <span
+  className={
+    log.winner === "player"
+      ? "text-emerald-400"
+      : log.winner === "ai"
+        ? "text-rose-400"
+        : "text-slate-500"
+  }
+>
+  {log.winner === "player" ? (
+    <>
+      {t("battle.youShort")} — {log.price}
+      <img
+        src={COIN}
+        alt=""
+        className="inline-block w-4 h-4 object-contain align-middle ml-1"
+      />
+    </>
+  ) : log.winner === "ai" ? (
+    <>
+      {t("battle.aiShort")} — {log.price}
+      <img
+        src={COIN}
+        alt=""
+        className="inline-block w-4 h-4 object-contain align-middle ml-1"
+      />
+    </>
+  ) : (
+    t("battle.skipped")
+  )}
+</span>
           </div>
         ))}
       </div>
