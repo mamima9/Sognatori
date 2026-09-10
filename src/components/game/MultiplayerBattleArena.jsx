@@ -548,6 +548,7 @@ useEffect(() => {
     const logsIt = [m_it.battleStart];
     const logsEn = [m_en.battleStart];
 
+    useEffect(() => {
     p1Active.forEach((s) => {
       if (s) {
         const d = onEntryDual(
@@ -602,7 +603,7 @@ updateMatch(match.id, {
 }).catch((error) => {
   console.error("Errore inizializzazione partita:", error);
 });
-} [
+}, [
   match,
   player1Team,
   player2Team,
