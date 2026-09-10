@@ -312,6 +312,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
 
         break;
       }
+      }
 
      
 
@@ -523,14 +524,15 @@ if (ea.hp === 0) {
 
       break;
     }
-
-  if (
-  abil === "taomarco_def_buff" &&
-  dmg > 0
-) {
-  applyMod(act.attacker, "dif", 1, act.allies);
-  msg += " · +1 DIF";
 }
+
+    case "taomarco_def_buff":
+      if (dmg > 0) {
+        applyMod(act.attacker, "dif", 1, act.allies);
+        msg += " · +1 DIF";
+      }
+      break;
+  }
 
   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
@@ -916,7 +918,6 @@ export function processActionDual(act, mIt, mEn) {
 
       break;
     }
-      }
 
     case "taomarco_def_buff":
       if (dmg > 0) {
@@ -933,21 +934,27 @@ export function processActionDual(act, mIt, mEn) {
       break;
   }
 
-  if (act.target.hp === 0) {
+   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified
       ? null
       : act.target.abilKey;
 
     if (tAbil === "cenere_scoppio") {
-  triggerCenereExplosion(
-    act.target,
-    act.enemies,
-    events
-  );
+      triggerCenereExplosion(
+        act.target,
+        act.enemies,
+        events
+      );
 
-  msgIt += ` · ${mIt.explode(act.target.nome)}`;
-  msgEn += ` · ${mEn.explode(act.target.nome)}`;
-}
+      msgIt += ` · ${mIt.explode(act.target.nome)}`;
+      msgEn += ` · ${mEn.explode(act.target.nome)}`;
+    }
+
+    act.target.fainted = true;
+
+    msgIt += mIt.ko(act.target.nome);
+    msgEn += mEn.ko(act.target.nome);
+  }
 
   log_it.push(msgIt);
   log_en.push(msgEn);
