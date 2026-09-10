@@ -14,7 +14,7 @@ export function initBattleSognatore(t) {
     abilityNullified: false,
     typeOverride: null,
     blockFirstAttack: false,
-    fainted: false
+    fainted: false,
     cenereTriggered: false
   };
 }
@@ -54,15 +54,33 @@ export function effVel(s) {
 
 export function getPriority(s) {
   const abil = s.abilityNullified ? null : s.abilKey;
+
   if (abil === "icepadel_priority") return 1;
+
   return 0;
 }
 
 function isDebuffImmune(target, allies) {
   if (!target) return false;
+
   const abil = target.abilityNullified ? null : target.abilKey;
+
   if (abil === "cancucc_immune") return true;
-  if (allies && allies.some(a => a && !a.fainted && a.abilKey === "ginza_guard" && !a.abilityNullified && a.id !== target.id)) return true;
+
+  if (
+    allies &&
+    allies.some(
+      a =>
+        a &&
+        !a.fainted &&
+        a.abilKey === "ginza_guard" &&
+        !a.abilityNullified &&
+        a.id !== target.id
+    )
+  ) {
+    return true;
+  }
+
   return false;
 }
 
@@ -78,19 +96,37 @@ function applyMod(target, stat, amount, allies) {
     amount = Math.abs(amount);
   }
 
-  if (amount < 0 && isDebuffImmune(target, allies)) return false;
+  if (amount < 0 && isDebuffImmune(target, allies)) {
+    return false;
+  }
 
-  target.statMods[stat] = (target.statMods[stat] || 0) + amount;
+  target.statMods[stat] =
+    (target.statMods[stat] || 0) + amount;
+
   return true;
 }
 
-function triggerCenereAbility(cenere, enemies, events, previousHp) {
+/*
+ * CENERE
+ *
+ * Quando Cenere passa da 5 PS o più
+ * a meno di 5 PS, infligge 3 danni
+ * a ciascun avversario.
+ *
+ * Si attiva una sola volta.
+ */
+function triggerCenereAbility(
+  cenere,
+  enemies,
+  events,
+  previousHp
+) {
   if (
     !cenere ||
     cenere.fainted ||
     cenere.abilKey !== "cenere_scoppio" ||
     cenere.cenereTriggered ||
-    previousHp >= 5 ||
+    previousHp < 5 ||
     cenere.hp >= 5
   ) {
     return false;
@@ -117,55 +153,92 @@ function triggerCenereAbility(cenere, enemies, events, previousHp) {
   return true;
 }
 
-  enemies.forEach(e => {
-    if (e && !e.fainted) {
-      e.hp = Math.max(0, e.hp - 3);
-
-      events.push({
-        targetId: e.id,
-        efficacy: "neutral",
-        dmg: 3
-      });
-
-      if (e.hp === 0) {
-        e.fainted = true;
-      }
-    }
-  });
-
-  return true;
-}
-
 export function calcDamage(attacker, defender) {
   const atkType = getType(attacker);
   const defType = getType(defender);
-  const defAbil = defender.abilityNullified ? null : defender.abilKey;
+  const defAbil = defender.abilityNullified
+    ? null
+    : defender.abilKey;
 
-  if (defAbil === "dragociocco_antislurpo" && atkType === "Orso") {
-    return { dmg: 0, bonus: 0, immune: true, antislurpo: true, efficacy: "immune" };
+  if (
+    defAbil === "dragociocco_antislurpo" &&
+    atkType === "Orso"
+  ) {
+    return {
+      dmg: 0,
+      bonus: 0,
+      immune: true,
+      antislurpo: true,
+      efficacy: "immune"
+    };
   }
 
   const bonus = typeBonus(atkType, defType);
-  if (bonus === -15) return { dmg: 0, bonus, immune: true, efficacy: "immune" };
+
+  if (bonus === -15) {
+    return {
+      dmg: 0,
+      bonus,
+      immune: true,
+      efficacy: "immune"
+    };
+  }
 
   let def = effDef(defender);
-  if (defAbil === "adli_shield" && atkType === "Umano") def += 5;
 
-  const raw = effAtt(attacker) - def + 4 + bonus;
-  const efficacy = bonus === 5 ? "se" : bonus === -3 ? "res" : "neutral";
-  return { dmg: Math.max(1, raw), bonus, immune: false, efficacy };
+  if (
+    defAbil === "adli_shield" &&
+    atkType === "Umano"
+  ) {
+    def += 5;
+  }
+
+  const raw =
+    effAtt(attacker) - def + 4 + bonus;
+
+  const efficacy =
+    bonus === 5
+      ? "se"
+      : bonus === -3
+        ? "res"
+        : "neutral";
+
+  return {
+    dmg: Math.max(1, raw),
+    bonus,
+    immune: false,
+    efficacy
+  };
 }
 
-export function onEntry(s, allies, enemies, lang = 'it') {
+export function onEntry(
+  s,
+  allies,
+  enemies,
+  lang = "it"
+) {
   if (!s || s.fainted) return [];
+
   const log = [];
   const m = bm(lang);
-  const abil = s.abilityNullified ? null : s.abilKey;
+
+  const abil = s.abilityNullified
+    ? null
+    : s.abilKey;
+
   s.blockFirstAttack = false;
 
   switch (abil) {
     case "sparkly_debuff":
-      enemies.forEach(e => { if (e && !e.fainted && applyMod(e, "att", -3, enemies)) log.push(m.debuffAtt(e.nome)); });
+      enemies.forEach(e => {
+        if (
+          e &&
+          !e.fainted &&
+          applyMod(e, "att", -3, enemies)
+        ) {
+          log.push(m.debuffAtt(e.nome));
+        }
+      });
       break;
 
     case "deb_aura":
@@ -175,35 +248,93 @@ export function onEntry(s, allies, enemies, lang = 'it') {
           !a.fainted &&
           a.tipo === "Robot"
         ) {
-          a.statMods.att = (a.statMods.att || 0) + 2;
+          a.statMods.att =
+            (a.statMods.att || 0) + 2;
+
           log.push(m.auraBuff(a.nome));
         }
       });
       break;
 
     case "cillymbu_aura":
-      allies.forEach(a => { if (a && !a.fainted && a.id !== s.id) applyMod(a, "att", 3, allies); });
+      allies.forEach(a => {
+        if (
+          a &&
+          !a.fainted &&
+          a.id !== s.id
+        ) {
+          applyMod(a, "att", 3, allies);
+        }
+      });
+
       log.push(m.alliesBuff(s.nome));
       break;
 
     case "pepe_memecoin": {
-      const ally = allies.find(a => a && !a.fainted && a.id !== s.id);
+      const ally = allies.find(
+        a =>
+          a &&
+          !a.fainted &&
+          a.id !== s.id
+      );
+
       if (ally) {
-        const stats = { att: ally.att, dif: ally.dif, vel: ally.vel };
-        const lowest = Object.entries(stats).sort((a, b) => a[1] - b[1])[0][0];
-        applyMod(ally, lowest, 4, allies);
-        log.push(m.memecoin(ally.nome, lowest.toUpperCase()));
+        const stats = {
+          att: ally.att,
+          dif: ally.dif,
+          vel: ally.vel
+        };
+
+        const lowest = Object.entries(stats)
+          .sort((a, b) => a[1] - b[1])[0][0];
+
+        applyMod(
+          ally,
+          lowest,
+          4,
+          allies
+        );
+
+        log.push(
+          m.memecoin(
+            ally.nome,
+            lowest.toUpperCase()
+          )
+        );
       }
+
       break;
     }
 
     case "riwupido_nullify":
-      enemies.forEach(e => { if (e && !e.fainted && e.tipo === "Robot") { e.abilityNullified = true; log.push(m.nullified(e.nome)); } });
+      enemies.forEach(e => {
+        if (
+          e &&
+          !e.fainted &&
+          e.tipo === "Robot"
+        ) {
+          e.abilityNullified = true;
+          log.push(m.nullified(e.nome));
+        }
+      });
       break;
 
     case "pequeno_block": {
-      const fastest = enemies.filter(e => e && !e.fainted).sort((a, b) => effVel(b) - effVel(a))[0];
-      if (fastest) { fastest.blockFirstAttack = true; log.push(m.firstBlocked(fastest.nome)); }
+      const fastest = enemies
+        .filter(e => e && !e.fainted)
+        .sort(
+          (a, b) =>
+            effVel(b) - effVel(a)
+        )[0];
+
+      if (fastest) {
+        fastest.blockFirstAttack = true;
+
+        log.push(
+          m.firstBlocked(fastest.nome)
+        );
+      }
+
       break;
     }
   }
@@ -211,178 +342,407 @@ export function onEntry(s, allies, enemies, lang = 'it') {
   return log;
 }
 
-export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAttacks) {
+export function resolveAttacks(
+  playerActive,
+  enemyActive,
+  playerAttacks,
+  enemyAttacks
+) {
   const log = [];
   const events = [];
   const all = [];
 
-  playerAttacks.forEach(a => all.push({ ...a, side: "player", allies: playerActive, enemies: enemyActive }));
-  enemyAttacks.forEach(a => all.push({ ...a, side: "enemy", allies: enemyActive, enemies: playerActive }));
+  playerAttacks.forEach(a =>
+    all.push({
+      ...a,
+      side: "player",
+      allies: playerActive,
+      enemies: enemyActive
+    })
+  );
+
+  enemyAttacks.forEach(a =>
+    all.push({
+      ...a,
+      side: "enemy",
+      allies: enemyActive,
+      enemies: playerActive
+    })
+  );
 
   all.sort((a, b) => {
-    const pa = getPriority(a.attacker), pb = getPriority(b.attacker);
+    const pa = getPriority(a.attacker);
+    const pb = getPriority(b.attacker);
+
     if (pb !== pa) return pb - pa;
 
-    const va = effVel(a.attacker), vb = effVel(b.attacker);
+    const va = effVel(a.attacker);
+    const vb = effVel(b.attacker);
+
     if (vb !== va) return vb - va;
 
     return Math.random() - 0.5;
   });
 
   for (let act of all) {
-    if (act.attacker.fainted || act.attacker.hp <= 0) continue;
+    if (
+      act.attacker.fainted ||
+      act.attacker.hp <= 0
+    ) {
+      continue;
+    }
 
-    if (!act.target || act.target.fainted) {
-      const newTarget = (act.enemies || []).find(e => e && !e.fainted);
+    if (
+      !act.target ||
+      act.target.fainted
+    ) {
+      const newTarget =
+        (act.enemies || []).find(
+          e => e && !e.fainted
+        );
+
       if (!newTarget) continue;
-      act = { ...act, target: newTarget };
+
+      act = {
+        ...act,
+        target: newTarget
+      };
     }
 
     if (act.attacker.blockFirstAttack) {
       act.attacker.blockFirstAttack = false;
-      log.push(`${act.attacker.nome} è bloccato! (Seed Phrase)`);
+
+      log.push(
+        `${act.attacker.nome} è bloccato! (Seed Phrase)`
+      );
+
       continue;
     }
 
-    const { dmg, bonus, immune, antislurpo, efficacy } = calcDamage(act.attacker, act.target);
-    let msg = `${act.attacker.nome} attacca ${act.target.nome}`;
+    const {
+      dmg,
+      bonus,
+      immune,
+      antislurpo,
+      efficacy
+    } = calcDamage(
+      act.attacker,
+      act.target
+    );
+
+    let msg =
+      `${act.attacker.nome} attacca ${act.target.nome}`;
 
     if (antislurpo) {
-      events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 });
-      log.push(`${msg}: Antislurpo! Dragociocco non può essere attaccato dagli Orsi`);
+      events.push({
+        targetId: act.target.id,
+        efficacy: "immune",
+        dmg: 0
+      });
+
+      log.push(
+        `${msg}: Antislurpo! Dragociocco non può essere attaccato dagli Orsi`
+      );
+
       continue;
     }
 
     if (act.target.protectedThisTurn) {
-      events.push({ targetId: act.target.id, efficacy: "protected", dmg: 0 });
-      log.push(`${msg} — protetto! (0 danni)`);
+      events.push({
+        targetId: act.target.id,
+        efficacy: "protected",
+        dmg: 0
+      });
+
+      log.push(
+        `${msg} — protetto! (0 danni)`
+      );
+
       continue;
     }
 
     if (immune) {
-      events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 });
-      log.push(`${msg}: immunità! (0 danni)`);
+      events.push({
+        targetId: act.target.id,
+        efficacy: "immune",
+        dmg: 0
+      });
+
+      log.push(
+        `${msg}: immunità! (0 danni)`
+      );
+
       continue;
     }
 
-    events.push({ targetId: act.target.id, efficacy, dmg });
+    events.push({
+      targetId: act.target.id,
+      efficacy,
+      dmg
+    });
 
-   
-    if (bonus === 5) msg += " — Superefficace!";
-    else if (bonus === -3) msg += " — Non molto efficace...";
+    const previousHp = act.target.hp;
+
+    act.target.hp = Math.max(
+      0,
+      act.target.hp - dmg
+    );
+
+    if (bonus === 5) {
+      msg += " — Superefficace!";
+    } else if (bonus === -3) {
+      msg += " — Non molto efficace...";
+    }
 
     msg += ` (${dmg} danni)`;
 
-    const abil = act.attacker.abilityNullified ? null : act.attacker.abilKey;
+    const abil =
+      act.attacker.abilityNullified
+        ? null
+        : act.attacker.abilKey;
 
     switch (abil) {
       case "scrocco_slow":
-        if (applyMod(act.target, "vel", -4, act.enemies)) msg += ` · ${act.target.nome} -4 VEL`;
+        if (
+          applyMod(
+            act.target,
+            "vel",
+            -4,
+            act.enemies
+          )
+        ) {
+          msg +=
+            ` · ${act.target.nome} -4 VEL`;
+        }
+
         break;
 
       case "uesditti_debuff":
-        if (applyMod(act.target, "dif", -4, act.enemies)) msg += ` · ${act.target.nome} -4 DIF`;
+        if (
+          applyMod(
+            act.target,
+            "dif",
+            -4,
+            act.enemies
+          )
+        ) {
+          msg +=
+            ` · ${act.target.nome} -4 DIF`;
+        }
+
         break;
 
       case "lari_typechange":
-        act.target.typeOverride = "Nuvola";
-        msg += ` · ${act.target.nome} diventa Nuvola!`;
+        act.target.typeOverride =
+          "Nuvola";
+
+        msg +=
+          ` · ${act.target.nome} diventa Nuvola!`;
+
         break;
 
       case "pirimar_lpool":
-        act.attacker.hp = Math.min(act.attacker.hpMax, act.attacker.hp + 6);
-        msg += " · +6 PS (Liquidity Pool)";
+        act.attacker.hp =
+          Math.min(
+            act.attacker.hpMax,
+            act.attacker.hp + 6
+          );
+
+        msg +=
+          " · +6 PS (Liquidity Pool)";
+
         break;
 
       case "nuvobetta_heal":
-        act.attacker.hp = Math.min(act.attacker.hpMax, act.attacker.hp + 1);
-        const na = act.allies.find(a => a && !a.fainted && a.id !== act.attacker.id);
+        act.attacker.hp =
+          Math.min(
+            act.attacker.hpMax,
+            act.attacker.hp + 1
+          );
+
+        const na = act.allies.find(
+          a =>
+            a &&
+            !a.fainted &&
+            a.id !== act.attacker.id
+        );
+
         if (na) {
-          na.hp = Math.min(na.hpMax, na.hp + 2);
-          msg += " · +2 PS alleato";
+          na.hp =
+            Math.min(
+              na.hpMax,
+              na.hp + 2
+            );
+
+          msg +=
+            " · +2 PS alleato";
         }
+
         break;
 
       case "fourmori_buff":
         act.allies.forEach(a => {
-          if (a && !a.fainted && a.id !== act.attacker.id) {
-            applyMod(a, "vel", 6, act.allies);
+          if (
+            a &&
+            !a.fainted &&
+            a.id !== act.attacker.id
+          ) {
+            applyMod(
+              a,
+              "vel",
+              6,
+              act.allies
+            );
           }
         });
-        msg += " · alleato +6 VEL";
+
+        msg +=
+          " · alleato +6 VEL";
+
         break;
 
       case "eroe_splash": {
-        const ea = act.enemies.find(e => e && !e.fainted && e.id !== act.target.id);
+        const ea =
+          act.enemies.find(
+            e =>
+              e &&
+              !e.fainted &&
+              e.id !== act.target.id
+          );
 
-        if (ea && !ea.protectedThisTurn) {
-          ea.hp = Math.max(0, ea.hp - 3);
-          msg += " · 3 danni all'alleato avversario";
+        if (
+          ea &&
+          !ea.protectedThisTurn
+        ) {
+          const splashPreviousHp =
+            ea.hp;
 
-         if (ea.hp === 0) {
-  const eaAbil = ea.abilityNullified
-    ? null
-    : ea.abilKey;
+          ea.hp = Math.max(
+            0,
+            ea.hp - 3
+          );
 
-    msg += ` · ${ea.nome} esplode!`;
-  }
+          msg +=
+            " · 3 danni all'alleato avversario";
 
-  ea.fainted = true;
-  msg += ` (${ea.nome} RIBALTATO!)`;
-}
+          if (
+            ea.abilKey === "cenere_scoppio" &&
+            !ea.abilityNullified
+          ) {
+            const triggered =
+              triggerCenereAbility(
+                ea,
+                act.enemies,
+                events,
+                splashPreviousHp
+              );
+
+            if (triggered) {
+              msg +=
+                ` · ${ea.nome} attiva Cenere!`;
+            }
+          }
+
+          if (ea.hp === 0) {
+            ea.fainted = true;
+
+            msg +=
+              ` (${ea.nome} RIBALTATO!)`;
+          }
         }
 
-              break;
+        break;
       }
 
+      case "taomarco_defeat_buff":
+        if (dmg > 0) {
+          applyMod(
+            act.attacker,
+            "dif",
+            1,
+            act.allies
+          );
+
+          msg +=
+            " · +1 DIF";
+        }
+
+        break;
+    }
+
+    /*
+     * CENERE:
+     * se il danno principale porta Cenere
+     * sotto i 5 PS, attiva l'abilità.
+     */
+    if (
+      act.target.abilKey === "cenere_scoppio" &&
+      !act.target.abilityNullified
+    ) {
+      const triggered =
+        triggerCenereAbility(
+          act.target,
+          act.enemies,
+          events,
+          previousHp
+        );
+
+      if (triggered) {
+        msg +=
+          ` · ${act.target.nome} attiva Cenere!`;
+      }
     }
 
     if (act.target.hp === 0) {
-      const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
-
-   if (tAbil === "cenere_scoppio") {
-  triggerCenereExplosion(
-    act.target,
-    act.enemies,
-    events
-  );
-
-  msg += ` · ${act.target.nome} esplode!`;
-}
-
       act.target.fainted = true;
-      msg += ` ${act.target.nome} è RIBALTATO!`;
+
+      msg +=
+        ` ${act.target.nome} è RIBALTATO!`;
     }
 
     log.push(msg);
   }
 
-  return { log, events };
+  return {
+    log,
+    events
+  };
 }
 
-export function orderActions(playerActive, enemyActive, playerAttacks, enemyAttacks) {
+export function orderActions(
+  playerActive,
+  enemyActive,
+  playerAttacks,
+  enemyAttacks
+) {
   const all = [];
 
-  playerAttacks.forEach(a => all.push({
-    ...a,
-    side: "player",
-    allies: playerActive,
-    enemies: enemyActive
-  }));
+  playerAttacks.forEach(a =>
+    all.push({
+      ...a,
+      side: "player",
+      allies: playerActive,
+      enemies: enemyActive
+    })
+  );
 
-  enemyAttacks.forEach(a => all.push({
-    ...a,
-    side: "enemy",
-    allies: enemyActive,
-    enemies: playerActive
-  }));
+  enemyAttacks.forEach(a =>
+    all.push({
+      ...a,
+      side: "enemy",
+      allies: enemyActive,
+      enemies: playerActive
+    })
+  );
 
   all.sort((a, b) => {
-    const pa = getPriority(a.attacker), pb = getPriority(b.attacker);
+    const pa = getPriority(a.attacker);
+    const pb = getPriority(b.attacker);
 
     if (pb !== pa) return pb - pa;
 
-    const va = effVel(a.attacker), vb = effVel(b.attacker);
+    const va = effVel(a.attacker);
+    const vb = effVel(b.attacker);
 
     if (vb !== va) return vb - va;
 
@@ -392,367 +752,95 @@ export function orderActions(playerActive, enemyActive, playerAttacks, enemyAtta
   return all;
 }
 
-export function processAction(act, lang = 'it') {
+export function processAction(
+  act,
+  lang = "it"
+) {
   const log = [];
   const events = [];
   const m = bm(lang);
 
-  if (!act || act.attacker.fainted || act.attacker.hp <= 0) {
-  return { log, events };
-}
-
-  if (!act.target || act.target.fainted) {
-    const newTarget = (act.enemies || []).find(e => e && !e.fainted);
-    if (!newTarget) return { log, events };
-    act = { ...act, target: newTarget };
+  if (
+    !act ||
+    act.attacker.fainted ||
+    act.attacker.hp <= 0
+  ) {
+    return {
+      log,
+      events
+    };
   }
 
-  if (act.attacker.blockFirstAttack) {
-    act.attacker.blockFirstAttack = false;
-    log.push(m.blocked(act.attacker.nome));
-    return { log, events };
-  }
-
-  if (act.target.protectedThisTurn) {
-    events.push({
-      targetId: act.target.id,
-      efficacy: "protected",
-      dmg: 0
-    });
-
-    log.push(
-      lang === "en"
-        ? `${act.attacker.nome} attacks ${act.target.nome}, but ${act.target.nome} is protected.`
-        : `${act.attacker.nome} attacca ${act.target.nome}, ma ${act.target.nome} si protegge.`
-    );
-
-    return { log, events };
-  }
-
-  const { dmg, bonus, immune, antislurpo, efficacy } = calcDamage(act.attacker, act.target);
-  let msg = m.attacks(act.attacker.nome, act.target.nome);
-
-  if (antislurpo) {
-    events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 });
-    log.push(m.antislurpo(msg));
-    return { log, events };
-  }
-
-  if (act.target.protectedThisTurn) {
-    events.push({
-      targetId: act.target.id,
-      efficacy: "protected",
-      dmg: 0
-    });
-
-    log.push(
-      lang === "en"
-        ? `${act.attacker.nome} attacks ${act.target.nome}, but ${act.target.nome} is protected.`
-        : `${act.attacker.nome} attacca ${act.target.nome}, ma ${act.target.nome} si protegge.`
-    );
-
-    return { log, events };
-  }
-
-  if (immune) {
-    events.push({ targetId: act.target.id, efficacy: "immune", dmg: 0 });
-    log.push(m.immune(msg));
-    return { log, events };
-  }
-
-  events.push({ targetId: act.target.id, efficacy, dmg });
-  act.target.hp = Math.max(0, act.target.hp - dmg);
-
-  if (bonus === 5) msg += m.superEffective;
-  else if (bonus === -3) msg += m.notEffective;
-
-  msg += m.damage(dmg);
-
-  const abil = act.attacker.abilityNullified ? null : act.attacker.abilKey;
-
-  switch (abil) {
-    case "scrocco_slow":
-      if (applyMod(act.target, "vel", -4, act.enemies)) {
-        msg += ` · ${m.slowDebuff(act.target.nome)}`;
-      }
-      break;
-
-    case "uesditti_debuff":
-      if (applyMod(act.target, "dif", -4, act.enemies)) {
-        msg += ` · ${m.defDebuff(act.target.nome)}`;
-      }
-      break;
-
-    case "lari_typechange":
-      act.target.typeOverride = "Nuvola";
-      msg += ` · ${m.typeChange(act.target.nome)}`;
-      break;
-
-    case "pirimar_lpool":
-      act.attacker.hp = Math.min(act.attacker.hpMax, act.attacker.hp + 6);
-      msg += m.lpool;
-      break;
-
-    case "nuvobetta_heal":
-      act.attacker.hp = Math.min(act.attacker.hpMax, act.attacker.hp + 1);
-
-      const na = act.allies.find(
-        a => a && !a.fainted && a.id !== act.attacker.id
+  if (
+    !act.target ||
+    act.target.fainted
+  ) {
+    const newTarget =
+      (act.enemies || []).find(
+        e => e && !e.fainted
       );
-
-      if (na) {
-        na.hp = Math.min(na.hpMax, na.hp + 2);
-        msg += m.heal;
-      }
-
-      break;
-
-    case "fourmori_buff":
-      act.allies.forEach(a => {
-        if (a && !a.fainted && a.id !== act.attacker.id) {
-          applyMod(a, "vel", 6, act.allies);
-        }
-      });
-
-      msg += m.velBuff;
-      break;
-
-    case "eroe_splash": {
-      const ea = act.enemies.find(
-        e => e && !e.fainted && e.id !== act.target.id
-      );
-
-      if (ea && !ea.protectedThisTurn) {
-        ea.hp = Math.max(0, ea.hp - 3);
-        msg += m.splash;
-if (ea.hp === 0) {
-  const eaAbil = ea.abilityNullified
-    ? null
-    : ea.abilKey;
-
- msg += ` · ${act.target.nome} esplode!`;
-  }
-
-  ea.fainted = true;
-  msg += m.splashKo(ea.nome);
-}
-      }
-
-          break;
-    }
-
-    case "taomarco_defeat_buff":
-      if (dmg > 0) {
-        applyMod(act.attacker, "dif", 1, act.allies);
-        msg += " · +1 DIF";
-      }
-      break;
-  }
-
-  if (act.target.hp === 0) {
-    const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
-if (tAbil === "cenere_scoppio") {
-  triggerCenereExplosion(
-    act.target,
-    act.enemies,
-    events
-  );
-
-  msg += ` · ${m.explode(act.target.nome)}`;
-  }
-} 
-
-log.push(msg);
-return { log, events };
-}
-
-export function applyEndOfTurn(allActive, lang = 'it') {
-  const log = [];
-  const m = bm(lang);
-
-  for (const s of allActive) {
-    if (!s || s.fainted) continue;
-
-    s.turnsInPlay = (s.turnsInPlay || 0) + 1;
-
-    const abil = s.abilityNullified ? null : s.abilKey;
-
-    if (abil === "nina_regen" && s.hp < s.hpMax) {
-      const heal = Math.min(2, s.hpMax - s.hp);
-      s.hp += heal;
-
-      if (heal > 0) log.push(m.regen(s.nome, heal));
-    }
-
-    s.cannotSwitch = false;
-    s.protectedLastTurn = s.protectedThisTurn;
-    s.protectedThisTurn = false;
-  }
-
-  return log;
-}
-
-export function onEntryDual(s, allies, enemies, mIt, mEn) {
-  const log_it = [], log_en = [];
-
-  if (!s || s.fainted) return { log_it, log_en };
-
-  const abil = s.abilityNullified ? null : s.abilKey;
-  s.blockFirstAttack = false;
-
-  switch (abil) {
-    case "sparkly_debuff":
-      enemies.forEach(e => {
-        if (e && !e.fainted && applyMod(e, "att", -3, enemies)) {
-          log_it.push(mIt.debuffAtt(e.nome));
-          log_en.push(mEn.debuffAtt(e.nome));
-        }
-      });
-      break;
-
-    case "deb_aura":
-      allies.forEach(a => {
-        if (a && !a.fainted && a.tipo === "Robot" && applyMod(a, "att", 2, allies)) {
-          log_it.push(mIt.auraBuff(a.nome));
-          log_en.push(mEn.auraBuff(a.nome));
-        }
-      });
-      break;
-
-    case "cillymbu_aura":
-      allies.forEach(a => {
-        if (a && !a.fainted && a.id !== s.id) {
-          applyMod(a, "att", 3, allies);
-        }
-      });
-
-      log_it.push(mIt.alliesBuff(s.nome));
-      log_en.push(mEn.alliesBuff(s.nome));
-      break;
-
-    case "pepe_memecoin": {
-      const ally = allies.find(a => a && !a.fainted && a.id !== s.id);
-
-      if (ally) {
-        const stats = { att: ally.att, dif: ally.dif, vel: ally.vel };
-        const lowest = Object.entries(stats).sort((a, b) => a[1] - b[1])[0][0];
-
-        applyMod(ally, lowest, 4, allies);
-
-        log_it.push(mIt.memecoin(ally.nome, lowest.toUpperCase()));
-        log_en.push(mEn.memecoin(ally.nome, lowest.toUpperCase()));
-      }
-
-      break;
-    }
-
-    case "riwupido_nullify":
-      enemies.forEach(e => {
-        if (e && !e.fainted && e.tipo === "Robot") {
-          e.abilityNullified = true;
-          log_it.push(mIt.nullified(e.nome));
-          log_en.push(mEn.nullified(e.nome));
-        }
-      });
-      break;
-
-    case "pequeno_block": {
-      const fastest = enemies
-        .filter(e => e && !e.fainted)
-        .sort((a, b) => effVel(b) - effVel(a))[0];
-
-      if (fastest) {
-        fastest.blockFirstAttack = true;
-        log_it.push(mIt.firstBlocked(fastest.nome));
-        log_en.push(mEn.firstBlocked(fastest.nome));
-      }
-
-      break;
-    }
-  }
-
-  return { log_it, log_en };
-}
-
-export function processActionDual(act, mIt, mEn) {
-  const log_it = [], log_en = [], events = [];
-
- if (!act || act.attacker.fainted || act.attacker.hp <= 0) {
-    return { log_it, log_en, events };
-  }
-
-  if (!act.target || act.target.fainted) {
-    const newTarget = (act.enemies || []).find(e => e && !e.fainted);
 
     if (!newTarget) {
-      return { log_it, log_en, events };
+      return {
+        log,
+        events
+      };
     }
 
-    act = { ...act, target: newTarget };
+    act = {
+      ...act,
+      target: newTarget
+    };
   }
 
   if (act.attacker.blockFirstAttack) {
     act.attacker.blockFirstAttack = false;
 
-    log_it.push(mIt.blocked(act.attacker.nome));
-    log_en.push(mEn.blocked(act.attacker.nome));
-
-    return { log_it, log_en, events };
-  }
-
-  // FIERO NONNO:
-// se un alleato protegge, Fiero scambia fisicamente
-// la propria posizione con quella dell'alleato
-// e diventa il bersaglio dell'attacco.
-if (act.target?.protectedThisTurn) {
-  const enemies = act.enemies || [];
-
-  const targetIndex = enemies.findIndex(
-    e => e && e.id === act.target.id
-  );
-
-  const fieroIndex = enemies.findIndex(
-    e =>
-      e &&
-      !e.fainted &&
-      !e.abilityNullified &&
-      e.abilKey === "fierononno_swap" &&
-      e.id !== act.target.id
-  );
-
-  if (targetIndex !== -1 && fieroIndex !== -1) {
-    const protectedTarget = enemies[targetIndex];
-    const fiero = enemies[fieroIndex];
-
-    // Scambio reale delle posizioni
-    enemies[targetIndex] = fiero;
-    enemies[fieroIndex] = protectedTarget;
-
-    // L'attacco ora colpisce Fiero
-    act.target = fiero;
-
-    log_it.push(
-      mIt.fieroSwap(protectedTarget.nome, fiero.nome)
+    log.push(
+      m.blocked(act.attacker.nome)
     );
 
-    log_en.push(
-      mEn.fieroSwap(protectedTarget.nome, fiero.nome)
-    );
+    return {
+      log,
+      events
+    };
   }
-}
 
-  const { dmg, bonus, immune, antislurpo, efficacy } =
-    calcDamage(act.attacker, act.target);
+  if (act.target.protectedThisTurn) {
+    events.push({
+      targetId: act.target.id,
+      efficacy: "protected",
+      dmg: 0
+    });
 
-  let msgIt = mIt.attacks(
-    act.attacker.nome,
-    act.target.nome
+    log.push(
+      lang === "en"
+        ? `${act.attacker.nome} attacks ${act.target.nome}, but ${act.target.nome} is protected.`
+        : `${act.attacker.nome} attacca ${act.target.nome}, ma ${act.target.nome} si protegge.`
+    );
+
+    return {
+      log,
+      events
+    };
+  }
+
+  const {
+    dmg,
+    bonus,
+    immune,
+    antislurpo,
+    efficacy
+  } = calcDamage(
+    act.attacker,
+    act.target
   );
 
-  let msgEn = mEn.attacks(
-    act.attacker.nome,
-    act.target.nome
-  );
+  let msg =
+    m.attacks(
+      act.attacker.nome,
+      act.target.nome
+    );
 
   if (antislurpo) {
     events.push({
@@ -761,17 +849,33 @@ if (act.target?.protectedThisTurn) {
       dmg: 0
     });
 
-    log_it.push(mIt.antislurpo(msgIt));
-    log_en.push(mEn.antislurpo(msgEn));
+    log.push(
+      m.antislurpo(msg)
+    );
 
-    return { log_it, log_en, events };
+    return {
+      log,
+      events
+    };
   }
 
   if (act.target.protectedThisTurn) {
-    log_it.push(mIt.protected(msgIt));
-    log_en.push(mEn.protected(msgEn));
+    events.push({
+      targetId: act.target.id,
+      efficacy: "protected",
+      dmg: 0
+    });
 
-    return { log_it, log_en, events };
+    log.push(
+      lang === "en"
+        ? `${act.attacker.nome} attacks ${act.target.nome}, but ${act.target.nome} is protected.`
+        : `${act.attacker.nome} attacca ${act.target.nome}, ma ${act.target.nome} si protegge.`
+    );
+
+    return {
+      log,
+      events
+    };
   }
 
   if (immune) {
@@ -781,110 +885,118 @@ if (act.target?.protectedThisTurn) {
       dmg: 0
     });
 
-    log_it.push(mIt.immune(msgIt));
-    log_en.push(mEn.immune(msgEn));
+    log.push(
+      m.immune(msg)
+    );
 
-    return { log_it, log_en, events };
+    return {
+      log,
+      events
+    };
   }
 
   events.push({
-  targetId: act.target.id,
-  efficacy,
-  dmg
-});
+    targetId: act.target.id,
+    efficacy,
+    dmg
+  });
 
-const previousHp = act.target.hp;
+  const previousHp =
+    act.target.hp;
 
-act.target.hp = Math.max(
-  0,
-  act.target.hp - dmg
-);
-
-if (
-  act.target.abilKey === "cenere_scoppio" &&
-  !act.target.abilityNullified
-) {
-  const triggered = triggerCenereAbility(
-    act.target,
-    act.enemies,
-    events,
-    previousHp
-  );
-
-  if (triggered) {
-    msgIt += ` · ${mIt.explode(act.target.nome)}`;
-    msgEn += ` · ${mEn.explode(act.target.nome)}`;
-  }
-}
-
+  act.target.hp =
+    Math.max(
+      0,
+      act.target.hp - dmg
+    );
 
   if (bonus === 5) {
-    msgIt += mIt.superEffective;
-    msgEn += mEn.superEffective;
+    msg += m.superEffective;
   } else if (bonus === -3) {
-    msgIt += mIt.notEffective;
-    msgEn += mEn.notEffective;
+    msg += m.notEffective;
   }
 
-  msgIt += mIt.damage(dmg);
-  msgEn += mEn.damage(dmg);
+  msg += m.damage(dmg);
 
-  const abil = act.attacker.abilityNullified
-    ? null
-    : act.attacker.abilKey;
+  const abil =
+    act.attacker.abilityNullified
+      ? null
+      : act.attacker.abilKey;
 
   switch (abil) {
     case "scrocco_slow":
-      if (applyMod(act.target, "vel", -4, act.enemies)) {
-        msgIt += ` · ${mIt.slowDebuff(act.target.nome)}`;
-        msgEn += ` · ${mEn.slowDebuff(act.target.nome)}`;
+      if (
+        applyMod(
+          act.target,
+          "vel",
+          -4,
+          act.enemies
+        )
+      ) {
+        msg +=
+          ` · ${m.slowDebuff(act.target.nome)}`;
       }
+
       break;
 
     case "uesditti_debuff":
-      if (applyMod(act.target, "dif", -4, act.enemies)) {
-        msgIt += ` · ${mIt.defDebuff(act.target.nome)}`;
-        msgEn += ` · ${mEn.defDebuff(act.target.nome)}`;
+      if (
+        applyMod(
+          act.target,
+          "dif",
+          -4,
+          act.enemies
+        )
+      ) {
+        msg +=
+          ` · ${m.defDebuff(act.target.nome)}`;
       }
+
       break;
 
     case "lari_typechange":
-      act.target.typeOverride = "Nuvola";
-      msgIt += ` · ${mIt.typeChange(act.target.nome)}`;
-      msgEn += ` · ${mEn.typeChange(act.target.nome)}`;
+      act.target.typeOverride =
+        "Nuvola";
+
+      msg +=
+        ` · ${m.typeChange(act.target.nome)}`;
+
       break;
 
     case "pirimar_lpool":
-      act.attacker.hp = Math.min(
-        act.attacker.hpMax,
-        act.attacker.hp + 6
-      );
+      act.attacker.hp =
+        Math.min(
+          act.attacker.hpMax,
+          act.attacker.hp + 6
+        );
 
-      msgIt += mIt.lpool;
-      msgEn += mEn.lpool;
+      msg += m.lpool;
+
       break;
 
     case "nuvobetta_heal":
-      act.attacker.hp = Math.min(
-        act.attacker.hpMax,
-        act.attacker.hp + 1
-      );
-
-      const na = act.allies.find(
-        a =>
-          a &&
-          !a.fainted &&
-          a.id !== act.attacker.id
-      );
-
-      if (na) {
-        na.hp = Math.min(
-          na.hpMax,
-          na.hp + 2
+      act.attacker.hp =
+        Math.min(
+          act.attacker.hpMax,
+          act.attacker.hp + 1
         );
 
-        msgIt += mIt.heal;
-        msgEn += mEn.heal;
+      const na =
+        act.allies.find(
+          a =>
+            a &&
+            !a.fainted &&
+            a.id !== act.attacker.id
+        );
+
+      if (na) {
+        na.hp =
+          Math.min(
+            na.hpMax,
+            na.hp + 2
+          );
+
+        msg += m.heal;
       }
 
       break;
@@ -905,41 +1017,58 @@ if (
         }
       });
 
-      msgIt += mIt.velBuff;
-      msgEn += mEn.velBuff;
+      msg += m.velBuff;
+
       break;
 
     case "eroe_splash": {
-      const ea = act.enemies.find(
-        e =>
-          e &&
-          !e.fainted &&
-          e.id !== act.target.id
-      );
-
-      if (ea && !ea.protectedThisTurn) {
-        ea.hp = Math.max(
-          0,
-          ea.hp - 3
+      const ea =
+        act.enemies.find(
+          e =>
+            e &&
+            !e.fainted &&
+            e.id !== act.target.id
         );
 
-        msgIt += mIt.splash;
-        msgEn += mEn.splash;
+      if (
+        ea &&
+        !ea.protectedThisTurn
+      ) {
+        const splashPreviousHp =
+          ea.hp;
 
-      if (ea.hp === 0) {
-  const eaAbil = ea.abilityNullified
-    ? null
-    : ea.abilKey;
+        ea.hp =
+          Math.max(
+            0,
+            ea.hp - 3
+          );
 
-    msgIt += ` · ${mIt.explode(ea.nome)}`;
-    msgEn += ` · ${mEn.explode(ea.nome)}`;
-  }
+        msg += m.splash;
 
-  ea.fainted = true;
+        if (
+          ea.abilKey === "cenere_scoppio" &&
+          !ea.abilityNullified
+        ) {
+          const triggered =
+            triggerCenereAbility(
+              ea,
+              act.enemies,
+              events,
+              splashPreviousHp
+            );
 
-  msgIt += mIt.splashKo(ea.nome);
-  msgEn += mEn.splashKo(ea.nome);
-}
+          if (triggered) {
+            msg +=
+              ` · ${ea.nome} attiva Cenere!`;
+          }
+        }
+
+        if (ea.hp === 0) {
+          ea.fainted = true;
+
+          msg +=
+            m.splashKo(ea.nome);
+        }
       }
 
       break;
@@ -954,32 +1083,804 @@ if (
           act.allies
         );
 
-        msgIt += " · +1 DIF";
-        msgEn += " · +1 DEF";
+        msg +=
+          " · +1 DIF";
       }
+
       break;
   }
 
-   if (act.target.hp === 0) {
-    const tAbil = act.target.abilityNullified
-      ? null
-      : act.target.abilKey;
-
-    if (tAbil === "cenere_scoppio") {
-      triggerCenereExplosion(
+  /*
+   * CENERE:
+   * si attiva quando passa da 5 PS o più
+   * a meno di 5 PS.
+   */
+  if (
+    act.target.abilKey === "cenere_scoppio" &&
+    !act.target.abilityNullified
+  ) {
+    const triggered =
+      triggerCenereAbility(
         act.target,
         act.enemies,
-        events
+        events,
+        previousHp
       );
 
-      msgIt += ` · ${mIt.explode(act.target.nome)}`;
-      msgEn += ` · ${mEn.explode(act.target.nome)}`;
+    if (triggered) {
+      msg +=
+        ` · ${m.explode(act.target.nome)}`;
     }
+  }
 
+  if (act.target.hp === 0) {
     act.target.fainted = true;
 
-    msgIt += mIt.ko(act.target.nome);
-    msgEn += mEn.ko(act.target.nome);
+    msg +=
+      m.ko(act.target.nome);
+  }
+
+  log.push(msg);
+
+  return {
+    log,
+    events
+  };
+}
+
+export function applyEndOfTurn(
+  allActive,
+  lang = "it"
+) {
+  const log = [];
+  const m = bm(lang);
+
+  for (const s of allActive) {
+    if (!s || s.fainted) continue;
+
+    s.turnsInPlay =
+      (s.turnsInPlay || 0) + 1;
+
+    const abil =
+      s.abilityNullified
+        ? null
+        : s.abilKey;
+
+    if (
+      abil === "nina_regen" &&
+      s.hp < s.hpMax
+    ) {
+      const heal =
+        Math.min(
+          2,
+          s.hpMax - s.hp
+        );
+
+      s.hp += heal;
+
+      if (heal > 0) {
+        log.push(
+          m.regen(
+            s.nome,
+            heal
+          )
+        );
+      }
+    }
+
+    s.cannotSwitch = false;
+
+    s.protectedLastTurn =
+      s.protectedThisTurn;
+
+    s.protectedThisTurn = false;
+  }
+
+  return log;
+}
+
+export function onEntryDual(
+  s,
+  allies,
+  enemies,
+  mIt,
+  mEn
+) {
+  const log_it = [];
+  const log_en = [];
+
+  if (!s || s.fainted) {
+    return {
+      log_it,
+      log_en
+    };
+  }
+
+  const abil =
+    s.abilityNullified
+      ? null
+      : s.abilKey;
+
+  s.blockFirstAttack = false;
+
+  switch (abil) {
+    case "sparkly_debuff":
+      enemies.forEach(e => {
+        if (
+          e &&
+          !e.fainted &&
+          applyMod(
+            e,
+            "att",
+            -3,
+            enemies
+          )
+        ) {
+          log_it.push(
+            mIt.debuffAtt(e.nome)
+          );
+
+          log_en.push(
+            mEn.debuffAtt(e.nome)
+          );
+        }
+      });
+
+      break;
+
+    case "deb_aura":
+      allies.forEach(a => {
+        if (
+          a &&
+          !a.fainted &&
+          a.tipo === "Robot" &&
+          applyMod(
+            a,
+            "att",
+            2,
+            allies
+          )
+        ) {
+          log_it.push(
+            mIt.auraBuff(a.nome)
+          );
+
+          log_en.push(
+            mEn.auraBuff(a.nome)
+          );
+        }
+      });
+
+      break;
+
+    case "cillymbu_aura":
+      allies.forEach(a => {
+        if (
+          a &&
+          !a.fainted &&
+          a.id !== s.id
+        ) {
+          applyMod(
+            a,
+            "att",
+            3,
+            allies
+          );
+        }
+      });
+
+      log_it.push(
+        mIt.alliesBuff(s.nome)
+      );
+
+      log_en.push(
+        mEn.alliesBuff(s.nome)
+      );
+
+      break;
+
+    case "pepe_memecoin": {
+      const ally =
+        allies.find(
+          a =>
+            a &&
+            !a.fainted &&
+            a.id !== s.id
+        );
+
+      if (ally) {
+        const stats = {
+          att: ally.att,
+          dif: ally.dif,
+          vel: ally.vel
+        };
+
+        const lowest =
+          Object.entries(stats)
+            .sort(
+              (a, b) =>
+                a[1] - b[1]
+            )[0][0];
+
+        applyMod(
+          ally,
+          lowest,
+          4,
+          allies
+        );
+
+        log_it.push(
+          mIt.memecoin(
+            ally.nome,
+            lowest.toUpperCase()
+          )
+        );
+
+        log_en.push(
+          mEn.memecoin(
+            ally.nome,
+            lowest.toUpperCase()
+          )
+        );
+      }
+
+      break;
+    }
+
+    case "riwupido_nullify":
+      enemies.forEach(e => {
+        if (
+          e &&
+          !e.fainted &&
+          e.tipo === "Robot"
+        ) {
+          e.abilityNullified = true;
+
+          log_it.push(
+            mIt.nullified(e.nome)
+          );
+
+          log_en.push(
+            mEn.nullified(e.nome)
+          );
+        }
+      });
+
+      break;
+
+    case "pequeno_block": {
+      const fastest =
+        enemies
+          .filter(
+            e => e && !e.fainted
+          )
+          .sort(
+            (a, b) =>
+              effVel(b) -
+              effVel(a)
+          )[0];
+
+      if (fastest) {
+        fastest.blockFirstAttack =
+          true;
+
+        log_it.push(
+          mIt.firstBlocked(
+            fastest.nome
+          )
+        );
+
+        log_en.push(
+          mEn.firstBlocked(
+            fastest.nome
+          )
+        );
+      }
+
+      break;
+    }
+  }
+
+  return {
+    log_it,
+    log_en
+  };
+}
+
+export function processActionDual(
+  act,
+  mIt,
+  mEn
+) {
+  const log_it = [];
+  const log_en = [];
+  const events = [];
+
+  if (
+    !act ||
+    act.attacker.fainted ||
+    act.attacker.hp <= 0
+  ) {
+    return {
+      log_it,
+      log_en,
+      events
+    };
+  }
+
+  if (
+    !act.target ||
+    act.target.fainted
+  ) {
+    const newTarget =
+      (act.enemies || []).find(
+        e => e && !e.fainted
+      );
+
+    if (!newTarget) {
+      return {
+        log_it,
+        log_en,
+        events
+      };
+    }
+
+    act = {
+      ...act,
+      target: newTarget
+    };
+  }
+
+  if (act.attacker.blockFirstAttack) {
+    act.attacker.blockFirstAttack = false;
+
+    log_it.push(
+      mIt.blocked(
+        act.attacker.nome
+      )
+    );
+
+    log_en.push(
+      mEn.blocked(
+        act.attacker.nome
+      )
+    );
+
+    return {
+      log_it,
+      log_en,
+      events
+    };
+  }
+
+  // FIERO NONNO
+  if (
+    act.target?.protectedThisTurn
+  ) {
+    const enemies =
+      act.enemies || [];
+
+    const targetIndex =
+      enemies.findIndex(
+        e =>
+          e &&
+          e.id === act.target.id
+      );
+
+    const fieroIndex =
+      enemies.findIndex(
+        e =>
+          e &&
+          !e.fainted &&
+          !e.abilityNullified &&
+          e.abilKey ===
+            "fierononno_swap" &&
+          e.id !== act.target.id
+      );
+
+    if (
+      targetIndex !== -1 &&
+      fieroIndex !== -1
+    ) {
+      const protectedTarget =
+        enemies[targetIndex];
+
+      const fiero =
+        enemies[fieroIndex];
+
+      enemies[targetIndex] =
+        fiero;
+
+      enemies[fieroIndex] =
+        protectedTarget;
+
+      act.target = fiero;
+
+      log_it.push(
+        mIt.fieroSwap(
+          protectedTarget.nome,
+          fiero.nome
+        )
+      );
+
+      log_en.push(
+        mEn.fieroSwap(
+          protectedTarget.nome,
+          fiero.nome
+        )
+      );
+    }
+  }
+
+  const {
+    dmg,
+    bonus,
+    immune,
+    antislurpo,
+    efficacy
+  } = calcDamage(
+    act.attacker,
+    act.target
+  );
+
+  let msgIt =
+    mIt.attacks(
+      act.attacker.nome,
+      act.target.nome
+    );
+
+  let msgEn =
+    mEn.attacks(
+      act.attacker.nome,
+      act.target.nome
+    );
+
+  if (antislurpo) {
+    events.push({
+      targetId: act.target.id,
+      efficacy: "immune",
+      dmg: 0
+    });
+
+    log_it.push(
+      mIt.antislurpo(msgIt)
+    );
+
+    log_en.push(
+      mEn.antislurpo(msgEn)
+    );
+
+    return {
+      log_it,
+      log_en,
+      events
+    };
+  }
+
+  if (
+    act.target.protectedThisTurn
+  ) {
+    log_it.push(
+      mIt.protected(msgIt)
+    );
+
+    log_en.push(
+      mEn.protected(msgEn)
+    );
+
+    return {
+      log_it,
+      log_en,
+      events
+    };
+  }
+
+  if (immune) {
+    events.push({
+      targetId: act.target.id,
+      efficacy: "immune",
+      dmg: 0
+    });
+
+    log_it.push(
+      mIt.immune(msgIt)
+    );
+
+    log_en.push(
+      mEn.immune(msgEn)
+    );
+
+    return {
+      log_it,
+      log_en,
+      events
+    };
+  }
+
+  events.push({
+    targetId: act.target.id,
+    efficacy,
+    dmg
+  });
+
+  const previousHp =
+    act.target.hp;
+
+  act.target.hp =
+    Math.max(
+      0,
+      act.target.hp - dmg
+    );
+
+  /*
+   * CENERE
+   */
+  if (
+    act.target.abilKey === "cenere_scoppio" &&
+    !act.target.abilityNullified
+  ) {
+    const triggered =
+      triggerCenereAbility(
+        act.target,
+        act.enemies,
+        events,
+        previousHp
+      );
+
+    if (triggered) {
+      msgIt +=
+        ` · ${mIt.explode(act.target.nome)}`;
+
+      msgEn +=
+        ` · ${mEn.explode(act.target.nome)}`;
+    }
+  }
+
+  if (bonus === 5) {
+    msgIt +=
+      mIt.superEffective;
+
+    msgEn +=
+      mEn.superEffective;
+  } else if (bonus === -3) {
+    msgIt +=
+      mIt.notEffective;
+
+    msgEn +=
+      mEn.notEffective;
+  }
+
+  msgIt +=
+    mIt.damage(dmg);
+
+  msgEn +=
+    mEn.damage(dmg);
+
+  const abil =
+    act.attacker.abilityNullified
+      ? null
+      : act.attacker.abilKey;
+
+  switch (abil) {
+    case "scrocco_slow":
+      if (
+        applyMod(
+          act.target,
+          "vel",
+          -4,
+          act.enemies
+        )
+      ) {
+        msgIt +=
+          ` · ${mIt.slowDebuff(act.target.nome)}`;
+
+        msgEn +=
+          ` · ${mEn.slowDebuff(act.target.nome)}`;
+      }
+
+      break;
+
+    case "uesditti_debuff":
+      if (
+        applyMod(
+          act.target,
+          "dif",
+          -4,
+          act.enemies
+        )
+      ) {
+        msgIt +=
+          ` · ${mIt.defDebuff(act.target.nome)}`;
+
+        msgEn +=
+          ` · ${mEn.defDebuff(act.target.nome)}`;
+      }
+
+      break;
+
+    case "lari_typechange":
+      act.target.typeOverride =
+        "Nuvola";
+
+      msgIt +=
+        ` · ${mIt.typeChange(act.target.nome)}`;
+
+      msgEn +=
+        ` · ${mEn.typeChange(act.target.nome)}`;
+
+      break;
+
+    case "pirimar_lpool":
+      act.attacker.hp =
+        Math.min(
+          act.attacker.hpMax,
+          act.attacker.hp + 6
+        );
+
+      msgIt +=
+        mIt.lpool;
+
+      msgEn +=
+        mEn.lpool;
+
+      break;
+
+    case "nuvobetta_heal":
+      act.attacker.hp =
+        Math.min(
+          act.attacker.hpMax,
+          act.attacker.hp + 1
+        );
+
+      const na =
+        act.allies.find(
+          a =>
+            a &&
+            !a.fainted &&
+            a.id !== act.attacker.id
+        );
+
+      if (na) {
+        na.hp =
+          Math.min(
+            na.hpMax,
+            na.hp + 2
+          );
+
+        msgIt +=
+          mIt.heal;
+
+        msgEn +=
+          mEn.heal;
+      }
+
+      break;
+
+    case "fourmori_buff":
+      act.allies.forEach(a => {
+        if (
+          a &&
+          !a.fainted &&
+          a.id !== act.attacker.id
+        ) {
+          applyMod(
+            a,
+            "vel",
+            6,
+            act.allies
+          );
+        }
+      });
+
+      msgIt +=
+        mIt.velBuff;
+
+      msgEn +=
+        mEn.velBuff;
+
+      break;
+
+    case "eroe_splash": {
+      const ea =
+        act.enemies.find(
+          e =>
+            e &&
+            !e.fainted &&
+            e.id !== act.target.id
+        );
+
+      if (
+        ea &&
+        !ea.protectedThisTurn
+      ) {
+        const splashPreviousHp =
+          ea.hp;
+
+        ea.hp =
+          Math.max(
+            0,
+            ea.hp - 3
+          );
+
+        msgIt +=
+          mIt.splash;
+
+        msgEn +=
+          mEn.splash;
+
+        if (
+          ea.abilKey === "cenere_scoppio" &&
+          !ea.abilityNullified
+        ) {
+          const triggered =
+            triggerCenereAbility(
+              ea,
+              act.enemies,
+              events,
+              splashPreviousHp
+            );
+
+          if (triggered) {
+            msgIt +=
+              ` · ${mIt.explode(ea.nome)}`;
+
+            msgEn +=
+              ` · ${mEn.explode(ea.nome)}`;
+          }
+        }
+
+        if (ea.hp === 0) {
+          ea.fainted = true;
+
+          msgIt +=
+            mIt.splashKo(
+              ea.nome
+            );
+
+          msgEn +=
+            mEn.splashKo(
+              ea.nome
+            );
+        }
+      }
+
+      break;
+    }
+
+    case "taomarco_defeat_buff":
+      if (dmg > 0) {
+        applyMod(
+          act.attacker,
+          "dif",
+          1,
+          act.allies
+        );
+
+        msgIt +=
+          " · +1 DIF";
+
+        msgEn +=
+          " · +1 DEF";
+      }
+
+      break;
+  }
+
+  /*
+   * KO DEL BERSAGLIO
+   */
+  if (act.target.hp === 0) {
+    act.target.fainted = true;
+
+    msgIt +=
+      mIt.ko(
+        act.target.nome
+      );
+
+    msgEn +=
+      mEn.ko(
+        act.target.nome
+      );
   }
 
   log_it.push(msgIt);
@@ -992,32 +1893,59 @@ if (
   };
 }
 
-export function applyEndOfTurnDual(allActive, mIt, mEn) {
-  const log_it = [], log_en = [];
+export function applyEndOfTurnDual(
+  allActive,
+  mIt,
+  mEn
+) {
+  const log_it = [];
+  const log_en = [];
 
   for (const s of allActive) {
     if (!s || s.fainted) continue;
 
-    s.turnsInPlay = (s.turnsInPlay || 0) + 1;
+    s.turnsInPlay =
+      (s.turnsInPlay || 0) + 1;
 
-    const abil = s.abilityNullified ? null : s.abilKey;
+    const abil =
+      s.abilityNullified
+        ? null
+        : s.abilKey;
 
-    if (abil === "nina_regen" && s.hp < s.hpMax) {
-      const heal = Math.min(
-        2,
-        s.hpMax - s.hp
-      );
+    if (
+      abil === "nina_regen" &&
+      s.hp < s.hpMax
+    ) {
+      const heal =
+        Math.min(
+          2,
+          s.hpMax - s.hp
+        );
 
       s.hp += heal;
 
       if (heal > 0) {
-        log_it.push(mIt.regen(s.nome, heal));
-        log_en.push(mEn.regen(s.nome, heal));
+        log_it.push(
+          mIt.regen(
+            s.nome,
+            heal
+          )
+        );
+
+        log_en.push(
+          mEn.regen(
+            s.nome,
+            heal
+          )
+        );
       }
     }
 
     s.cannotSwitch = false;
-    s.protectedLastTurn = s.protectedThisTurn;
+
+    s.protectedLastTurn =
+      s.protectedThisTurn;
+
     s.protectedThisTurn = false;
   }
 
@@ -1027,20 +1955,35 @@ export function applyEndOfTurnDual(allActive, mIt, mEn) {
   };
 }
 
-export function aiChooseActions(enemyActive, playerActive, enemyBench) {
+export function aiChooseActions(
+  enemyActive,
+  playerActive,
+  enemyBench
+) {
   return enemyActive.map(s => {
-    if (!s || s.fainted) return null;
+    if (!s || s.fainted) {
+      return null;
+    }
 
-    const benchAlive = enemyBench.filter(
-      b => b && !b.fainted
-    );
+    const benchAlive =
+      enemyBench.filter(
+        b =>
+          b &&
+          !b.fainted
+      );
 
-    if (s.hp <= 4 && benchAlive.length > 0) {
+    if (
+      s.hp <= 4 &&
+      benchAlive.length > 0
+    ) {
       return {
         type: "switch",
-        benchIdx: enemyBench.findIndex(
-          b => b && !b.fainted
-        )
+        benchIdx:
+          enemyBench.findIndex(
+            b =>
+              b &&
+              !b.fainted
+          )
       };
     }
 
@@ -1054,17 +1997,23 @@ export function aiChooseActions(enemyActive, playerActive, enemyBench) {
       };
     }
 
-    const targets = playerActive.filter(
-      t => t && !t.fainted
-    );
+    const targets =
+      playerActive.filter(
+        t =>
+          t &&
+          !t.fainted
+      );
 
-    if (targets.length === 0) return null;
+    if (targets.length === 0) {
+      return null;
+    }
 
     let best = targets[0];
     let bestDmg = -1;
 
     for (const t of targets) {
-      const { dmg } = calcDamage(s, t);
+      const { dmg } =
+        calcDamage(s, t);
 
       if (dmg > bestDmg) {
         bestDmg = dmg;
