@@ -543,7 +543,7 @@ useEffect(() => {
       lastTurnLog_it: logsIt,
       lastTurnLog_en: logsEn,
 
-      turn: 0,
+      turn: 1,
       battleStartTime: Date.now(),
     };
 
@@ -803,7 +803,7 @@ useEffect(() => {
       lastTurnLog_it: logsIt,
       lastTurnLog_en: logsEn,
 
-      turn: 0,
+      turn: 1,
       battleStartTime: Date.now(),
     };
 
