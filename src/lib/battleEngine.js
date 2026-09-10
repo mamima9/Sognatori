@@ -513,7 +513,7 @@ if (ea.hp === 0) {
       events
     );
 
-    msg += ` · ${m.explode(ea.nome)}`;
+ msg += ` · ${act.target.nome} esplode!`;
   }
 
   ea.fainted = true;
