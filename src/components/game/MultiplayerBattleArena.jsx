@@ -2423,24 +2423,24 @@ const oppSubmitted =
    */
 
   const myActive =
-  animFrame
-    ? animFrame[`${mySide}_active`]
-    : gs[`${mySide}_active`];
+  animFrame?.[`${mySide}_active`] ||
+  gs[`${mySide}_active`] ||
+  [];
 
 const myBench =
-  animFrame
-    ? animFrame[`${mySide}_bench`]
-    : gs[`${mySide}_bench`];
+  animFrame?.[`${mySide}_bench`] ||
+  gs[`${mySide}_bench`] ||
+  [];
 
 const oppActive =
-  animFrame
-    ? animFrame[`${oppSide}_active`]
-    : gs[`${oppSide}_active`];
+  animFrame?.[`${oppSide}_active`] ||
+  gs[`${oppSide}_active`] ||
+  [];
 
 const oppBench =
-  animFrame
-    ? animFrame[`${oppSide}_bench`]
-    : gs[`${oppSide}_bench`];
+  animFrame?.[`${oppSide}_bench`] ||
+  gs[`${oppSide}_bench`] ||
+  [];
 
   const popupFor = (s) =>
   animFrame?.events?.find(
