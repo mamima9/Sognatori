@@ -83,6 +83,30 @@ function applyMod(target, stat, amount, allies) {
   return true;
 }
 
+function triggerCenereExplosion(cenere, enemies, events) {
+  if (!cenere || cenere.abilKey !== "cenere_scoppio") {
+    return false;
+  }
+
+  enemies.forEach(e => {
+    if (e && !e.fainted) {
+      e.hp = Math.max(0, e.hp - 3);
+
+      events.push({
+        targetId: e.id,
+        efficacy: "neutral",
+        dmg: 3
+      });
+
+      if (e.hp === 0) {
+        e.fainted = true;
+      }
+    }
+  });
+
+  return true;
+}
+
 export function calcDamage(attacker, defender) {
   const atkType = getType(attacker);
   const defType = getType(defender);
@@ -266,10 +290,24 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
           ea.hp = Math.max(0, ea.hp - 3);
           msg += " · 3 danni all'alleato avversario";
 
-          if (ea.hp === 0) {
-            ea.fainted = true;
-            msg += ` (${ea.nome} RIBALTATO!)`;
-          }
+         if (ea.hp === 0) {
+  const eaAbil = ea.abilityNullified
+    ? null
+    : ea.abilKey;
+
+  if (eaAbil === "cenere_scoppio") {
+    triggerCenereExplosion(
+      ea,
+      act.enemies,
+      events
+    );
+
+    msg += ` · ${ea.nome} esplode!`;
+  }
+
+  ea.fainted = true;
+  msg += ` (${ea.nome} RIBALTATO!)`;
+}
         }
 
         break;
@@ -280,17 +318,15 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
     if (act.target.hp === 0) {
       const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
 
-      if (tAbil === "cenere_scoppio") {
-        act.enemies.forEach(e => {
-          if (e && !e.fainted) {
-            e.hp = Math.max(0, e.hp - 3);
+   if (tAbil === "cenere_scoppio") {
+  triggerCenereExplosion(
+    act.target,
+    act.enemies,
+    events
+  );
 
-            if (e.hp === 0) e.fainted = true;
-          }
-        });
-
-        msg += ` · ${m.explode(act.target.nome)}`;
-      }
+  msg += ` · ${act.target.nome} esplode!`;
+}
 
       act.target.fainted = true;
       msg += ` ${act.target.nome} è RIBALTATO!`;
@@ -465,11 +501,24 @@ export function processAction(act, lang = 'it') {
       if (ea && !ea.protectedThisTurn) {
         ea.hp = Math.max(0, ea.hp - 3);
         msg += m.splash;
+if (ea.hp === 0) {
+  const eaAbil = ea.abilityNullified
+    ? null
+    : ea.abilKey;
 
-        if (ea.hp === 0) {
-          ea.fainted = true;
-          msg += m.splashKo(ea.nome);
-        }
+  if (eaAbil === "cenere_scoppio") {
+    triggerCenereExplosion(
+      ea,
+      act.enemies,
+      events
+    );
+
+    msg += ` · ${m.explode(ea.nome)}`;
+  }
+
+  ea.fainted = true;
+  msg += m.splashKo(ea.nome);
+}
       }
 
       break;
@@ -842,16 +891,32 @@ export function processActionDual(act, mIt, mEn) {
         msgIt += mIt.splash;
         msgEn += mEn.splash;
 
-        if (ea.hp === 0) {
-          ea.fainted = true;
+      if (ea.hp === 0) {
+  const eaAbil = ea.abilityNullified
+    ? null
+    : ea.abilKey;
 
-          msgIt += mIt.splashKo(ea.nome);
-          msgEn += mEn.splashKo(ea.nome);
-        }
+  if (eaAbil === "cenere_scoppio") {
+    triggerCenereExplosion(
+      ea,
+      act.enemies,
+      events
+    );
+
+    msgIt += ` · ${mIt.explode(ea.nome)}`;
+    msgEn += ` · ${mEn.explode(ea.nome)}`;
+  }
+
+  ea.fainted = true;
+
+  msgIt += mIt.splashKo(ea.nome);
+  msgEn += mEn.splashKo(ea.nome);
+}
       }
 
       break;
     }
+      }
 
     case "taomarco_def_buff":
       if (dmg > 0) {
@@ -874,34 +939,15 @@ export function processActionDual(act, mIt, mEn) {
       : act.target.abilKey;
 
     if (tAbil === "cenere_scoppio") {
-      act.enemies.forEach(e => {
-        if (e && !e.fainted) {
-          e.hp = Math.max(
-            0,
-            e.hp - 3
-          );
+  triggerCenereExplosion(
+    act.target,
+    act.enemies,
+    events
+  );
 
-          events.push({
-            targetId: e.id,
-            efficacy: "neutral",
-            dmg: 3
-          });
-
-          if (e.hp === 0) {
-            e.fainted = true;
-          }
-        }
-      });
-
-      msgIt += ` · ${mIt.explode(act.target.nome)}`;
-      msgEn += ` · ${mEn.explode(act.target.nome)}`;
-    }
-
-    act.target.fainted = true;
-
-    msgIt += mIt.ko(act.target.nome);
-    msgEn += mEn.ko(act.target.nome);
-  }
+  msgIt += ` · ${mIt.explode(act.target.nome)}`;
+  msgEn += ` · ${mEn.explode(act.target.nome)}`;
+}
 
   log_it.push(msgIt);
   log_en.push(msgEn);
