@@ -682,6 +682,47 @@ export function processActionDual(act, mIt, mEn) {
     }
   }
 
+  // FIERO NONNO:
+  // se l'attacco colpisce un alleato protetto,
+  // Fiero scambia fisicamente posizione con lui
+  // e diventa il bersaglio dell'attacco.
+  if (act.target.protectedThisTurn) {
+    const targetIndex = (act.enemies || []).findIndex(
+      e => e && e.id === act.target.id
+    );
+
+    const fieroIndex = (act.enemies || []).findIndex(
+      e =>
+        e &&
+        !e.fainted &&
+        !e.abilityNullified &&
+        e.abilKey === "fierononno_swap" &&
+        e.id !== act.target.id
+    );
+
+    if (fieroIndex !== -1 && targetIndex !== -1) {
+      const protectedTarget = act.enemies[targetIndex];
+      const fiero = act.enemies[fieroIndex];
+
+      act.enemies[targetIndex] = fiero;
+      act.enemies[fieroIndex] = protectedTarget;
+
+      log_it.push(
+        mIt.fieroSwap(protectedTarget.nome, fiero.nome)
+      );
+
+      log_en.push(
+        mEn.fieroSwap(protectedTarget.nome, fiero.nome)
+      );
+
+      act = {
+        ...act,
+        target: fiero
+      };
+    }
+  }
+
+
   const { dmg, bonus, immune, antislurpo, efficacy } =
     calcDamage(act.attacker, act.target);
 
