@@ -310,11 +310,10 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
 }
         }
 
-        break;
-      }
+              break;
       }
 
-     
+    }
 
     if (act.target.hp === 0) {
       const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
@@ -522,9 +521,8 @@ if (ea.hp === 0) {
 }
       }
 
-      break;
+          break;
     }
-}
 
     case "taomarco_def_buff":
       if (dmg > 0) {
@@ -536,22 +534,15 @@ if (ea.hp === 0) {
 
   if (act.target.hp === 0) {
     const tAbil = act.target.abilityNullified ? null : act.target.abilKey;
+if (tAbil === "cenere_scoppio") {
+  triggerCenereExplosion(
+    act.target,
+    act.enemies,
+    events
+  );
 
-    if (tAbil === "cenere_scoppio") {
-      act.enemies.forEach(e => {
-        if (e && !e.fainted) {
-          e.hp = Math.max(0, e.hp - 3);
-
-          if (e.hp === 0) e.fainted = true;
-        }
-      });
-
-      msg += ` · ${m.explode(act.target.nome)}`;
-    }
-
-    act.target.fainted = true;
-    msg += m.ko(act.target.nome);
-  }
+  msg += ` · ${m.explode(act.target.nome)}`;
+}
 
   log.push(msg);
   return { log, events };
