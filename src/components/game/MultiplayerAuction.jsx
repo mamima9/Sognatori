@@ -1593,7 +1593,18 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
               key={i}
               className="text-[11px] text-slate-300 bg-white/5 rounded-md px-2 py-1"
             >
-              {l}
+              {l.split("🪙").map((part, index) => (
+  <React.Fragment key={index}>
+    {index > 0 && (
+      <img
+        src="/images/moneta-sognatori.png"
+        alt=""
+        className="inline-block w-4 h-4 object-contain align-middle mx-0.5"
+      />
+    )}
+    {part}
+  </React.Fragment>
+))}
             </div>
           ))}
       </div>
