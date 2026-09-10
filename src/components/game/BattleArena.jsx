@@ -7,7 +7,7 @@ import {
   initBattleSognatore,
   calcDamage,
   orderActions,
-  processAction
+  processAction,
   resetStatsOnBench
 } from "@/lib/battleEngine";
 import BattlePokemon from "./BattlePokemon";
