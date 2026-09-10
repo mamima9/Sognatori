@@ -30,30 +30,28 @@ export default function Multiplayer() {
     if (!user) return;
 
     const cleanup = async () => {
-      try {
-        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-        const { data: waiting, error: fetchError } = await supabase
-          .from("matches")
-          .select("id, player1_id, created_at")
-          .eq("status", "waiting")
-          .eq("player1_id", user.id)
-          .lt("created_at", fiveMinAgo);
+  try {
+    // Elimina tutti i match waiting vecchi di 5 minuti
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-        if (fetchError) return;
+    await supabase
+      .from("matches")
+      .delete()
+      .eq("status", "waiting")
+      .lt("created_at", fiveMinAgo);
 
-        for (const m of waiting || []) {
-          await supabase
-            .from("matches")
-            .delete()
-            .eq("id", m.id)
-            .eq("player1_id", user.id)
-            .eq("status", "waiting");
-        }
-      } catch (e) {
-        console.error("Match cleanup failed:", e);
-      }
-    };
-
+    // Elimina eventuali match waiting ancora aperti
+    // creati dallo stesso utente
+    await supabase
+      .from("matches")
+      .delete()
+      .eq("status", "waiting")
+      .eq("player1_id", user.id)
+      .is("player2_id", null);
+  } catch (e) {
+    console.error("Match cleanup failed:", e);
+  }
+};
     cleanup();
   }, [user]);
 
@@ -72,6 +70,22 @@ export default function Multiplayer() {
     }
 
     try {
+      // Pulizia preventiva dei waiting rimasti aperti
+const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+await supabase
+  .from("matches")
+  .delete()
+  .eq("status", "waiting")
+  .lt("created_at", fiveMinAgo);
+
+// Questo utente non deve avere più di un waiting aperto
+await supabase
+  .from("matches")
+  .delete()
+  .eq("status", "waiting")
+  .eq("player1_id", user.id)
+  .is("player2_id", null);
       let query = supabase
         .from("matches")
         .select("*")
