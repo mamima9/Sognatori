@@ -602,7 +602,7 @@ updateMatch(match.id, {
 }).catch((error) => {
   console.error("Errore inizializzazione partita:", error);
 });
-}, [
+} [
   match,
   player1Team,
   player2Team,
