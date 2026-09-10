@@ -201,7 +201,7 @@ export function resolveAttacks(playerActive, enemyActive, playerAttacks, enemyAt
   });
 
   for (let act of all) {
-    if (act.attacker.fainted) continue;
+    if (act.attacker.fainted || act.attacker.hp <= 0) continue;
 
     if (!act.target || act.target.fainted) {
       const newTarget = (act.enemies || []).find(e => e && !e.fainted);
