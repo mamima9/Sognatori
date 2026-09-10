@@ -662,7 +662,12 @@ resetStatsOnBench(out);
 
   const animLogs =
     log.slice(animLogStart);
-
+const visibleLogs =
+  phase === "animating"
+    ? animLogs
+    : currentTurn === 0
+      ? log.slice(1)
+      : [];
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col">
 
@@ -692,8 +697,7 @@ resetStatsOnBench(out);
   />
 </div>
 
-        {phase === "animating" &&
-          animLogs.length > 0 && (
+        {visibleLogs.length > 0 && (
             <div className="flex justify-center mb-2">
               <motion.div
                 key={animLogs.length}
@@ -716,7 +720,7 @@ resetStatsOnBench(out);
                 </div>
 
              <div className="space-y-1">
-  {animLogs
+  {visibleLogs
     .filter(l => !l.startsWith("__TURN_"))
     .slice(-8)
 .map((l, i, arr) => (
