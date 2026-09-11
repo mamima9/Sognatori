@@ -2579,7 +2579,10 @@ const oppBench =
       key={`${gs.turn}-${animStep}`}
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      transition={{
+  duration: 0.3,
+  delay: animFrame.section === "start" ? 1 : 0
+}}
       className="bg-slate-900/90 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 max-w-[90%] text-center shadow-2xl"
     >
       <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-2">
