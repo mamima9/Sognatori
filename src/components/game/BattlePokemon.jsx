@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import HealthBar, { FactionBadge, SognatoreImage } from "./HealthBar";
-import { getType } from "@/lib/battleEngine";
+import { getType, effAtt } from "@/lib/battleEngine";
 import { useLanguage } from "@/lib/i18n";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 
@@ -124,7 +124,7 @@ export default function BattlePokemon({ s, side, popup }) {
 
         <div className="flex justify-center gap-0.5 mt-1 text-[8px]">
           <span className="bg-red-500/20 rounded px-1">
-            A{s.att + (s.statMods?.att || 0)}
+          A{effAtt(s)}
           </span>
 
           <span className="bg-blue-500/20 rounded px-1">

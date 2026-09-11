@@ -495,7 +495,13 @@ export function resolveAttacks(
     }
 
     msg += ` (${dmg} danni)`;
-
+if (
+  act.attacker.abilKey === "aragostino_fullhp" &&
+  !act.attacker.abilityNullified &&
+  act.attacker.hp >= act.attacker.hpMax
+) {
+  msg += " · +3 ATT (Piena vita)";
+}
     const abil =
       act.attacker.abilityNullified
         ? null
