@@ -110,9 +110,12 @@ export default function BattlePokemon({ s, side, popup }) {
       </motion.div>
 
       <div className="mt-1 w-full max-w-[170px] text-center">
-        <div className="text-xs font-semibold text-white truncate">
-          {s.nome}
-        </div>
+       <div
+  translate="no"
+  className="text-xs font-semibold text-white truncate"
+>
+  {s.nome}
+</div>
 
         <div className="text-[9px] text-amber-400/80 font-semibold">
           {getAbilityName(s, lang)}
