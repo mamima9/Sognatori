@@ -553,26 +553,28 @@ export function resolveAttacks(
 
         break;
 
-      case "nuvobetta_heal":
-        act.attacker.hp = Math.min(
-  act.attacker.hpMax,
-  act.attacker.hp + 1
-);
-
-const na = act.allies.find(
-  a => a && !a.fainted && a.id !== act.attacker.id
-);
-
-if (na) {
-  na.hp = Math.min(
-    na.hpMax,
-    na.hp + 2
+    case "nuvobetta_heal":
+  act.attacker.hp = Math.min(
+    act.attacker.hpMax,
+    act.attacker.hp + 1
   );
 
-  msg +=
-    ` · ${act.attacker.nome} +1 PS · ${na.nome} +2 PS (Majorette)`;
-}
-        break;
+  msg += ` · ${act.attacker.nome} +1 PS`;
+
+  const na = act.allies.find(
+    a => a && !a.fainted && a.id !== act.attacker.id
+  );
+
+  if (na) {
+    na.hp = Math.min(
+      na.hpMax,
+      na.hp + 2
+    );
+
+    msg += ` · ${na.nome} +2 PS (Majorette)`;
+  }
+
+  break;
 
       case "fourmori_buff":
         act.allies.forEach(a => {
@@ -1551,22 +1553,28 @@ export function processActionDual(
   }
 
   if (
-    act.target.protectedThisTurn
-  ) {
-    log_it.push(
-      mIt.protected(msgIt)
-    );
+  act.target.protectedThisTurn
+) {
+  events.push({
+    targetId: act.target.id,
+    efficacy: "protected",
+    dmg: 0
+  });
 
-    log_en.push(
-      mEn.protected(msgEn)
-    );
+  log_it.push(
+    mIt.protected(msgIt)
+  );
 
-    return {
-      log_it,
-      log_en,
-      events
-    };
-  }
+  log_en.push(
+    mEn.protected(msgEn)
+  );
+
+  return {
+    log_it,
+    log_en,
+    events
+  };
+}
 
   if (immune) {
     events.push({
