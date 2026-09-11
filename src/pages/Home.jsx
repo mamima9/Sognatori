@@ -210,7 +210,7 @@ export default function Home() {
                 <>
                   <span className="text-xs text-slate-400">
                     {t("home.welcome")},{" "}
-                    {user?.full_name || user?.email}
+                    {user?.user_metadata?.username || user?.email}
                   </span>
 
                   <button
