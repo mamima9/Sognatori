@@ -23,6 +23,7 @@ import { LanguageProvider } from '@/lib/i18n';
 import { useLanguage } from '@/lib/i18n';
 import SognatoriStats from '@/pages/SognatoriStats';
 import TestRandom from '@/pages/TestRandom';
+import Profile from '@/pages/Profile';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
           <Route path="/multiplayer" element={<Multiplayer />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/test-random" element={<TestRandom />} />
+           <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
