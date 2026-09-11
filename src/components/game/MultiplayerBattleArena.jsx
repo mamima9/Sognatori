@@ -796,10 +796,43 @@ p2Active.forEach(s => {
 const initialTurnFrames =
   entryLogsIt.length > 0 || entryLogsEn.length > 0
     ? [
+        // FRAME 1 — discesa in campo
+        {
+          section: "start",
+          log_it: [],
+          log_en: [],
+          player1_active: JSON.parse(
+            JSON.stringify(p1Active)
+          ),
+          player2_active: JSON.parse(
+            JSON.stringify(p2Active)
+          ),
+          player1_bench: JSON.parse(
+            JSON.stringify(p1Bench)
+          ),
+          player2_bench: JSON.parse(
+            JSON.stringify(p2Bench)
+          ),
+          events: []
+        },
+
+        // FRAME 2 — abilità all'ingresso
         {
           section: "start",
           log_it: entryLogsIt,
           log_en: entryLogsEn,
+          player1_active: JSON.parse(
+            JSON.stringify(p1Active)
+          ),
+          player2_active: JSON.parse(
+            JSON.stringify(p2Active)
+          ),
+          player1_bench: JSON.parse(
+            JSON.stringify(p1Bench)
+          ),
+          player2_bench: JSON.parse(
+            JSON.stringify(p2Bench)
+          ),
           events: []
         }
       ]
