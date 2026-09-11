@@ -2502,25 +2502,28 @@ const oppSubmitted =
    * ============================================================
    */
 
-  const myActive =
-  animFrame?.[`${mySide}_active`] ||
-  gs[`${mySide}_active`] ||
-  [];
+  const isAnimating =
+  gs.phase === "animating";
+
+const myActive =
+  isAnimating
+    ? (animFrame?.[`${mySide}_active`] || [])
+    : (gs[`${mySide}_active`] || []);
 
 const myBench =
-  animFrame?.[`${mySide}_bench`] ||
-  gs[`${mySide}_bench`] ||
-  [];
+  isAnimating
+    ? (animFrame?.[`${mySide}_bench`] || [])
+    : (gs[`${mySide}_bench`] || []);
 
 const oppActive =
-  animFrame?.[`${oppSide}_active`] ||
-  gs[`${oppSide}_active`] ||
-  [];
+  isAnimating
+    ? (animFrame?.[`${oppSide}_active`] || [])
+    : (gs[`${oppSide}_active`] || []);
 
 const oppBench =
-  animFrame?.[`${oppSide}_bench`] ||
-  gs[`${oppSide}_bench`] ||
-  [];
+  isAnimating
+    ? (animFrame?.[`${oppSide}_bench`] || [])
+    : (gs[`${oppSide}_bench`] || []);
 
   const popupFor = (s) =>
   animFrame?.events?.find(
