@@ -214,6 +214,16 @@ if (frame) {
   })
   .filter(Boolean);
    }; 
+const player1Team = resolveTeam(
+  match?.player1_team_ids,
+  match?.player1_team
+);
+
+const player2Team = resolveTeam(
+  match?.player2_team_ids,
+  match?.player2_team
+);
+
   /*
    * ============================================================
    * CLOCK
