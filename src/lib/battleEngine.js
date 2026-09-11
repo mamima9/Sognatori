@@ -554,30 +554,24 @@ export function resolveAttacks(
         break;
 
       case "nuvobetta_heal":
-        act.attacker.hp =
-          Math.min(
-            act.attacker.hpMax,
-            act.attacker.hp + 1
-          );
+        act.attacker.hp = Math.min(
+  act.attacker.hpMax,
+  act.attacker.hp + 1
+);
 
-        const na = act.allies.find(
-          a =>
-            a &&
-            !a.fainted &&
-            a.id !== act.attacker.id
-        );
+const na = act.allies.find(
+  a => a && !a.fainted && a.id !== act.attacker.id
+);
 
-        if (na) {
-          na.hp =
-            Math.min(
-              na.hpMax,
-              na.hp + 2
-            );
+if (na) {
+  na.hp = Math.min(
+    na.hpMax,
+    na.hp + 2
+  );
 
-          msg +=
-            " · +2 PS alleato";
-        }
-
+  msg +=
+    ` · ${act.attacker.nome} +1 PS · ${na.nome} +2 PS (Majorette)`;
+}
         break;
 
       case "fourmori_buff":
@@ -669,8 +663,7 @@ export function resolveAttacks(
 
         break;
     }
-
-    /*
+/*
      * CENERE:
      * se il danno principale porta Cenere
      * sotto i 5 PS, attiva l'abilità.
