@@ -144,8 +144,9 @@ export default function Multiplayer() {
           .update({
             player2_id: user.id,
             player2_name:
-              user.user_metadata?.full_name ||
-              user.email,
+  user.user_metadata?.username ||
+  user.user_metadata?.full_name ||
+  user.email,
           })
           .eq("id", m.id)
           .eq("status", "waiting")
@@ -173,8 +174,9 @@ export default function Multiplayer() {
           .insert({
             player1_id: user.id,
             player1_name:
-              user.user_metadata?.full_name ||
-              user.email,
+  user.user_metadata?.username ||
+  user.user_metadata?.full_name ||
+  user.email,
             status: "waiting",
             mode: selectedMode,
             room_code: rc,
