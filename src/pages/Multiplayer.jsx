@@ -362,11 +362,11 @@ await supabase
             <div className="text-slate-400 text-sm mb-6">
               {match?.player2_id ? "✓ " + (match.player2_name || "Player 2") : "In attesa del secondo giocatore..."}
             </div>
-           <button
+         <button
   onClick={cancelMatch}
   className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm transition"
 >
-  Annulla
+  🏠 Torna alla Home
 </button>
           </motion.div>
         )}
