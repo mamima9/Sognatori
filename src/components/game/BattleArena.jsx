@@ -77,14 +77,33 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
   const logEnd = useRef(null);
 
   useEffect(() => {
+  const timer = setTimeout(() => {
     const logs = [];
 
     playerActive.forEach(s => {
-      if (s) logs.push(...onEntry(s, playerActive, enemyActive, lang));
+      if (s) {
+        logs.push(
+          ...onEntry(
+            s,
+            playerActive,
+            enemyActive,
+            lang
+          )
+        );
+      }
     });
 
     enemyActive.forEach(s => {
-      if (s) logs.push(...onEntry(s, enemyActive, playerActive, lang));
+      if (s) {
+        logs.push(
+          ...onEntry(
+            s,
+            enemyActive,
+            playerActive,
+            lang
+          )
+        );
+      }
     });
 
     if (logs.length) {
@@ -92,9 +111,12 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
       setPlayerActive(prev => [...prev]);
       setEnemyActive(prev => [...prev]);
     }
+  }, 1200);
 
-    // eslint-disable-next-line
-  }, []);
+  return () => clearTimeout(timer);
+
+  // eslint-disable-next-line
+}, []);
 
   const setAction = (slot, action) =>
     setActions((a) => ({ ...a, [slot]: action }));
