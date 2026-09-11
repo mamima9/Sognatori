@@ -174,18 +174,25 @@ if (frame) {
         if (!s) return null;
         const roster = ROSTER.find((r) => String(r.id) === String(s.id));
         if (!roster) return s;
-        return {
-          ...roster,
-          ...s,
-          nome: s.nome ?? roster.nome,
-          tipo: s.tipo ?? roster.tipo,
-          att: Number.isFinite(Number(s.att)) ? Number(s.att) : roster.att,
-          dif: Number.isFinite(Number(s.dif)) ? Number(s.dif) : roster.dif,
-          vel: Number.isFinite(Number(s.vel)) ? Number(s.vel) : roster.vel,
-          abilKey: s.abilKey ?? roster.abilKey,
-          img: s.img ?? roster.img,
-        };
-      })
+        
+return {
+  ...roster,
+  ...s,
+  nome: s.nome ?? roster.nome,
+  tipo: s.tipo ?? roster.tipo,
+  att: Number.isFinite(Number(s.att)) ? Number(s.att) : roster.att,
+  dif: Number.isFinite(Number(s.dif)) ? Number(s.dif) : roster.dif,
+  vel: Number.isFinite(Number(s.vel)) ? Number(s.vel) : roster.vel,
+
+  // Ability metadata always comes from the current ROSTER
+  abilKey: roster.abilKey,
+  abil: roster.abil,
+  abilDesc: roster.abilDesc,
+
+  img: s.img ?? roster.img
+};
+
+
       .filter(Boolean);
   };
 
