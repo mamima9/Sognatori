@@ -948,13 +948,14 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
       ? match.player2_name
       : match.player1_name;
 
-  const myName =
-    isHost
-      ? match.player1_name
-      : (
-          currentUser.full_name ||
-          currentUser.email
-        );
+      const myName =
+  isHost
+    ? match.player1_name
+    : (
+        currentUser.user_metadata?.username ||
+        currentUser.user_metadata?.full_name ||
+        "Giocatore"
+      );
 
   const currentLot =
     gs.currentLot;
