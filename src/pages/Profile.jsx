@@ -1,4 +1,4 @@
-```jsx
+
 // @ts-nocheck
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -783,4 +783,3 @@ function StatCard({ label, value }) {
     </div>
   );
 }
-```
