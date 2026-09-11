@@ -161,44 +161,59 @@ if (frame) {
     const source = Array.isArray(ids) && ids.length ? ids : (Array.isArray(legacyTeam) ? legacyTeam : []);
 
     return source
-      .map((entry) => {
-        if (entry && typeof entry === "object") {
-          const id = entry.id ?? entry.sognatoreId ?? entry.sognatore_id;
-          const roster = id != null ? ROSTER.find((s) => String(s.id) === String(id)) : null;
-          return roster ? { ...roster, ...entry, nome: entry.nome ?? roster.nome, tipo: entry.tipo ?? roster.tipo, att: entry.att ?? roster.att, dif: entry.dif ?? roster.dif, vel: entry.vel ?? roster.vel, abilKey: entry.abilKey ?? roster.abilKey, img: entry.img ?? roster.img } : entry;
-        }
+  .map((entry) => {
+    if (entry && typeof entry === "object") {
+      const id = entry.id ?? entry.sognatoreId ?? entry.sognatore_id;
+      const roster =
+        id != null
+          ? ROSTER.find((s) => String(s.id) === String(id))
+          : null;
 
-        return ROSTER.find((s) => String(s.id) === String(entry));
-      })
-      .map((s) => {
-        if (!s) return null;
-        const roster = ROSTER.find((r) => String(r.id) === String(s.id));
-        if (!roster) return s;
-        
-return {
-  ...roster,
-  ...s,
-  nome: s.nome ?? roster.nome,
-  tipo: s.tipo ?? roster.tipo,
-  att: Number.isFinite(Number(s.att)) ? Number(s.att) : roster.att,
-  dif: Number.isFinite(Number(s.dif)) ? Number(s.dif) : roster.dif,
-  vel: Number.isFinite(Number(s.vel)) ? Number(s.vel) : roster.vel,
+      return roster
+        ? {
+            ...roster,
+            ...entry,
+            nome: entry.nome ?? roster.nome,
+            tipo: entry.tipo ?? roster.tipo,
+            att: entry.att ?? roster.att,
+            dif: entry.dif ?? roster.dif,
+            vel: entry.vel ?? roster.vel,
+            abilKey: entry.abilKey ?? roster.abilKey,
+            img: entry.img ?? roster.img
+          }
+        : entry;
+    }
 
-  // Ability metadata always comes from the current ROSTER
-  abilKey: roster.abilKey,
-  abil: roster.abil,
-  abilDesc: roster.abilDesc,
+    return ROSTER.find((s) => String(s.id) === String(entry));
+  })
+  .map((s) => {
+    if (!s) return null;
 
-  img: s.img ?? roster.img
-};
+    const roster = ROSTER.find(
+      (r) => String(r.id) === String(s.id)
+    );
 
+    if (!roster) return s;
 
-      .filter(Boolean);
-  };
+    return {
+      ...roster,
+      ...s,
+      nome: s.nome ?? roster.nome,
+      tipo: s.tipo ?? roster.tipo,
+      att: Number.isFinite(Number(s.att)) ? Number(s.att) : roster.att,
+      dif: Number.isFinite(Number(s.dif)) ? Number(s.dif) : roster.dif,
+      vel: Number.isFinite(Number(s.vel)) ? Number(s.vel) : roster.vel,
 
-  const player1Team = resolveTeam(match?.player1_team_ids, match?.player1_team);
-  const player2Team = resolveTeam(match?.player2_team_ids, match?.player2_team);
+      // Ability metadata always comes from the current ROSTER
+      abilKey: roster.abilKey,
+      abil: roster.abil,
+      abilDesc: roster.abilDesc,
 
+      img: s.img ?? roster.img
+    };
+  })
+  .filter(Boolean);
+    
   /*
    * ============================================================
    * CLOCK
