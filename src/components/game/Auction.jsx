@@ -46,8 +46,13 @@ export default function Auction({ onComplete, onBack }) {
 
   /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */
   const [pool, setPool] = useState(() =>
-    [...ROSTER].sort(() => Math.random() - 0.5)
-  );
+  ROSTER
+    .filter(
+      (sog) =>
+        !["fierononno", "pequeno", "cenere"].includes(sog.id)
+    )
+    .sort(() => Math.random() - 0.5)
+);
 
   const [playerCredits, setPlayerCredits] = useState(100);
   const [aiCredits, setAiCredits] = useState(100);
@@ -382,14 +387,21 @@ export default function Auction({ onComplete, onBack }) {
   };
 
   const playerBid = (amount) => {
-    const newBid = currentBid + amount;
+  const newBid = currentBid + amount;
 
-    if (newBid > playerCredits) return;
+  const remainingSlots = Math.max(
+    0,
+    4 - playerTeam.length - 1
+  );
 
-    setCurrentBid(newBid);
-    setCurrentBidder("player");
-    setTurn("ai");
-  };
+  const maxBid = playerCredits - remainingSlots;
+
+  if (newBid > maxBid) return;
+
+  setCurrentBid(newBid);
+  setCurrentBidder("player");
+  setTurn("ai");
+};
 
   const playerPass = () => {
     if (currentBidder === null) return;
@@ -420,24 +432,38 @@ export default function Auction({ onComplete, onBack }) {
       const value = aiValuation(currentSog);
 
       if (currentBidder === "player") {
-        if (
-          value > currentBid + 1 &&
-          aiCredits >= currentBid + 1
-        ) {
-          setCurrentBid(currentBid + 1);
-          setCurrentBidder("ai");
-          setTurn("player");
-        } else {
-          resolveWin("player");
-        }
+      const remainingSlots = Math.max(
+  0,
+  4 - aiTeam.length - 1
+);
+
+const maxBid = aiCredits - remainingSlots;
+
+if (
+  value > currentBid + 1 &&
+  currentBid + 1 <= maxBid
+) {
+  setCurrentBid(currentBid + 1);
+  setCurrentBidder("ai");
+  setTurn("player");
+} else {
+  resolveWin("player");
+}
       } else {
-        if (aiCredits >= 1) {
-          setCurrentBid(1);
-          setCurrentBidder("ai");
-          setTurn("player");
-        } else {
-          resolveUnsold();
-        }
+       const remainingSlots = Math.max(
+  0,
+  4 - aiTeam.length - 1
+);
+
+const maxBid = aiCredits - remainingSlots;
+
+if (maxBid >= 1) {
+  setCurrentBid(1);
+  setCurrentBidder("ai");
+  setTurn("player");
+} else {
+  resolveUnsold();
+}
       }
     }, 1000);
 
@@ -735,8 +761,10 @@ export default function Auction({ onComplete, onBack }) {
                     key={amount}
                     onClick={() => playerBid(amount)}
                     disabled={
-                      currentBid + amount > playerCredits
-                    }
+  currentBid + amount >
+  playerCredits -
+    Math.max(0, 4 - playerTeam.length - 1)
+}
                     className="py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-sm disabled:opacity-30"
                   >
                     +{amount}
