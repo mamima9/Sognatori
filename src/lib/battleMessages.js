@@ -1,3 +1,6 @@
+// @ts-nocheck
+
+
 export function bm(lang) {
   const en = lang === 'en';
   return {

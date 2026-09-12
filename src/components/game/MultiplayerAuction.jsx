@@ -432,13 +432,17 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
     if (action.type === "bid") {
       const newBid = gs.currentBid + action.amount;
 
-      if (
-        newBid >
-        gs[`${actor}_credits`]
-      ) {
-        resolvingRef.current = false;
-        return;
-      }
+   const remainingSlots =
+  4 - gs[`${actor}_team`].length - 1;
+
+const maxBid =
+  gs[`${actor}_credits`] -
+  Math.max(0, remainingSlots);
+
+if (newBid > maxBid) {
+  resolvingRef.current = false;
+  return;
+}
 
       newGs.currentBid = newBid;
       newGs.currentBidder = actor;
@@ -755,14 +759,18 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
     }
 
     const newBid =
-      gs.currentBid + amount;
+  gs.currentBid + amount;
 
-    if (
-      newBid >
-      gs[`${mySide}_credits`]
-    ) {
-      return;
-    }
+const remainingSlots =
+  4 - gs[`${mySide}_team`].length - 1;
+
+const maxBid =
+  gs[`${mySide}_credits`] -
+  Math.max(0, remainingSlots);
+
+if (newBid > maxBid) {
+  return;
+}
 
     await updateMatch(
       match.id,
@@ -1519,10 +1527,14 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
                           submitBid(amt)
                         }
                         disabled={
-                          gs.currentBid +
-                            amt >
-                          myCredits
-                        }
+  gs.currentBid +
+    amt >
+  myCredits -
+    Math.max(
+      0,
+      4 - myTeam.length - 1
+    )
+}
                         className="py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-sm disabled:opacity-30"
                       >
                         +{amt}
