@@ -953,6 +953,8 @@ const cloneBattleState = (list) =>
 resetStatsOnBench(out);
 p1Active[i] = inc;
 p1Bench[act.benchIdx] = out;
+inc.protectedLastTurn = false;
+inc.protectedThisTurn = false;
 
         newLogIt.push(
           m_it.switchLog(
@@ -1008,6 +1010,8 @@ p1Bench[act.benchIdx] = out;
 resetStatsOnBench(out);
 p2Active[i] = inc;
 p2Bench[act.benchIdx] = out;
+inc.protectedLastTurn = false;
+inc.protectedThisTurn = false;
 
         newLogIt.push(
           m_it.switchLog(
