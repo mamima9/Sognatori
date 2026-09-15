@@ -17,7 +17,6 @@ export default function Home() {
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
   const [result, setResult] = useState(null);
-  const [result, setResult] = useState(null);
 
 
   const RULES = [
