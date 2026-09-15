@@ -123,7 +123,18 @@ export default function Home() {
             {/* PULSANTI */}
             <div className="flex flex-wrap gap-3 justify-center">
 
-              {/* MULTIPLAYER */}
+          
+              {/* VS IA */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setScreen("auction")}
+                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
+              >
+                🤖 {t("home.arcade")}
+              </motion.button>
+
+  {/* MULTIPLAYER */}
               <Link to="/multiplayer">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -133,16 +144,6 @@ export default function Home() {
                   ⚔️ {t("home.multiplayer")}
                 </motion.button>
               </Link>
-
-              {/* VS IA */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setScreen("auction")}
-                className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
-              >
-                🤖 {t("home.vsAI")}
-              </motion.button>
 
               {/* LORE */}
               <Link to="/lore">
