@@ -17,10 +17,22 @@ export default function Rankings() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("players");
+  const [arcadeRanking, setArcadeRanking] = useState([]);
 
   useEffect(() => {
     const loadHistory = async () => {
       setLoading(true);
+const { data: arcadeData, error: arcadeError } = await supabase
+  .from("profiles")
+  .select("id, username, avatar, arcade_wins, arcade_current_streak, arcade_best_streak")
+  .order("arcade_best_streak", { ascending: false })
+  .order("arcade_wins", { ascending: false })
+  .limit(20);
+
+if (arcadeError) throw arcadeError;
+
+setArcadeRanking(arcadeData || []);
+
 
       try {
         const { data, error } = await supabase
@@ -223,6 +235,17 @@ export default function Rankings() {
             🎴 {t("rankings.sognatori")}
           </button>
         </div>
+
+<button
+  onClick={() => setTab("arcade")}
+  className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
+    tab === "arcade"
+      ? "bg-amber-500/30 text-amber-400 border border-amber-500/50"
+      : "bg-white/5 text-slate-400 border border-white/10"
+  }`}
+>
+  🤖 Arcade
+</button>
 
         {loading ? (
           <div className="flex justify-center py-20">
