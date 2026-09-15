@@ -667,7 +667,7 @@ resetStatsOnBench(out);
     }, 200);
   };
 
-  const handlePlayDown = () => {
+  const handlePlayDown = async () => {
     const slot =
       playerActive.findIndex(
         s => s && s.fainted
