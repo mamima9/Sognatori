@@ -468,7 +468,18 @@ if (available.length === 0) {
   return;
 }
 
-const ranked = [...available].sort(
+const preferred = profile.preferredType
+  ? available.filter(
+      (sog) => sog.tipo === profile.preferredType
+    )
+  : [];
+
+const candidates =
+  preferred.length > 0
+    ? preferred
+    : available;
+
+const ranked = [...candidates].sort(
   (a, b) => aiValuation(b) - aiValuation(a)
 );
 
