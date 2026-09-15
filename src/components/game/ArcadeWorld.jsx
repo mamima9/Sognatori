@@ -165,8 +165,6 @@ const MAPS = {
   ],
 };
 
-const MAP = MAPS[stage] || MAPS[1];
-
 const PLAYER_START = {
   x: 2,
   y: 2,
@@ -256,6 +254,8 @@ export default function ArcadeWorld({
   onStartAuction,
   onBack,
 }) {
+  const MAP = MAPS[stage] || MAPS[1];
+
   const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
 
   const [player, setPlayer] =
