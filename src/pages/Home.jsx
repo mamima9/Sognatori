@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import Auction from "@/components/game/Auction";
 import BattleArena from "@/components/game/BattleArena";
 import PreMatchSelect from "@/components/game/PreMatchSelect";
+import ArcadeWorld from "@/components/game/ArcadeWorld";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 
@@ -128,7 +129,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => setScreen("auction")}
+                onClick={() => setScreen("arcadeWorld")}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
               >
                 🤖 {t("Arcade")}
@@ -249,6 +250,22 @@ export default function Home() {
 
           </motion.div>
         )}
+
+{/* ARCADE WORLD */}
+{screen === "arcadeWorld" && (
+  <motion.div
+    key="arcadeWorld"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  >
+    <ArcadeWorld
+      onStartAuction={() => setScreen("auction")}
+      onBack={() => setScreen("menu")}
+    />
+  </motion.div>
+)}
+
 
         {/* AUCTION */}
         {screen === "auction" && (
