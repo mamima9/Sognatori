@@ -266,8 +266,58 @@ setArcadeRanking(arcadeData || []);
               {t("rankings.firstMatch")}
             </Link>
           </div>
-        ) : tab === "players" ? (
-          <div className="space-y-2">
+      ) : tab === "arcade" ? (
+  <div className="space-y-2">
+    {arcadeRanking.map((p, i) => (
+      <motion.div
+        key={p.id}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: i * 0.05 }}
+        className={`flex items-center gap-3 rounded-xl p-3 border ${
+          i < 3
+            ? "bg-amber-500/10 border-amber-500/30"
+            : "bg-white/5 border-white/10"
+        }`}
+      >
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+            i === 0
+              ? "bg-yellow-500 text-black"
+              : i === 1
+              ? "bg-gray-400 text-black"
+              : i === 2
+              ? "bg-orange-700 text-white"
+              : "bg-white/10 text-slate-400"
+          }`}
+        >
+          {i + 1}
+        </div>
+
+        <div className="flex-1">
+          <div className="font-bold text-sm">
+            {p.username}
+          </div>
+
+          <div className="text-[10px] text-slate-400">
+            {p.arcade_wins} vittorie Arcade
+          </div>
+        </div>
+
+        <div className="text-right">
+          <div className="text-lg font-bold text-amber-400">
+            🔥 {p.arcade_best_streak}
+          </div>
+
+          <div className="text-[10px] text-emerald-400">
+            streak migliore
+          </div>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+) : tab === "players" ? (
+  <div className="space-y-2">
             {rankings.map((p, i) => (
               <motion.div
                 key={p.id}
