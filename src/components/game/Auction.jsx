@@ -618,72 +618,67 @@ const pick =
   };
 
   useEffect(() => {
-    if (
-      turn !== "ai" ||
-      !currentSog ||
-      finished
-    ) {
+  if (turn !== "ai" || !currentSog || finished) return;
+
+  const timer = setTimeout(() => {
+    if (aiDone) {
+      if (currentBidder === "player") {
+        resolveWin("player");
+      } else {
+        resolveUnsold();
+      }
       return;
     }
 
-    const timer = setTimeout(() => {
-      if (aiDone) {
-        if (currentBidder === "player") {
-          resolveWin("player");
-        } else {
-          resolveUnsold();
-        }
-
-        return;
-      }
-
-
-      if (currentBidder === "player") {
+    if (currentBidder === "player") {
       const remainingSlots = Math.max(
-  0,
-  4 - aiTeam.length - 1
-);
+        0,
+        4 - aiTeam.length - 1
+      );
 
-const maxBid = aiCredits - remainingSlots;
+      const maxBid = aiCredits - remainingSlots;
 
-if (
-  shouldAiBid(currentSog, currentBid) &&
-  currentBid + 1 <= maxBid
-) {
-  setCurrentBid(currentBid + 1);
-  setCurrentBidder("ai");
-  setTurn("player");
-} else {
-  resolveWin("player");
-}
-         } else {
-        const remainingSlots = Math.max(0, 4 - aiTeam.length - 1);
-        const maxBid = aiCredits - remainingSlots;
+      if (
+        shouldAiBid(currentSog, currentBid) &&
+        currentBid + 1 <= maxBid
+      ) {
+        setCurrentBid(currentBid + 1);
+        setCurrentBidder("ai");
+        setTurn("player");
+      } else {
+        resolveWin("player");
+      }
+    } else {
+      const remainingSlots = Math.max(
+        0,
+        4 - aiTeam.length - 1
+      );
 
-        if (
-          maxBid >= 1 &&
-          shouldAiBid(currentSog, 0)
-        ) {
-          setCurrentBid(1);
-          setCurrentBidder("ai");
-          setTurn("player");
-        } else {
-          resolveUnsold();
-        }
+      const maxBid = aiCredits - remainingSlots;
+
+      if (
+        maxBid >= 1 &&
+        shouldAiBid(currentSog, 0)
+      ) {
+        setCurrentBid(1);
+        setCurrentBidder("ai");
+        setTurn("player");
+      } else {
+        resolveUnsold();
       }
     }
   }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [
-    turn,
-    currentSog,
-    currentBid,
-    currentBidder,
-    aiDone,
-    aiCredits,
-    finished,
-  ]);
+  return () => clearTimeout(timer);
+}, [
+  turn,
+  currentSog,
+  currentBid,
+  currentBidder,
+  aiDone,
+  aiCredits,
+  finished,
+]);
 
   useEffect(() => {
     if (
