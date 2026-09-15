@@ -270,6 +270,29 @@ export default function Auction({
   return Math.max(1, Math.round(value));
 };
 
+const getAiMaxBid = () => {
+  const remainingSlots = Math.max(
+    0,
+    4 - aiTeam.length - 1
+  );
+
+  return Math.max(
+    0,
+    aiCredits - remainingSlots
+  );
+};
+
+const shouldAiBid = (sog, bid) => {
+  const value = aiValuation(sog);
+  const maxBid = getAiMaxBid();
+
+  if (bid >= maxBid) {
+    return false;
+  }
+
+  return value > bid;
+};
+
   const finish = () => {
     if (finished) return;
 
@@ -573,7 +596,6 @@ export default function Auction({
         return;
       }
 
-      const value = aiValuation(currentSog);
 
       if (currentBidder === "player") {
       const remainingSlots = Math.max(
@@ -584,7 +606,7 @@ export default function Auction({
 const maxBid = aiCredits - remainingSlots;
 
 if (
-  value > currentBid + 1 &&
+  shouldAiBid(currentSog, currentBid) &&
   currentBid + 1 <= maxBid
 ) {
   setCurrentBid(currentBid + 1);
@@ -593,20 +615,20 @@ if (
 } else {
   resolveWin("player");
 }
-      } else {
-       const remainingSlots = Math.max(
-  0,
-  4 - aiTeam.length - 1
-);
+   } else {
+  const remainingSlots = Math.max(0, 4 - aiTeam.length - 1);
+  const maxBid = aiCredits - remainingSlots;
 
-const maxBid = aiCredits - remainingSlots;
-
-if (maxBid >= 1) {
-  setCurrentBid(1);
-  setCurrentBidder("ai");
-  setTurn("player");
-} else {
-  resolveUnsold();
+  if (
+    maxBid >= 1 &&
+    shouldAiBid(currentSog, 0)
+  ) {
+    setCurrentBid(1);
+    setCurrentBidder("ai");
+    setTurn("player");
+  } else {
+    resolveUnsold();
+  }
 }
       }
     }, 1000);
