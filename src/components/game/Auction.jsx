@@ -290,7 +290,44 @@ const shouldAiBid = (sog, bid) => {
     return false;
   }
 
-  return value > bid;
+  const profile = aiProfile;
+
+  // Quanto è importante questo Sognatore per questo profilo
+  const isPupil = profile.pupils.includes(sog.id);
+
+  // Profili specializzati: più aggressivi sul proprio tipo
+  if (
+    profile.preferredType &&
+    sog.tipo === profile.preferredType
+  ) {
+    if (bid < value) {
+      return true;
+    }
+  }
+
+  // Pupilli: li vuole fortemente
+  if (isPupil) {
+    return bid < value;
+  }
+
+  // Strategia ottimizzatrice
+  if (profile.optimalStrategy) {
+    const statScore =
+      sog.att +
+      sog.dif +
+      sog.vel;
+
+    // Sognatore molto forte
+    if (statScore >= 40) {
+      return bid < value;
+    }
+
+    // Sognatore mediocre: evita di pagare troppo
+    return bid + 2 < value;
+  }
+
+  // Comportamento normale
+  return bid < value;
 };
 
   const finish = () => {
@@ -422,19 +459,23 @@ const shouldAiBid = (sog, bid) => {
     }
 
     if (nextPicker === "ai" && !aiDone) {
-      const available = pool
-        .filter(
-          (sog) => !aiTeam.some((teamSog) => teamSog.id === sog.id)
-        )
-        .sort((a, b) => b.costo - a.costo);
+      const available = pool.filter(
+  (sog) => !aiTeam.some((teamSog) => teamSog.id === sog.id)
+);
 
-      if (available.length === 0) {
-        finish();
-        return;
-      }
+if (available.length === 0) {
+  finish();
+  return;
+}
 
-      const limit = Math.min(3, available.length);
-      const pick = available[Math.floor(Math.random() * limit)];
+const ranked = [...available].sort(
+  (a, b) => aiValuation(b) - aiValuation(a)
+);
+
+const limit = Math.min(3, ranked.length);
+
+const pick =
+  ranked[Math.floor(Math.random() * limit)];
 
       setPool((currentPool) =>
         currentPool.filter((sog) => sog.id !== pick.id)
