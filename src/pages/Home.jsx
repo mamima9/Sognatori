@@ -131,7 +131,7 @@ export default function Home() {
                 onClick={() => setScreen("auction")}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
               >
-                🤖 {t("home.arcade")}
+                🤖 {t("Arcade")}
               </motion.button>
 
   {/* MULTIPLAYER */}
