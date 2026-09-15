@@ -16,6 +16,8 @@ export default function Home() {
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
+  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null);
 
 
   const RULES = [
@@ -348,18 +350,28 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <BattleArena
-              playerTeam={teams.playerTeam}
-              enemyTeam={teams.enemyTeam}
-              onEnd={(r) => {
-                setResult(r);
+            
+<BattleArena
+  playerTeam={teams.playerTeam}
+  enemyTeam={teams.enemyTeam}
+  onEnd={(r) => {
+    setResult(r);
+    setTeams(null);
 
-                setTimeout(
-                  () => setScreen("result"),
-                  1000
-                );
-              }}
-            />
+    if (r === "win") {
+      if (arcadeStage < 9) {
+        setArcadeStage((prev) => prev + 1);
+        setScreen("arcadeWorld");
+      } else {
+        setScreen("result");
+      }
+    } else {
+      setScreen("result");
+    }
+  }}
+/>
+
+
           </motion.div>
         )}
 
@@ -389,17 +401,27 @@ export default function Home() {
               className="h-16 object-contain mb-3"
             />
 
-            <h2 className="text-4xl font-black mb-2">
-              {result === "win"
-                ? t("home.victory")
-                : t("home.defeat")}
-            </h2>
+           <h2 className="text-4xl font-black mb-2">
+  {result === "win" && arcadeStage === 9
+    ? "ARCADE COMPLETATO!"
+    : result === "win"
+      ? t("home.victory")
+      : t("home.defeat")}
+</h2>
 
-            <p className="text-slate-400 mb-8 text-sm">
-              {result === "win"
-                ? t("home.victoryMsg")
-                : t("home.defeatMsg")}
-            </p>
+<p className="text-slate-400 mb-8 text-sm">
+  {result === "win" && arcadeStage === 9
+    ? "Hai completato tutti e 9 gli Stage dei Sognatori!"
+    : result === "win"
+      ? t("home.victoryMsg")
+      : t("home.defeatMsg")}
+</p>
+
+{result === "win" && arcadeStage === 9 && (
+  <div className="text-amber-400 font-bold text-lg mb-8">
+    🎁 Otterrai una ricompensa!
+  </div>
+)}
 
             <div className="flex gap-3">
 
