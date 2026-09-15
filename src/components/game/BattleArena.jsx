@@ -695,17 +695,18 @@ resetStatsOnBench(out);
     ]);
 
     setTimeout(() => {
-      if (
-        newActive.filter(
-          s =>
-            s &&
-            !s.fainted
-        ).length === 0
-      ) {
-        setPhase("done");
-        onEnd("lose");
-        return;
-      }
+     if (
+  newActive.filter(
+    s =>
+      s &&
+      !s.fainted
+  ).length === 0
+) {
+  setPhase("done");
+  await updateArcadeStreak("lose");
+  onEnd("lose");
+  return;
+}
 
       if (
         !newActive.some(
