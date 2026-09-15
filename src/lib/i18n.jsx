@@ -189,7 +189,7 @@ export const translations = {
     'rankings.back': '← Home',
     'rankings.play': 'Gioca →',
     'rankings.title': 'Classifica Globale',
-    'rankings.players': 'Giocatori',
+    'rankings.players': 'Multiplayer',
     'rankings.sognatori': 'Sognatori',
     'rankings.empty': 'Nessuna partita competitiva giocata ancora.',
     'rankings.firstMatch': 'Gioca la prima partita',

@@ -694,7 +694,7 @@ resetStatsOnBench(out);
       )
     ]);
 
-    setTimeout(() => {
+   setTimeout(async () => {
      if (
   newActive.filter(
     s =>
