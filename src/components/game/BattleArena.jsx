@@ -331,7 +331,12 @@ resetStatsOnBench(out);
         act.type === "attack" &&
         pActive[i]
       ) {
-        const target =
+       
+       const originalTargetSlot = enemyActive.findIndex(
+  s => s && s.id === act.targetId
+);
+
+let target =
   eActive.find(
     s =>
       s &&
@@ -339,12 +344,21 @@ resetStatsOnBench(out);
       !s.fainted
   );
 
-        if (target) {
-          playerAttacks.push({
-            attacker: pActive[i],
-            target
-          });
-        }
+if (
+  !target &&
+  originalTargetSlot !== -1 &&
+  eActive[originalTargetSlot] &&
+  !eActive[originalTargetSlot].fainted
+) {
+  target = eActive[originalTargetSlot];
+}
+
+if (target) {
+  playerAttacks.push({
+    attacker: pActive[i],
+    target
+  });
+} 
       }
     });
 
