@@ -46,8 +46,8 @@ function actionLabel(act, enemyActive, playerBench, m) {
 }
 
 export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
-    const { user } = useAuth();
-  const { t, lang, setLang } = useLanguage();
+  const { user } = useAuth();
+  const { t, lang } = useLanguage();
   const m = bm(lang);
 
   const updateArcadeStreak = async (result) => {
@@ -125,46 +125,44 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
   const logEnd = useRef(null);
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    const logs = [];
+    const timer = setTimeout(() => {
+      const logs = [];
 
-    playerActive.forEach(s => {
-      if (s) {
-        logs.push(
-          ...onEntry(
-            s,
-            playerActive,
-            enemyActive,
-            lang
-          )
-        );
+      playerActive.forEach(s => {
+        if (s) {
+          logs.push(
+            ...onEntry(
+              s,
+              playerActive,
+              enemyActive,
+              lang
+            )
+          );
+        }
+      });
+
+      enemyActive.forEach(s => {
+        if (s) {
+          logs.push(
+            ...onEntry(
+              s,
+              enemyActive,
+              playerActive,
+              lang
+            )
+          );
+        }
+      });
+
+      if (logs.length) {
+        setLog(prev => [...prev, ...logs]);
+        setPlayerActive(prev => [...prev]);
+        setEnemyActive(prev => [...prev]);
       }
-    });
+    }, 1200);
 
-    enemyActive.forEach(s => {
-      if (s) {
-        logs.push(
-          ...onEntry(
-            s,
-            enemyActive,
-            playerActive,
-            lang
-          )
-        );
-      }
-    });
-
-    if (logs.length) {
-      setLog(prev => [...prev, ...logs]);
-      setPlayerActive(prev => [...prev]);
-      setEnemyActive(prev => [...prev]);
-    }
-  }, 1200);
-
-  return () => clearTimeout(timer);
-
-  // eslint-disable-next-line
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   const setAction = (slot, action) =>
     setActions((a) => ({ ...a, [slot]: action }));
@@ -189,25 +187,26 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
       playerActive,
       enemyBench
     );
-let pActive = playerActive.map(s => s ? {
-  ...s,
-  statMods: { ...s.statMods }
-} : s);
 
-let pBench = playerBench.map(s => s ? {
-  ...s,
-  statMods: { ...s.statMods }
-} : s);
+    let pActive = playerActive.map(s => s ? {
+      ...s,
+      statMods: { ...s.statMods }
+    } : s);
 
-let eActive = enemyActive.map(s => s ? {
-  ...s,
-  statMods: { ...s.statMods }
-} : s);
+    let pBench = playerBench.map(s => s ? {
+      ...s,
+      statMods: { ...s.statMods }
+    } : s);
 
-let eBench = enemyBench.map(s => s ? {
-  ...s,
-  statMods: { ...s.statMods }
-} : s);
+    let eActive = enemyActive.map(s => s ? {
+      ...s,
+      statMods: { ...s.statMods }
+    } : s);
+
+    let eBench = enemyBench.map(s => s ? {
+      ...s,
+      statMods: { ...s.statMods }
+    } : s);
 
     const slots = pActive
       .map((s, i) => (s && !s.fainted ? i : null))
@@ -223,6 +222,7 @@ let eBench = enemyBench.map(s => s ? {
       if (act && act.type === "switch" && pActive[i]) {
         const inc = pBench[act.benchIdx];
         const out = pActive[i];
+
         resetStatsOnBench(out);
 
         pActive[i] = inc;
@@ -242,7 +242,9 @@ let eBench = enemyBench.map(s => s ? {
       if (a && a.type === "switch" && eActive[i]) {
         const inc = eBench[a.benchIdx];
         const out = eActive[i];
-resetStatsOnBench(out);
+
+        resetStatsOnBench(out);
+
         eActive[i] = inc;
         eBench[a.benchIdx] = out;
 
@@ -320,33 +322,43 @@ resetStatsOnBench(out);
       await sleep(4000);
     }
 
-    const originalTargetSlot = playerActive.findIndex(
-  s => s && s.id === a.targetId
-);
+    // Build attacks AFTER switches, but preserve the original target slot.
+    const playerAttacks = [];
 
-let target =
-  pActive.find(
-    s =>
-      s &&
-      s.id === a.targetId &&
-      !s.fainted
-  );
+    usedActions.forEach((a, i) => {
+      if (
+        a &&
+        a.type === "attack" &&
+        pActive[i]
+      ) {
+        const originalTargetSlot = enemyActive.findIndex(
+          (s) => s && s.id === a.targetId
+        );
 
-if (
-  !target &&
-  originalTargetSlot !== -1 &&
-  pActive[originalTargetSlot] &&
-  !pActive[originalTargetSlot].fainted
-) {
-  target = pActive[originalTargetSlot];
-}
+        let target = eActive.find(
+          (s) =>
+            s &&
+            s.id === a.targetId &&
+            !s.fainted
+        );
 
-if (target) {
-  enemyAttacks.push({
-    attacker: eActive[i],
-    target
-  });
-}
+        if (
+          !target &&
+          originalTargetSlot !== -1 &&
+          eActive[originalTargetSlot] &&
+          !eActive[originalTargetSlot].fainted
+        ) {
+          target = eActive[originalTargetSlot];
+        }
+
+        if (target) {
+          playerAttacks.push({
+            attacker: pActive[i],
+            target
+          });
+        }
+      }
+    });
 
     const enemyAttacks = [];
 
@@ -355,33 +367,33 @@ if (target) {
         a &&
         a.type === "attack" &&
         eActive[i]
-      ) const originalTargetSlot = playerActive.findIndex(
-  s => s && s.id === a.targetId
-);
+      ) {
+        const originalTargetSlot = playerActive.findIndex(
+          (s) => s && s.id === a.targetId
+        );
 
-let target =
-  pActive.find(
-    s =>
-      s &&
-      s.id === a.targetId &&
-      !s.fainted
-  );
+        let target = pActive.find(
+          (s) =>
+            s &&
+            s.id === a.targetId &&
+            !s.fainted
+        );
 
-if (
-  !target &&
-  originalTargetSlot !== -1 &&
-  pActive[originalTargetSlot] &&
-  !pActive[originalTargetSlot].fainted
-) {
-  target = pActive[originalTargetSlot];
-}
+        if (
+          !target &&
+          originalTargetSlot !== -1 &&
+          pActive[originalTargetSlot] &&
+          !pActive[originalTargetSlot].fainted
+        ) {
+          target = pActive[originalTargetSlot];
+        }
 
-if (target) {
-  enemyAttacks.push({
-    attacker: eActive[i],
-    target
-  });
-}
+        if (target) {
+          enemyAttacks.push({
+            attacker: eActive[i],
+            target
+          });
+        }
       }
     });
 
@@ -489,19 +501,19 @@ if (target) {
       s => s && !s.fainted
     ).length;
 
- if (pAlive === 0) {
-  setPhase("done");
-  await updateArcadeStreak("lose");
-  onEnd("lose");
-  return;
-}
+    if (pAlive === 0) {
+      setPhase("done");
+      await updateArcadeStreak("lose");
+      onEnd("lose");
+      return;
+    }
 
-   if (eAlive === 0) {
-  setPhase("done");
-  await updateArcadeStreak("win");
-  onEnd("win");
-  return;
-}
+    if (eAlive === 0) {
+      setPhase("done");
+      await updateArcadeStreak("win");
+      onEnd("win");
+      return;
+    }
 
     if (
       pActive.some(
@@ -622,7 +634,9 @@ if (target) {
 
     const out =
       playerActive[slot];
-resetStatsOnBench(out);
+
+    resetStatsOnBench(out);
+
     const newActive = [
       ...playerActive
     ];
@@ -700,19 +714,19 @@ resetStatsOnBench(out);
       )
     ]);
 
-   setTimeout(async () => {
-     if (
-  newActive.filter(
-    s =>
-      s &&
-      !s.fainted
-  ).length === 0
-) {
-  setPhase("done");
-  await updateArcadeStreak("lose");
-  onEnd("lose");
-  return;
-}
+    setTimeout(async () => {
+      if (
+        newActive.filter(
+          s =>
+            s &&
+            !s.fainted
+        ).length === 0
+      ) {
+        setPhase("done");
+        await updateArcadeStreak("lose");
+        onEnd("lose");
+        return;
+      }
 
       if (
         !newActive.some(
@@ -741,83 +755,85 @@ resetStatsOnBench(out);
 
   const animLogs =
     log.slice(animLogStart);
-const visibleLogs =
-  phase === "animating"
-    ? animLogs
-    : currentTurn === 0
-      ? log.slice(1)
-      : [];
+
+  const visibleLogs =
+    phase === "animating"
+      ? animLogs
+      : currentTurn === 0
+        ? log.slice(1)
+        : [];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col">
 
       <div className="relative flex-1 px-4 pt-5 pb-3 max-w-4xl mx-auto w-full">
 
-     <div className="flex items-center gap-3 mb-2">
-  <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
-    {t("battle.vgc")}
-  </span>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
+            {t("battle.vgc")}
+          </span>
 
-  <button
-    onClick={() => setShowTypeChart(true)}
-    className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
-  >
-    📊 {t("battle.types")}
-  </button>
+          <button
+            onClick={() => setShowTypeChart(true)}
+            className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+          >
+            📊 {t("battle.types")}
+          </button>
 
-  <button
-    onClick={() => setShowBench(true)}
-    className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
-  >
-    🪑 {t("battle.bench")}
-  </button>
+          <button
+            onClick={() => setShowBench(true)}
+            className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+          >
+            🪑 {t("battle.bench")}
+          </button>
 
-  <AbandonButton
-    onAbandon={() => onEnd("abandon")}
-  />
-</div>
+          <AbandonButton
+            onAbandon={() => onEnd("abandon")}
+          />
+        </div>
 
         {visibleLogs.length > 0 && (
-            <div className="flex justify-center mb-2">
-              <motion.div
-                key={animLogs.length}
-                initial={{
-                  opacity: 0,
-                  scale: 0.85
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1
-                }}
-                transition={{
-                  duration: 0.3
-                }}
-                className="bg-slate-900/95 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 w-full max-w-4xl text-center shadow-2xl"
-              >
-                <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-                  {t("battle.turn")}{" "}
-                  {currentTurn}
-                </div>
+          <div className="flex justify-center mb-2">
+            <motion.div
+              key={animLogs.length}
+              initial={{
+                opacity: 0,
+                scale: 0.85
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1
+              }}
+              transition={{
+                duration: 0.3
+              }}
+              className="bg-slate-900/95 backdrop-blur border border-amber-500/40 rounded-2xl px-5 py-3 w-full max-w-4xl text-center shadow-2xl"
+            >
+              <div className="text-[9px] uppercase tracking-widest text-amber-400 font-bold mb-1">
+                {t("battle.turn")}{" "}
+                {currentTurn}
+              </div>
 
-             <div className="space-y-1">
-  {visibleLogs
-    .filter(l => !l.startsWith("__TURN_"))
-    .slice(-8)
-.map((l, i, arr) => (
-      <div
-        key={i}
-        className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
-          i === arr.length - 1
-            ? "bg-white/10 text-white"
-            : "bg-black/20 text-slate-400"
-        }`}
-      >
-        {l}
-      </div>
-    ))}
-</div>
-              </motion.div>
-            </div>
-          )}
+              <div className="space-y-1">
+                {visibleLogs
+                  .filter(l => !l.startsWith("__TURN_"))
+                  .slice(-8)
+                  .map((l, i, arr) => (
+                    <div
+                      key={i}
+                      className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold leading-snug ${
+                        i === arr.length - 1
+                          ? "bg-white/10 text-white"
+                          : "bg-black/20 text-slate-400"
+                      }`}
+                    >
+                      {l}
+                    </div>
+                  ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <div className="relative rounded-3xl bg-gradient-to-b from-rose-950/30 via-slate-900/40 to-emerald-950/30 border border-white/10 p-4 sm:p-6">
 
@@ -914,9 +930,9 @@ const visibleLogs =
 
                 return (
                   <div
-  key={i}
-  className="rounded-xl bg-white/5 p-2 min-h-[190px] flex flex-col"
->
+                    key={i}
+                    className="rounded-xl bg-white/5 p-2 min-h-[190px] flex flex-col"
+                  >
 
                     <div className="text-xs font-semibold flex items-center gap-1">
 
@@ -1181,8 +1197,8 @@ const visibleLogs =
               >
                 {t("battle.confirm")}
               </button>
-</div>
             </div>
+          </div>
         )}
 
         {phase === "animating" && (
@@ -1279,12 +1295,12 @@ const visibleLogs =
           }
         >
 
-         <div
-  className="bg-gradient-to-b from-amber-950/90 via-slate-900 to-amber-950/90 rounded-3xl border border-amber-500/30 p-5 max-w-4xl w-full min-h-[360px] max-h-[85vh] overflow-y-auto shadow-2xl"
-  onClick={e =>
-    e.stopPropagation()
-  }
->
+          <div
+            className="bg-gradient-to-b from-amber-950/90 via-slate-900 to-amber-950/90 rounded-3xl border border-amber-500/30 p-5 max-w-4xl w-full min-h-[360px] max-h-[85vh] overflow-y-auto shadow-2xl"
+            onClick={e =>
+              e.stopPropagation()
+            }
+          >
 
             <div className="flex justify-between items-center mb-3">
 
