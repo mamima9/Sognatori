@@ -320,47 +320,33 @@ resetStatsOnBench(out);
       await sleep(4000);
     }
 
-    // Build and order attacks
-    const playerAttacks = [];
-
-    slots.forEach((i) => {
-      const act = usedActions[i];
-
-      if (
-        act &&
-        act.type === "attack" &&
-        pActive[i]
-      ) {
-       
-       const originalTargetSlot = enemyActive.findIndex(
-  s => s && s.id === act.targetId
+    const originalTargetSlot = playerActive.findIndex(
+  s => s && s.id === a.targetId
 );
 
 let target =
-  eActive.find(
+  pActive.find(
     s =>
       s &&
-      s.id === act.targetId &&
+      s.id === a.targetId &&
       !s.fainted
   );
 
 if (
   !target &&
   originalTargetSlot !== -1 &&
-  eActive[originalTargetSlot] &&
-  !eActive[originalTargetSlot].fainted
+  pActive[originalTargetSlot] &&
+  !pActive[originalTargetSlot].fainted
 ) {
-  target = eActive[originalTargetSlot];
+  target = pActive[originalTargetSlot];
 }
 
 if (target) {
-  playerAttacks.push({
-    attacker: pActive[i],
+  enemyAttacks.push({
+    attacker: eActive[i],
     target
   });
-} 
-      }
-    });
+}
 
     const enemyAttacks = [];
 
@@ -369,20 +355,33 @@ if (target) {
         a &&
         a.type === "attack" &&
         eActive[i]
-      ) {const target =
+      ) const originalTargetSlot = playerActive.findIndex(
+  s => s && s.id === a.targetId
+);
+
+let target =
   pActive.find(
     s =>
       s &&
       s.id === a.targetId &&
       !s.fainted
-  ); 
+  );
 
-        if (target) {
-          enemyAttacks.push({
-            attacker: eActive[i],
-            target
-          });
-        }
+if (
+  !target &&
+  originalTargetSlot !== -1 &&
+  pActive[originalTargetSlot] &&
+  !pActive[originalTargetSlot].fainted
+) {
+  target = pActive[originalTargetSlot];
+}
+
+if (target) {
+  enemyAttacks.push({
+    attacker: eActive[i],
+    target
+  });
+}
       }
     });
 

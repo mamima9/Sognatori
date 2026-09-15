@@ -50,9 +50,10 @@ function buildAttacks(actions, myActive, oppActive) {
 
     if (act && act.type === "attack" && myActive[i]) {
       const target =
-  oppActive.find(
-    (s) => s && s.id === act.targetId && !s.fainted
-  );
+        oppActive.find(
+          (s) => s && s.id === act.targetId && !s.fainted
+        ) ||
+        oppActive[i];
 
       if (target) {
         attacks.push({
@@ -65,6 +66,8 @@ function buildAttacks(actions, myActive, oppActive) {
 
   return attacks;
 }
+      
+    
 
 export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [match, setMatch] = useState(null);
