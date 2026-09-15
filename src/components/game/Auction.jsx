@@ -468,9 +468,9 @@ if (available.length === 0) {
   return;
 }
 
-const preferred = profile.preferredType
+const preferred = aiProfile.preferredType
   ? available.filter(
-      (sog) => sog.tipo === profile.preferredType
+      (sog) => sog.tipo === aiProfile.preferredType
     )
   : [];
 
