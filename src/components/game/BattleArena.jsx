@@ -19,6 +19,8 @@ import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { bm } from "@/lib/battleMessages";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/AuthContext";
 
 const TURN_SECONDS = 60;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -44,8 +46,54 @@ function actionLabel(act, enemyActive, playerBench, m) {
 }
 
 export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
+    const { user } = useAuth();
   const { t, lang, setLang } = useLanguage();
   const m = bm(lang);
+
+  const updateArcadeStreak = async (result) => {
+    if (!user) return;
+
+    try {
+      const { data: profile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("arcade_wins, arcade_current_streak, arcade_best_streak")
+        .eq("id", user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (result === "win") {
+        const newStreak = (profile.arcade_current_streak || 0) + 1;
+        const newWins = (profile.arcade_wins || 0) + 1;
+        const newBest = Math.max(
+          profile.arcade_best_streak || 0,
+          newStreak
+        );
+
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            arcade_wins: newWins,
+            arcade_current_streak: newStreak,
+            arcade_best_streak: newBest,
+          })
+          .eq("id", user.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            arcade_current_streak: 0,
+          })
+          .eq("id", user.id);
+
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error("Arcade streak update failed:", error);
+    }
+  };
 
   const [playerActive, setPlayerActive] = useState(
     () => playerTeam.slice(0, 2).map(initBattleSognatore)
@@ -435,17 +483,19 @@ resetStatsOnBench(out);
       s => s && !s.fainted
     ).length;
 
-    if (pAlive === 0) {
-      setPhase("done");
-      onEnd("lose");
-      return;
-    }
+ if (pAlive === 0) {
+  setPhase("done");
+  await updateArcadeStreak("lose");
+  onEnd("lose");
+  return;
+}
 
-    if (eAlive === 0) {
-      setPhase("done");
-      onEnd("win");
-      return;
-    }
+   if (eAlive === 0) {
+  setPhase("done");
+  await updateArcadeStreak("win");
+  onEnd("win");
+  return;
+}
 
     if (
       pActive.some(
