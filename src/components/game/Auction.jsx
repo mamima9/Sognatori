@@ -13,6 +13,63 @@ import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 const COIN = "/images/moneta-sognatori.png";
 const BID_OPTIONS = [1, 5, 10];
+const ARCADE_AUCTION_PROFILES = {
+  1: {
+    name: "Foresta dei Sognatori",
+    preferredType: "Natura",
+    pupils: [],
+  },
+
+  2: {
+    name: "Vulcano dei Demoni",
+    preferredType: "Demone",
+    pupils: [],
+  },
+
+  3: {
+    name: "Splash",
+    preferredType: "Marino",
+    pupils: [],
+  },
+
+  4: {
+    name: "Sniakerville",
+    preferredType: "Dolce",
+    pupils: [],
+  },
+
+  5: {
+    name: "Sulle nuvole",
+    preferredType: "Nuvola",
+    pupils: [],
+  },
+
+  6: {
+    name: "Bug city",
+    preferredType: "Robot",
+    pupils: [],
+  },
+
+  7: {
+    name: "Una piccola casa",
+    preferredType: null,
+    pupils: [],
+    optimalStrategy: true,
+  },
+
+  8: {
+    name: "Accademia dei sognatori",
+    preferredType: "Mago",
+    pupils: [],
+  },
+
+  9: {
+    name: "Mimmiland",
+    preferredType: null,
+    pupils: ["deb", "nina", "cancucc"],
+    optimalStrategy: true,
+  },
+};
 
 /**
  * @typedef {Object} Sognatore
@@ -47,6 +104,9 @@ export default function Auction({
   onBack,
 }) {
   const { t, lang } = useLanguage();
+  const aiProfile =
+  ARCADE_AUCTION_PROFILES[stage] ||
+  ARCADE_AUCTION_PROFILES[1];
 
   /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */
   const [pool, setPool] = useState(() =>
@@ -115,20 +175,100 @@ export default function Auction({
     `pick-${round}`
   );
 
-  const aiValuation = (sog) => {
-    const sameType = aiTeam.filter((teamSog) => teamSog.tipo === sog.tipo).length;
+ const aiValuation = (sog) => {
+  const profile = aiProfile;
 
-    let value =
-      sog.costo + Math.round((Math.random() - 0.4) * 12);
+  const sameType = aiTeam.filter(
+    (teamSog) => teamSog.tipo === sog.tipo
+  ).length;
 
-    if (sameType >= 2) {
-      value = 1;
-    } else if (sameType >= 1) {
-      value = Math.max(1, value - 4);
+  const isPupil = profile.pupils.includes(sog.id);
+
+  let value = sog.costo;
+
+  // --------------------------------
+  // 1. VALORE BASE
+  // --------------------------------
+
+  value += Math.round((Math.random() - 0.5) * 6);
+
+  // --------------------------------
+  // 2. PUPILLI
+  // --------------------------------
+
+  if (isPupil) {
+    value += 12;
+  }
+
+  // --------------------------------
+  // 3. TIPO PREFERITO
+  // --------------------------------
+
+  if (
+    profile.preferredType &&
+    sog.tipo === profile.preferredType
+  ) {
+    // Più ne ha già, meno vuole continuare
+    if (sameType === 0) {
+      value += 8;
+    } else if (sameType === 1) {
+      value += 5;
+    } else if (sameType === 2) {
+      value += 1;
+    } else {
+      value -= 8;
+    }
+  }
+
+  // --------------------------------
+  // 4. SINERGIA CON LA SQUADRA
+  // --------------------------------
+
+  if (sameType >= 1) {
+    value += 3;
+  }
+
+  // --------------------------------
+  // 5. STAGE 7
+  // AI OTTIMIZZATRICE
+  // --------------------------------
+
+  if (profile.optimalStrategy) {
+    const statScore =
+      sog.att +
+      sog.dif +
+      sog.vel;
+
+    value += Math.round(statScore / 5);
+
+    // Preferisce Sognatori completi
+    if (
+      sog.att >= 14 &&
+      sog.dif >= 11 &&
+      sog.vel >= 9
+    ) {
+      value += 5;
     }
 
-    return Math.max(1, value);
-  };
+    // Evita di accumulare troppo dello stesso tipo
+    if (sameType >= 2) {
+      value -= 6;
+    }
+  }
+
+  // --------------------------------
+  // 6. SE IL TEAM È QUASI COMPLETO
+  // privilegia la complementarità
+  // --------------------------------
+
+  if (aiTeam.length === 3) {
+    if (sameType === 0) {
+      value += 5;
+    }
+  }
+
+  return Math.max(1, Math.round(value));
+};
 
   const finish = () => {
     if (finished) return;
