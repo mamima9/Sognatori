@@ -656,23 +656,23 @@ if (
 } else {
   resolveWin("player");
 }
-   } else {
-  const remainingSlots = Math.max(0, 4 - aiTeam.length - 1);
-  const maxBid = aiCredits - remainingSlots;
+         } else {
+        const remainingSlots = Math.max(0, 4 - aiTeam.length - 1);
+        const maxBid = aiCredits - remainingSlots;
 
-  if (
-    maxBid >= 1 &&
-    shouldAiBid(currentSog, 0)
-  ) {
-    setCurrentBid(1);
-    setCurrentBidder("ai");
-    setTurn("player");
-  } else {
-    resolveUnsold();
-  }
-}
+        if (
+          maxBid >= 1 &&
+          shouldAiBid(currentSog, 0)
+        ) {
+          setCurrentBid(1);
+          setCurrentBidder("ai");
+          setTurn("player");
+        } else {
+          resolveUnsold();
+        }
       }
-    }, 1000);
+    }
+  }, 1000);
 
     return () => clearTimeout(timer);
   }, [
