@@ -24,9 +24,83 @@ const PLAYER_START = {
   y: 2,
 };
 
-const NPC1 = {
+const NPC_POSITION = {
   x: 10,
   y: 9,
+};
+
+const STAGE_NPCS = {
+  1: {
+    name: "NPC 1",
+    emoji: "🌳",
+    world: "La Foresta dei Sognatori",
+    dialogue:
+      "Benvenuto nella Foresta dei Sognatori. Qui ogni scelta può cambiare il tuo cammino. Sei pronto a mettere alla prova la tua squadra?",
+  },
+
+  2: {
+    name: "NPC 2",
+    emoji: "👹",
+    world: "Il Vulcano dei Demoni",
+    dialogue:
+      "Qui dentro non basta essere forte. Devi avere il coraggio di rilanciare quando le cose si fanno difficili. Vediamo quanto vali.",
+  },
+
+  3: {
+    name: "NPC 3",
+    emoji: "🌊",
+    world: "Splash",
+    dialogue:
+      "L'acqua cambia continuamente direzione... proprio come un'asta. Non farti sorprendere e pensa bene alla tua prossima mossa!",
+  },
+
+  4: {
+    name: "NPC 4",
+    emoji: "🍬",
+    world: "Sniakerville",
+    dialogue:
+      "Sembra tutto dolce e tranquillo, vero? Non fidarti delle apparenze. Anche qui potresti trovare un avversario difficile da battere.",
+  },
+
+  5: {
+    name: "NPC 5",
+    emoji: "☁️",
+    world: "Sulle nuvole",
+    dialogue:
+      "Da quassù tutto sembra più semplice. Ma nell'asta basta un solo rilancio per mandare in fumo i tuoi piani.",
+  },
+
+  6: {
+    name: "NPC 6",
+    emoji: "🤖",
+    world: "Bug City",
+    dialogue:
+      "Sistema attivo. Analisi dell'avversario completata. Errore previsto: sottovalutare l'asta. Procedi con cautela.",
+  },
+
+  7: {
+    name: "NPC 7",
+    emoji: "🏠",
+    world: "Una piccola casa",
+    dialogue:
+      "Non lasciarti ingannare da questa casetta. Qui si gioca con una strategia diversa... e ogni scelta conta.",
+  },
+
+  8: {
+    name: "NPC 8",
+    emoji: "🧙",
+    world: "Accademia dei Sognatori",
+    dialogue:
+      "Benvenuto all'Accademia. Qui non si impara soltanto a combattere: si impara a costruire la squadra perfetta.",
+  },
+
+  9: {
+    name: "NPC 9",
+    emoji: "👑",
+    world: "Mimmiland",
+    dialogue:
+      "Sei arrivato fin qui. Da questo momento non sarà più facile. Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland.",
+  },
 };
 
 export default function ArcadeWorld({
@@ -34,6 +108,8 @@ export default function ArcadeWorld({
   onStartAuction,
   onBack,
 }) {
+  const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
+
   const [player, setPlayer] =
     useState(PLAYER_START);
 
@@ -51,8 +127,8 @@ export default function ArcadeWorld({
 
   const checkNpcDistance = (x, y) => {
     const distance =
-      Math.abs(x - NPC1.x) +
-      Math.abs(y - NPC1.y);
+      Math.abs(x - NPC_POSITION.x) +
+      Math.abs(y - NPC_POSITION.y);
 
     return distance <= 1;
   };
@@ -144,7 +220,7 @@ export default function ArcadeWorld({
             </div>
 
             <h1 className="text-2xl font-black">
-              La Foresta dei Sognatori
+              {npc.world}
             </h1>
           </div>
 
@@ -202,23 +278,23 @@ export default function ArcadeWorld({
             )}
           </div>
 
-          {/* NPC1 */}
+          {/* NPC */}
 
           <div
             className="absolute flex flex-col items-center justify-center pointer-events-none"
             style={{
-              left: `${NPC1.x * tileWidth}%`,
-              top: `${NPC1.y * tileHeight}%`,
+              left: `${NPC_POSITION.x * tileWidth}%`,
+              top: `${NPC_POSITION.y * tileHeight}%`,
               width: `${tileWidth}%`,
               height: `${tileHeight}%`,
             }}
           >
             <div className="text-3xl drop-shadow-xl">
-              🧙
+              {npc.emoji}
             </div>
 
             <div className="text-[9px] font-black text-amber-300">
-              NPC1
+              {npc.name}
             </div>
           </div>
 
@@ -253,6 +329,7 @@ export default function ArcadeWorld({
 
         <div className="hidden sm:block text-center mt-4 text-xs text-slate-400">
           <b>WASD</b> / <b>FRECCE</b> per muoverti
+
           {nearNpc && (
             <span className="ml-3 text-amber-400 font-bold">
               • Premi E per parlare
@@ -335,7 +412,8 @@ export default function ArcadeWorld({
                 onClick={talkToNpc}
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                💬 PARLA CON NPC1
+                💬 PARLA CON {npc.name}
+
                 <span className="ml-2 text-xs opacity-70">
                   [E]
                 </span>
@@ -368,17 +446,15 @@ export default function ArcadeWorld({
             >
 
               <div className="text-4xl mb-2">
-                🧙
+                {npc.emoji}
               </div>
 
               <div className="text-amber-400 font-black uppercase tracking-widest text-xs mb-2">
-                NPC1
+                {npc.name}
               </div>
 
               <p className="text-sm text-slate-300 mb-5">
-                “Ogni battaglia inizia con una
-                scelta... Vuoi affidarti al
-                destino?”
+                “{npc.dialogue}”
               </p>
 
               <button
