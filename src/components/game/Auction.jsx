@@ -41,7 +41,11 @@ const BID_OPTIONS = [1, 5, 10];
  * @property {Sognatore} sog
  */
 
-export default function Auction({ onComplete, onBack }) {
+export default function Auction({
+  stage = 1,
+  onComplete,
+  onBack,
+}) {
   const { t, lang } = useLanguage();
 
   /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */

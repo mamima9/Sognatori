@@ -15,7 +15,7 @@ export default function Home() {
   const { lang, setLang, t } = useLanguage();
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
-  const [result, setResult] = useState(null);
+  const [arcadeStage, setArcadeStage] = useState(1);
 
 
   const RULES = [
@@ -260,9 +260,13 @@ export default function Home() {
     exit={{ opacity: 0 }}
   >
     <ArcadeWorld
-      onStartAuction={() => setScreen("auction")}
-      onBack={() => setScreen("menu")}
-    />
+  stage={arcadeStage}
+  onStartAuction={(stage) => {
+    setArcadeStage(stage);
+    setScreen("auction");
+  }}
+  onBack={() => setScreen("menu")}
+/>
   </motion.div>
 )}
 
@@ -284,7 +288,8 @@ export default function Home() {
             }}
           >
             <Auction
-              onComplete={(pt, et) => {
+  stage={arcadeStage}
+  onComplete={(pt, et) => {
                 setTeams({
                   playerTeam: pt,
                   enemyTeam: et,

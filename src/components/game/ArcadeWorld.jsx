@@ -30,6 +30,7 @@ const NPC1 = {
 };
 
 export default function ArcadeWorld({
+  stage = 1,
   onStartAuction,
   onBack,
 }) {
@@ -381,7 +382,7 @@ export default function ArcadeWorld({
               </p>
 
               <button
-                onClick={onStartAuction}
+                onClick={() => onStartAuction(stage)}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 font-black hover:brightness-110 transition"
               >
                 🔮 INIZIA L'ASTA
