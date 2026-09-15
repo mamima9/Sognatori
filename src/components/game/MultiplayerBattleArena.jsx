@@ -50,10 +50,9 @@ function buildAttacks(actions, myActive, oppActive) {
 
     if (act && act.type === "attack" && myActive[i]) {
       const target =
-        oppActive.find(
-          (s) => s && s.id === act.targetId && !s.fainted
-        ) ||
-        oppActive.find((s) => s && !s.fainted);
+  oppActive.find(
+    (s) => s && s.id === act.targetId && !s.fainted
+  );
 
       if (target) {
         attacks.push({

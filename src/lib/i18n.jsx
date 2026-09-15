@@ -9,7 +9,7 @@ export const translations = {
     'home.vsAI': 'Contro AI',
     'home.lore': 'Lore',
     'home.types': 'Affinità',
-    'home.rankings': 'Classifica',
+    'home.rankings': 'Classifiche',
     'home.login': 'Login',
     'home.register': 'Registrati',
     'home.logout': 'Logout',

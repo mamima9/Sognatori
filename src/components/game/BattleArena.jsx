@@ -332,15 +332,12 @@ resetStatsOnBench(out);
         pActive[i]
       ) {
         const target =
-          eActive.find(
-            s =>
-              s &&
-              s.id === act.targetId &&
-              !s.fainted
-          ) ||
-          eActive.find(
-            s => s && !s.fainted
-          );
+  eActive.find(
+    s =>
+      s &&
+      s.id === act.targetId &&
+      !s.fainted
+  );
 
         if (target) {
           playerAttacks.push({
@@ -358,17 +355,13 @@ resetStatsOnBench(out);
         a &&
         a.type === "attack" &&
         eActive[i]
-      ) {
-        const target =
-          pActive.find(
-            s =>
-              s &&
-              s.id === a.targetId &&
-              !s.fainted
-          ) ||
-          pActive.find(
-            s => s && !s.fainted
-          );
+      ) {const target =
+  pActive.find(
+    s =>
+      s &&
+      s.id === a.targetId &&
+      !s.fainted
+  ); 
 
         if (target) {
           enemyAttacks.push({
