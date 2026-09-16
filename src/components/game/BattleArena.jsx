@@ -224,6 +224,8 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
         const out = pActive[i];
 
         resetStatsOnBench(out);
+        inc.protectedLastTurn = false;
+inc.protectedThisTurn = false;
 
         pActive[i] = inc;
         pBench[act.benchIdx] = out;
@@ -244,7 +246,8 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
         const out = eActive[i];
 
         resetStatsOnBench(out);
-
+inc.protectedLastTurn = false;
+inc.protectedThisTurn = false;
         eActive[i] = inc;
         eBench[a.benchIdx] = out;
 
@@ -325,40 +328,42 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
     // Build attacks AFTER switches, but preserve the original target slot.
     const playerAttacks = [];
 
-    usedActions.forEach((a, i) => {
-      if (
-        a &&
-        a.type === "attack" &&
-        pActive[i]
-      ) {
-        const originalTargetSlot = enemyActive.findIndex(
-          (s) => s && s.id === a.targetId
-        );
+Object.entries(usedActions).forEach(([key, a]) => {
+  const i = Number(key);
 
-        let target = eActive.find(
-          (s) =>
-            s &&
-            s.id === a.targetId &&
-            !s.fainted
-        );
+  if (
+    a &&
+    a.type === "attack" &&
+    pActive[i]
+  ) {
+    const originalTargetSlot = enemyActive.findIndex(
+      (s) => s && s.id === a.targetId
+    );
 
-        if (
-          !target &&
-          originalTargetSlot !== -1 &&
-          eActive[originalTargetSlot] &&
-          !eActive[originalTargetSlot].fainted
-        ) {
-          target = eActive[originalTargetSlot];
-        }
+    let target = eActive.find(
+      (s) =>
+        s &&
+        s.id === a.targetId &&
+        !s.fainted
+    );
 
-        if (target) {
-          playerAttacks.push({
-            attacker: pActive[i],
-            target
-          });
-        }
-      }
-    });
+    if (
+      !target &&
+      originalTargetSlot !== -1 &&
+      eActive[originalTargetSlot] &&
+      !eActive[originalTargetSlot].fainted
+    ) {
+      target = eActive[originalTargetSlot];
+    }
+
+    if (target) {
+      playerAttacks.push({
+        attacker: pActive[i],
+        target
+      });
+    }
+  }
+});
 
     const enemyAttacks = [];
 
@@ -405,30 +410,46 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
     );
 
     // Execute each attack one at a time — 4 seconds per move
-    for (const act of ordered) {
-      const {
-        log: actionLog,
-        events
-      } = processAction(act, lang);
+   for (const act of ordered) {
+  const { log: actionLog, events } = processAction(act, lang);
 
-      setLog(prev => [
-        ...prev,
-        ...actionLog
-      ]);
+  setLog((prev) => [...prev, ...actionLog]);
 
-      if (events.length) {
-        setPopups(events);
-      }
+  if (events.length) {
+    setPopups(events);
+  }
 
-      setPlayerActive([...pActive]);
-      setEnemyActive([...eActive]);
+  // Salva una fotografia reale dello stato dopo QUESTA mossa.
+  // Così le mosse successive non modificano retroattivamente
+  // gli HP mostrati per la mossa precedente.
+  setPlayerActive(
+    pActive.map((s) =>
+      s
+        ? {
+            ...s,
+            statMods: s.statMods ? { ...s.statMods } : s.statMods,
+          }
+        : s
+    )
+  );
 
-      await sleep(4000);
+  setEnemyActive(
+    eActive.map((s) =>
+      s
+        ? {
+            ...s,
+            statMods: s.statMods ? { ...s.statMods } : s.statMods,
+          }
+        : s
+    )
+  );
 
-      setPopups([]);
+  await sleep(4000);
 
-      await sleep(200);
-    }
+  setPopups([]);
+  await sleep(200);
+}
+    
 
     // End of turn
     const endLog = applyEndOfTurn(
