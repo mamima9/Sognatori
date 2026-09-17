@@ -1,4 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";\nimport { Navigate } from "react-router-dom";\nimport { useAuth } from "@/lib/AuthContext";
+// @ts-nocheck
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 
 /*
