@@ -13,54 +13,59 @@ import { useLanguage } from "@/lib/i18n";
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
+
   const isDev = user?.user_metadata?.username === "bibito";
+
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
   const [result, setResult] = useState(null);
-const [arcadePortrait, setArcadePortrait] = useState(null);
-const arcadePortraits = [
-  "angi.png",
-  "moro.png",
-  "anna.png",
-  "xia.png",
-  "vecchiaccio.png",
-  "diouf.png",
-  "biondo.png",
-];
-const arcadeNPCNames = {
-  1: "Gnopot",
-  2: "Ribarbanno",
-  3: "Civu",
-  4: "Marsmellow",
-  5: "Spaxio",
-  6: "Gubbo",
-  7: "Boccinu-R",
-  8: "Viaggiatore101",
-  9: "Affrescone",
-};
+  const [arcadePortrait, setArcadePortrait] = useState(null);
+  const [arcadeIntro, setArcadeIntro] = useState(false);
 
-const arcadeNPCImages = {
-  1: "gnopot.png",
-  2: "ribarbanno.jpg",
-  3: "civu.png",
-  4: "cappucc.png",
-  5: "spaxio.png",
-  6: "gubbo.png",
-  7: "boccinu-r.png",
-  8: "viaggiatore101.png",
-  9: "affrescone.png",
-};
-const [arcadeIntro, setArcadeIntro] = useState(false);
-useEffect(() => {
-  if (screen !== "arcadeIntro") return;
+  const arcadePortraits = [
+    "angi.png",
+    "moro.png",
+    "anna.png",
+    "xia.png",
+    "vecchiaccio.png",
+    "diouf.png",
+    "biondo.png",
+  ];
 
-  const timer = setTimeout(() => {
-    setScreen("auction");
-  }, 6000);
+  const arcadeNPCNames = {
+    1: "Gnopot",
+    2: "Ribarbanno",
+    3: "Civu",
+    4: "Marsmellow",
+    5: "Spaxio",
+    6: "Gubbo",
+    7: "Boccinu-R",
+    8: "Viaggiatore101",
+    9: "Affrescone",
+  };
 
-  return () => clearTimeout(timer);
-}, [screen]);
+  const arcadeNPCImages = {
+    1: "gnopot.png",
+    2: "ribarbanno.jpg",
+    3: "civu.png",
+    4: "cappucc.png",
+    5: "spaxio.png",
+    6: "gubbo.png",
+    7: "boccinu-r.png",
+    8: "viaggiatore101.png",
+    9: "affrescone.png",
+  };
+
+  useEffect(() => {
+    if (screen !== "arcadeIntro") return;
+
+    const timer = setTimeout(() => {
+      setScreen("auction");
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, [screen]);
 
   const RULES = [
     t("rule.1"),
@@ -81,7 +86,10 @@ useEffect(() => {
 
       <AnimatePresence mode="wait">
 
+        {/* ========================================================= */}
         {/* MENU */}
+        {/* ========================================================= */}
+
         {screen === "menu" && (
           <motion.div
             key="menu"
@@ -92,33 +100,35 @@ useEffect(() => {
           >
 
             {/* LINGUA */}
-<div className="absolute top-4 right-4 z-50 flex items-center gap-1 rounded-full bg-slate-900/90 backdrop-blur border border-white/10 shadow-lg px-2 py-1.5">
-  <span className="text-[9px] text-slate-400 uppercase tracking-widest mr-1">
-    {t("home.language")}
-  </span>
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-1 rounded-full bg-slate-900/90 backdrop-blur border border-white/10 shadow-lg px-2 py-1.5">
 
-  <button
-    onClick={() => setLang("it")}
-    className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
-      lang === "it"
-        ? "bg-amber-500 text-slate-950"
-        : "bg-white/10 text-slate-300 hover:bg-white/20"
-    }`}
-  >
-    IT
-  </button>
+              <span className="text-[9px] text-slate-400 uppercase tracking-widest mr-1">
+                {t("home.language")}
+              </span>
 
-  <button
-    onClick={() => setLang("en")}
-    className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
-      lang === "en"
-        ? "bg-amber-500 text-slate-950"
-        : "bg-white/10 text-slate-300 hover:bg-white/20"
-    }`}
-  >
-    EN
-  </button>
-</div>
+              <button
+                onClick={() => setLang("it")}
+                className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
+                  lang === "it"
+                    ? "bg-amber-500 text-slate-950"
+                    : "bg-white/10 text-slate-300 hover:bg-white/20"
+                }`}
+              >
+                IT
+              </button>
+
+              <button
+                onClick={() => setLang("en")}
+                className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${
+                  lang === "en"
+                    ? "bg-amber-500 text-slate-950"
+                    : "bg-white/10 text-slate-300 hover:bg-white/20"
+                }`}
+              >
+                EN
+              </button>
+
+            </div>
 
             {/* LOGO */}
             <motion.div
@@ -145,11 +155,13 @@ useEffect(() => {
 
             {/* REGOLE */}
             <div className="max-w-sm w-full rounded-2xl bg-white/5 border border-white/10 p-4 mb-5">
+
               <div className="text-xs uppercase tracking-widest text-amber-400 font-bold mb-2">
                 {t("home.rules")}
               </div>
 
               <ul className="space-y-1 text-[11px] text-slate-300">
+
                 {RULES.map((r) => (
                   <li
                     key={r}
@@ -162,27 +174,28 @@ useEffect(() => {
                     {r}
                   </li>
                 ))}
+
               </ul>
+
             </div>
 
             {/* PULSANTI */}
             <div className="flex flex-wrap gap-3 justify-center">
 
-          
-              {/* VS IA */}
+              {/* ARCADE */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
-             onClick={() => {
-  setArcadePortrait(null);
-  setScreen("arcadePortrait");
-}}
+                onClick={() => {
+                  setArcadePortrait(null);
+                  setScreen("arcadePortrait");
+                }}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
               >
                 🤖 {t("Arcade")}
               </motion.button>
 
-  {/* MULTIPLAYER */}
+              {/* MULTIPLAYER */}
               <Link to="/multiplayer">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -204,7 +217,7 @@ useEffect(() => {
                 </motion.button>
               </Link>
 
-              {/* AFFINITà */}
+              {/* AFFINITÀ */}
               <Link to="/typechart">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -227,17 +240,17 @@ useEffect(() => {
               </Link>
 
               {/* PROFILO */}
-{isAuthenticated && (
-  <Link to="/profilo">
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.96 }}
-      className="px-6 py-3.5 rounded-full bg-white/10 font-bold text-sm hover:bg-white/20 transition border border-white/20"
-    >
-      👤 Profilo
-    </motion.button>
-  </Link>
-)}
+              {isAuthenticated && (
+                <Link to="/profilo">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="px-6 py-3.5 rounded-full bg-white/10 font-bold text-sm hover:bg-white/20 transition border border-white/20"
+                  >
+                    👤 Profilo
+                  </motion.button>
+                </Link>
+              )}
 
               {/* CLASSIFICHE */}
               <Link to="/rankings">
@@ -298,149 +311,242 @@ useEffect(() => {
           </motion.div>
         )}
 
+        {/* ========================================================= */}
+        {/* SCELTA VIAGGIATORE */}
+        {/* ========================================================= */}
 
-{screen === "arcadePortrait" && (
-  <motion.div
-    key="arcadePortrait"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="min-h-screen flex flex-col items-center justify-center p-6"
-  >
-    <h1 className="text-4xl font-bold text-white mb-8">
-      SCEGLI IL TUO VIAGGIATORE
-    </h1>
+        {screen === "arcadePortrait" && (
+          <motion.div
+            key="arcadePortrait"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen flex flex-col items-center justify-center p-6"
+          >
 
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {arcadePortraits.map((portrait) => (
-        <button
-          key={portrait}
-          onClick={() => setArcadePortrait(portrait)}
-          className={`w-32 h-40 rounded-xl border-4 transition-all ${
-            arcadePortrait === portrait
-              ? "border-yellow-400 scale-110"
-              : "border-white/20 hover:border-white/60"
-          }`}
-        >
-     <img
-  src={`/images/${portrait}`}
-  alt={portrait}
-  className="w-full h-full object-contain"
-/>
-        </button>
-      ))}
-    </div>
+            <h1 className="text-4xl font-bold text-white mb-8">
+              SCEGLI IL TUO VIAGGIATORE
+            </h1>
 
-    <button
-      disabled={!arcadePortrait}
-      onClick={() => setScreen("arcadeWorld")}
-      className="mt-10 px-8 py-4 rounded-xl bg-yellow-500 text-black font-bold disabled:opacity-40"
-    >
-      CONFERMA
-    </button>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-    <button
-      onClick={() => setScreen("menu")}
-      className="mt-4 text-white/70 hover:text-white"
-    >
-      ← Indietro
-    </button>
-  </motion.div>
-)}
+              {arcadePortraits.map((portrait) => (
+                <button
+                  key={portrait}
+                  onClick={() => setArcadePortrait(portrait)}
+                  className={`w-32 h-40 rounded-xl border-4 transition-all ${
+                    arcadePortrait === portrait
+                      ? "border-yellow-400 scale-110"
+                      : "border-white/20 hover:border-white/60"
+                  }`}
+                >
+                  <img
+                    src={`/images/${portrait}`}
+                    alt={portrait}
+                    className="w-full h-full object-contain"
+                  />
+                </button>
+              ))}
 
-{/* ARCADE INTRO */}
-{screen === "arcadeIntro" && (
-  <motion.div
-    key="arcadeIntro"
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0 }}
-    className="min-h-screen flex flex-col items-center justify-center px-4 text-center"
-  >
-<div className="text-amber-400 text-2xl md:text-3xl font-black tracking-[0.25em] mb-5 uppercase drop-shadow-lg">
-  STAGE {arcadeStage}
-</div>
+            </div>
 
- <div className="w-full flex flex-col items-center justify-center gap-8">
-    
-          {/* TUO VIAGGIATORE */}
-        <motion.div
-          initial={{ x: -120, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center"
-        >
-          <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
-            <img
-              src={`/images/${arcadePortrait}`}
-              alt="Il tuo viaggiatore"
-              className="w-full h-full object-contain"
+            <button
+              disabled={!arcadePortrait}
+              onClick={() => setScreen("arcadeWorld")}
+              className="mt-10 px-8 py-4 rounded-xl bg-yellow-500 text-black font-bold disabled:opacity-40"
+            >
+              CONFERMA
+            </button>
+
+            <button
+              onClick={() => setScreen("menu")}
+              className="mt-4 text-white/70 hover:text-white"
+            >
+              ← Indietro
+            </button>
+
+            {/* ===================================================== */}
+            {/* DEV MODE — SOLO BIBITO */}
+            {/* ===================================================== */}
+
+            {isDev && (
+              <div className="mt-8 p-4 rounded-2xl bg-red-950/50 border border-red-500/40">
+
+                <div className="text-xs font-black text-red-400 tracking-widest mb-3 text-center">
+                  DEV MODE — TEST STAGE
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2">
+
+                  {Array.from(
+                    { length: 9 },
+                    (_, i) => i + 1
+                  ).map((testStage) => (
+                    <button
+                      key={testStage}
+                      onClick={() => {
+                        setArcadeStage(testStage);
+                        setScreen("arcadeWorld");
+                      }}
+                      className="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-black transition"
+                    >
+                      STAGE {testStage}
+                    </button>
+                  ))}
+
+                </div>
+
+              </div>
+            )}
+
+          </motion.div>
+        )}
+
+        {/* ========================================================= */}
+        {/* ARCADE INTRO */}
+        {/* ========================================================= */}
+
+        {screen === "arcadeIntro" && (
+          <motion.div
+            key="arcadeIntro"
+            initial={{
+              opacity: 0,
+              scale: 0.9,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            className="min-h-screen flex flex-col items-center justify-center px-4 text-center"
+          >
+
+            <div className="text-amber-400 text-2xl md:text-3xl font-black tracking-[0.25em] mb-5 uppercase drop-shadow-lg">
+              STAGE {arcadeStage}
+            </div>
+
+            <div className="w-full flex flex-col items-center justify-center gap-8">
+
+              {/* TUO VIAGGIATORE */}
+              <motion.div
+                initial={{
+                  x: -120,
+                  opacity: 0,
+                }}
+                animate={{
+                  x: 0,
+                  opacity: 1,
+                }}
+                transition={{
+                  duration: 0.5,
+                }}
+                className="flex flex-col items-center"
+              >
+
+                <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
+
+                  <img
+                    src={`/images/${arcadePortrait}`}
+                    alt="Il tuo viaggiatore"
+                    className="w-full h-full object-contain"
+                  />
+
+                </div>
+
+                <div className="mt-2 text-sm md:text-base font-black">
+                  {user?.user_metadata?.username || user?.email || "TU"}
+                </div>
+
+              </motion.div>
+
+              {/* VS */}
+              <motion.div
+                initial={{
+                  scale: 0,
+                  opacity: 0,
+                }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                }}
+                transition={{
+                  delay: 0.45,
+                  duration: 0.35,
+                  type: "spring",
+                }}
+                className="text-2xl md:text-3xl font-black text-amber-400 drop-shadow-lg"
+              >
+                VS
+              </motion.div>
+
+              {/* NPC */}
+              <div className="flex flex-col items-center">
+
+                <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-red-500 bg-white/5 p-2 flex items-center justify-center">
+
+                  <img
+                    src={`/images/${arcadeNPCImages[arcadeStage]}`}
+                    alt={arcadeNPCNames[arcadeStage]}
+                    className="w-full h-full object-contain"
+                  />
+
+                </div>
+
+                <div className="mt-2 text-sm md:text-base font-black">
+                  {arcadeNPCNames[arcadeStage]}
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="mt-10 text-slate-400 text-sm">
+              PREPARATI ALLA SFIDA...
+            </div>
+
+          </motion.div>
+        )}
+
+        {/* ========================================================= */}
+        {/* ARCADE WORLD */}
+        {/* ========================================================= */}
+
+        {screen === "arcadeWorld" && (
+          <motion.div
+            key="arcadeWorld"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+          >
+
+            <ArcadeWorld
+              stage={arcadeStage}
+              portrait={arcadePortrait}
+              npcNames={arcadeNPCNames}
+              npcImages={arcadeNPCImages}
+              onStartAuction={(stage) => {
+                setArcadeStage(stage);
+                setArcadeIntro(true);
+                setScreen("arcadeIntro");
+              }}
+              onBack={() => setScreen("menu")}
             />
-          </div>
 
-          <div className="mt-2 text-sm md:text-base font-black">
-            {user?.user_metadata?.username || user?.email || "TU"}
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.45, duration: 0.35, type: "spring" }}
-          className="text-2xl md:text-3xl font-black text-amber-400 drop-shadow-lg"
-        >
-          VS
-        </motion.div>
-
-      {/* NPC */}
-      <div className="flex flex-col items-center">
-<div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-red-500 bg-white/5 p-2 flex items-center justify-center">
-       <img
-  src={`/images/${arcadeNPCImages[arcadeStage]}`}
-  alt={arcadeNPCNames[arcadeStage]}
-  className="w-full h-full object-contain"
-/>
-        </div>
-
-<div className="mt-2 text-sm md:text-base font-black">  {arcadeNPCNames[arcadeStage]}
-</div>
-      </div>
-
-    </div>
-
-    <div className="mt-10 text-slate-400 text-sm">
-      PREPARATI ALLA SFIDA...
-    </div>
-  </motion.div>
-)}
-
-
-{/* ARCADE WORLD */}
-{screen === "arcadeWorld" && (
-    <motion.div
-      key="arcadeWorld"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <ArcadeWorld
-        stage={arcadeStage}
-        portrait={arcadePortrait}
-        npcNames={arcadeNPCNames}
-        npcImages={arcadeNPCImages}
-        onStartAuction={(stage) => {
-          setArcadeStage(stage);
-          setArcadeIntro(true);
-          setScreen("arcadeIntro");
-        }}
-        onBack={() => setScreen("menu")}
-      />
-    </motion.div>
-  </>
-)}
-
-
+        {/* ========================================================= */}
         {/* AUCTION */}
+        {/* ========================================================= */}
+
         {screen === "auction" && (
           <motion.div
             key="auction"
@@ -456,9 +562,10 @@ useEffect(() => {
               opacity: 0,
             }}
           >
+
             <Auction
-  stage={arcadeStage}
-  onComplete={(pt, et) => {
+              stage={arcadeStage}
+              onComplete={(pt, et) => {
                 setTeams({
                   playerTeam: pt,
                   enemyTeam: et,
@@ -468,10 +575,14 @@ useEffect(() => {
               }}
               onBack={() => setScreen("menu")}
             />
+
           </motion.div>
         )}
 
+        {/* ========================================================= */}
         {/* PREMATCH */}
+        {/* ========================================================= */}
+
         {screen === "prematch" && teams && (
           <motion.div
             key="prematch"
@@ -487,6 +598,7 @@ useEffect(() => {
               opacity: 0,
             }}
           >
+
             <PreMatchSelect
               playerTeam={teams.playerTeam}
               enemyTeam={teams.enemyTeam}
@@ -506,43 +618,57 @@ useEffect(() => {
                 setScreen("menu");
               }}
             />
+
           </motion.div>
         )}
 
+        {/* ========================================================= */}
         {/* BATTLE */}
+        {/* ========================================================= */}
+
         {screen === "battle" && teams && (
           <motion.div
             key="battle"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
           >
-            
-<BattleArena
-  playerTeam={teams.playerTeam}
-  enemyTeam={teams.enemyTeam}
-  onEnd={(r) => {
-    setResult(r);
-    setTeams(null);
 
-    if (r === "win") {
-      if (arcadeStage < 9) {
-        setArcadeStage((prev) => prev + 1);
-        setScreen("arcadeWorld");
-      } else {
-        setScreen("result");
-      }
-    } else {
-      setScreen("result");
-    }
-  }}
-/>
+            <BattleArena
+              playerTeam={teams.playerTeam}
+              enemyTeam={teams.enemyTeam}
+              onEnd={(r) => {
+                setResult(r);
+                setTeams(null);
 
+                if (r === "win") {
+
+                  if (arcadeStage < 9) {
+                    setArcadeStage((prev) => prev + 1);
+                    setScreen("arcadeWorld");
+                  } else {
+                    setScreen("result");
+                  }
+
+                } else {
+                  setScreen("result");
+                }
+              }}
+            />
 
           </motion.div>
         )}
 
+        {/* ========================================================= */}
         {/* RESULT */}
+        {/* ========================================================= */}
+
         {screen === "result" && (
           <motion.div
             key="result"
@@ -556,6 +682,7 @@ useEffect(() => {
             }}
             className="min-h-screen flex flex-col items-center justify-center text-center px-6"
           >
+
             <div className="text-7xl mb-4">
               {result === "win"
                 ? "🏆"
@@ -568,27 +695,31 @@ useEffect(() => {
               className="h-16 object-contain mb-3"
             />
 
-           <h2 className="text-4xl font-black mb-2">
-  {result === "win" && arcadeStage === 9
-    ? "ARCADE COMPLETATO!"
-    : result === "win"
-      ? t("home.victory")
-      : t("home.defeat")}
-</h2>
+            <h2 className="text-4xl font-black mb-2">
 
-<p className="text-slate-400 mb-8 text-sm">
-  {result === "win" && arcadeStage === 9
-    ? "Hai completato tutti e 9 gli Stage dei Sognatori!"
-    : result === "win"
-      ? t("home.victoryMsg")
-      : t("home.defeatMsg")}
-</p>
+              {result === "win" && arcadeStage === 9
+                ? "ARCADE COMPLETATO!"
+                : result === "win"
+                  ? t("home.victory")
+                  : t("home.defeat")}
 
-{result === "win" && arcadeStage === 9 && (
-  <div className="text-amber-400 font-bold text-lg mb-8">
-    🎁 Otterrai una ricompensa!
-  </div>
-)}
+            </h2>
+
+            <p className="text-slate-400 mb-8 text-sm">
+
+              {result === "win" && arcadeStage === 9
+                ? "Hai completato tutti e 9 gli Stage dei Sognatori!"
+                : result === "win"
+                  ? t("home.victoryMsg")
+                  : t("home.defeatMsg")}
+
+            </p>
+
+            {result === "win" && arcadeStage === 9 && (
+              <div className="text-amber-400 font-bold text-lg mb-8">
+                🎁 Otterrai una ricompensa!
+              </div>
+            )}
 
             <div className="flex gap-3">
 
@@ -611,10 +742,12 @@ useEffect(() => {
               </button>
 
             </div>
+
           </motion.div>
         )}
 
       </AnimatePresence>
+
     </div>
   );
 }
