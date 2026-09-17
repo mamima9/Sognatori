@@ -36,6 +36,11 @@ const PLAYER = {
   speed: 230,
 };
 
+const PLAYER_START = {
+  x: 1450,
+  y: 1100,
+};
+
 const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
@@ -315,13 +320,11 @@ export default function Avventura() {
   const keysRef = useRef({});
 
   const playerRef = useRef({
-    x: 1800,
-    y: 900,
+    ...PLAYER_START,
   });
 
   const cameraRef = useRef({
-    x: 1800,
-    y: 900,
+    ...PLAYER_START,
   });
 
   const wildRef = useRef(
@@ -1771,10 +1774,10 @@ export default function Avventura() {
       </div>
 
       {/* =====================================
-          MINIMAP
+          MINIMAP COMPATTA
           ===================================== */}
 
-      <div className="absolute right-4 top-32 h-40 w-56 overflow-hidden rounded-2xl border border-white/15 bg-black/65 shadow-2xl backdrop-blur-md">
+      <div className="absolute right-3 top-24 z-40 h-24 w-32 overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
         <div className="relative h-full w-full">
           {ZONES.map((z) => (
             <div
@@ -1814,7 +1817,7 @@ export default function Avventura() {
           ))}
 
           <div
-            className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_12px_white]"
+            className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]"
             style={{
               left: `${
                 (player.x /
@@ -1829,10 +1832,6 @@ export default function Avventura() {
               }%`,
             }}
           />
-        </div>
-
-        <div className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-widest text-white/50">
-          Mappa del mondo
         </div>
       </div>
 
@@ -1938,11 +1937,6 @@ export default function Avventura() {
             <button
               type="button"
               onClick={() => {
-                /*
-                  Evitiamo che al ritorno
-                  possa riaprire immediatamente.
-                */
-
                 challengerCooldownRef.current[
                   challengerEncounter.id
                 ] =
@@ -1963,10 +1957,6 @@ export default function Avventura() {
             <button
               type="button"
               onClick={() => {
-                /*
-                  30 secondi di tranquillità.
-                */
-
                 challengerCooldownRef.current[
                   challengerEncounter.id
                 ] =
