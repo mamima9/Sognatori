@@ -25,7 +25,7 @@ const MAPS = {
     "#....##............#",
     "#....##....~~~~....#",
     "#...........##.....#",
-   "#..####.....~~.....#",
+    "#..####.....~~.....#",
     "#..#...............#",
     "#..#....######.....#",
     "#.......#..........#",
@@ -263,14 +263,9 @@ export default function ArcadeWorld({
   const npcName = npcNames?.[stage] || npc.name;
   const npcImage = npcImages?.[stage];
 
-  const [player, setPlayer] =
-    useState(PLAYER_START);
-
-  const [nearNpc, setNearNpc] =
-    useState(false);
-
-  const [talking, setTalking] =
-    useState(false);
+  const [player, setPlayer] = useState(PLAYER_START);
+  const [nearNpc, setNearNpc] = useState(false);
+  const [talking, setTalking] = useState(false);
 
   const isWalkable = (x, y) => {
     if (!MAP[y] || !MAP[y][x]) return false;
@@ -295,9 +290,7 @@ export default function ArcadeWorld({
         return current;
       }
 
-      setNearNpc(
-        checkNpcDistance(nextX, nextY)
-      );
+      setNearNpc(checkNpcDistance(nextX, nextY));
 
       return {
         x: nextX,
@@ -342,16 +335,10 @@ export default function ArcadeWorld({
       }
     };
 
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [nearNpc]);
 
@@ -395,23 +382,23 @@ export default function ArcadeWorld({
             maxWidth: "960px",
             aspectRatio: "20 / 15",
             background:
-  stage === 1
-    ? "linear-gradient(135deg, #16351f, #244d2c)"
-    : stage === 2
-    ? "linear-gradient(135deg, #4a160f, #8b2f16)"
-    : stage === 3
-    ? "linear-gradient(135deg, #0b3045, #176b87)"
-    : stage === 4
-    ? "linear-gradient(135deg, #5a246b, #d66bba)"
-    : stage === 5
-    ? "linear-gradient(135deg, #667085, #dbeafe)"
-    : stage === 6
-    ? "linear-gradient(135deg, #20242b, #475569)"
-    : stage === 7
-    ? "linear-gradient(135deg, #4a3020, #8b6b4a)"
-    : stage === 8
-    ? "linear-gradient(135deg, #252052, #5546a8)"
-    : "linear-gradient(135deg, #3b174f, #8b2f8f)",
+              stage === 1
+                ? "linear-gradient(135deg, #16351f, #244d2c)"
+                : stage === 2
+                ? "linear-gradient(135deg, #4a160f, #8b2f16)"
+                : stage === 3
+                ? "linear-gradient(135deg, #0b3045, #176b87)"
+                : stage === 4
+                ? "linear-gradient(135deg, #5a246b, #d66bba)"
+                : stage === 5
+                ? "linear-gradient(135deg, #667085, #dbeafe)"
+                : stage === 6
+                ? "linear-gradient(135deg, #20242b, #475569)"
+                : stage === 7
+                ? "linear-gradient(135deg, #4a3020, #8b6b4a)"
+                : stage === 8
+                ? "linear-gradient(135deg, #252052, #5546a8)"
+                : "linear-gradient(135deg, #3b174f, #8b2f8f)",
           }}
         >
 
@@ -426,60 +413,69 @@ export default function ArcadeWorld({
                 `repeat(${MAP.length}, 1fr)`,
             }}
           >
+
             {MAP.map((row, y) =>
               row.split("").map((cell, x) => (
                 <div
                   key={`${x}-${y}`}
-              className={
-  cell === "~"
-    ? "bg-gradient-to-br from-yellow-400 via-orange-600 to-red-800 border border-orange-500/30 animate-pulse"
-    : cell === "#"
-    ? stage === 1
-      ? "bg-emerald-950 border border-emerald-900"
-      : stage === 2
-      ? "bg-stone-950 border border-stone-800"
-      : stage === 3
-      ? "bg-cyan-950 border border-cyan-900"
-      : stage === 4
-      ? "bg-fuchsia-950 border border-fuchsia-900"
-      : stage === 5
-      ? "bg-sky-950 border border-sky-900"
-      : stage === 6
-      ? "bg-slate-950 border border-slate-800"
-      : stage === 7
-      ? "bg-amber-950 border border-amber-900"
-      : stage === 8
-      ? "bg-indigo-950 border border-indigo-900"
-      : "bg-purple-950 border border-purple-900"
-    : stage === 1
-    ? "bg-emerald-800/70 border border-emerald-700/20"
-   : stage === 2
-? "bg-gradient-to-br from-stone-800 via-stone-900 to-zinc-950 border border-stone-700/30"
-    : stage === 3
-    ? "bg-cyan-800/70 border border-cyan-700/20"
-    : stage === 4
-    ? "bg-fuchsia-800/70 border border-fuchsia-700/20"
-    : stage === 5
-    ? "bg-sky-800/70 border border-sky-700/20"
-    : stage === 6
-    ? "bg-slate-700/70 border border-slate-600/20"
-    : stage === 7
-    ? "bg-amber-800/70 border border-amber-700/20"
-    : stage === 8
-    ? "bg-indigo-800/70 border border-indigo-700/20"
-    : "bg-purple-800/70 border border-purple-700/20"
-}
+                  className={
+                    cell === "~"
+                      ? "bg-gradient-to-br from-yellow-400 via-orange-600 to-red-800 border border-orange-500/30 animate-pulse"
+                      : cell === "#"
+                      ? stage === 1
+                        ? "bg-emerald-950 border border-emerald-900"
+                        : stage === 2
+                        ? "bg-stone-950 border border-stone-800"
+                        : stage === 3
+                        ? "bg-cyan-950 border border-cyan-900"
+                        : stage === 4
+                        ? "bg-fuchsia-950 border border-fuchsia-900"
+                        : stage === 5
+                        ? "bg-sky-950 border border-sky-900"
+                        : stage === 6
+                        ? "bg-slate-950 border border-slate-800"
+                        : stage === 7
+                        ? "bg-amber-950 border border-amber-900"
+                        : stage === 8
+                        ? "bg-indigo-950 border border-indigo-900"
+                        : "bg-purple-950 border border-purple-900"
+                      : stage === 1
+                      ? "bg-emerald-800/70 border border-emerald-700/20"
+                      : stage === 2
+                      ? "bg-gradient-to-br from-stone-800 via-stone-900 to-zinc-950 border border-stone-700/30"
+                      : stage === 3
+                      ? "bg-cyan-800/70 border border-cyan-700/20"
+                      : stage === 4
+                      ? "bg-fuchsia-800/70 border border-fuchsia-700/20"
+                      : stage === 5
+                      ? "bg-sky-800/70 border border-sky-700/20"
+                      : stage === 6
+                      ? "bg-slate-700/70 border border-slate-600/20"
+                      : stage === 7
+                      ? "bg-amber-800/70 border border-amber-700/20"
+                      : stage === 8
+                      ? "bg-indigo-800/70 border border-indigo-700/20"
+                      : "bg-purple-800/70 border border-purple-700/20"
+                  }
                 >
-               {cell !== "#" &&
-  cell !== "~" &&
-  Math.random() > 0.82 && (
-    <div className="w-full h-full flex items-center justify-center text-xs opacity-70">
-     {stage === 1 ? "🌿" : stage === 2 ? "🪨" : ""}
-    </div>
-  )}     
-             </div>
+
+                  {cell !== "#" &&
+                    cell !== "~" &&
+                    Math.random() > 0.82 && (
+                      <div className="w-full h-full flex items-center justify-center text-xs opacity-70">
+                        {stage === 1
+                          ? "🌿"
+                          : stage === 2
+                          ? "🪨"
+                          : ""}
+                      </div>
+                    )}
+
+                </div>
               ))
             )}
+
+          </div>
 
           {/* NPC */}
 
@@ -492,23 +488,27 @@ export default function ArcadeWorld({
               height: `${tileHeight}%`,
             }}
           >
-      <div className="w-10 h-10 drop-shadow-xl">
-  {npcImage ? (
-    <img
-      src={`/images/${npcImage}`}
-      alt={npcName}
-      className="w-full h-full object-contain"
-    />
-  ) : (
-    <span className="text-3xl">
-      {npc.emoji}
-    </span>
-  )}
-</div>
+
+            <div className="w-10 h-10 drop-shadow-xl">
+
+              {npcImage ? (
+                <img
+                  src={`/images/${npcImage}`}
+                  alt={npcName}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-3xl">
+                  {npc.emoji}
+                </span>
+              )}
+
+            </div>
 
             <div className="text-[9px] font-black text-amber-300">
               {npcName}
             </div>
+
           </div>
 
           {/* YOU */}
@@ -527,23 +527,27 @@ export default function ArcadeWorld({
               height: `${tileHeight}%`,
             }}
           >
+
             <div className="w-10 h-10 drop-shadow-xl">
-  {portrait ? (
-    <img
-      src={`/images/${portrait}`}
-      alt="Ritratto giocatore"
-      className="w-full h-full object-contain"
-    />
-  ) : (
-    <span className="text-3xl">
-      🧙‍♂️
-    </span>
-  )}
-</div>
+
+              {portrait ? (
+                <img
+                  src={`/images/${portrait}`}
+                  alt="Ritratto giocatore"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-3xl">
+                  🧙‍♂️
+                </span>
+              )}
+
+            </div>
 
             <div className="text-[9px] font-black text-white">
               YOU
             </div>
+
           </motion.div>
 
         </div>
@@ -551,6 +555,7 @@ export default function ArcadeWorld({
         {/* CONTROLLI DESKTOP */}
 
         <div className="hidden sm:block text-center mt-4 text-xs text-slate-400">
+
           <b>WASD</b> / <b>FRECCE</b> per muoverti
 
           {nearNpc && (
@@ -558,6 +563,7 @@ export default function ArcadeWorld({
               • Premi E per parlare
             </span>
           )}
+
         </div>
 
         {/* PAD MOBILE */}
@@ -636,7 +642,6 @@ export default function ArcadeWorld({
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
                 💬 PARLA CON {npcName}
-
               </button>
 
             </motion.div>
@@ -665,22 +670,24 @@ export default function ArcadeWorld({
               className="mt-5 mx-auto max-w-md rounded-2xl bg-slate-900 border border-amber-500/40 p-5 text-center shadow-2xl"
             >
 
-              <div className="w-10 h-10 drop-shadow-xl">
-  {npcImage ? (
-    <img
-      src={`/images/${npcImage}`}
-      alt={npcName}
-      className="w-full h-full object-contain"
-    />
-  ) : (
-    <span className="text-3xl">
-      {npc.emoji}
-    </span>
-  )}
-</div>
+              <div className="w-10 h-10 drop-shadow-xl mx-auto mb-2">
+
+                {npcImage ? (
+                  <img
+                    src={`/images/${npcImage}`}
+                    alt={npcName}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-3xl">
+                    {npc.emoji}
+                  </span>
+                )}
+
+              </div>
 
               <div className="text-amber-400 font-black uppercase tracking-widest text-xs mb-2">
-               {npcName}
+                {npcName}
               </div>
 
               <p className="text-sm text-slate-300 mb-5">
@@ -697,12 +704,10 @@ export default function ArcadeWorld({
             </motion.div>
           )}
 
-         </AnimatePresence>
+        </AnimatePresence>
 
       </div>
 
     </div>
-
-  </div>
   );
 }
