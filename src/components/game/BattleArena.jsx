@@ -461,44 +461,7 @@ while (remainingActions.length > 0) {
     remainingActions
   );
 }
-  const { log: actionLog, events } = processAction(act, lang);
-
-  setLog((prev) => [...prev, ...actionLog]);
-
-  if (events.length) {
-    setPopups(events);
-  }
-
-  // Salva una fotografia reale dello stato dopo QUESTA mossa.
-  // Così le mosse successive non modificano retroattivamente
-  // gli HP mostrati per la mossa precedente.
-  setPlayerActive(
-    pActive.map((s) =>
-      s
-        ? {
-            ...s,
-            statMods: s.statMods ? { ...s.statMods } : s.statMods,
-          }
-        : s
-    )
-  );
-
-  setEnemyActive(
-    eActive.map((s) =>
-      s
-        ? {
-            ...s,
-            statMods: s.statMods ? { ...s.statMods } : s.statMods,
-          }
-        : s
-    )
-  );
-
-  await sleep(4000);
-
-  setPopups([]);
-  await sleep(200);
-}
+ 
     
 
     // End of turn
