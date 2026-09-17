@@ -17,7 +17,16 @@ export default function Home() {
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
   const [result, setResult] = useState(null);
-
+const [arcadePortrait, setArcadePortrait] = useState(null);
+const arcadePortraits = [
+  "angi.png",
+  "moro.png",
+  "anna.png",
+  "xia.png",
+  "vecchiaccio.png",
+  "diouf.png",
+  "biondo.png",
+];
 
   const RULES = [
     t("rule.1"),
@@ -130,7 +139,10 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => setScreen("arcadeWorld")}
+             onClick={() => {
+  setArcadePortrait(null);
+  setScreen("arcadePortrait");
+}}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
               >
                 🤖 {t("Arcade")}
@@ -252,6 +264,57 @@ export default function Home() {
           </motion.div>
         )}
 
+
+{screen === "arcadePortrait" && (
+  <motion.div
+    key="arcadePortrait"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="min-h-screen flex flex-col items-center justify-center p-6"
+  >
+    <h1 className="text-4xl font-bold text-white mb-8">
+      SCEGLI IL TUO RITRATTO
+    </h1>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {arcadePortraits.map((portrait) => (
+        <button
+          key={portrait}
+          onClick={() => setArcadePortrait(portrait)}
+          className={`w-32 h-40 rounded-xl border-4 transition-all ${
+            arcadePortrait === portrait
+              ? "border-yellow-400 scale-110"
+              : "border-white/20 hover:border-white/60"
+          }`}
+        >
+     <img
+  src={`/images/${portrait}`}
+  alt={portrait}
+  className="w-full h-full object-contain"
+/>
+        </button>
+      ))}
+    </div>
+
+    <button
+      disabled={!arcadePortrait}
+      onClick={() => setScreen("arcadeWorld")}
+      className="mt-10 px-8 py-4 rounded-xl bg-yellow-500 text-black font-bold disabled:opacity-40"
+    >
+      CONFERMA
+    </button>
+
+    <button
+      onClick={() => setScreen("menu")}
+      className="mt-4 text-white/70 hover:text-white"
+    >
+      ← Indietro
+    </button>
+  </motion.div>
+)}
+
+
 {/* ARCADE WORLD */}
 {screen === "arcadeWorld" && (
   <motion.div
@@ -262,6 +325,7 @@ export default function Home() {
   >
     <ArcadeWorld
   stage={arcadeStage}
+  portrait={arcadePortrait}
   onStartAuction={(stage) => {
     setArcadeStage(stage);
     setScreen("auction");

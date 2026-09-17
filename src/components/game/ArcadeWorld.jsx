@@ -251,6 +251,7 @@ const STAGE_NPCS = {
 
 export default function ArcadeWorld({
   stage = 1,
+  portrait,
   onStartAuction,
   onBack,
 }) {
@@ -437,9 +438,17 @@ export default function ArcadeWorld({
               height: `${tileHeight}%`,
             }}
           >
-            <div className="text-3xl drop-shadow-xl">
-              {npc.emoji}
-            </div>
+      <div className="w-10 h-10 drop-shadow-xl">
+  {portrait ? (
+    <img
+      src={`/images/${portrait}`}
+      alt="Ritratto giocatore"
+      className="w-full h-full object-contain"
+    />
+  ) : (
+    "🧙‍♂️"
+  )}
+</div> 
 
             <div className="text-[9px] font-black text-amber-300">
               {npc.name}
