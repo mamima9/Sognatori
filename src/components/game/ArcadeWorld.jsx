@@ -706,8 +706,9 @@ export default function ArcadeWorld({
     nearNpc={nearNpc}
   />
 ) : (
-  <div
-            className="absolute inset-0 grid"
+  <>
+    <div
+      className="absolute inset-0 grid"
             style={{
               gridTemplateColumns:
                 `repeat(${MAP[0].length}, 1fr)`,
@@ -779,7 +780,6 @@ export default function ArcadeWorld({
 
           </div>
 
-          {/* NPC */}
 
           <div
             className="absolute flex flex-col items-center justify-center pointer-events-none"
@@ -850,8 +850,9 @@ export default function ArcadeWorld({
               YOU
             </div>
 
-          </motion.div>
-          )}
+             </motion.div>
+        </>
+        )}
 
         </div>
 
