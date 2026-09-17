@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/i18n";
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const isDev = user?.user_metadata?.username === "bibito";
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
@@ -416,6 +417,19 @@ useEffect(() => {
 
 {/* ARCADE WORLD */}
 {screen === "arcadeWorld" && (
+  {isDev && (
+  <div className="fixed top-4 left-4 z-50 flex flex-wrap gap-2 max-w-xs">
+    {Array.from({ length: 9 }, (_, i) => i + 1).map((testStage) => (
+      <button
+        key={testStage}
+        onClick={() => setArcadeStage(testStage)}
+        className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-black shadow-lg hover:bg-red-500"
+      >
+        STAGE {testStage}
+      </button>
+    ))}
+  </div>
+)}
   <motion.div
     key="arcadeWorld"
     initial={{ opacity: 0 }}
