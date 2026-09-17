@@ -7,6 +7,7 @@ import {
   initBattleSognatore,
   calcDamage,
   orderActions,
+  reorderActions,
   processAction,
   resetStatsOnBench
 } from "@/lib/battleEngine";
@@ -402,15 +403,64 @@ Object.entries(usedActions).forEach(([key, a]) => {
       }
     });
 
-    const ordered = orderActions(
-      pActive,
-      eActive,
-      playerAttacks,
-      enemyAttacks
-    );
+    let remainingActions = orderActions(
+  pActive,
+  eActive,
+  playerAttacks,
+  enemyAttacks
+);
 
-    // Execute each attack one at a time — 4 seconds per move
-   for (const act of ordered) {
+// Execute each attack one at a time — 4 seconds per move
+while (remainingActions.length > 0) {
+  const act = remainingActions.shift();
+
+  const { log: actionLog, events } = processAction(
+    act,
+    lang
+  );
+
+  setLog((prev) => [...prev, ...actionLog]);
+
+  if (events.length) {
+    setPopups(events);
+  }
+
+  setPlayerActive(
+    pActive.map((s) =>
+      s
+        ? {
+            ...s,
+            statMods: s.statMods
+              ? { ...s.statMods }
+              : s.statMods,
+          }
+        : s
+    )
+  );
+
+  setEnemyActive(
+    eActive.map((s) =>
+      s
+        ? {
+            ...s,
+            statMods: s.statMods
+              ? { ...s.statMods }
+              : s.statMods,
+          }
+        : s
+    )
+  );
+
+  await sleep(4000);
+
+  setPopups([]);
+  await sleep(200);
+
+  // 🔥 RICALCOLA L'ORDINE DELLE MOSSE ANCORA DA ESEGUIRE
+  remainingActions = reorderActions(
+    remainingActions
+  );
+}
   const { log: actionLog, events } = processAction(act, lang);
 
   setLog((prev) => [...prev, ...actionLog]);

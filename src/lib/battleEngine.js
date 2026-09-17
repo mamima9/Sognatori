@@ -753,6 +753,35 @@ export function orderActions(
   return all;
 }
 
+export function reorderActions(actions) {
+  const indexed = actions.map((action, index) => ({
+    action,
+    index,
+  }));
+
+  indexed.sort((a, b) => {
+    const pa = getPriority(a.action.attacker);
+    const pb = getPriority(b.action.attacker);
+
+    if (pb !== pa) {
+      return pb - pa;
+    }
+
+    const va = effVel(a.action.attacker);
+    const vb = effVel(b.action.attacker);
+
+    if (vb !== va) {
+      return vb - va;
+    }
+
+    // Se priorità e velocità sono uguali,
+    // manteniamo l'ordine precedente.
+    return a.index - b.index;
+  });
+
+  return indexed.map(({ action }) => action);
+}
+
 export function processAction(
   act,
   lang = "it"

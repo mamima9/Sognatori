@@ -15,6 +15,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 import {
   initBattleSognatore,
   orderActions,
+  reorderActions,
   processActionDual,
   applyEndOfTurnDual,
   onEntryDual,
@@ -1162,23 +1163,27 @@ inc.protectedThisTurn = false;
       p1Active
     );
 
-    const ordered = orderActions(
-      p1Active,
-      p2Active,
-      playerAttacks,
-      enemyAttacks
-    );
+   let remainingActions = orderActions(
+  p1Active,
+  p2Active,
+  playerAttacks,
+  enemyAttacks
+);
 
-   /*
- * ESECUZIONE MOSSE UNA ALLA VOLTA
- * Ogni mossa viene:
- * 1. calcolata
- * 2. salvata su Supabase
- * 3. mostrata nell'event window
- * 4. lasciata visibile per 4 secondi
- */
+while (remainingActions.length > 0) {
+  const act = remainingActions.shift();
 
-for (const act of ordered) {
+  const {
+    log_it,
+    log_en,
+    events,
+  } = processActionDual(
+    act,
+    m_it,
+    m_en
+  );
+
+  // ... tutto il codice che hai già qui
   const {
     log_it,
     log_en,
@@ -1234,6 +1239,12 @@ turnFrames.push({
   events: frameEvents,
   section: "actions",
 });
+  // 🔥 RICALCOLA L'ORDINE DOPO LA MOSSA
+  // usando le statistiche aggiornate.
+  remainingActions = reorderActions(
+    remainingActions
+  );
+}
 }
 /*
  * FINE TURNO
