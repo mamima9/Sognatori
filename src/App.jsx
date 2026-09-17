@@ -24,6 +24,7 @@ import { useLanguage } from '@/lib/i18n';
 import SognatoriStats from '@/pages/SognatoriStats';
 import TestRandom from '@/pages/TestRandom';
 import Profile from '@/pages/Profile';
+import Avventura from '@/pages/Avventura';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
           <Route path="/test-random" element={<TestRandom />} />
            <Route path="/profilo" element={<Profile />} />
         </Route>
+        <Route path="/avventura" element={<Avventura />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <GlobalMusicPlayer />
