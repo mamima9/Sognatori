@@ -24,6 +24,7 @@ import {
 } from "@/lib/battleEngine";
 
 import BattlePokemon from "./BattlePokemon";
+import { setMusicMode } from "./GlobalMusicPlayer";
 import BenchCard from "./BenchCard";
 import { SognatoreImage, FactionBadge } from "./HealthBar";
 import TypeChartTable from "./TypeChartTable";
@@ -71,6 +72,13 @@ function buildAttacks(actions, myActive, oppActive) {
     
 
 export default function MultiplayerBattleArena({ matchId, onEnd }) {
+  useEffect(() => {
+  setMusicMode("battle");
+
+  return () => {
+    setMusicMode("main");
+  };
+}, []);
   const [match, setMatch] = useState(null);
 
   const { user: currentUser } = useAuth();

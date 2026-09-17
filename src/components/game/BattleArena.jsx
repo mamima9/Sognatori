@@ -12,6 +12,7 @@ import {
   resetStatsOnBench
 } from "@/lib/battleEngine";
 import BattlePokemon from "./BattlePokemon";
+import { setMusicMode } from "./GlobalMusicPlayer";
 import BenchCard from "./BenchCard";
 import { SognatoreImage } from "./HealthBar";
 import TypeChartTable from "./TypeChartTable";
@@ -47,6 +48,13 @@ function actionLabel(act, enemyActive, playerBench, m) {
 }
 
 export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
+  useEffect(() => {
+  setMusicMode("battle");
+
+  return () => {
+    setMusicMode("main");
+  };
+}, []);
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const m = bm(lang);

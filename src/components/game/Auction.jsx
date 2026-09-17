@@ -9,6 +9,7 @@ import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import { setMusicMode } from "./GlobalMusicPlayer";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 const COIN = "/images/moneta-sognatori.png";

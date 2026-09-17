@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
-const TRACKS = [
+const MAIN_TRACKS = [
   {
     name: "Dream Arena",
     url: "/audio/002Sognatori - Dream Arena.mp3",
@@ -28,59 +29,262 @@ const TRACKS = [
   },
 ];
 
-export default function GlobalMusicPlayer() {
-  const [trackIdx, setTrackIdx] = useState(
-    () => Math.floor(Math.random() * TRACKS.length)
+const BATTLE_TRACKS = [
+  {
+    name: "Battaglia",
+    url: "/audio/Battaglia.mp3",
+  },
+  {
+    name: "Eroica tensione",
+    url: "/audio/Eroica tensione.mp3",
+  },
+];
+
+const AUCTION_TRACKS = [
+  {
+    name: "Franco",
+    url: "/audio/Franco.mp3",
+  },
+  {
+    name: "Motivo Mediterraneo",
+    url: "/audio/Motivo Mediterraneo.mp3",
+  },
+];
+
+/*
+ * Cambia la modalità musicale del player globale.
+ *
+ * mode:
+ * "main"
+ * "battle"
+ * "auction"
+ */
+export function setMusicMode(mode) {
+  window.dispatchEvent(
+    new CustomEvent("sognatori-music-mode", {
+      detail: { mode },
+    })
   );
+}
+
+export default function GlobalMusicPlayer() {
+  const location = useLocation();
+
+  const [musicMode, setMusicModeState] = useState("main");
+
+  const [trackIdx, setTrackIdx] = useState(
+    () => Math.floor(Math.random() * MAIN_TRACKS.length)
+  );
+
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.25);
   const [showPlaylist, setShowPlaylist] = useState(false);
 
   const audioRef = useRef(null);
   const playingRef = useRef(false);
+  const startedRef = useRef(false);
 
-  const current = TRACKS[trackIdx];
+  /*
+   * TRACKS ATTUALI
+   */
+  const tracks =
+    musicMode === "battle"
+      ? BATTLE_TRACKS
+      : musicMode === "auction"
+        ? AUCTION_TRACKS
+        : MAIN_TRACKS;
 
+  const current = tracks[trackIdx] || tracks[0];
+
+  /*
+   * MEMORIZZA STATO PLAY
+   */
   useEffect(() => {
     playingRef.current = playing;
   }, [playing]);
 
-  // Create audio element when track changes
-  // Auto-advance to next track when the current one ends
+  /*
+   * CAMBIO MODALITÀ MUSICA
+   */
   useEffect(() => {
+    const handleMusicMode = (event) => {
+      const mode = event.detail?.mode || "main";
+
+      const nextTracks =
+        mode === "battle"
+          ? BATTLE_TRACKS
+          : mode === "auction"
+            ? AUCTION_TRACKS
+            : MAIN_TRACKS;
+
+      const nextIndex = Math.floor(
+        Math.random() * nextTracks.length
+      );
+
+      setMusicModeState(mode);
+      setTrackIdx(nextIndex);
+    };
+
+    window.addEventListener(
+      "sognatori-music-mode",
+      handleMusicMode
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sognatori-music-mode",
+        handleMusicMode
+      );
+    };
+  }, []);
+
+  /*
+   * CREA AUDIO
+   */
+  useEffect(() => {
+    if (!current) return;
+
     const audio = new Audio(current.url);
 
     audio.loop = false;
     audio.volume = volume;
+    audio.preload = "auto";
 
     audio.onended = () => {
-      setTrackIdx((i) => (i + 1) % TRACKS.length);
+      setTrackIdx(
+        (i) => (i + 1) % tracks.length
+      );
     };
 
     audioRef.current = audio;
 
-    // Continue playing automatically when changing track
+    /*
+     * Se il player era già in riproduzione,
+     * continua automaticamente con il nuovo brano.
+     */
     if (playingRef.current) {
-      audio.play().catch(() => setPlaying(false));
+      audio
+        .play()
+        .then(() => {
+          setPlaying(true);
+        })
+        .catch(() => {
+          setPlaying(false);
+        });
     }
 
     return () => {
       audio.pause();
       audio.currentTime = 0;
       audio.src = "";
-      audioRef.current = null;
+
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
     };
 
-    // eslint-disable-next-line
-  }, [trackIdx]);
+    // tracks cambia in base alla modalità, ma non deve
+    // essere usato direttamente come dipendenza.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackIdx, musicMode]);
 
-  // Update volume
+  /*
+   * VOLUME
+   */
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
+  /*
+   * AUTOPLAY HOME
+   *
+   * Prova immediatamente.
+   * Se il browser blocca l'autoplay,
+   * riprova al primo gesto dell'utente.
+   */
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+
+    /*
+     * Se siamo già partiti non dobbiamo
+     * registrare nuovamente gli eventi.
+     */
+    if (startedRef.current) return;
+
+    const startMusic = () => {
+      const audio = audioRef.current;
+
+      if (!audio || startedRef.current) return;
+
+      audio
+        .play()
+        .then(() => {
+          startedRef.current = true;
+          setPlaying(true);
+
+          window.removeEventListener(
+            "pointerdown",
+            startMusic
+          );
+
+          window.removeEventListener(
+            "keydown",
+            startMusic
+          );
+
+          window.removeEventListener(
+            "touchstart",
+            startMusic
+          );
+        })
+        .catch(() => {
+          /*
+           * Autoplay bloccato dal browser.
+           * Riproveremo al prossimo gesto.
+           */
+        });
+    };
+
+    startMusic();
+
+    window.addEventListener(
+      "pointerdown",
+      startMusic
+    );
+
+    window.addEventListener(
+      "keydown",
+      startMusic
+    );
+
+    window.addEventListener(
+      "touchstart",
+      startMusic
+    );
+
+    return () => {
+      window.removeEventListener(
+        "pointerdown",
+        startMusic
+      );
+
+      window.removeEventListener(
+        "keydown",
+        startMusic
+      );
+
+      window.removeEventListener(
+        "touchstart",
+        startMusic
+      );
+    };
+  }, [location.pathname]);
+
+  /*
+   * PLAY / PAUSE
+   */
   const togglePlay = () => {
     const audio = audioRef.current;
 
@@ -92,19 +296,48 @@ export default function GlobalMusicPlayer() {
     } else {
       audio
         .play()
-        .then(() => setPlaying(true))
-        .catch(() => setPlaying(false));
+        .then(() => {
+          startedRef.current = true;
+          setPlaying(true);
+        })
+        .catch(() => {
+          setPlaying(false);
+        });
     }
   };
 
+  /*
+   * CAMBIO BRANO
+   */
   const selectTrack = (idx) => {
     setTrackIdx(idx);
     setShowPlaylist(false);
   };
 
+  /*
+   * BRANO PRECEDENTE
+   */
+  const previousTrack = () => {
+    setTrackIdx(
+      (i) =>
+        (i - 1 + tracks.length) %
+        tracks.length
+    );
+  };
+
+  /*
+   * BRANO SUCCESSIVO
+   */
+  const nextTrack = () => {
+    setTrackIdx(
+      (i) => (i + 1) % tracks.length
+    );
+  };
+
   return (
     <div className="w-full flex justify-center px-4 py-4">
       <div className="relative">
+
         {/* PLAYLIST */}
         <AnimatePresence>
           {showPlaylist && (
@@ -142,7 +375,8 @@ export default function GlobalMusicPlayer() {
                 z-50
               "
             >
-              {/* PLAYLIST TITLE */}
+
+              {/* TITOLO */}
               <div
                 className="
                   px-3
@@ -156,15 +390,21 @@ export default function GlobalMusicPlayer() {
                   tracking-wider
                 "
               >
-                Playlist
+                {musicMode === "battle"
+                  ? "Battle"
+                  : musicMode === "auction"
+                    ? "Asta"
+                    : "Playlist"}
               </div>
 
-              {/* TRACK LIST */}
+              {/* BRANI */}
               <div className="max-h-60 overflow-y-auto">
-                {TRACKS.map((t, i) => (
+                {tracks.map((t, i) => (
                   <button
                     key={i}
-                    onClick={() => selectTrack(i)}
+                    onClick={() =>
+                      selectTrack(i)
+                    }
                     className={`
                       w-full
                       text-left
@@ -184,7 +424,9 @@ export default function GlobalMusicPlayer() {
                     `}
                   >
                     <span className="text-xs">
-                      {i === trackIdx && playing ? "▶" : "♪"}
+                      {i === trackIdx && playing
+                        ? "▶"
+                        : "♪"}
                     </span>
 
                     <span className="truncate flex-1">
@@ -217,7 +459,11 @@ export default function GlobalMusicPlayer() {
                   step="0.05"
                   value={volume}
                   onChange={(e) =>
-                    setVolume(parseFloat(e.target.value))
+                    setVolume(
+                      parseFloat(
+                        e.target.value
+                      )
+                    )
                   }
                   className="flex-1 h-1 accent-amber-400"
                 />
@@ -243,13 +489,10 @@ export default function GlobalMusicPlayer() {
             max-w-full
           "
         >
+
           {/* PREVIOUS */}
           <button
-            onClick={() =>
-              setTrackIdx(
-                (i) => (i - 1 + TRACKS.length) % TRACKS.length
-              )
-            }
+            onClick={previousTrack}
             className="
               w-7
               h-7
@@ -286,18 +529,18 @@ export default function GlobalMusicPlayer() {
               hover:brightness-110
               transition
             "
-            aria-label={playing ? "Pausa" : "Riproduci"}
+            aria-label={
+              playing
+                ? "Pausa"
+                : "Riproduci"
+            }
           >
             {playing ? "⏸" : "▶"}
           </button>
 
           {/* NEXT */}
           <button
-            onClick={() =>
-              setTrackIdx(
-                (i) => (i + 1) % TRACKS.length
-              )
-            }
+            onClick={nextTrack}
             className="
               w-7
               h-7
@@ -316,9 +559,13 @@ export default function GlobalMusicPlayer() {
             ⏭
           </button>
 
-          {/* CURRENT TRACK / PLAYLIST */}
+          {/* CURRENT TRACK */}
           <button
-            onClick={() => setShowPlaylist((s) => !s)}
+            onClick={() =>
+              setShowPlaylist(
+                (s) => !s
+              )
+            }
             className="
               ml-1
               px-2
@@ -338,7 +585,7 @@ export default function GlobalMusicPlayer() {
             aria-label="Apri playlist"
           >
             <span className="truncate">
-              {current.name}
+              {current?.name || "Musica"}
             </span>
 
             <span className="text-[8px] flex-shrink-0">

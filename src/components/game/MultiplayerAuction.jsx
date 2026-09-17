@@ -17,6 +17,7 @@ import { modeLabel } from "@/lib/gameConstants";
 import { useLanguage } from "@/lib/i18n";
 import { bm } from "@/lib/battleMessages";
 import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import { setMusicMode } from "./GlobalMusicPlayer";
 
 const BID_OPTIONS = [1, 5, 10];
 const AUCTION_SECONDS = 60;
@@ -24,6 +25,13 @@ const COIN = "/images/moneta-sognatori.png";
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
 export default function MultiplayerAuction({ matchId, onAbandon }) {
+  useEffect(() => {
+  setMusicMode("auction");
+
+  return () => {
+    setMusicMode("main");
+  };
+}, []);
   const [match, setMatch] = useState(null);
   const [now, setNow] = useState(Date.now());
 
