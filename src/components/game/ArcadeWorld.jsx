@@ -476,7 +476,8 @@ export default function ArcadeWorld({
     <div className="w-full h-full flex items-center justify-center text-xs opacity-70">
      {stage === 1 ? "🌿" : stage === 2 ? "🪨" : ""}
     </div>
-  )}                </div>
+  )}     
+             </div>
               ))
             )}
 
