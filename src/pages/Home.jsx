@@ -56,7 +56,7 @@ useEffect(() => {
 
   const timer = setTimeout(() => {
     setScreen("auction");
-  }, 3000);
+  }, 6000);
 
   return () => clearTimeout(timer);
 }, [screen]);
@@ -360,23 +360,36 @@ useEffect(() => {
   STAGE {arcadeStage}
 </div>
 
-<div className="w-full max-w-5xl flex items-center justify-center gap-10 md:gap-12">
-      {/* TUO VIAGGIATORE */}
-      <div className="flex flex-col items-center">
-<div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
-          <img
-            src={`/images/${arcadePortrait}`}
-            alt="Il tuo viaggiatore"
-            className="w-full h-full object-contain"
-          />
-        </div>
-        </div>
-<div className="mt-2 text-sm md:text-base font-black">  {user?.user_metadata?.username || user?.email || "TU"}
-</div>
+ <div className="w-full flex flex-col items-center justify-center gap-8">
+    
+          {/* TUO VIAGGIATORE */}
+        <motion.div
+          initial={{ x: -120, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center"
+        >
+          <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
+            <img
+              src={`/images/${arcadePortrait}`}
+              alt="Il tuo viaggiatore"
+              className="w-full h-full object-contain"
+            />
+          </div>
 
-      <div className="text-3xl md:text-4xl font-black text-amber-400 drop-shadow-lg">
-  VS
-</div>
+          <div className="mt-2 text-sm md:text-base font-black">
+            {user?.user_metadata?.username || user?.email || "TU"}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.45, duration: 0.35, type: "spring" }}
+          className="text-2xl md:text-3xl font-black text-amber-400 drop-shadow-lg"
+        >
+          VS
+        </motion.div>
 
       {/* NPC */}
       <div className="flex flex-col items-center">
