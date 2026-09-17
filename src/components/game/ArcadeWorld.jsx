@@ -697,10 +697,12 @@ export default function ArcadeWorld({
             </motion.div>
           )}
 
-        </AnimatePresence>
+         </AnimatePresence>
 
       </div>
 
     </div>
+
+  </div>
   );
 }
