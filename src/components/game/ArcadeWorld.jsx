@@ -181,7 +181,7 @@ const STAGE_NPCS = {
     emoji: "🌳",
     world: "La Foresta dei Sognatori",
     dialogue:
-      "Benvenuto nella Foresta dei Sognatori. Qui ogni scelta può cambiare il tuo cammino. Sei pronto a mettere alla prova la tua squadra?",
+      "Benvenuto nella Foresta dei Sognatori. Qui ogni scelta può cambiare il tuo cammino. Sei pronto/a a mettere alla prova la tua natura?",
   },
 
   2: {
@@ -189,7 +189,7 @@ const STAGE_NPCS = {
     emoji: "👹",
     world: "Il Vulcano dei Demoni",
     dialogue:
-      "Qui dentro non basta essere forte. Devi avere il coraggio di rilanciare quando le cose si fanno difficili. Vediamo quanto vali.",
+      "Qui dentro non basta essere forte. Devi avere il coraggio di cambiare quando le cose si fanno difficili. Vediamo quanto vali.",
   },
 
   3: {
@@ -205,7 +205,7 @@ const STAGE_NPCS = {
     emoji: "🍬",
     world: "Sniakerville",
     dialogue:
-      "Sembra tutto dolce e tranquillo, vero? Non fidarti delle apparenze. Anche qui potresti trovare un avversario difficile da battere.",
+      "Sembra tutto dolce e tranquillo, vero? Non fidarti delle apparenze. Le cose più dolci posso essere le più pericolose.",
   },
 
   5: {
@@ -213,7 +213,7 @@ const STAGE_NPCS = {
     emoji: "☁️",
     world: "Sulle nuvole",
     dialogue:
-      "Da quassù tutto sembra più semplice. Ma nell'asta basta un solo rilancio per mandare in fumo i tuoi piani.",
+      "Da quassù tutto sembra più semplice. Quanto riuscirai a tenere la testa tra le nuvole senza impazzire?",
   },
 
   6: {
@@ -221,7 +221,7 @@ const STAGE_NPCS = {
     emoji: "🤖",
     world: "Bug City",
     dialogue:
-      "Sistema attivo. Analisi dell'avversario completata. Errore previsto: sottovalutare l'asta. Procedi con cautela.",
+      "Sistema attivo. Analisi dell'avversario completata. Errore previsto: sottovalutare l'asta. Vittoria assicurata",
   },
 
   7: {
@@ -229,7 +229,7 @@ const STAGE_NPCS = {
     emoji: "🏠",
     world: "Una piccola casa",
     dialogue:
-      "Non lasciarti ingannare da questa casetta. Qui si gioca con una strategia diversa... e ogni scelta conta.",
+      "Ti sei lasciato/a ingannare da questa casetta. Qui si gioca con una strategia diversa...usare i migliori, tranquillo/a avrai paura fino a quando finalmente avrai perso",
   },
 
   8: {
@@ -237,7 +237,7 @@ const STAGE_NPCS = {
     emoji: "🧙",
     world: "Accademia dei Sognatori",
     dialogue:
-      "Benvenuto all'Accademia. Qui non si impara soltanto a combattere: si impara a costruire la squadra perfetta.",
+      "Benvenuto all'Accademia , hai fatto un bel viaggio. Qui non si impara soltanto a combattere: si impara a trascendere la tua realtà. Ho fatto il tuo stesso viaggio, tempo fa",
   },
 
   9: {
@@ -245,7 +245,7 @@ const STAGE_NPCS = {
     emoji: "👑",
     world: "Mimmiland",
     dialogue:
-      "Sei arrivato fin qui. Da questo momento non sarà più facile. Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland.",
+      "Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland. Battimi ed entra davvero a far parte del mondo dei Sognatori",
   },
 };
 
@@ -587,9 +587,6 @@ export default function ArcadeWorld({
               >
                 💬 PARLA CON {npcName}
 
-                <span className="ml-2 text-xs opacity-70">
-                  [E]
-                </span>
               </button>
 
             </motion.div>
