@@ -363,7 +363,7 @@ useEffect(() => {
 <div className="w-full max-w-5xl flex items-center justify-center gap-10 md:gap-24">
       {/* TUO VIAGGIATORE */}
       <div className="flex flex-col items-center">
-        <div className="w-52 h-52 rounded-2xl border-4 border-amber-400 bg-white/5 p-3">
+<div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
           <img
             src={`/images/${arcadePortrait}`}
             alt="Il tuo viaggiatore"
@@ -375,13 +375,13 @@ useEffect(() => {
   {user?.user_metadata?.username || user?.email || "TU"}
 </div>
 
-      <div className="text-5xl md:text-7xl font-black text-amber-400 drop-shadow-lg">
+      <div className="text-3xl md:text-4xl font-black text-amber-400 drop-shadow-lg">
   VS
 </div>
 
       {/* NPC */}
       <div className="flex flex-col items-center">
-        <div className="w-52 h-52 rounded-2xl border-4 border-red-500 bg-white/5 p-3 flex items-center justify-center">
+<div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-red-500 bg-white/5 p-2 flex items-center justify-center">
        <img
   src={`/images/${arcadeNPCImages[arcadeStage]}`}
   alt={arcadeNPCNames[arcadeStage]}
