@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import Auction from "@/components/game/Auction";
@@ -27,6 +27,39 @@ const arcadePortraits = [
   "diouf.png",
   "biondo.png",
 ];
+const arcadeNPCNames = {
+  1: "Gnopot",
+  2: "Ribarbanno",
+  3: "Civu",
+  4: "Marsmellow",
+  5: "Spaxio",
+  6: "Gubbo",
+  7: "Boccinu-R",
+  8: "Viaggiatore101",
+  9: "Affrescone",
+};
+
+const arcadeNPCImages = {
+  1: "gnopot.png",
+  2: "ribarbanno.jpg",
+  3: "civu.png",
+  4: "cappucc.png",
+  5: "spaxio.png",
+  6: "gubbo.png",
+  7: "boccinu-r.png",
+  8: "viaggiatore101.png",
+  9: "affrescone.png",
+};
+const [arcadeIntro, setArcadeIntro] = useState(false);
+useEffect(() => {
+  if (screen !== "arcadeIntro") return;
+
+  const timer = setTimeout(() => {
+    setScreen("auction");
+  }, 3000);
+
+  return () => clearTimeout(timer);
+}, [screen]);
 
   const RULES = [
     t("rule.1"),
@@ -274,7 +307,7 @@ const arcadePortraits = [
     className="min-h-screen flex flex-col items-center justify-center p-6"
   >
     <h1 className="text-4xl font-bold text-white mb-8">
-      SCEGLI IL TUO RITRATTO
+      SCEGLI IL TUO VIAGGIATORE
     </h1>
 
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -314,6 +347,61 @@ const arcadePortraits = [
   </motion.div>
 )}
 
+{/* ARCADE INTRO */}
+{screen === "arcadeIntro" && (
+  <motion.div
+    key="arcadeIntro"
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0 }}
+    className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
+  >
+<div className="text-amber-400 text-2xl md:text-3xl font-black tracking-[0.25em] mb-10 uppercase drop-shadow-lg">
+  STAGE {arcadeStage}
+</div>
+
+<div className="w-full max-w-5xl flex items-center justify-center gap-10 md:gap-24">
+      {/* TUO VIAGGIATORE */}
+      <div className="flex flex-col items-center">
+        <div className="w-52 h-52 rounded-2xl border-4 border-amber-400 bg-white/5 p-3">
+          <img
+            src={`/images/${arcadePortrait}`}
+            alt="Il tuo viaggiatore"
+            className="w-full h-full object-contain"
+          />
+        </div>
+        </div>
+      <div className="mt-3 text-xl md:text-2xl font-black">
+  {user?.user_metadata?.username || user?.email || "TU"}
+</div>
+
+      <div className="text-5xl md:text-7xl font-black text-amber-400 drop-shadow-lg">
+  VS
+</div>
+
+      {/* NPC */}
+      <div className="flex flex-col items-center">
+        <div className="w-52 h-52 rounded-2xl border-4 border-red-500 bg-white/5 p-3 flex items-center justify-center">
+       <img
+  src={`/images/${arcadeNPCImages[arcadeStage]}`}
+  alt={arcadeNPCNames[arcadeStage]}
+  className="w-full h-full object-contain"
+/>
+        </div>
+
+    <div className="mt-3 text-xl md:text-2xl font-black">
+  {arcadeNPCNames[arcadeStage]}
+</div>
+      </div>
+
+    </div>
+
+    <div className="mt-10 text-slate-400 text-sm">
+      PREPARATI ALLA SFIDA...
+    </div>
+  </motion.div>
+)}
+
 
 {/* ARCADE WORLD */}
 {screen === "arcadeWorld" && (
@@ -326,10 +414,13 @@ const arcadePortraits = [
     <ArcadeWorld
   stage={arcadeStage}
   portrait={arcadePortrait}
-  onStartAuction={(stage) => {
-    setArcadeStage(stage);
-    setScreen("auction");
-  }}
+  npcNames={arcadeNPCNames}
+  npcImages={arcadeNPCImages}
+onStartAuction={(stage) => {
+  setArcadeStage(stage);
+  setArcadeIntro(true);
+  setScreen("arcadeIntro");
+}}
   onBack={() => setScreen("menu")}
 />
   </motion.div>

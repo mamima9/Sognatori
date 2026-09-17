@@ -252,12 +252,16 @@ const STAGE_NPCS = {
 export default function ArcadeWorld({
   stage = 1,
   portrait,
+  npcNames,
+  npcImages,
   onStartAuction,
   onBack,
 }) {
   const MAP = MAPS[stage] || MAPS[1];
 
   const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
+  const npcName = npcNames?.[stage] || npc.name;
+  const npcImage = npcImages?.[stage];
 
   const [player, setPlayer] =
     useState(PLAYER_START);
@@ -451,7 +455,7 @@ export default function ArcadeWorld({
 </div> 
 
             <div className="text-[9px] font-black text-amber-300">
-              {npc.name}
+              {npcName}
             </div>
           </div>
 
@@ -569,7 +573,7 @@ export default function ArcadeWorld({
                 onClick={talkToNpc}
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                💬 PARLA CON {npc.name}
+                💬 PARLA CON {npcName}
 
                 <span className="ml-2 text-xs opacity-70">
                   [E]
@@ -602,12 +606,22 @@ export default function ArcadeWorld({
               className="mt-5 mx-auto max-w-md rounded-2xl bg-slate-900 border border-amber-500/40 p-5 text-center shadow-2xl"
             >
 
-              <div className="text-4xl mb-2">
-                {npc.emoji}
-              </div>
+              <div className="w-10 h-10 drop-shadow-xl">
+  {npcImage ? (
+    <img
+      src={`/images/${npcImage}`}
+      alt={npcName}
+      className="w-full h-full object-contain"
+    />
+  ) : (
+    <span className="text-3xl">
+      {npc.emoji}
+    </span>
+  )}
+</div>
 
               <div className="text-amber-400 font-black uppercase tracking-widest text-xs mb-2">
-                {npc.name}
+               {npcName}
               </div>
 
               <p className="text-sm text-slate-300 mb-5">
