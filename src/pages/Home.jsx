@@ -417,25 +417,41 @@ useEffect(() => {
 
 {/* ARCADE WORLD */}
 {screen === "arcadeWorld" && (
-  <motion.div
-    key="arcadeWorld"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-  >
-    <ArcadeWorld
-  stage={arcadeStage}
-  portrait={arcadePortrait}
-  npcNames={arcadeNPCNames}
-  npcImages={arcadeNPCImages}
-onStartAuction={(stage) => {
-  setArcadeStage(stage);
-  setArcadeIntro(true);
-  setScreen("arcadeIntro");
-}}
-  onBack={() => setScreen("menu")}
-/>
-  </motion.div>
+  <>
+    {isDev && (
+      <div className="fixed top-4 left-4 z-50 flex flex-wrap gap-2 max-w-xs">
+        {Array.from({ length: 9 }, (_, i) => i + 1).map((testStage) => (
+          <button
+            key={testStage}
+            onClick={() => setArcadeStage(testStage)}
+            className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-black shadow-lg hover:bg-red-500"
+          >
+            STAGE {testStage}
+          </button>
+        ))}
+      </div>
+    )}
+
+    <motion.div
+      key="arcadeWorld"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <ArcadeWorld
+        stage={arcadeStage}
+        portrait={arcadePortrait}
+        npcNames={arcadeNPCNames}
+        npcImages={arcadeNPCImages}
+        onStartAuction={(stage) => {
+          setArcadeStage(stage);
+          setArcadeIntro(true);
+          setScreen("arcadeIntro");
+        }}
+        onBack={() => setScreen("menu")}
+      />
+    </motion.div>
+  </>
 )}
 
 
