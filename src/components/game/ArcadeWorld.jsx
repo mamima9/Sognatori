@@ -443,16 +443,18 @@ export default function ArcadeWorld({
             }}
           >
       <div className="w-10 h-10 drop-shadow-xl">
-  {portrait ? (
+  {npcImage ? (
     <img
-      src={`/images/${portrait}`}
-      alt="Ritratto giocatore"
+      src={`/images/${npcImage}`}
+      alt={npcName}
       className="w-full h-full object-contain"
     />
   ) : (
-    "🧙‍♂️"
+    <span className="text-3xl">
+      {npc.emoji}
+    </span>
   )}
-</div> 
+</div>
 
             <div className="text-[9px] font-black text-amber-300">
               {npcName}
@@ -475,9 +477,19 @@ export default function ArcadeWorld({
               height: `${tileHeight}%`,
             }}
           >
-            <div className="text-3xl drop-shadow-xl">
-              🧙‍♂️
-            </div>
+            <div className="w-10 h-10 drop-shadow-xl">
+  {portrait ? (
+    <img
+      src={`/images/${portrait}`}
+      alt="Ritratto giocatore"
+      className="w-full h-full object-contain"
+    />
+  ) : (
+    <span className="text-3xl">
+      🧙‍♂️
+    </span>
+  )}
+</div>
 
             <div className="text-[9px] font-black text-white">
               YOU
