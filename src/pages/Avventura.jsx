@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";\nimport { Navigate } from "react-router-dom";\nimport { useAuth } from "@/lib/AuthContext";
+import { ROSTER } from "@/lib/sognatoriData";
 
 /*
   SOGNATORI — AVVENTURA
@@ -34,6 +35,54 @@ const PLAYER = {
 const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
+
+const WILD_STARTS = [
+  { id: "wild-1", x: 1460, y: 470, name: "Cancucc", speed: 38, behavior: "wander" },
+  { id: "wild-2", x: 1050, y: 1320, name: "Cillymbu", speed: 30, behavior: "wander" },
+  { id: "wild-3", x: 2250, y: 720, name: "Nina", speed: 34, behavior: "shy" },
+  { id: "wild-4", x: 2900, y: 1320, name: "Dragociocco", speed: 28, behavior: "wander" },
+  { id: "wild-5", x: 680, y: 1880, name: "Pepe", speed: 42, behavior: "shy" },
+  { id: "wild-6", x: 3150, y: 520, name: "Icepadel", speed: 35, behavior: "wander" },
+  { id: "wild-7", x: 2350, y: 1960, name: "Eroe", speed: 31, behavior: "wander" },
+  { id: "wild-8", x: 1380, y: 2050, name: "Uesditti", speed: 45, behavior: "shy" },
+];
+
+const CHALLENGERS = [
+  {
+    id: "challenger-1",
+    name: "Marta",
+    x: 2040,
+    y: 1040,
+    team: ["Adli", "Nuvobetta"],
+    vision: 190,
+    speed: 58,
+    color: "#e8a34a",
+  },
+  {
+    id: "challenger-2",
+    name: "Rik",
+    x: 920,
+    y: 1740,
+    team: ["Pepe", "Cenere"],
+    vision: 175,
+    speed: 54,
+    color: "#d65a62",
+  },
+  {
+    id: "challenger-3",
+    name: "Luce",
+    x: 3000,
+    y: 920,
+    team: ["Nina", "Riwupido"],
+    vision: 210,
+    speed: 50,
+    color: "#d9c15b",
+  },
+];
+
+const spriteFor = (name) =>
+  ROSTER.find((s) => s.nome.toLowerCase() === name.toLowerCase())?.img ||
+  "/images/1. ADLI.png";
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -179,7 +228,13 @@ export default function Avventura() {
   const [message, setMessage] = useState("");
   const [dialogue, setDialogue] = useState(null);
   const [encounter, setEncounter] = useState(null);
+  const [challengerEncounter, setChallengerEncounter] = useState(null);
+  const [wildSognatori, setWildSognatori] = useState(WILD_STARTS);
   const [time, setTime] = useState(9);
+
+  const wildRef = useRef(WILD_STARTS.map((s) => ({ ...s })));
+  const challengerRef = useRef(CHALLENGERS.map((s) => ({ ...s })));
+  const lastEntityRenderRef = useRef(0);
   const [questDone, setQuestDone] = useState(false);
 
   const collected = 28 - crystals.length;
@@ -305,17 +360,67 @@ export default function Avventura() {
             })
           );
 
-          // Erba alta → piccolo incontro casuale.
-          if (
-            Math.sin(next.x * 0.013 + next.y * 0.009) > 0.995 &&
-            Math.random() < 0.018
-          ) {
-            setEncounter({
-              name: ["Cillymbu", "Càncucc", "Draciocco", "Ashaadi"][
-                Math.floor(Math.random() * 4)
-              ],
-            });
           }
+      }
+
+      // IA Sognatori selvatici: piccoli movimenti autonomi.
+      const now = performance.now();
+      wildRef.current = wildRef.current.map((s) => {
+        const d = Math.hypot(playerRef.current.x - s.x, playerRef.current.y - s.y);
+        let angle = s.angle ?? Math.random() * Math.PI * 2;
+        let speed = s.speed;
+
+        if (s.behavior === "shy" && d < 180) {
+          angle = Math.atan2(s.y - playerRef.current.y, s.x - playerRef.current.x);
+          speed *= 1.7;
+        } else if (Math.random() < 0.012) {
+          angle = Math.random() * Math.PI * 2;
+        }
+
+        const nx = clamp(s.x + Math.cos(angle) * speed * dt, 60, WORLD.width - 60);
+        const ny = clamp(s.y + Math.sin(angle) * speed * dt, 60, WORLD.height - 60);
+
+        return { ...s, x: nx, y: ny, angle };
+      });
+
+      // Sfidanti pattugliano lentamente le loro zone.
+      challengerRef.current = challengerRef.current.map((c) => {
+        const d = Math.hypot(playerRef.current.x - c.x, playerRef.current.y - c.y);
+        let angle = c.angle ?? 0;
+
+        if (d < c.vision) {
+          angle = Math.atan2(playerRef.current.y - c.y, playerRef.current.x - c.x);
+        } else if (Math.random() < 0.008) {
+          angle = Math.random() * Math.PI * 2;
+        }
+
+        const nx = clamp(c.x + Math.cos(angle) * c.speed * dt, 80, WORLD.width - 80);
+        const ny = clamp(c.y + Math.sin(angle) * c.speed * dt, 80, WORLD.height - 80);
+
+        return { ...c, x: nx, y: ny, angle };
+      });
+
+      if (now - lastEntityRenderRef.current > 120) {
+        lastEntityRenderRef.current = now;
+        setWildSognatori(wildRef.current.map((s) => ({ ...s })));
+      }
+
+      // Incontro automatico quando un Sognatore selvatico è molto vicino.
+      if (!encounter && !challengerEncounter) {
+        const nearbyWild = wildRef.current.find(
+          (s) => Math.hypot(playerRef.current.x - s.x, playerRef.current.y - s.y) < 48
+        );
+
+        if (nearbyWild) {
+          setEncounter(nearbyWild);
+        }
+
+        const nearbyChallenger = challengerRef.current.find(
+          (c) => Math.hypot(playerRef.current.x - c.x, playerRef.current.y - c.y) < 70
+        );
+
+        if (nearbyChallenger) {
+          setChallengerEncounter(nearbyChallenger);
         }
       }
 
@@ -533,6 +638,74 @@ export default function Avventura() {
     <div className="fixed inset-0 overflow-hidden bg-black text-white select-none">
       <canvas ref={canvasRef} className="absolute inset-0" />
 
+      {/* Sognatori selvatici e sfidanti nel mondo */}
+      <div className="pointer-events-none absolute inset-0">
+        {wildSognatori.map((s) => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          const scale = Math.min(w / 1100, h / 700);
+          const sx = w / 2 + (s.x - player.x) * scale;
+          const sy = h / 2 + (s.y - player.y) * scale;
+
+          if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
+
+          return (
+            <div
+              key={s.id}
+              className="absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: sx, top: sy }}
+            >
+              <div className="mb-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
+                {s.name}
+              </div>
+              <img
+                src={spriteFor(s.name)}
+                alt={s.name}
+                className="h-16 w-16 object-contain drop-shadow-[0_5px_8px_rgba(0,0,0,.7)]"
+              />
+              <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40">
+                <div className="h-full w-full rounded-full bg-emerald-400" />
+              </div>
+            </div>
+          );
+        })}
+
+        {CHALLENGERS.map((c) => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          const scale = Math.min(w / 1100, h / 700);
+          const sx = w / 2 + (c.x - player.x) * scale;
+          const sy = h / 2 + (c.y - player.y) * scale;
+
+          if (sx < -120 || sx > w + 120 || sy < -150 || sy > h + 150) return null;
+
+          const close = Math.hypot(player.x - c.x, player.y - c.y) < c.vision;
+
+          return (
+            <div
+              key={c.id}
+              className="absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: sx, top: sy }}
+            >
+              {close && (
+                <div className="mb-1 rounded-full border border-red-300/30 bg-red-950/85 px-2 py-0.5 text-[8px] font-black text-red-100">
+                  ! TI HA VISTO
+                </div>
+              )}
+              <div
+                className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/60 shadow-lg"
+                style={{ background: c.color }}
+              >
+                <span className="text-lg">🧍</span>
+              </div>
+              <div className="mt-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
+                {c.name}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* HUD superiore */}
       <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-4 pointer-events-none">
         <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 backdrop-blur-md shadow-2xl">
@@ -634,6 +807,45 @@ export default function Avventura() {
         </div>
       )}
 
+      {/* Sfidante */}
+      {challengerEncounter && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="w-[min(460px,92vw)] rounded-3xl border border-red-300/20 bg-zinc-950 p-7 text-center shadow-2xl">
+            <div className="text-xs font-black uppercase tracking-[0.3em] text-red-200/60">
+              Sfidante
+            </div>
+            <div className="mt-3 text-4xl font-black">{challengerEncounter.name}</div>
+            <div className="mt-2 text-sm text-white/50">
+              Ti ha visto e vuole sfidarti!
+            </div>
+            <div className="mt-5 flex justify-center gap-2">
+              {challengerEncounter.team.map((name) => (
+                <img
+                  key={name}
+                  src={spriteFor(name)}
+                  alt={name}
+                  className="h-20 w-20 object-contain"
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                window.location.href = "/test-random";
+              }}
+              className="mt-6 w-full rounded-xl bg-red-400 py-3 font-black text-black"
+            >
+              ACCETTA LA SFIDA
+            </button>
+            <button
+              onClick={() => setChallengerEncounter(null)}
+              className="mt-2 w-full rounded-xl bg-white/10 py-3 font-bold"
+            >
+              Continua a esplorare
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Incontro */}
       {encounter && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -646,7 +858,9 @@ export default function Avventura() {
               Un Sognatore è apparso nell'erba alta.
             </div>
             <button
-              onClick={() => setEncounter(null)}
+              onClick={() => {
+                window.location.href = "/test-random";
+              }}
               className="mt-7 w-full rounded-xl bg-yellow-300 py-3 font-black text-black"
             >
               Affronta
