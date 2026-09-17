@@ -1183,17 +1183,6 @@ while (remainingActions.length > 0) {
     m_en
   );
 
-  // ... tutto il codice che hai già qui
-  const {
-    log_it,
-    log_en,
-    events,
-  } = processActionDual(
-    act,
-    m_it,
-    m_en
-  );
-
   const relativeLogIndex =
     newLogIt.length -
     (gs.log_it || []).length -
@@ -1244,7 +1233,6 @@ turnFrames.push({
   remainingActions = reorderActions(
     remainingActions
   );
-}
 }
 /*
  * FINE TURNO
