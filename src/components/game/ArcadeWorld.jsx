@@ -696,19 +696,17 @@ export default function ArcadeWorld({
           }}
         >
 
-          {isStage10 ? (
-            <DreamArenaStage10
-              player={player}
-              npc={npc}
-              npcName={npcName}
-              npcImage={npcImage}
-              portrait={portrait}
-              nearNpc={nearNpc}
-            />
-          ) : (
-          {/* TILES */}
-
-          <div
+         {isStage10 ? (
+  <DreamArenaStage10
+    player={player}
+    npc={npc}
+    npcName={npcName}
+    npcImage={npcImage}
+    portrait={portrait}
+    nearNpc={nearNpc}
+  />
+) : (
+  <div
             className="absolute inset-0 grid"
             style={{
               gridTemplateColumns:
