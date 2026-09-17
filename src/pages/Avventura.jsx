@@ -255,21 +255,27 @@ export default function Avventura() {
   }, [player]);
 
   useEffect(() => {
-    const down = (e) => {
-      keysRef.current[e.key.toLowerCase()] = true;
+   const down = (e) => {
+  const key = e.key.toLowerCase();
+  const code = e.code.toLowerCase();
 
-      if (
-        ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(
-          e.key.toLowerCase()
-        )
-      ) {
-        e.preventDefault();
-      }
-    };
+  keysRef.current[key] = true;
+  keysRef.current[code] = true;
 
-    const up = (e) => {
-      keysRef.current[e.key.toLowerCase()] = false;
-    };
+  if (
+    ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)
+  ) {
+    e.preventDefault();
+  }
+};
+
+const up = (e) => {
+  const key = e.key.toLowerCase();
+  const code = e.code.toLowerCase();
+
+  keysRef.current[key] = false;
+  keysRef.current[code] = false;
+};
 
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
@@ -293,9 +299,9 @@ export default function Avventura() {
       let dy = 0;
 
       if (keys.w || keys.arrowup) dy -= 1;
-      if (keys.s || keys.arrowdown) dy += 1;
-      if (keys.a || keys.arrowleft) dx -= 1;
-      if (keys.d || keys.arrowright) dx += 1;
+if (keys.s || keys.arrowdown) dy += 1;
+if (keys.a || keys.arrowleft) dx -= 1;
+if (keys.d || keys.arrowright) dx += 1;
 
       if (dx || dy) {
         const length = Math.hypot(dx, dy);
