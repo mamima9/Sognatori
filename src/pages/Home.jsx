@@ -354,13 +354,13 @@ useEffect(() => {
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0 }}
-    className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
+    className="min-h-screen flex flex-col items-center justify-center px-4 text-center"
   >
-<div className="text-amber-400 text-2xl md:text-3xl font-black tracking-[0.25em] mb-10 uppercase drop-shadow-lg">
+<div className="text-amber-400 text-2xl md:text-3xl font-black tracking-[0.25em] mb-5 uppercase drop-shadow-lg">
   STAGE {arcadeStage}
 </div>
 
-<div className="w-full max-w-5xl flex items-center justify-center gap-10 md:gap-24">
+<div className="w-full max-w-5xl flex items-center justify-center gap-10 md:gap-12">
       {/* TUO VIAGGIATORE */}
       <div className="flex flex-col items-center">
 <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-amber-400 bg-white/5 p-2">
@@ -371,8 +371,7 @@ useEffect(() => {
           />
         </div>
         </div>
-      <div className="mt-3 text-xl md:text-2xl font-black">
-  {user?.user_metadata?.username || user?.email || "TU"}
+<div className="mt-2 text-sm md:text-base font-black">  {user?.user_metadata?.username || user?.email || "TU"}
 </div>
 
       <div className="text-3xl md:text-4xl font-black text-amber-400 drop-shadow-lg">
@@ -389,8 +388,7 @@ useEffect(() => {
 />
         </div>
 
-    <div className="mt-3 text-xl md:text-2xl font-black">
-  {arcadeNPCNames[arcadeStage]}
+<div className="mt-2 text-sm md:text-base font-black">  {arcadeNPCNames[arcadeStage]}
 </div>
       </div>
 
