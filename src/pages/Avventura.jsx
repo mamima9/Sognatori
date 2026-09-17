@@ -6,21 +6,22 @@ import { ROSTER } from "@/lib/sognatoriData";
 
 /*
   SOGNATORI — AVVENTURA
-  File unico, pronto da usare in src/pages/Avventura.jsx
 
-  Contiene:
   - mondo grande e continuo
   - movimento WASD / frecce
+  - pad touch mobile
   - camera fluida
   - collisioni
-  - acqua, alberi, rocce, case e recinti
+  - acqua, alberi, rocce, case
   - 4 zone esplorabili
   - NPC interattivi
-  - raccolta di cristalli
-  - erba alta con incontri casuali
+  - raccolta cristalli
+  - Sognatori selvatici
+  - sfidanti
+  - cooldown incontri
   - ciclo giorno/notte
   - minimappa
-  - quest semplice
+  - quest
   - HUD
   - nessuna dipendenza aggiuntiva
 */
@@ -40,14 +41,70 @@ const TESTER_EMAILS = [
 ];
 
 const WILD_STARTS = [
-  { id: "wild-1", x: 1460, y: 470, name: "Cancucc", speed: 38, behavior: "wander" },
-  { id: "wild-2", x: 1050, y: 1320, name: "Cillymbu", speed: 30, behavior: "wander" },
-  { id: "wild-3", x: 2250, y: 720, name: "Nina", speed: 34, behavior: "shy" },
-  { id: "wild-4", x: 2900, y: 1320, name: "Dragociocco", speed: 28, behavior: "wander" },
-  { id: "wild-5", x: 680, y: 1880, name: "Pepe", speed: 42, behavior: "shy" },
-  { id: "wild-6", x: 3150, y: 520, name: "Icepadel", speed: 35, behavior: "wander" },
-  { id: "wild-7", x: 2350, y: 1960, name: "Eroe", speed: 31, behavior: "wander" },
-  { id: "wild-8", x: 1380, y: 2050, name: "Uesditti", speed: 45, behavior: "shy" },
+  {
+    id: "wild-1",
+    x: 1460,
+    y: 470,
+    name: "Cancucc",
+    speed: 38,
+    behavior: "wander",
+  },
+  {
+    id: "wild-2",
+    x: 1050,
+    y: 1320,
+    name: "Cillymbu",
+    speed: 30,
+    behavior: "wander",
+  },
+  {
+    id: "wild-3",
+    x: 2250,
+    y: 720,
+    name: "Nina",
+    speed: 34,
+    behavior: "shy",
+  },
+  {
+    id: "wild-4",
+    x: 2900,
+    y: 1320,
+    name: "Dragociocco",
+    speed: 28,
+    behavior: "wander",
+  },
+  {
+    id: "wild-5",
+    x: 680,
+    y: 1880,
+    name: "Pepe",
+    speed: 42,
+    behavior: "shy",
+  },
+  {
+    id: "wild-6",
+    x: 3150,
+    y: 520,
+    name: "Icepadel",
+    speed: 35,
+    behavior: "wander",
+  },
+  {
+    id: "wild-7",
+    x: 2350,
+    y: 1960,
+    name: "Eroe",
+    speed: 31,
+    behavior: "wander",
+  },
+  {
+    id: "wild-8",
+    x: 1380,
+    y: 2050,
+    name: "Uesditti",
+    speed: 45,
+    behavior: "shy",
+  },
 ];
 
 const CHALLENGERS = [
@@ -84,15 +141,19 @@ const CHALLENGERS = [
 ];
 
 const spriteFor = (name) =>
-  ROSTER.find((s) => s.nome.toLowerCase() === name.toLowerCase())?.img ||
-  "/images/1. ADLI.png";
+  ROSTER.find(
+    (s) => s.nome?.toLowerCase() === name.toLowerCase()
+  )?.img || "/images/1. ADLI.png";
 
-const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+const clamp = (v, min, max) =>
+  Math.max(min, Math.min(max, v));
 
-const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const distance = (a, b) =>
+  Math.hypot(a.x - b.x, a.y - b.y);
 
 function seededRandom(seed) {
   let value = seed;
+
   return () => {
     value = (value * 9301 + 49297) % 233280;
     return value / 233280;
@@ -106,12 +167,16 @@ function buildWorld() {
   const rocks = [];
   const crystals = [];
 
-  // Alberi distribuiti nel mondo, evitando la zona centrale.
   for (let i = 0; i < 150; i++) {
     const x = 80 + rand() * (WORLD.width - 160);
     const y = 80 + rand() * (WORLD.height - 160);
 
-    if (Math.abs(x - 1800) < 420 && Math.abs(y - 1200) < 300) continue;
+    if (
+      Math.abs(x - 1800) < 420 &&
+      Math.abs(y - 1200) < 300
+    ) {
+      continue;
+    }
 
     trees.push({
       id: `tree-${i}`,
@@ -138,7 +203,11 @@ function buildWorld() {
     });
   }
 
-  return { trees, rocks, crystals };
+  return {
+    trees,
+    rocks,
+    crystals,
+  };
 }
 
 const WORLD_OBJECTS = buildWorld();
@@ -208,10 +277,22 @@ const ZONES = [
   },
 ];
 
-function circleRectCollision(cx, cy, radius, rx, ry, rw, rh) {
+function circleRectCollision(
+  cx,
+  cy,
+  radius,
+  rx,
+  ry,
+  rw,
+  rh
+) {
   const closestX = clamp(cx, rx, rx + rw);
   const closestY = clamp(cy, ry, ry + rh);
-  return Math.hypot(cx - closestX, cy - closestY) < radius;
+
+  return (
+    Math.hypot(cx - closestX, cy - closestY) <
+    radius
+  );
 }
 
 export default function Avventura() {
@@ -221,24 +302,90 @@ export default function Avventura() {
 
   const testerAllowed =
     !!user?.email &&
-    TESTER_EMAILS.includes(user.email.toLowerCase());
-  const keysRef = useRef({});
-  const playerRef = useRef({ x: 1800, y: 900 });
-  const cameraRef = useRef({ x: 1800, y: 900 });
+    TESTER_EMAILS.includes(
+      user.email.toLowerCase()
+    );
 
-  const [player, setPlayer] = useState(playerRef.current);
-  const [crystals, setCrystals] = useState(WORLD_OBJECTS.crystals);
+  /*
+    ============================
+    REFS PRINCIPALI
+    ============================
+  */
+
+  const keysRef = useRef({});
+
+  const playerRef = useRef({
+    x: 1800,
+    y: 900,
+  });
+
+  const cameraRef = useRef({
+    x: 1800,
+    y: 900,
+  });
+
+  const wildRef = useRef(
+    WILD_STARTS.map((s) => ({
+      ...s,
+    }))
+  );
+
+  const challengerRef = useRef(
+    CHALLENGERS.map((s) => ({
+      ...s,
+    }))
+  );
+
+  /*
+    Cooldown reali.
+    Usiamo ref perché il game loop gira continuamente
+    e non deve dipendere dagli state React.
+  */
+
+  const challengerCooldownRef = useRef({});
+  const wildCooldownRef = useRef({});
+
+  /*
+    Evitano che il requestAnimationFrame
+    apra continuamente la stessa finestra.
+  */
+
+  const encounterOpenRef = useRef(false);
+  const challengerEncounterOpenRef = useRef(false);
+
+  const lastEntityRenderRef = useRef(0);
+
+  /*
+    ============================
+    STATE
+    ============================
+  */
+
+  const [player, setPlayer] = useState(
+    playerRef.current
+  );
+
+  const [crystals, setCrystals] = useState(
+    WORLD_OBJECTS.crystals
+  );
+
   const [message, setMessage] = useState("");
+
   const [dialogue, setDialogue] = useState(null);
-  const [encounter, setEncounter] = useState(null);
-  const [challengerEncounter, setChallengerEncounter] = useState(null);
-  const [wildSognatori, setWildSognatori] = useState(WILD_STARTS);
+
+  const [encounter, setEncounter] =
+    useState(null);
+
+  const [challengerEncounter, setChallengerEncounter] =
+    useState(null);
+
+  const [wildSognatori, setWildSognatori] =
+    useState(WILD_STARTS);
+
   const [time, setTime] = useState(9);
 
-  const wildRef = useRef(WILD_STARTS.map((s) => ({ ...s })));
-  const challengerRef = useRef(CHALLENGERS.map((s) => ({ ...s })));
-  const lastEntityRenderRef = useRef(0);
-  const [questDone, setQuestDone] = useState(false);
+  const [questDone, setQuestDone] =
+    useState(false);
 
   const collected = 28 - crystals.length;
 
@@ -254,28 +401,40 @@ export default function Avventura() {
     );
   }, [player]);
 
+  /*
+    ============================
+    KEYBOARD
+    ============================
+  */
+
   useEffect(() => {
-   const down = (e) => {
-  const key = e.key.toLowerCase();
-  const code = e.code.toLowerCase();
+    const down = (e) => {
+      const key = e.key.toLowerCase();
+      const code = e.code.toLowerCase();
 
-  keysRef.current[key] = true;
-  keysRef.current[code] = true;
+      keysRef.current[key] = true;
+      keysRef.current[code] = true;
 
-  if (
-    ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)
-  ) {
-    e.preventDefault();
-  }
-};
+      if (
+        [
+          "arrowup",
+          "arrowdown",
+          "arrowleft",
+          "arrowright",
+          " ",
+        ].includes(key)
+      ) {
+        e.preventDefault();
+      }
+    };
 
-const up = (e) => {
-  const key = e.key.toLowerCase();
-  const code = e.code.toLowerCase();
+    const up = (e) => {
+      const key = e.key.toLowerCase();
+      const code = e.code.toLowerCase();
 
-  keysRef.current[key] = false;
-  keysRef.current[code] = false;
-};
+      keysRef.current[key] = false;
+      keysRef.current[code] = false;
+    };
 
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
@@ -286,51 +445,124 @@ const up = (e) => {
     };
   }, []);
 
+  /*
+    ============================
+    GAME LOOP
+    ============================
+  */
+
   useEffect(() => {
     let animation;
+
     let last = performance.now();
 
     const loop = (now) => {
-      const dt = Math.min((now - last) / 1000, 0.05);
+      const dt = Math.min(
+        (now - last) / 1000,
+        0.05
+      );
+
       last = now;
 
       const keys = keysRef.current;
+
       let dx = 0;
       let dy = 0;
 
-      if (keys.w || keys.arrowup) dy -= 1;
-if (keys.s || keys.arrowdown) dy += 1;
-if (keys.a || keys.arrowleft) dx -= 1;
-if (keys.d || keys.arrowright) dx += 1;
+      /*
+        MOVIMENTO
+      */
+
+      if (
+        keys.w ||
+        keys.keyw ||
+        keys.arrowup
+      ) {
+        dy -= 1;
+      }
+
+      if (
+        keys.s ||
+        keys.keys ||
+        keys.arrowdown
+      ) {
+        dy += 1;
+      }
+
+      if (
+        keys.a ||
+        keys.keya ||
+        keys.arrowleft
+      ) {
+        dx -= 1;
+      }
+
+      if (
+        keys.d ||
+        keys.keyd ||
+        keys.arrowright
+      ) {
+        dx += 1;
+      }
 
       if (dx || dy) {
         const length = Math.hypot(dx, dy);
+
         dx /= length;
         dy /= length;
 
-        const speed = PLAYER.speed * dt;
+        const movement =
+          PLAYER.speed * dt;
+
         const next = {
-          x: clamp(playerRef.current.x + dx * speed, 30, WORLD.width - 30),
-          y: clamp(playerRef.current.y + dy * speed, 30, WORLD.height - 30),
+          x: clamp(
+            playerRef.current.x +
+              dx * movement,
+            30,
+            WORLD.width - 30
+          ),
+
+          y: clamp(
+            playerRef.current.y +
+              dy * movement,
+            30,
+            WORLD.height - 30
+          ),
         };
 
         let blocked = false;
 
+        /*
+          ALBERI
+        */
+
         for (const tree of WORLD_OBJECTS.trees) {
           if (
-            Math.hypot(next.x - tree.x, next.y - tree.y) <
-            tree.r + PLAYER.size * 0.45
+            Math.hypot(
+              next.x - tree.x,
+              next.y - tree.y
+            ) <
+            tree.r +
+              PLAYER.size * 0.45
           ) {
             blocked = true;
             break;
           }
         }
 
+        /*
+          ROCCE
+        */
+
         if (!blocked) {
           for (const rock of WORLD_OBJECTS.rocks) {
             if (
-              Math.hypot(next.x - rock.x, next.y - rock.y) <
-              rock.r + PLAYER.size * 0.45
+              Math.hypot(
+                next.x - rock.x,
+                next.y - rock.y
+              ) <
+              rock.r +
+                PLAYER.size * 0.45
             ) {
               blocked = true;
               break;
@@ -338,7 +570,10 @@ if (keys.d || keys.arrowright) dx += 1;
           }
         }
 
-        // Lago centrale.
+        /*
+          LAGO
+        */
+
         if (
           circleRectCollision(
             next.x,
@@ -353,279 +588,833 @@ if (keys.d || keys.arrowright) dx += 1;
           blocked = true;
         }
 
+        /*
+          MOVIMENTO REALE
+        */
+
         if (!blocked) {
           playerRef.current = next;
-          setPlayer({ ...next });
 
-          // Raccolta cristalli.
+          setPlayer({
+            ...next,
+          });
+
+          /*
+            CRISTALLI
+          */
+
           setCrystals((old) =>
             old.filter((crystal) => {
-              if (distance(next, crystal) < 34) {
-                setMessage("✦ Cristallo del Sogno raccolto!");
-                setTimeout(() => setMessage(""), 1800);
+              if (
+                distance(
+                  next,
+                  crystal
+                ) < 34
+              ) {
+                setMessage(
+                  "✦ Cristallo del Sogno raccolto!"
+                );
+
+                setTimeout(
+                  () => setMessage(""),
+                  1800
+                );
+
                 return false;
               }
+
               return true;
             })
           );
+        }
+      }
 
+      /*
+        ============================
+        IA SOGNATORI SELVATICI
+        ============================
+      */
+
+      wildRef.current =
+        wildRef.current.map((s) => {
+          const d = Math.hypot(
+            playerRef.current.x - s.x,
+            playerRef.current.y - s.y
+          );
+
+          let angle =
+            s.angle ??
+            Math.random() *
+              Math.PI *
+              2;
+
+          let speed = s.speed;
+
+          /*
+            Sognatori timidi scappano
+            se il giocatore si avvicina.
+          */
+
+          if (
+            s.behavior === "shy" &&
+            d < 180
+          ) {
+            angle = Math.atan2(
+              s.y -
+                playerRef.current.y,
+              s.x -
+                playerRef.current.x
+            );
+
+            speed *= 1.7;
+          } else if (
+            Math.random() <
+            0.012
+          ) {
+            angle =
+              Math.random() *
+              Math.PI *
+              2;
           }
-      }
 
-      // IA Sognatori selvatici: piccoli movimenti autonomi.
+          const nx = clamp(
+            s.x +
+              Math.cos(angle) *
+                speed *
+                dt,
+            60,
+            WORLD.width - 60
+          );
 
-      wildRef.current = wildRef.current.map((s) => {
-        const d = Math.hypot(playerRef.current.x - s.x, playerRef.current.y - s.y);
-        let angle = s.angle ?? Math.random() * Math.PI * 2;
-        let speed = s.speed;
+          const ny = clamp(
+            s.y +
+              Math.sin(angle) *
+                speed *
+                dt,
+            60,
+            WORLD.height - 60
+          );
 
-        if (s.behavior === "shy" && d < 180) {
-          angle = Math.atan2(s.y - playerRef.current.y, s.x - playerRef.current.x);
-          speed *= 1.7;
-        } else if (Math.random() < 0.012) {
-          angle = Math.random() * Math.PI * 2;
-        }
+          return {
+            ...s,
+            x: nx,
+            y: ny,
+            angle,
+          };
+        });
 
-        const nx = clamp(s.x + Math.cos(angle) * speed * dt, 60, WORLD.width - 60);
-        const ny = clamp(s.y + Math.sin(angle) * speed * dt, 60, WORLD.height - 60);
+      /*
+        ============================
+        SFIDANTI
+        ============================
 
-        return { ...s, x: nx, y: ny, angle };
-      });
+        IMPORTANTISSIMO:
+        NON inseguono più il giocatore.
 
-      // Sfidanti pattugliano lentamente le loro zone.
-      challengerRef.current = challengerRef.current.map((c) => {
-        const d = Math.hypot(playerRef.current.x - c.x, playerRef.current.y - c.y);
-        let angle = c.angle ?? 0;
+        Pattugliano la loro zona.
+      */
 
-        if (d < c.vision) {
-          angle = Math.atan2(playerRef.current.y - c.y, playerRef.current.x - c.x);
-        } else if (Math.random() < 0.008) {
-          angle = Math.random() * Math.PI * 2;
-        }
+      challengerRef.current =
+        challengerRef.current.map((c) => {
+          let angle =
+            c.angle ??
+            Math.random() *
+              Math.PI *
+              2;
 
-        const nx = clamp(c.x + Math.cos(angle) * c.speed * dt, 80, WORLD.width - 80);
-        const ny = clamp(c.y + Math.sin(angle) * c.speed * dt, 80, WORLD.height - 80);
+          /*
+            Movimento casuale lento.
+          */
 
-        return { ...c, x: nx, y: ny, angle };
-      });
+          if (
+            Math.random() <
+            0.008
+          ) {
+            angle =
+              Math.random() *
+              Math.PI *
+              2;
+          }
 
-      if (now - lastEntityRenderRef.current > 120) {
-        lastEntityRenderRef.current = now;
-        setWildSognatori(wildRef.current.map((s) => ({ ...s })));
-      }
+          const nx = clamp(
+            c.x +
+              Math.cos(angle) *
+                c.speed *
+                dt,
+            80,
+            WORLD.width - 80
+          );
 
-      // Incontro automatico quando un Sognatore selvatico è molto vicino.
-      if (!encounter && !challengerEncounter) {
-        const nearbyWild = wildRef.current.find(
-          (s) => Math.hypot(playerRef.current.x - s.x, playerRef.current.y - s.y) < 48
+          const ny = clamp(
+            c.y +
+              Math.sin(angle) *
+                c.speed *
+                dt,
+            80,
+            WORLD.height - 80
+          );
+
+          return {
+            ...c,
+            x: nx,
+            y: ny,
+            angle,
+          };
+        });
+
+      /*
+        Aggiorniamo il rendering
+        delle entità ogni ~120ms.
+      */
+
+      if (
+        now -
+          lastEntityRenderRef.current >
+        120
+      ) {
+        lastEntityRenderRef.current =
+          now;
+
+        setWildSognatori(
+          wildRef.current.map(
+            (s) => ({
+              ...s,
+            })
+          )
         );
+      }
+
+      /*
+        ============================
+        INCONTRI
+        ============================
+      */
+
+      if (
+        !encounterOpenRef.current &&
+        !challengerEncounterOpenRef.current
+      ) {
+        /*
+          SOGNATORE SELVATICO
+        */
+
+        const nearbyWild =
+          wildRef.current.find(
+            (s) => {
+              const cooldownUntil =
+                wildCooldownRef.current[
+                  s.id
+                ] || 0;
+
+              return (
+                Date.now() >=
+                  cooldownUntil &&
+                Math.hypot(
+                  playerRef.current.x -
+                    s.x,
+                  playerRef.current.y -
+                    s.y
+                ) < 48
+              );
+            }
+          );
 
         if (nearbyWild) {
-          setEncounter(nearbyWild);
+          encounterOpenRef.current =
+            true;
+
+          setEncounter(
+            nearbyWild
+          );
         }
 
-        const nearbyChallenger = challengerRef.current.find(
-          (c) => Math.hypot(playerRef.current.x - c.x, playerRef.current.y - c.y) < 70
-        );
+        /*
+          SFIDANTE
+        */
 
-        if (nearbyChallenger) {
-          setChallengerEncounter(nearbyChallenger);
+        if (!nearbyWild) {
+          const nearbyChallenger =
+            challengerRef.current.find(
+              (c) => {
+                const cooldownUntil =
+                  challengerCooldownRef
+                    .current[c.id] || 0;
+
+                const d =
+                  Math.hypot(
+                    playerRef.current.x -
+                      c.x,
+                    playerRef.current.y -
+                      c.y
+                  );
+
+                return (
+                  Date.now() >=
+                    cooldownUntil &&
+                  d < c.vision
+                );
+              }
+            );
+
+          if (nearbyChallenger) {
+            challengerEncounterOpenRef.current =
+              true;
+
+            setChallengerEncounter(
+              nearbyChallenger
+            );
+          }
         }
       }
 
-      const target = playerRef.current;
-      cameraRef.current.x += (target.x - cameraRef.current.x) * 0.1;
-      cameraRef.current.y += (target.y - cameraRef.current.y) * 0.1;
+      /*
+        ============================
+        CAMERA
+        ============================
+      */
 
-      setTime((t) => (t + dt * 0.03) % 24);
+      const target =
+        playerRef.current;
 
-      animation = requestAnimationFrame(loop);
+      cameraRef.current.x +=
+        (target.x -
+          cameraRef.current.x) *
+        0.1;
+
+      cameraRef.current.y +=
+        (target.y -
+          cameraRef.current.y) *
+        0.1;
+
+      /*
+        ============================
+        TEMPO
+        ============================
+      */
+
+      setTime(
+        (t) =>
+          (t + dt * 0.03) % 24
+      );
+
+      animation =
+        requestAnimationFrame(loop);
     };
 
-    animation = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(animation);
+    animation =
+      requestAnimationFrame(loop);
+
+    return () =>
+      cancelAnimationFrame(
+        animation
+      );
   }, []);
 
+  /*
+    ============================
+    CANVAS RENDER
+    ============================
+  */
+
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas =
+      canvasRef.current;
+
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
+    const ctx =
+      canvas.getContext("2d");
+
+    if (!ctx) return;
+
+    const dpr =
+      window.devicePixelRatio ||
+      1;
 
     const resize = () => {
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.width =
+        window.innerWidth * dpr;
+
+      canvas.height =
+        window.innerHeight * dpr;
+
+      canvas.style.width =
+        `${window.innerWidth}px`;
+
+      canvas.style.height =
+        `${window.innerHeight}px`;
+
+      ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+      );
     };
 
     resize();
-    window.addEventListener("resize", resize);
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
 
     let frame;
 
     const draw = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
+      const w =
+        window.innerWidth;
 
-      ctx.clearRect(0, 0, w, h);
+      const h =
+        window.innerHeight;
 
-      const cam = cameraRef.current;
-      const scale = Math.min(w / 1100, h / 700);
-      const offsetX = w / 2 - cam.x * scale;
-      const offsetY = h / 2 - cam.y * scale;
+      ctx.clearRect(
+        0,
+        0,
+        w,
+        h
+      );
+
+      const cam =
+        cameraRef.current;
+
+      const scale = Math.min(
+        w / 1100,
+        h / 700
+      );
+
+      const offsetX =
+        w / 2 -
+        cam.x * scale;
+
+      const offsetY =
+        h / 2 -
+        cam.y * scale;
 
       ctx.save();
-      ctx.translate(offsetX, offsetY);
-      ctx.scale(scale, scale);
 
-      // Mondo.
-      ctx.fillStyle = "#203b29";
-      ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+      ctx.translate(
+        offsetX,
+        offsetY
+      );
+
+      ctx.scale(
+        scale,
+        scale
+      );
+
+      /*
+        MONDO
+      */
+
+      ctx.fillStyle =
+        "#203b29";
+
+      ctx.fillRect(
+        0,
+        0,
+        WORLD.width,
+        WORLD.height
+      );
+
+      /*
+        ZONE
+      */
 
       for (const z of ZONES) {
-        ctx.fillStyle = z.color;
-        ctx.globalAlpha = 0.82;
-        ctx.fillRect(z.x, z.y, z.w, z.h);
+        ctx.fillStyle =
+          z.color;
+
+        ctx.globalAlpha =
+          0.82;
+
+        ctx.fillRect(
+          z.x,
+          z.y,
+          z.w,
+          z.h
+        );
       }
+
       ctx.globalAlpha = 1;
 
-      // Sentieri principali.
-      ctx.fillStyle = "#c7a56a";
-      ctx.fillRect(0, 1010, WORLD.width, 100);
-      ctx.fillRect(1740, 0, 120, WORLD.height);
-      ctx.fillRect(800, 550, 2100, 70);
+      /*
+        SENTIERI
+      */
 
-      // Lago.
-      ctx.fillStyle = "#276b82";
+      ctx.fillStyle =
+        "#c7a56a";
+
+      ctx.fillRect(
+        0,
+        1010,
+        WORLD.width,
+        100
+      );
+
+      ctx.fillRect(
+        1740,
+        0,
+        120,
+        WORLD.height
+      );
+
+      ctx.fillRect(
+        800,
+        550,
+        2100,
+        70
+      );
+
+      /*
+        LAGO
+      */
+
+      ctx.fillStyle =
+        "#276b82";
+
       ctx.beginPath();
-      ctx.roundRect(1570, 820, 460, 220, 90);
+
+      ctx.roundRect(
+        1570,
+        820,
+        460,
+        220,
+        90
+      );
+
       ctx.fill();
 
-      ctx.strokeStyle = "#6ec6d9";
+      ctx.strokeStyle =
+        "#6ec6d9";
+
       ctx.lineWidth = 7;
-      for (let y = 850; y < 1010; y += 38) {
+
+      for (
+        let y = 850;
+        y < 1010;
+        y += 38
+      ) {
         ctx.beginPath();
-        ctx.moveTo(1610, y);
-        ctx.quadraticCurveTo(1730, y - 18, 1840, y);
+
+        ctx.moveTo(
+          1610,
+          y
+        );
+
+        ctx.quadraticCurveTo(
+          1730,
+          y - 18,
+          1840,
+          y
+        );
+
         ctx.stroke();
       }
 
-      // Case.
-      drawHouse(ctx, 1730, 1010, "#7c4f35");
-      drawHouse(ctx, 2380, 1460, "#694d39");
-      drawHouse(ctx, 1210, 650, "#604b72");
+      /*
+        CASE
+      */
 
-      // Alberi.
+      drawHouse(
+        ctx,
+        1730,
+        1010,
+        "#7c4f35"
+      );
+
+      drawHouse(
+        ctx,
+        2380,
+        1460,
+        "#694d39"
+      );
+
+      drawHouse(
+        ctx,
+        1210,
+        650,
+        "#604b72"
+      );
+
+      /*
+        ALBERI
+      */
+
       for (const tree of WORLD_OBJECTS.trees) {
-        drawTree(ctx, tree.x, tree.y, tree.r);
+        drawTree(
+          ctx,
+          tree.x,
+          tree.y,
+          tree.r
+        );
       }
 
-      // Rocce.
+      /*
+        ROCCE
+      */
+
       for (const rock of WORLD_OBJECTS.rocks) {
-        ctx.fillStyle = "#575757";
+        ctx.fillStyle =
+          "#575757";
+
         ctx.beginPath();
-        ctx.ellipse(rock.x, rock.y, rock.r * 1.2, rock.r * 0.85, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#777";
-        ctx.beginPath();
+
         ctx.ellipse(
-          rock.x - rock.r * 0.25,
-          rock.y - rock.r * 0.2,
-          rock.r * 0.45,
-          rock.r * 0.25,
+          rock.x,
+          rock.y,
+          rock.r * 1.2,
+          rock.r * 0.85,
+          0,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+          "#777";
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+          rock.x -
+            rock.r *
+              0.25,
+          rock.y -
+            rock.r *
+              0.2,
+          rock.r *
+            0.45,
+          rock.r *
+            0.25,
           -0.4,
           0,
           Math.PI * 2
         );
+
         ctx.fill();
       }
 
-      // Cristalli.
+      /*
+        CRISTALLI
+      */
+
       for (const crystal of crystals) {
         ctx.save();
-        ctx.translate(crystal.x, crystal.y);
-        ctx.rotate(Math.PI / 4);
-        ctx.fillStyle = "#b9f2ff";
-        ctx.shadowColor = "#8be9fd";
+
+        ctx.translate(
+          crystal.x,
+          crystal.y
+        );
+
+        ctx.rotate(
+          Math.PI / 4
+        );
+
+        ctx.fillStyle =
+          "#b9f2ff";
+
+        ctx.shadowColor =
+          "#8be9fd";
+
         ctx.shadowBlur = 18;
-        ctx.fillRect(-9, -9, 18, 18);
+
+        ctx.fillRect(
+          -9,
+          -9,
+          18,
+          18
+        );
+
         ctx.restore();
+
         ctx.shadowBlur = 0;
       }
 
-      // NPC.
+      /*
+        NPC
+      */
+
       for (const npc of NPCS) {
-        drawNpc(ctx, npc);
+        drawNpc(
+          ctx,
+          npc
+        );
       }
 
-      // Player.
-      drawPlayer(ctx, playerRef.current);
+      /*
+        PLAYER
+      */
 
-      // Zone label nel mondo.
-      ctx.fillStyle = "rgba(0,0,0,.35)";
-      ctx.roundRect(playerRef.current.x - 180, playerRef.current.y - 120, 360, 50, 20);
+      drawPlayer(
+        ctx,
+        playerRef.current
+      );
+
+      /*
+        ZONE LABEL
+      */
+
+      ctx.fillStyle =
+        "rgba(0,0,0,.35)";
+
+      ctx.roundRect(
+        playerRef.current.x -
+          180,
+        playerRef.current.y -
+          120,
+        360,
+        50,
+        20
+      );
+
       ctx.fill();
 
-      ctx.fillStyle = "#fff";
-      ctx.font = "700 22px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText(zone.name, playerRef.current.x, playerRef.current.y - 88);
+      ctx.fillStyle =
+        "#fff";
+
+      ctx.font =
+        "700 22px system-ui";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillText(
+        zone.name,
+        playerRef.current.x,
+        playerRef.current.y -
+          88
+      );
 
       ctx.restore();
 
-      // Overlay notte.
+      /*
+        NOTTE
+      */
+
       const night =
-        time > 20 || time < 6
+        time > 20 ||
+        time < 6
           ? 0.46
           : time > 18
-          ? ((time - 18) / 2) * 0.46
+          ? ((time - 18) /
+              2) *
+            0.46
           : 0;
 
       if (night > 0) {
-        ctx.fillStyle = `rgba(8,15,40,${night})`;
-        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle =
+          `rgba(8,15,40,${night})`;
+
+        ctx.fillRect(
+          0,
+          0,
+          w,
+          h
+        );
       }
 
-      frame = requestAnimationFrame(draw);
+      frame =
+        requestAnimationFrame(
+          draw
+        );
     };
 
-    frame = requestAnimationFrame(draw);
+    frame =
+      requestAnimationFrame(
+        draw
+      );
 
     return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(
+        frame
+      );
+
+      window.removeEventListener(
+        "resize",
+        resize
+      );
     };
-  }, [crystals, player, zone, time]);
+  }, [
+    crystals,
+    player,
+    zone,
+    time,
+  ]);
+
+  /*
+    ============================
+    INTERAZIONE NPC
+    ============================
+  */
 
   const interact = () => {
-    const nearest = NPCS.find((npc) => distance(playerRef.current, npc) < 90);
+    const nearest =
+      NPCS.find(
+        (npc) =>
+          distance(
+            playerRef.current,
+            npc
+          ) < 90
+      );
 
     if (nearest) {
       setDialogue(nearest);
       return;
     }
 
-    setMessage("Non c'è nessuno qui con cui interagire.");
-    setTimeout(() => setMessage(""), 1600);
+    setMessage(
+      "Non c'è nessuno qui con cui interagire."
+    );
+
+    setTimeout(
+      () => setMessage(""),
+      1600
+    );
   };
+
+  /*
+    ============================
+    QUEST
+    ============================
+  */
 
   const questText = questDone
     ? "✓ I cristalli sono stati raccolti."
-    : `Raccogli 10 Cristalli del Sogno (${Math.min(collected, 10)}/10)`;
+    : `Raccogli 10 Cristalli del Sogno (${Math.min(
+        collected,
+        10
+      )}/10)`;
 
   useEffect(() => {
-    if (collected >= 10 && !questDone) {
+    if (
+      collected >= 10 &&
+      !questDone
+    ) {
       setQuestDone(true);
-      setMessage("★ Missione completata: Sentiero dei Sognatori!");
-    }
-  }, [collected, questDone]);
 
-  // Il controllo accesso viene fatto dopo tutti gli hook:
-  // così React non cambia mai l'ordine degli hook tra un render e l'altro.
-  if (isLoadingAuth || !authChecked) {
+      setMessage(
+        "★ Missione completata: Sentiero dei Sognatori!"
+      );
+    }
+  }, [
+    collected,
+    questDone,
+  ]);
+
+  /*
+    ============================
+    ACCESSO
+    ============================
+  */
+
+  if (
+    isLoadingAuth ||
+    !authChecked
+  ) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
         <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
@@ -636,42 +1425,182 @@ if (keys.d || keys.arrowright) dx += 1;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
   }
 
   if (!testerAllowed) {
-    return <Navigate to="/" replace />;
+    return (
+      <Navigate
+        to="/"
+        replace
+      />
+    );
   }
 
-  return (
-    <div className="fixed inset-0 overflow-hidden bg-black text-white select-none">
-      <canvas ref={canvasRef} className="absolute inset-0" />
+  /*
+    ============================
+    RETURN
+    ============================
+  */
 
-      {/* Sognatori selvatici e sfidanti nel mondo */}
+  return (
+    <div className="fixed inset-0 overflow-hidden bg-black text-white select-none touch-none">
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0"
+      />
+
+      {/* =====================================
+          PAD MOBILE
+          ===================================== */}
+
+      <div className="absolute bottom-5 left-5 z-50 md:hidden">
+        <div className="relative h-36 w-36">
+          <button
+            type="button"
+            aria-label="Muovi in alto"
+            className="absolute left-12 top-0 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              keysRef.current.w = true;
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              keysRef.current.w = false;
+            }}
+            onTouchCancel={(e) => {
+              e.preventDefault();
+              keysRef.current.w = false;
+            }}
+          >
+            ▲
+          </button>
+
+          <button
+            type="button"
+            aria-label="Muovi in basso"
+            className="absolute bottom-0 left-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              keysRef.current.s = true;
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              keysRef.current.s = false;
+            }}
+            onTouchCancel={(e) => {
+              e.preventDefault();
+              keysRef.current.s = false;
+            }}
+          >
+            ▼
+          </button>
+
+          <button
+            type="button"
+            aria-label="Muovi a sinistra"
+            className="absolute left-0 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              keysRef.current.a = true;
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              keysRef.current.a = false;
+            }}
+            onTouchCancel={(e) => {
+              e.preventDefault();
+              keysRef.current.a = false;
+            }}
+          >
+            ◀
+          </button>
+
+          <button
+            type="button"
+            aria-label="Muovi a destra"
+            className="absolute right-0 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              keysRef.current.d = true;
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              keysRef.current.d = false;
+            }}
+            onTouchCancel={(e) => {
+              e.preventDefault();
+              keysRef.current.d = false;
+            }}
+          >
+            ▶
+          </button>
+
+          <div className="absolute left-12 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/25" />
+        </div>
+      </div>
+
+      {/* =====================================
+          SOGNATORI SELVATICI
+          ===================================== */}
+
       <div className="pointer-events-none absolute inset-0">
         {wildSognatori.map((s) => {
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          const scale = Math.min(w / 1100, h / 700);
-          const sx = w / 2 + (s.x - player.x) * scale;
-          const sy = h / 2 + (s.y - player.y) * scale;
+          const w =
+            window.innerWidth;
 
-          if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
+          const h =
+            window.innerHeight;
+
+          const scale =
+            Math.min(
+              w / 1100,
+              h / 700
+            );
+
+          const sx =
+            w / 2 +
+            (s.x - player.x) *
+              scale;
+
+          const sy =
+            h / 2 +
+            (s.y - player.y) *
+              scale;
+
+          if (
+            sx < -100 ||
+            sx > w + 100 ||
+            sy < -120 ||
+            sy > h + 120
+          ) {
+            return null;
+          }
 
           return (
             <div
               key={s.id}
               className="absolute -translate-x-1/2 -translate-y-full"
-              style={{ left: sx, top: sy }}
+              style={{
+                left: sx,
+                top: sy,
+              }}
             >
               <div className="mb-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
                 {s.name}
               </div>
+
               <img
                 src={spriteFor(s.name)}
                 alt={s.name}
                 className="h-16 w-16 object-contain drop-shadow-[0_5px_8px_rgba(0,0,0,.7)]"
               />
+
               <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40">
                 <div className="h-full w-full rounded-full bg-emerald-400" />
               </div>
@@ -679,77 +1608,172 @@ if (keys.d || keys.arrowright) dx += 1;
           );
         })}
 
-        {CHALLENGERS.map((c) => {
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          const scale = Math.min(w / 1100, h / 700);
-          const sx = w / 2 + (c.x - player.x) * scale;
-          const sy = h / 2 + (c.y - player.y) * scale;
+        {/* =====================================
+            SFIDANTI
+            ===================================== */}
 
-          if (sx < -120 || sx > w + 120 || sy < -150 || sy > h + 150) return null;
+        {challengerRef.current.map(
+          (c) => {
+            const w =
+              window.innerWidth;
 
-          const close = Math.hypot(player.x - c.x, player.y - c.y) < c.vision;
+            const h =
+              window.innerHeight;
 
-          return (
-            <div
-              key={c.id}
-              className="absolute -translate-x-1/2 -translate-y-full"
-              style={{ left: sx, top: sy }}
-            >
-              {close && (
-                <div className="mb-1 rounded-full border border-red-300/30 bg-red-950/85 px-2 py-0.5 text-[8px] font-black text-red-100">
-                  ! TI HA VISTO
-                </div>
-              )}
+            const scale =
+              Math.min(
+                w / 1100,
+                h / 700
+              );
+
+            const sx =
+              w / 2 +
+              (c.x - player.x) *
+                scale;
+
+            const sy =
+              h / 2 +
+              (c.y - player.y) *
+                scale;
+
+            if (
+              sx < -120 ||
+              sx > w + 120 ||
+              sy < -150 ||
+              sy > h + 150
+            ) {
+              return null;
+            }
+
+            const cooldownUntil =
+              challengerCooldownRef
+                .current[c.id] ||
+              0;
+
+            const available =
+              Date.now() >=
+              cooldownUntil;
+
+            const close =
+              available &&
+              Math.hypot(
+                player.x - c.x,
+                player.y - c.y
+              ) < c.vision;
+
+            return (
               <div
-                className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/60 shadow-lg"
-                style={{ background: c.color }}
+                key={c.id}
+                className="absolute -translate-x-1/2 -translate-y-full"
+                style={{
+                  left: sx,
+                  top: sy,
+                  opacity: available
+                    ? 1
+                    : 0.55,
+                }}
               >
-                <span className="text-lg">🧍</span>
+                {close && (
+                  <div className="mb-1 rounded-full border border-red-300/30 bg-red-950/85 px-2 py-0.5 text-[8px] font-black text-red-100">
+                    ! TI HA VISTO
+                  </div>
+                )}
+
+                <div
+                  className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/60 shadow-lg"
+                  style={{
+                    background:
+                      c.color,
+                  }}
+                >
+                  <span className="text-lg">
+                    🧍
+                  </span>
+                </div>
+
+                <div className="mt-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
+                  {c.name}
+                </div>
               </div>
-              <div className="mt-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
-                {c.name}
-              </div>
-            </div>
-          );
-        })}
+            );
+          }
+        )}
       </div>
 
-      {/* HUD superiore */}
-      <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-4 pointer-events-none">
-        <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 backdrop-blur-md shadow-2xl">
+      {/* =====================================
+          HUD
+          ===================================== */}
+
+      <div className="pointer-events-none absolute left-4 right-4 top-4 flex items-start justify-between gap-4">
+        <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 shadow-2xl backdrop-blur-md">
           <div className="text-xs font-bold uppercase tracking-[0.25em] text-white/50">
             Sognatori
           </div>
-          <div className="mt-1 text-2xl font-black">AVVENTURA</div>
-          <div className="mt-1 text-sm text-white/60">{zone.name}</div>
+
+          <div className="mt-1 text-2xl font-black">
+            AVVENTURA
+          </div>
+
+          <div className="mt-1 text-sm text-white/60">
+            {zone.name}
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 text-right backdrop-blur-md">
-          <div className="text-xs text-white/50">CRISTALLI</div>
-          <div className="text-xl font-black">✦ {collected} / 28</div>
+        <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 text-right shadow-2xl backdrop-blur-md">
+          <div className="text-xs text-white/50">
+            CRISTALLI
+          </div>
+
+          <div className="text-xl font-black">
+            ✦ {collected} / 28
+          </div>
+
           <div className="mt-1 text-xs text-white/50">
-            Ore {String(Math.floor(time)).padStart(2, "0")}:
-            {String(Math.floor((time % 1) * 60)).padStart(2, "0")}
+            Ore{" "}
+            {String(
+              Math.floor(time)
+            ).padStart(2, "0")}
+            :
+            {String(
+              Math.floor(
+                (time % 1) * 60
+              )
+            ).padStart(2, "0")}
           </div>
         </div>
       </div>
 
-      {/* Quest */}
+      {/* =====================================
+          QUEST
+          ===================================== */}
+
       <div className="absolute left-4 top-32 w-72 rounded-2xl border border-yellow-200/15 bg-black/55 p-4 backdrop-blur-md">
         <div className="text-[11px] font-black uppercase tracking-widest text-yellow-200/70">
           Missione
         </div>
-        <div className="mt-2 text-sm font-semibold">{questText}</div>
+
+        <div className="mt-2 text-sm font-semibold">
+          {questText}
+        </div>
+
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-yellow-300 transition-all"
-            style={{ width: `${Math.min(100, (collected / 10) * 100)}%` }}
+            style={{
+              width: `${Math.min(
+                100,
+                (collected / 10) *
+                  100
+              )}%`,
+            }}
           />
         </div>
       </div>
 
-      {/* Minimap */}
+      {/* =====================================
+          MINIMAP
+          ===================================== */}
+
       <div className="absolute right-4 top-32 h-40 w-56 overflow-hidden rounded-2xl border border-white/15 bg-black/65 shadow-2xl backdrop-blur-md">
         <div className="relative h-full w-full">
           {ZONES.map((z) => (
@@ -757,58 +1781,118 @@ if (keys.d || keys.arrowright) dx += 1;
               key={z.name}
               className="absolute"
               style={{
-                left: `${(z.x / WORLD.width) * 100}%`,
-                top: `${(z.y / WORLD.height) * 100}%`,
-                width: `${(z.w / WORLD.width) * 100}%`,
-                height: `${(z.h / WORLD.height) * 100}%`,
-                background: z.color,
+                left: `${
+                  (z.x /
+                    WORLD.width) *
+                  100
+                }%`,
+
+                top: `${
+                  (z.y /
+                    WORLD.height) *
+                  100
+                }%`,
+
+                width: `${
+                  (z.w /
+                    WORLD.width) *
+                  100
+                }%`,
+
+                height: `${
+                  (z.h /
+                    WORLD.height) *
+                  100
+                }%`,
+
+                background:
+                  z.color,
+
                 opacity: 0.8,
               }}
             />
           ))}
+
           <div
             className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_12px_white]"
             style={{
-              left: `${(player.x / WORLD.width) * 100}%`,
-              top: `${(player.y / WORLD.height) * 100}%`,
+              left: `${
+                (player.x /
+                  WORLD.width) *
+                100
+              }%`,
+
+              top: `${
+                (player.y /
+                  WORLD.height) *
+                100
+              }%`,
             }}
           />
         </div>
+
         <div className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-widest text-white/50">
           Mappa del mondo
         </div>
       </div>
 
-      {/* Controlli */}
-      <div className="absolute bottom-5 left-5 rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md">
-        <span className="font-bold text-white">WASD / FRECCE</span> · muovi
+      {/* =====================================
+          CONTROLLI DESKTOP
+          ===================================== */}
+
+      <div className="absolute bottom-5 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
+        <span className="font-bold text-white">
+          WASD / FRECCE
+        </span>{" "}
+        · muovi
         <br />
-        <span className="font-bold text-white">E</span> · interagisci
+        <span className="font-bold text-white">
+          E
+        </span>{" "}
+        · interagisci
       </div>
 
+      {/* =====================================
+          INTERAGISCI
+          ===================================== */}
+
       <button
+        type="button"
         onClick={interact}
         className="absolute bottom-5 right-5 rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
       >
         E · INTERAGISCI
       </button>
 
-      {/* Messaggio */}
+      {/* =====================================
+          MESSAGGIO
+          ===================================== */}
+
       {message && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/75 px-6 py-3 text-sm font-bold shadow-2xl backdrop-blur-md">
           {message}
         </div>
       )}
 
-      {/* Dialogo */}
+      {/* =====================================
+          DIALOGO NPC
+          ===================================== */}
+
       {dialogue && (
-        <div className="absolute inset-x-4 bottom-5 mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="absolute inset-x-4 bottom-5 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
           <div className="mb-2 text-sm font-black uppercase tracking-widest text-yellow-200">
             {dialogue.name}
           </div>
-          <div className="text-base leading-7 text-white/85">{dialogue.dialogue}</div>
+
+          <div className="text-base leading-7 text-white/85">
+            {dialogue.dialogue}
+          </div>
+
           <button
-            onClick={() => setDialogue(null)}
+            type="button"
+            onClick={() =>
+              setDialogue(null)
+            }
             className="mt-5 rounded-xl bg-white px-5 py-2 text-sm font-black text-black"
           >
             Continua
@@ -816,37 +1900,86 @@ if (keys.d || keys.arrowright) dx += 1;
         </div>
       )}
 
-      {/* Sfidante */}
+      {/* =====================================
+          SFIDANTE
+          ===================================== */}
+
       {challengerEncounter && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-[min(460px,92vw)] rounded-3xl border border-red-300/20 bg-zinc-950 p-7 text-center shadow-2xl">
             <div className="text-xs font-black uppercase tracking-[0.3em] text-red-200/60">
               Sfidante
             </div>
-            <div className="mt-3 text-4xl font-black">{challengerEncounter.name}</div>
+
+            <div className="mt-3 text-4xl font-black">
+              {challengerEncounter.name}
+            </div>
+
             <div className="mt-2 text-sm text-white/50">
-              Ti ha visto e vuole sfidarti!
+              Ti ha visto e vuole
+              sfidarti!
             </div>
+
             <div className="mt-5 flex justify-center gap-2">
-              {challengerEncounter.team.map((name) => (
-                <img
-                  key={name}
-                  src={spriteFor(name)}
-                  alt={name}
-                  className="h-20 w-20 object-contain"
-                />
-              ))}
+              {challengerEncounter.team.map(
+                (name) => (
+                  <img
+                    key={name}
+                    src={spriteFor(
+                      name
+                    )}
+                    alt={name}
+                    className="h-20 w-20 object-contain"
+                  />
+                )
+              )}
             </div>
+
             <button
+              type="button"
               onClick={() => {
-                window.location.href = "/test-random";
+                /*
+                  Evitiamo che al ritorno
+                  possa riaprire immediatamente.
+                */
+
+                challengerCooldownRef.current[
+                  challengerEncounter.id
+                ] =
+                  Date.now() +
+                  30000;
+
+                challengerEncounterOpenRef.current =
+                  false;
+
+                window.location.href =
+                  "/test-random";
               }}
               className="mt-6 w-full rounded-xl bg-red-400 py-3 font-black text-black"
             >
               ACCETTA LA SFIDA
             </button>
+
             <button
-              onClick={() => setChallengerEncounter(null)}
+              type="button"
+              onClick={() => {
+                /*
+                  30 secondi di tranquillità.
+                */
+
+                challengerCooldownRef.current[
+                  challengerEncounter.id
+                ] =
+                  Date.now() +
+                  30000;
+
+                challengerEncounterOpenRef.current =
+                  false;
+
+                setChallengerEncounter(
+                  null
+                );
+              }}
               className="mt-2 w-full rounded-xl bg-white/10 py-3 font-bold"
             >
               Continua a esplorare
@@ -855,27 +1988,60 @@ if (keys.d || keys.arrowright) dx += 1;
         </div>
       )}
 
-      {/* Incontro */}
+      {/* =====================================
+          INCONTRO SELVATICO
+          ===================================== */}
+
       {encounter && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-[min(420px,90vw)] rounded-3xl border border-white/15 bg-zinc-950 p-7 text-center shadow-2xl">
             <div className="text-xs font-black uppercase tracking-[0.3em] text-white/40">
               Incontro selvatico
             </div>
-            <div className="mt-4 text-4xl font-black">{encounter.name}</div>
-            <div className="mt-3 text-sm text-white/50">
-              Un Sognatore è apparso nell'erba alta.
+
+            <div className="mt-4 text-4xl font-black">
+              {encounter.name}
             </div>
+
+            <div className="mt-3 text-sm text-white/50">
+              Un Sognatore è apparso
+              nell'erba alta.
+            </div>
+
             <button
+              type="button"
               onClick={() => {
-                window.location.href = "/test-random";
+                wildCooldownRef.current[
+                  encounter.id
+                ] =
+                  Date.now() +
+                  5000;
+
+                encounterOpenRef.current =
+                  false;
+
+                window.location.href =
+                  "/test-random";
               }}
               className="mt-7 w-full rounded-xl bg-yellow-300 py-3 font-black text-black"
             >
               Affronta
             </button>
+
             <button
-              onClick={() => setEncounter(null)}
+              type="button"
+              onClick={() => {
+                wildCooldownRef.current[
+                  encounter.id
+                ] =
+                  Date.now() +
+                  5000;
+
+                encounterOpenRef.current =
+                  false;
+
+                setEncounter(null);
+              }}
               className="mt-2 w-full rounded-xl bg-white/10 py-3 font-bold"
             >
               Fuggi
@@ -887,108 +2053,415 @@ if (keys.d || keys.arrowright) dx += 1;
   );
 }
 
+/*
+  ============================================
+  PLAYER
+  ============================================
+*/
+
 function drawPlayer(ctx, p) {
   ctx.save();
-  ctx.translate(p.x, p.y);
 
-  ctx.fillStyle = "rgba(0,0,0,.25)";
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+  /*
+    Ombra
+  */
+
+  ctx.fillStyle =
+    "rgba(0,0,0,.25)";
+
   ctx.beginPath();
-  ctx.ellipse(0, 18, 18, 7, 0, 0, Math.PI * 2);
+
+  ctx.ellipse(
+    0,
+    18,
+    18,
+    7,
+    0,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  // corpo
-  ctx.fillStyle = "#f2c14e";
+  /*
+    Corpo
+  */
+
+  ctx.fillStyle =
+    "#f2c14e";
+
   ctx.beginPath();
-  ctx.roundRect(-14, -4, 28, 34, 9);
+
+  ctx.roundRect(
+    -14,
+    -4,
+    28,
+    34,
+    9
+  );
+
   ctx.fill();
 
-  // testa
-  ctx.fillStyle = "#f4d7b5";
+  /*
+    Testa
+  */
+
+  ctx.fillStyle =
+    "#f4d7b5";
+
   ctx.beginPath();
-  ctx.arc(0, -14, 16, 0, Math.PI * 2);
+
+  ctx.arc(
+    0,
+    -14,
+    16,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  // capelli
-  ctx.fillStyle = "#2d211d";
+  /*
+    Capelli
+  */
+
+  ctx.fillStyle =
+    "#2d211d";
+
   ctx.beginPath();
-  ctx.arc(0, -18, 16, Math.PI, Math.PI * 2);
+
+  ctx.arc(
+    0,
+    -18,
+    16,
+    Math.PI,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  // occhi
-  ctx.fillStyle = "#111";
-  ctx.fillRect(-6, -16, 3, 4);
-  ctx.fillRect(3, -16, 3, 4);
+  /*
+    Occhi
+  */
+
+  ctx.fillStyle =
+    "#111";
+
+  ctx.fillRect(
+    -6,
+    -16,
+    3,
+    4
+  );
+
+  ctx.fillRect(
+    3,
+    -16,
+    3,
+    4
+  );
 
   ctx.restore();
 }
 
-function drawTree(ctx, x, y, r) {
-  ctx.fillStyle = "#573b27";
-  ctx.fillRect(x - 8, y, 16, r * 1.8);
+/*
+  ============================================
+  TREE
+  ============================================
+*/
 
-  ctx.fillStyle = "#183f2a";
+function drawTree(
+  ctx,
+  x,
+  y,
+  r
+) {
+  /*
+    Tronco
+  */
+
+  ctx.fillStyle =
+    "#573b27";
+
+  ctx.fillRect(
+    x - 8,
+    y,
+    16,
+    r * 1.8
+  );
+
+  /*
+    Chioma scura
+  */
+
+  ctx.fillStyle =
+    "#183f2a";
+
   ctx.beginPath();
-  ctx.arc(x, y - 12, r, 0, Math.PI * 2);
+
+  ctx.arc(
+    x,
+    y - 12,
+    r,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  ctx.fillStyle = "#27613b";
+  /*
+    Chioma sinistra
+  */
+
+  ctx.fillStyle =
+    "#27613b";
+
   ctx.beginPath();
-  ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.62, 0, Math.PI * 2);
+
+  ctx.arc(
+    x -
+      r * 0.35,
+    y -
+      r * 0.35,
+    r * 0.62,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  ctx.fillStyle = "#3e7d48";
+  /*
+    Chioma destra
+  */
+
+  ctx.fillStyle =
+    "#3e7d48";
+
   ctx.beginPath();
-  ctx.arc(x + r * 0.35, y - r * 0.2, r * 0.5, 0, Math.PI * 2);
+
+  ctx.arc(
+    x +
+      r * 0.35,
+    y -
+      r * 0.2,
+    r * 0.5,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 }
 
-function drawHouse(ctx, x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, 190, 130);
+/*
+  ============================================
+  HOUSE
+  ============================================
+*/
 
-  ctx.fillStyle = "#40251b";
+function drawHouse(
+  ctx,
+  x,
+  y,
+  color
+) {
+  /*
+    Corpo
+  */
+
+  ctx.fillStyle =
+    color;
+
+  ctx.fillRect(
+    x,
+    y,
+    190,
+    130
+  );
+
+  /*
+    Tetto
+  */
+
+  ctx.fillStyle =
+    "#40251b";
+
   ctx.beginPath();
-  ctx.moveTo(x - 20, y);
-  ctx.lineTo(x + 95, y - 95);
-  ctx.lineTo(x + 210, y);
+
+  ctx.moveTo(
+    x - 20,
+    y
+  );
+
+  ctx.lineTo(
+    x + 95,
+    y - 95
+  );
+
+  ctx.lineTo(
+    x + 210,
+    y
+  );
+
   ctx.closePath();
+
   ctx.fill();
 
-  ctx.fillStyle = "#d9c29c";
-  ctx.fillRect(x + 72, y + 58, 42, 72);
+  /*
+    Porta
+  */
 
-  ctx.fillStyle = "#8ed1dc";
-  ctx.fillRect(x + 25, y + 35, 35, 35);
-  ctx.fillRect(x + 130, y + 35, 35, 35);
+  ctx.fillStyle =
+    "#d9c29c";
+
+  ctx.fillRect(
+    x + 72,
+    y + 58,
+    42,
+    72
+  );
+
+  /*
+    Finestre
+  */
+
+  ctx.fillStyle =
+    "#8ed1dc";
+
+  ctx.fillRect(
+    x + 25,
+    y + 35,
+    35,
+    35
+  );
+
+  ctx.fillRect(
+    x + 130,
+    y + 35,
+    35,
+    35
+  );
 }
 
-function drawNpc(ctx, npc) {
+/*
+  ============================================
+  NPC
+  ============================================
+*/
+
+function drawNpc(
+  ctx,
+  npc
+) {
   ctx.save();
-  ctx.translate(npc.x, npc.y);
 
-  ctx.fillStyle = "rgba(0,0,0,.25)";
+  ctx.translate(
+    npc.x,
+    npc.y
+  );
+
+  /*
+    Ombra
+  */
+
+  ctx.fillStyle =
+    "rgba(0,0,0,.25)";
+
   ctx.beginPath();
-  ctx.ellipse(0, 25, 20, 7, 0, 0, Math.PI * 2);
+
+  ctx.ellipse(
+    0,
+    25,
+    20,
+    7,
+    0,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  ctx.fillStyle = npc.color;
+  /*
+    Corpo
+  */
+
+  ctx.fillStyle =
+    npc.color;
+
   ctx.beginPath();
-  ctx.arc(0, 0, 19, 0, Math.PI * 2);
+
+  ctx.arc(
+    0,
+    0,
+    19,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  ctx.fillStyle = "#f4d7b5";
+  /*
+    Testa
+  */
+
+  ctx.fillStyle =
+    "#f4d7b5";
+
   ctx.beginPath();
-  ctx.arc(0, -20, 12, 0, Math.PI * 2);
+
+  ctx.arc(
+    0,
+    -20,
+    12,
+    0,
+    Math.PI * 2
+  );
+
   ctx.fill();
 
-  ctx.fillStyle = "#111";
-  ctx.fillRect(-5, -22, 3, 4);
-  ctx.fillRect(3, -22, 3, 4);
+  /*
+    Occhi
+  */
 
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 14px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText(npc.name, 0, 43);
+  ctx.fillStyle =
+    "#111";
+
+  ctx.fillRect(
+    -5,
+    -22,
+    3,
+    4
+  );
+
+  ctx.fillRect(
+    3,
+    -22,
+    3,
+    4
+  );
+
+  /*
+    Nome
+  */
+
+  ctx.fillStyle =
+    "#fff";
+
+  ctx.font =
+    "bold 14px system-ui";
+
+  ctx.textAlign =
+    "center";
+
+  ctx.fillText(
+    npc.name,
+    0,
+    43
+  );
 
   ctx.restore();
 }
