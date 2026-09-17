@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";\nimport { Navigate } from "react-router-dom";\nimport { useAuth } from "@/lib/AuthContext";
 
 /*
   SOGNATORI — AVVENTURA
@@ -165,54 +165,11 @@ function circleRectCollision(cx, cy, radius, rx, ry, rw, rh) {
 export default function Avventura() {
   const canvasRef = useRef(null);
 
-  const [authChecked, setAuthChecked] = useState(false);
-  const [testerAllowed, setTesterAllowed] = useState(false);
+  const { user, isLoadingAuth, authChecked } = useAuth();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const checkTester = async () => {
-      try {
-        // Usa l'istanza Supabase già configurata nel progetto.
-        const { supabase } = await import("@/lib/supabase");
-        const { data } = await supabase.auth.getUser();
-        const email = data?.user?.email?.toLowerCase();
-
-        if (!cancelled) {
-          setTesterAllowed(
-            !!email && TESTER_EMAILS.includes(email)
-          );
-          setAuthChecked(true);
-        }
-      } catch {
-        if (!cancelled) {
-          setTesterAllowed(false);
-          setAuthChecked(true);
-        }
-      }
-    };
-
-    checkTester();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (!authChecked) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
-          Controllo accesso tester...
-        </div>
-      </div>
-    );
-  }
-
-  if (!testerAllowed) {
-    window.location.replace("/");
-    return null;
-  }
+  const testerAllowed =
+    !!user?.email &&
+    TESTER_EMAILS.includes(user.email.toLowerCase());
   const keysRef = useRef({});
   const playerRef = useRef({ x: 1800, y: 900 });
   const cameraRef = useRef({ x: 1800, y: 900 });
@@ -551,6 +508,26 @@ export default function Avventura() {
       setMessage("★ Missione completata: Sentiero dei Sognatori!");
     }
   }, [collected, questDone]);
+
+  // Il controllo accesso viene fatto dopo tutti gli hook:
+  // così React non cambia mai l'ordine degli hook tra un render e l'altro.
+  if (isLoadingAuth || !authChecked) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
+          Controllo accesso tester...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!testerAllowed) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black text-white select-none">
