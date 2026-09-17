@@ -367,7 +367,7 @@ export default function Avventura() {
       }
 
       // IA Sognatori selvatici: piccoli movimenti autonomi.
-      const now = performance.now();
+
       wildRef.current = wildRef.current.map((s) => {
         const d = Math.hypot(playerRef.current.x - s.x, playerRef.current.y - s.y);
         let angle = s.angle ?? Math.random() * Math.PI * 2;
