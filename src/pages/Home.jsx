@@ -379,7 +379,7 @@ export default function Home() {
                 <div className="flex flex-wrap justify-center gap-2">
 
                   {Array.from(
-                    { length: 9 },
+                    { length: 10 },
                     (_, i) => i + 1
                   ).map((testStage) => (
                     <button
