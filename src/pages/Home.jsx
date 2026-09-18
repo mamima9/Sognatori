@@ -49,7 +49,7 @@ export default function Home() {
     1: "gnopot.png",
     2: "ribarbanno.jpg",
     3: "civu.png",
-    4: "cappucc.png",
+    4: "marsmellow.png",
     5: "spaxio.png",
     6: "gubbo.png",
     7: "boccinu-r.png",
