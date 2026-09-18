@@ -104,10 +104,20 @@ export default function Auction({
   onComplete,
   onBack,
 }) {
+  useEffect(() => {
+    setMusicMode("auction");
+
+    return () => {
+      setMusicMode("main");
+    };
+  }, []);
+
   const { t, lang } = useLanguage();
   const aiProfile =
   ARCADE_AUCTION_PROFILES[stage] ||
   ARCADE_AUCTION_PROFILES[1];
+
+
 
   /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */
   const [pool, setPool] = useState(() =>
