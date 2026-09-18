@@ -119,14 +119,8 @@ export default function Auction({
 
 
 
-  /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */
   const [pool, setPool] = useState(() =>
-  ROSTER
-    .filter(
-      (sog) =>
-        !["fierononno", "pequeno", "cenere"].includes(sog.id)
-    )
-    .sort(() => Math.random() - 0.5)
+  ROSTER.sort(() => Math.random() - 0.5)
 );
 
   const [playerCredits, setPlayerCredits] = useState(100);
