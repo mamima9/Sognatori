@@ -20,6 +20,39 @@ const FACTION_ICONS = {
   Salato: "🧂",
 };
 
+/* ORDINE UFFICIALE DEI SOGNATORI */
+const SOGNATORI_ORDER = [
+  "adlimago",
+  "eroe",
+  "cancucc",
+  "dragociocco",
+  "deb",
+  "sparkly",
+  "taomarco",
+  "aragostino",
+  "cillymbu",
+  "nina",
+  "nuvobetta",
+  "scroccospell",
+  "riwupido",
+  "fourmori",
+  "ginza",
+  "lari",
+  "uesditti",
+  "long",
+  "pepe",
+  "icepadel",
+  "pirimar",
+  "fierononno",
+  "pequeno",
+  "cenere",
+];
+
+/* ROSTER ordinato senza modificare il ROSTER originale */
+const orderedRoster = SOGNATORI_ORDER
+  .map((id) => ROSTER.find((s) => s.id === id))
+  .filter(Boolean);
+
 const SOGNATORI_LORE = {
   adlimago: {
     it: `Adli è un antico sognatore che custodisce i segreti del mondo dei sognatori.
@@ -274,7 +307,8 @@ export default function Lore() {
         {/* SOGNATORI */}
         <Section title={t("lore.sognatori")}>
           <div className="grid sm:grid-cols-2 gap-3">
-            {ROSTER.map((s, i) => {
+
+            {orderedRoster.map((s, i) => {
               const hasLore = Boolean(SOGNATORI_LORE[s.id]);
 
               return (
@@ -292,10 +326,12 @@ export default function Lore() {
                 >
                   <div className="flex items-center gap-3">
 
-                    <div className="text-[10px] text-slate-500 w-5">
-                      {i + 1}
+                    {/* NUMERO DI APPARIZIONE */}
+                    <div className="text-[10px] text-amber-400/70 font-bold w-8 shrink-0">
+                      #{String(i + 1).padStart(3, "0")}
                     </div>
 
+                    {/* IMMAGINE */}
                     <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-white/5">
                       <img
                         src={s.img}
@@ -304,6 +340,7 @@ export default function Lore() {
                       />
                     </div>
 
+                    {/* NOME + TIPO */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-white">
@@ -318,15 +355,15 @@ export default function Lore() {
                           ? lang === "en"
                             ? "Discover their story →"
                             : "Scopri la sua storia →"
-                          : lang === "en"
-                            ? "Lore coming soon..."
-                            : "Lore in arrivo..."}
+                          : "🔒 👀 Lore sbloccabile"}
                       </div>
                     </div>
+
                   </div>
                 </motion.button>
               );
             })}
+
           </div>
         </Section>
 
@@ -334,6 +371,7 @@ export default function Lore() {
         <div className="text-center text-[11px] text-slate-500 mt-8 mb-4 italic">
           {t("lore.footer")}
         </div>
+
       </div>
 
       {/* MODAL LORE */}
@@ -409,6 +447,7 @@ export default function Lore() {
 
                 </div>
               </div>
+
             </motion.div>
           </motion.div>
         )}
