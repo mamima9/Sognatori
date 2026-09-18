@@ -49,3 +49,20 @@ export function getAbilityDesc(s, lang) {
   if (lang === "en" && s.abilKey && ABILITY_EN[s.abilKey]) return ABILITY_EN[s.abilKey].desc;
   return s.abilDesc;
 }
+export function getAbility2Name(s, lang) {
+
+  if (lang === "en" && s.abil2Key && ABILITY_EN[s.abil2Key]) {
+    return ABILITY_EN[s.abil2Key].name;
+  }
+
+  return s.abil2;
+}
+
+export function getAbility2Desc(s, lang) {
+
+  if (lang === "en" && s.abil2Key && ABILITY_EN[s.abil2Key]) {
+    return ABILITY_EN[s.abil2Key].desc;
+  }
+
+  return s.abil2Desc;
+}
