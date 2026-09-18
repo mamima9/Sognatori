@@ -6,6 +6,8 @@ import { ROSTER } from "@/lib/sognatoriData";
 import {
   getAbilityName,
   getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
 } from "@/lib/abilityI18n";
 
 const getTypeStyle = (tipo) => {
@@ -194,18 +196,38 @@ export default function SognatoriStats() {
 
               </div>
 
-              {/* ABILITÀ */}
-              <div className="mx-4 mb-4 rounded-xl bg-black/20 border border-white/5 p-3">
+           {/* ABILITÀ */}
+<div className="mx-4 mb-4 rounded-xl bg-black/20 border border-white/5 p-3">
 
-                <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-                  {getAbilityName(s, "it")}
-                </div>
+  <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
+    Abilità
+  </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed min-h-[48px]">
-                  {getAbilityDesc(s, "it")}
-                </p>
+  <div className="text-sm font-bold text-white">
+    {getAbilityName(s, "it") || "—"}
+  </div>
 
-              </div>
+  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+    {getAbilityDesc(s, "it") || "—"}
+  </p>
+
+  {s.abil2Key && (
+    <div className="pt-3 border-t border-white/10">
+      <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
+        Abilità 2
+      </div>
+
+      <div className="text-sm font-bold text-white">
+        {getAbility2Name(s, "it")}
+      </div>
+
+      <p className="text-xs text-slate-300 leading-relaxed">
+        {getAbility2Desc(s, "it")}
+      </p>
+    </div>
+  )}
+
+</div>
 
             </article>
           ))}
