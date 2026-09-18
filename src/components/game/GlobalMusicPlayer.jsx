@@ -4,10 +4,6 @@ import { useLocation } from "react-router-dom";
 
 const MAIN_TRACKS = [
   {
-    name: "Dream Arena",
-    url: "/audio/002Sognatori - Dream Arena.mp3",
-  },
-  {
     name: "Sognatori Awakes",
     url: "/audio/Sognatori Awakes.mp3",
   },
@@ -24,8 +20,28 @@ const MAIN_TRACKS = [
     url: "/audio/Lantern Deer.mp3",
   },
   {
-    name: "Arrivederci Roma",
-    url: "/audio/001 Sognatori - Arrivederci Roma.mp3",
+    name: "Adli il Mago",
+    url: "/audio/Adli il mago.mp3",
+  },
+  {
+    name: "Come gocce di tiglio",
+    url: "/audio/Come gocce di tiglio.mp3",
+  },
+  {
+    name: "Dandadan",
+    url: "/audio/Dandadan.mp3",
+  },
+  {
+    name: "El Buitre",
+    url: "/audio/El Buitre.mp3",
+  },
+  {
+    name: "Ganbare",
+    url: "/audio/ganbare.mp3",
+  },
+  {
+    name: "H1CQS",
+    url: "/audio/H1CQS.mp3",
   },
 ];
 
@@ -41,6 +57,14 @@ const BATTLE_TRACKS = [
 ];
 
 const AUCTION_TRACKS = [
+    {
+    name: "Dream Arena",
+    url: "/audio/002Sognatori - Dream Arena.mp3",
+  },
+  {
+    name: "Arrivederci Roma",
+    url: "/audio/001 Sognatori - Arrivederci Roma.mp3",
+  },
   {
     name: "Franco",
     url: "/audio/Franco.mp3",
