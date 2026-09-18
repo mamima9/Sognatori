@@ -4,7 +4,12 @@ import { SognatoreImage, FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 const TIMER_SECONDS = 60;

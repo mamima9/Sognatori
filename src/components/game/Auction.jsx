@@ -8,7 +8,12 @@ import { FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 import { setMusicMode } from "./GlobalMusicPlayer";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
@@ -912,13 +917,29 @@ const pick =
                   ))}
                 </div>
 
-                <div className="text-[10px] text-amber-400 mt-1 font-semibold">
-                  {getAbilityName(currentSog, lang)}
-                </div>
+              {currentSog.abilKey ? (
+  <>
+    <div className="text-[10px] text-amber-400 mt-1 font-semibold">
+      {getAbilityName(currentSog, lang)}
+    </div>
 
-                <div className="text-[9px] text-slate-300 mt-0.5 leading-tight">
-                  {getAbilityDesc(currentSog, lang)}
-                </div>
+    <div className="text-[9px] text-slate-300 mt-0.5 leading-tight">
+      {getAbilityDesc(currentSog, lang)}
+    </div>
+  </>
+) : null}
+
+{currentSog.abil2Key && (
+  <div className="mt-1.5 pt-1.5 border-t border-white/10">
+    <div className="text-[9px] text-amber-400 font-semibold">
+      Abilità 2 — {getAbility2Name(currentSog, lang)}
+    </div>
+
+    <div className="text-[9px] text-slate-300 mt-0.5 leading-tight">
+      {getAbility2Desc(currentSog, lang)}
+    </div>
+  </div>
+)}
               </div>
             </div>
 

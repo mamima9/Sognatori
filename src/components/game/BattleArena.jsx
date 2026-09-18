@@ -20,7 +20,12 @@ import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
 import { useLanguage } from "@/lib/i18n";
 import { bm } from "@/lib/battleMessages";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 

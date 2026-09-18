@@ -16,7 +16,12 @@ import AbandonButton from "./AbandonButton";
 import { modeLabel } from "@/lib/gameConstants";
 import { useLanguage } from "@/lib/i18n";
 import { bm } from "@/lib/battleMessages";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 import { setMusicMode } from "./GlobalMusicPlayer";
 
 const BID_OPTIONS = [1, 5, 10];
