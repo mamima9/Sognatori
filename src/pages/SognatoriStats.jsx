@@ -144,9 +144,9 @@ const EffectBadge = ({ effect }) => {
 
   return (
     <span
-      className="inline-flex items-center px-2 py-1 rounded-lg text-[9px] font-black text-white"
+      className="text-[9px] font-black uppercase tracking-wide mr-1"
       style={{
-        backgroundColor: style.bg,
+        color: style.bg,
       }}
     >
       {style.label}
