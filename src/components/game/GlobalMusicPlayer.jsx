@@ -24,28 +24,28 @@ const MAIN_TRACKS = [
     url: "/audio/Adli il mago.mp3",
   },
   {
-    name: "Come gocce di tiglio",
-    url: "/audio/Come gocce di tiglio.mp3",
-  },
-  {
-    name: "Dandadan",
-    url: "/audio/Dandadan.mp3",
-  },
-  {
-    name: "El Buitre",
-    url: "/audio/El Buitre.mp3",
-  },
-  {
-    name: "Ganbare",
-    url: "/audio/ganbare.mp3",
-  },
-  {
     name: "H1CQS",
     url: "/audio/H1CQS.mp3",
   },
 ];
 
 const BATTLE_TRACKS = [
+   {
+    name: "Dream Arena",
+    url: "/audio/002Sognatori - Dream Arena.mp3",
+  },
+   {
+    name: "Ganbare",
+    url: "/audio/ganbare.mp3",
+  },
+   {
+    name: "El Buitre",
+    url: "/audio/El Buitre.mp3",
+  },
+  {
+    name: "Arrivederci Roma",
+    url: "/audio/001 Sognatori - Arrivederci Roma.mp3",
+  },
   {
     name: "Battaglia",
     url: "/audio/Battaglia.mp3",
@@ -54,17 +54,17 @@ const BATTLE_TRACKS = [
     name: "Eroica tensione",
     url: "/audio/Eroica tensione.mp3",
   },
+    {
+    name: "Come gocce di tiglio",
+    url: "/audio/Come gocce di tiglio.mp3",
+  },
+  {
+    name: "Dandadan",
+    url: "/audio/Dandadan.mp3",
+  },
 ];
 
 const AUCTION_TRACKS = [
-    {
-    name: "Dream Arena",
-    url: "/audio/002Sognatori - Dream Arena.mp3",
-  },
-  {
-    name: "Arrivederci Roma",
-    url: "/audio/001 Sognatori - Arrivederci Roma.mp3",
-  },
   {
     name: "Franco",
     url: "/audio/Franco.mp3",
