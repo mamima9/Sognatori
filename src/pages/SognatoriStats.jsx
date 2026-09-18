@@ -44,6 +44,39 @@ const getTypeStyle = (tipo) => {
   }
 };
 
+/* ORDINE UFFICIALE DELLA PAGINA SOGNATORI */
+const SOGNATORI_ORDER = [
+  "adlimago",
+  "eroe",
+  "cancucc",
+  "dragociocco",
+  "deb",
+  "sparkly",
+  "taomarco",
+  "aragostino",
+  "cillymbu",
+  "nina",
+  "nuvobetta",
+  "scroccospell",
+  "riwupido",
+  "fourmori",
+  "ginza",
+  "lari",
+  "uesditti",
+  "long",
+  "pepe",
+  "icepadel",
+  "pirimar",
+  "fierononno",
+  "pequeno",
+  "cenere",
+];
+
+/* Usa ROSTER senza modificarlo */
+const orderedRoster = SOGNATORI_ORDER
+  .map((id) => ROSTER.find((s) => s.id === id))
+  .filter(Boolean);
+
 export default function SognatoriStats() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white px-4 py-8">
@@ -87,6 +120,7 @@ export default function SognatoriStats() {
 
           <div className="grid grid-cols-3 gap-2 max-w-md">
 
+            {/* ATT */}
             <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2 text-center">
               <div className="text-[9px] text-red-300 font-bold">
                 ATT
@@ -97,6 +131,7 @@ export default function SognatoriStats() {
               </div>
             </div>
 
+            {/* DIF */}
             <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-2 text-center">
               <div className="text-[9px] text-blue-300 font-bold">
                 DIF
@@ -107,6 +142,7 @@ export default function SognatoriStats() {
               </div>
             </div>
 
+            {/* VEL */}
             <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-2 text-center">
               <div className="text-[9px] text-green-300 font-bold">
                 VEL
@@ -123,7 +159,7 @@ export default function SognatoriStats() {
         {/* SOGNATORI */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-          {ROSTER.map((s) => (
+          {orderedRoster.map((s) => (
             <article
               key={s.id}
               className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-xl hover:border-amber-400/30 transition"
@@ -143,10 +179,17 @@ export default function SognatoriStats() {
 
                 <div className="min-w-0">
 
+                  {/* NUMERO DI APPARIZIONE */}
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-amber-400/70 font-bold mb-0.5">
+                    #{String(SOGNATORI_ORDER.indexOf(s.id) + 1).padStart(3, "0")}
+                  </div>
+
+                  {/* NOME */}
                   <h2 className="text-lg font-black truncate">
                     {s.nome}
                   </h2>
 
+                  {/* TIPO */}
                   <span
                     className={`inline-flex mt-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${getTypeStyle(
                       s.tipo
@@ -196,38 +239,41 @@ export default function SognatoriStats() {
 
               </div>
 
-           {/* ABILITÀ */}
-<div className="mx-4 mb-4 rounded-xl bg-black/20 border border-white/5 p-3">
+              {/* ABILITÀ */}
+              <div className="mx-4 mb-4 rounded-xl bg-black/20 border border-white/5 p-3">
 
-  <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-    Abilità
-  </div>
+                <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
+                  Abilità
+                </div>
 
-  <div className="text-sm font-bold text-white">
-    {getAbilityName(s, "it") || "—"}
-  </div>
+                <div className="text-sm font-bold text-white">
+                  {getAbilityName(s, "it") || "—"}
+                </div>
 
-  <p className="text-xs text-slate-300 leading-relaxed mb-3">
-    {getAbilityDesc(s, "it") || "—"}
-  </p>
+                <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                  {getAbilityDesc(s, "it") || "—"}
+                </p>
 
-  {s.abil2Key && (
-    <div className="pt-3 border-t border-white/10">
-      <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-        Abilità 2
-      </div>
+                {/* ABILITÀ 2 */}
+                {s.abil2Key && (
+                  <div className="pt-3 border-t border-white/10">
 
-      <div className="text-sm font-bold text-white">
-        {getAbility2Name(s, "it")}
-      </div>
+                    <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
+                      Abilità 2
+                    </div>
 
-      <p className="text-xs text-slate-300 leading-relaxed">
-        {getAbility2Desc(s, "it")}
-      </p>
-    </div>
-  )}
+                    <div className="text-sm font-bold text-white">
+                      {getAbility2Name(s, "it")}
+                    </div>
 
-</div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      {getAbility2Desc(s, "it")}
+                    </p>
+
+                  </div>
+                )}
+
+              </div>
 
             </article>
           ))}
