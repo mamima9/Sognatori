@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import HealthBar, { FactionBadge, SognatoreImage } from "./HealthBar";
 import { getType, effAtt } from "@/lib/battleEngine";
 import { useLanguage } from "@/lib/i18n";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 
 const EFFICACY = {
   it: {
@@ -124,6 +129,18 @@ export default function BattlePokemon({ s, side, popup }) {
         <div className="text-[8px] text-slate-400 leading-tight px-1">
           {getAbilityDesc(s, lang)}
         </div>
+
+        {s.abil2Key && (
+  <>
+    <div className="text-[9px] text-amber-400/80 font-semibold mt-1">
+      {getAbility2Name(s, lang)}
+    </div>
+
+    <div className="text-[8px] text-slate-400 leading-tight px-1">
+      {getAbility2Desc(s, lang)}
+    </div>
+  </>
+)}
 
         <div className="flex justify-center gap-0.5 mt-1 text-[8px]">
           <span className="bg-red-500/20 rounded px-1">

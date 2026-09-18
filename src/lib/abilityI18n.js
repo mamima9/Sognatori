@@ -24,6 +24,18 @@ const ABILITY_EN = {
   cillymbu_aura: { name: "Bamboo Thrust", desc: "Ally gain +3 ATT." },
   pequeno_block: { name: "Seed Phrase", desc: "On entry, blocks the first attack of the fastest opposing Sognatore." },
   cenere_scoppio: { name: "Burning White Paper", desc:"When it drops below 5 HP, it deals 3 damage to each opponent" },
+  cenere_naturale: {
+  name: "Natural",
+  desc: "Just arrived, it still cannot control its full powers.",
+},
+pequeno_naturale: {
+  name: "Natural",
+  desc: "Just arrived, it still cannot control its full powers.",
+},
+fierononno_naturale: {
+  name: "Natural",
+  desc: "Just arrived, it still cannot control its full powers.",
+},
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };

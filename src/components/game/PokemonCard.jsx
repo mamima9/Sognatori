@@ -2,7 +2,12 @@ import React from "react";
 import { FACTION_COLORS } from "@/lib/typeChart";
 import { FactionBadge, SognatoreImage } from "./HealthBar";
 import { useLanguage } from "@/lib/i18n";
-import { getAbilityName, getAbilityDesc } from "@/lib/abilityI18n";
+import {
+  getAbilityName,
+  getAbilityDesc,
+  getAbility2Name,
+  getAbility2Desc,
+} from "@/lib/abilityI18n";
 
 export default function PokemonCard({ pokemon, selected, onClick }) {
   const { lang } = useLanguage();
@@ -27,8 +32,20 @@ export default function PokemonCard({ pokemon, selected, onClick }) {
           <Stat label="VEL" value={pokemon.vel} />
         </div>
         <div className="mt-2 text-[10px] text-slate-300 leading-tight">
-          <span className="text-amber-400 font-semibold">{getAbilityName(pokemon, lang)}</span> · {getAbilityDesc(pokemon, lang)}
-        </div>
+  <span className="text-amber-400 font-semibold">
+    {getAbilityName(pokemon, lang)}
+  </span>{" "}
+  · {getAbilityDesc(pokemon, lang)}
+
+  {pokemon.abil2Key && (
+    <div className="mt-1">
+      <span className="text-amber-400 font-semibold">
+        {getAbility2Name(pokemon, lang)}
+      </span>{" "}
+      · {getAbility2Desc(pokemon, lang)}
+    </div>
+  )}
+</div>
         <div className="mt-2 flex justify-between items-center">
           <span className="text-[10px] text-slate-400">20 PS</span>
           <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold">{pokemon.costo} 🪙</span>
