@@ -221,7 +221,7 @@ setArcadeRanking(arcadeData || []);
                 : "bg-white/5 text-slate-400 border border-white/10"
             }`}
           >
-            🏆 {t("rankings.players")}
+           🏆 Tra viaggiatori
           </button>
 
           <button
