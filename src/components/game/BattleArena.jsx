@@ -52,7 +52,12 @@ function actionLabel(act, enemyActive, playerBench, m) {
   return "";
 }
 
-export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
+export default function BattleArena({
+  stage,
+  playerTeam,
+  enemyTeam,
+  onEnd,
+}) {
   useEffect(() => {
   setMusicMode("battle");
 
@@ -70,7 +75,9 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
     try {
       const { data: profile, error: fetchError } = await supabase
         .from("profiles")
-        .select("arcade_wins, arcade_current_streak, arcade_best_streak")
+.select(
+  "arcade_wins, arcade_current_streak, arcade_best_streak, arcade_completed"
+)
         .eq("id", user.id)
         .single();
 
@@ -83,13 +90,21 @@ export default function BattleArena({ playerTeam, enemyTeam, onEnd }) {
           profile.arcade_best_streak || 0,
           newStreak
         );
+        const completedNow =
+  stage === 9 && !profile.arcade_completed;
 
         const { error } = await supabase
           .from("profiles")
           .update({
             arcade_wins: newWins,
-            arcade_current_streak: newStreak,
-            arcade_best_streak: newBest,
+arcade_current_streak: newStreak,
+arcade_best_streak: newBest,
+...(completedNow
+  ? {
+      arcade_completed: true,
+      arcade_completed_at: new Date().toISOString(),
+    }
+  : {}),
           })
           .eq("id", user.id);
 

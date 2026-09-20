@@ -641,8 +641,9 @@ export default function Home() {
           >
 
             <BattleArena
-              playerTeam={teams.playerTeam}
-              enemyTeam={teams.enemyTeam}
+  stage={arcadeStage}
+  playerTeam={teams.playerTeam}
+  enemyTeam={teams.enemyTeam}
               onEnd={(r) => {
                 setResult(r);
                 setTeams(null);
