@@ -24,7 +24,9 @@ export default function Rankings() {
       setLoading(true);
 const { data: arcadeData, error: arcadeError } = await supabase
   .from("profiles")
-  .select("id, username, avatar, arcade_wins, arcade_current_streak, arcade_best_streak")
+.select(
+  "id, username, avatar, arcade_wins, arcade_current_streak, arcade_best_streak, arcade_completed"
+)
   .order("arcade_best_streak", { ascending: false })
   .order("arcade_wins", { ascending: false })
   .limit(20);
@@ -298,11 +300,18 @@ setArcadeRanking(arcadeData || []);
           <div className="font-bold text-sm">
             {p.username}
           </div>
-
-          <div className="text-[10px] text-slate-400">
-            {p.arcade_wins} vittorie Arcade
-          </div>
-        </div>
+</div>
+        <div
+  className={`text-[10px] font-bold ${
+    p.arcade_completed
+      ? "text-amber-400"
+      : "text-slate-400"
+  }`}
+>
+  {p.arcade_completed
+    ? "🏆 ARCADE COMPLETATO"
+    : "Arcade non completato"}
+</div>
 
         <div className="text-right">
           <div className="text-lg font-bold text-amber-400">
