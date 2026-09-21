@@ -208,7 +208,7 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     abilDesc: "Chi subisce un suo attacco diventa di tipo Nuvola",
     costo: 22,
     theme: "Nuvole rosa",
-    img: "/images/15-tinia",
+    img: "/images/15-tinia.png",
   },
   {
     id: "uesditti",
