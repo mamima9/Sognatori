@@ -68,7 +68,7 @@ export const ROSTER = [
     abilDesc: "Quando infligge danno, gli avversari colpiti ricevono -4 VEL",
     costo: 28,
     theme: "Rug pull",
-    img: "/images/5. SCROCCOSPELL.jpg",
+    img: "/images/5.SCROCCOSPELL.jpg",
   },
   {
     id: "deb",
