@@ -79,7 +79,7 @@ const SOGNATORI_ORDER = [
   "riwupido",
   "fourmori",
   "ginza",
-  "lari",
+  "tinia",
   "uesditti",
   "long",
   "pepe",

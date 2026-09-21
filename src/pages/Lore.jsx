@@ -37,7 +37,7 @@ const SOGNATORI_ORDER = [
   "riwupido",
   "fourmori",
   "ginza",
-  "lari",
+  "tinia",
   "uesditti",
   "long",
   "pepe",
@@ -151,13 +151,13 @@ Continua ad essere un gran brontolone ma adesso protegge gli umani dall'alto.`,
 He is still a great grumbler, but now he protects humans from above.`,
   },
 
-  lari: {
-    it: `Lari è una sognatrice nata da una divinità protettrice delle dimore.
+  tinia: {
+    it: `Tinia è una sognatrice nata da una divinità protettrice delle dimore.
 
 In cambio di adorazione protegge i cieli circostanti da fulmini, tornadi e inondazioni.
 
 Cambia il colore delle nuvole in base al suo umore.`,
-    en: `Lari is a female Dreamer born from a deity who protects homes.
+    en: `Tinia is a female Dreamer born from a deity who protects homes.
 
 In exchange for worship, she protects the surrounding skies from lightning, tornadoes and floods.
 
