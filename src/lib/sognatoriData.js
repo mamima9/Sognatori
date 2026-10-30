@@ -399,6 +399,6 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     abilDesc: "Ogni volta che subisce danno, aumenta la DIF di 2",
     costo: 1,
     theme: "HODL",
-    img: "/images/28-ELMAS.png",
+    img: "/images/28 - Elmas.png",
   },
 ];
