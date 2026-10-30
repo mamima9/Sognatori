@@ -308,11 +308,11 @@ export function onEntry(
         if (target.tipo === "Dolce") {
           applyMod(target, "att", 2, targetTeam);
           applyMod(target, "vel", 2, targetTeam);
-          log.push(`${target.nome} è ricoperto di miele: +2 ATT, +2 VEL`);
+          log.push(lang === "en" ? target.nome + " is covered in honey: +2 ATK, +2 SPD" : target.nome + " è ricoperto di miele: +2 ATT, +2 VEL");
         } else if (target.tipo === "Salato") {
           applyMod(target, "att", -2, targetTeam);
           applyMod(target, "dif", -2, targetTeam);
-          log.push(`${target.nome} viene appesantito dal miele: -2 ATT, -2 DIF`);
+          log.push(lang === "en" ? target.nome + " is weighed down by honey: -2 ATK, -2 DEF" : target.nome + " viene appesantito dal miele: -2 ATT, -2 DIF");
         }
       });
       break;
