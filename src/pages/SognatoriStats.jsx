@@ -88,6 +88,7 @@ const SOGNATORI_ORDER = [
   "fierononno",
   "pequeno",
   "cenere",
+  "spinoff",
 ];
 
 

@@ -19,6 +19,10 @@ const ABILITY_EN = {
   lari_typechange: { name: "Pink Clouds", desc: "Anyone hit by its attack becomes Cloud type." },
   uesditti_debuff: { name: "DeFi Depeg", desc: "The hit opponent loses 4 DEF." },
   fierononno_swap: { name: "HODL", desc: "If its ally Protects, it swaps position with that ally." },
+  spinoff_expansion: {
+    name: "Expansion",
+    desc: "When it hits an opponent, they lose 1 ATK, 1 DEF and 1 SPD."
+  },
   long_stable: { name: "Airdrop Claim", desc: "Stat decreases become increases." },
   pepe_memecoin: { name: "Memecoin", desc: "On entry, the ally's lowest base stat gains +4." },
   cillymbu_aura: { name: "Bamboo Thrust", desc: "Ally gain +3 ATT." },

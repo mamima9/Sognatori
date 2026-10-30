@@ -106,6 +106,22 @@ function applyMod(target, stat, amount, allies) {
   return true;
 }
 
+function applySpinoffExpansion(target, allies) {
+  if (!target || target.fainted) return null;
+
+  const reversed =
+    target.abilKey === "long_stable" &&
+    !target.abilityNullified;
+
+  const applied = ["att", "dif", "vel"].map(stat =>
+    applyMod(target, stat, -1, allies)
+  );
+
+  if (!applied.some(Boolean)) return null;
+
+  return reversed;
+}
+
 /*
  * CENERE
  *
@@ -656,7 +672,15 @@ if (
         break;
       }
 
-      case "taomarco_defeat_buff":
+            case "spinoff_expansion": {
+        const reversed = applySpinoffExpansion(act.target, act.enemies);
+        if (reversed !== null) {
+          log.push(bm("it").spinoffExpansion(act.target.nome, reversed));
+        }
+        break;
+      }
+
+case "taomarco_defeat_buff":
         if (dmg > 0) {
           applyMod(
             act.attacker,
@@ -1104,7 +1128,15 @@ export function processAction(
       break;
     }
 
-    case "taomarco_defeat_buff":
+        case "spinoff_expansion": {
+      const reversed = applySpinoffExpansion(act.target, act.enemies);
+      if (reversed !== null) {
+        msg += ` · ${m.spinoffExpansion(act.target.nome, reversed)}`;
+      }
+      break;
+    }
+
+case "taomarco_defeat_buff":
       if (dmg > 0) {
         applyMod(
           act.attacker,
@@ -1883,7 +1915,16 @@ export function processActionDual(
       break;
     }
 
-    case "taomarco_defeat_buff":
+        case "spinoff_expansion": {
+      const reversed = applySpinoffExpansion(act.target, act.enemies);
+      if (reversed !== null) {
+        msgIt += ` · ${mIt.spinoffExpansion(act.target.nome, reversed)}`;
+        msgEn += ` · ${mEn.spinoffExpansion(act.target.nome, reversed)}`;
+      }
+      break;
+    }
+
+case "taomarco_defeat_buff":
       if (dmg > 0) {
         applyMod(
           act.attacker,

@@ -46,6 +46,7 @@ const SOGNATORI_ORDER = [
   "fierononno",
   "pequeno",
   "cenere",
+  "spinoff",
 ];
 
 /* ROSTER ordinato senza modificare il ROSTER originale */
@@ -230,14 +231,7 @@ Si nutre di banconote e lascia monetine lungo il suo cammino.`,
 
 He feeds on banknotes and leaves coins along his path.`,
   },
-  spinoff: {
-  it: `Spinoff è un sognatore nato dal desiderio della natura di non essere dimenticata.
 
-Ama dondolarsi, e le sue spine ondeggiano leggere nelle sere d’estate.`,
-  en: `Spinoff is a dreamer born from nature's desire not to be forgotten.
-
-He loves to sway, and his spikes gently move in the summer evenings.`,
-},
 };
 
 export default function Lore() {

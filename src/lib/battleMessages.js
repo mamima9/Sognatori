@@ -26,6 +26,14 @@ export function bm(lang) {
     debuffAtt: (n) => `${n} -3 ATT (FUD)`,
     auraBuff: (n) => `${n} +2 ATT (Spedizione)`,
     alliesBuff: (n) => en ? `${n}: ally +3 ATK` : `${n}: alleato +3 ATT`,
+    spinoffExpansion: (n, reversed) =>
+      en
+        ? reversed
+          ? `${n}: Expansion reversed! +1 ATK, +1 DEF, +1 SPD`
+          : `${n} loses 1 ATK, 1 DEF and 1 SPD (Expansion)`
+        : reversed
+          ? `${n}: Espansione invertita! +1 ATT, +1 DIF, +1 VEL`
+          : `${n} perde 1 ATT, 1 DIF e 1 VEL (Espansione)`,
     memecoin: (n, stat) => `${n} +4 ${stat} (Memecoin)`,
     nullified: (n) => en ? `${n}'s ability nullified!` : `Abilità di ${n} annullata!`,
     firstBlocked: (n) => en ? `${n}'s first attack blocked!` : `Primo attacco di ${n} bloccato!`,
