@@ -1,4 +1,8 @@
 const ABILITY_EN = {
+  ring_ape_spargimiele: {
+    name: "Honey Shower",
+    desc: "On entry, Sweet Sognatori gain +2 ATK and +2 SPD; Salty Sognatori lose 2 ATK and 2 DEF."
+  },
   adli_shield: { name: "Ritual", desc: "If it has to defend against a Human, it gets +5 DEF." },
   cancucc_immune: { name: "Bread and Hugs", desc: "Cannot suffer ATT or DEF drops." },
   eroe_splash: { name: "FOMO Cumulonimbus", desc: "When it deals damage, it also deals 3 damage to the opponent's ally." },
