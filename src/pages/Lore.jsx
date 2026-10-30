@@ -50,6 +50,7 @@ const SOGNATORI_ORDER = [
   "toasty",
   "shoboshi",
   "elmas",
+  "ring-ape",
 ];
 
 /* ROSTER ordinato senza modificare il ROSTER originale */
