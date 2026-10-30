@@ -1782,6 +1782,11 @@ export function processActionDual(
       act.target.hp - dmg
     );
 
+  if (dmg > 0 && triggerElmasHodl(act.target)) {
+    msgIt += ` · ${mIt.elmasHodl(act.target.nome)}`;
+    msgEn += ` · ${mEn.elmasHodl(act.target.nome)}`;
+  }
+
   /*
    * CENERE
    */
@@ -1979,10 +1984,6 @@ export function processActionDual(
         if (triggerElmasHodl(ea)) {
           msgIt += ` · ${mIt.elmasHodl(ea.nome)}`;
           msgEn += ` · ${mEn.elmasHodl(ea.nome)}`;
-        }
-
-        if (triggerElmasHodl(ea)) {
-          msg += ` · ${m.elmasHodl(ea.nome)}`;
         }
 
         msgIt +=
