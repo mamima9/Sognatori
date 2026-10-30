@@ -48,6 +48,7 @@ const SOGNATORI_ORDER = [
   "cenere",
   "spinoff",
   "toasty",
+  "shoboshi",
 ];
 
 /* ROSTER ordinato senza modificare il ROSTER originale */
@@ -235,6 +236,11 @@ Dopo la morte del maestro in un incendio, allena gli allievi della palestra per 
 One day, he met a Konfutaki master and learned that reaching the highest rank in that martial art would earn him the Shrimp Cap.
 
 After his master died in a fire, Toasty began training the students at the dojo, helping them achieve their dreams.`,
+  },
+
+  shoboshi: {
+    it: `Lore da sbloccare.`,
+    en: `Lore to be unlocked.`,
   },
 
   uesditti: {

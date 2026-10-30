@@ -39,6 +39,10 @@ export function bm(lang) {
       en
         ? `${n}: Fireproof! +1 ATK, +1 DEF and +1 SPD`
         : `${n}: Ignifugo! +1 ATT, +1 DIF e +1 VEL`,
+    forkRedirect: (from, to) =>
+      en
+        ? `Fork! Attack redirected from ${from} to ${to}`
+        : `Fork! Attacco reindirizzato da ${from} a ${to}`,
     memecoin: (n, stat) => `${n} +4 ${stat} (Memecoin)`,
     nullified: (n) => en ? `${n}'s ability nullified!` : `Abilità di ${n} annullata!`,
     firstBlocked: (n) => en ? `${n}'s first attack blocked!` : `Primo attacco di ${n} bloccato!`,

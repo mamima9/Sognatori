@@ -122,6 +122,26 @@ function applySpinoffExpansion(target, allies) {
   return reversed;
 }
 
+function triggerShoboshiFork(act) {
+  if (!act || !act.target || act.target.fainted) return null;
+
+  const shoboshi = (act.enemies || []).find(
+    ally =>
+      ally &&
+      !ally.fainted &&
+      !ally.abilityNullified &&
+      ally.abilKey === "shoboshi_fork" &&
+      ally.id !== act.target.id
+  );
+
+  if (!shoboshi) return null;
+
+  const originalTarget = act.target;
+  act.target = shoboshi;
+
+  return { originalTarget, shoboshi };
+}
+
 function triggerToastyIgnifugo(target, attacker) {
   if (
     !target ||
@@ -454,6 +474,8 @@ export function resolveAttacks(
       continue;
     }
 
+    const forkRedirect = triggerShoboshiFork(act);
+
     const {
       dmg,
       bonus,
@@ -467,6 +489,9 @@ export function resolveAttacks(
 
     let msg =
       `${act.attacker.nome} attacca ${act.target.nome}`;
+    if (forkRedirect) {
+      msg += ` · Fork: attacco reindirizzato da ${forkRedirect.originalTarget.nome} a ${forkRedirect.shoboshi.nome}`;
+    }
 
     if (antislurpo) {
       events.push({
@@ -882,6 +907,8 @@ export function processAction(
     };
   }
 
+  const forkRedirect = triggerShoboshiFork(act);
+
   if (act.target.protectedThisTurn) {
     events.push({
       targetId: act.target.id,
@@ -917,6 +944,9 @@ export function processAction(
       act.attacker.nome,
       act.target.nome
     );
+  if (forkRedirect) {
+    msg += ` · ${m.forkRedirect(forkRedirect.originalTarget.nome, forkRedirect.shoboshi.nome)}`;
+  }
 
   if (antislurpo) {
     events.push({
@@ -1599,6 +1629,8 @@ export function processActionDual(
     }
   }
 
+  const forkRedirect = triggerShoboshiFork(act);
+
   const {
     dmg,
     bonus,
@@ -1621,6 +1653,10 @@ export function processActionDual(
       act.attacker.nome,
       act.target.nome
     );
+  if (forkRedirect) {
+    msgIt += ` · ${mIt.forkRedirect(forkRedirect.originalTarget.nome, forkRedirect.shoboshi.nome)}`;
+    msgEn += ` · ${mEn.forkRedirect(forkRedirect.originalTarget.nome, forkRedirect.shoboshi.nome)}`;
+  }
 
   if (antislurpo) {
     events.push({
