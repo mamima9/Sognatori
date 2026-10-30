@@ -413,6 +413,6 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     abilDesc: "Quando entra in campo, i Sognatori Dolce ricevono +2 ATT e +2 VEL; i Salati ricevono -2 ATT e -2 DIF",
     costo: 1,
     theme: "Miele, Spargimiele",
-    img: "/images/29 - RING-APE.webp",
+    img: "/images/29 - RING-APE.png",
   },
 ];
