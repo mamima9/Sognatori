@@ -1059,11 +1059,6 @@ export function processAction(
     );
 
   if (dmg > 0 && triggerElmasHodl(act.target)) {
-    msgIt += " · HODL: +2 DIF";
-    msgEn += " · HODL: +2 DEF";
-  }
-
-  if (dmg > 0 && triggerElmasHodl(act.target)) {
     msg += " · HODL: +2 DIF";
   }
 
@@ -1202,11 +1197,6 @@ export function processAction(
             0,
             ea.hp - 3
           );
-
-        if (triggerElmasHodl(ea)) {
-          msgIt += ` · ${mIt.elmasHodl(ea.nome)}`;
-          msgEn += ` · ${mEn.elmasHodl(ea.nome)}`;
-        }
 
         if (triggerElmasHodl(ea)) {
           msg += ` · ${m.elmasHodl(ea.nome)}`;
