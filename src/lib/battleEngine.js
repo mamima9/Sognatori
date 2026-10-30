@@ -299,6 +299,25 @@ export function onEntry(
   s.blockFirstAttack = false;
 
   switch (abil) {
+    case "ring_ape_spargimiele": {
+      [...allies, ...enemies].forEach(target => {
+        if (!target || target.fainted || target.id === s.id) return;
+
+        const targetTeam = allies.some(a => a?.id === target.id) ? allies : enemies;
+
+        if (target.tipo === "Dolce") {
+          applyMod(target, "att", 2, targetTeam);
+          applyMod(target, "vel", 2, targetTeam);
+          log.push(`${target.nome} è ricoperto di miele: +2 ATT, +2 VEL`);
+        } else if (target.tipo === "Salato") {
+          applyMod(target, "att", -2, targetTeam);
+          applyMod(target, "dif", -2, targetTeam);
+          log.push(`${target.nome} viene appesantito dal miele: -2 ATT, -2 DIF`);
+        }
+      });
+      break;
+    }
+
     case "sparkly_debuff":
       enemies.forEach(e => {
         if (
