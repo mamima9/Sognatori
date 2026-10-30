@@ -250,6 +250,19 @@ After his master died in a fire, Toasty began training the students at the dojo,
     en: `Lore to be unlocked.`,
   },
 
+  "ring-ape": {
+    it: `Ring-Ape vive in una foresta dove il miele scorre come un fiume e ogni albero custodisce un piccolo tesoro dorato.
+
+Con il suo enorme barile raccoglie il miele più prezioso e lo sparge sul campo di battaglia. I Sognatori Dolce diventano più energici e veloci, mentre i Salati restano impiastricciati e fanno fatica a muoversi.
+
+Nessuno sa se lo faccia per strategia o semplicemente perché ama vedere tutto ricoperto di miele.`,
+    en: `Ring-Ape lives in a forest where honey flows like a river and every tree hides a tiny golden treasure.
+
+With his enormous barrel, he gathers the finest honey and showers the battlefield with it. Sweet Dreamers become stronger and faster, while Salty ones get stuck in the sticky mess.
+
+Nobody knows whether he does it for strategy or simply because he loves seeing everything covered in honey.`,
+  },
+
   uesditti: {
     it: `Uesditti nasce per collegare mondi completamente distanti attraverso la sua ancora e dare stabilità ad ognuno di essi.
 
