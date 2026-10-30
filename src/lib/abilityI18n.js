@@ -23,10 +23,6 @@ const ABILITY_EN = {
     name: "Expansion",
     desc: "When it hits an opponent, they lose 1 ATK, 1 DEF and 1 SPD."
   },
-  toasty_ignifugo: {
-    name: "Fireproof",
-    desc: "When hit by a Demon, gains +1 ATK, +1 DEF and +1 SPD."
-  },
   long_stable: { name: "Airdrop Claim", desc: "Stat decreases become increases." },
   pepe_memecoin: { name: "Memecoin", desc: "On entry, the ally's lowest base stat gains +4." },
   cillymbu_aura: { name: "Bamboo Thrust", desc: "Ally gain +3 ATT." },

@@ -122,25 +122,6 @@ function applySpinoffExpansion(target, allies) {
   return reversed;
 }
 
-function triggerToastyIgnifugo(target, attacker) {
-  if (
-    !target ||
-    target.fainted ||
-    target.abilityNullified ||
-    target.abilKey !== "toasty_ignifugo" ||
-    !attacker ||
-    getType(attacker) !== "Demone"
-  ) {
-    return false;
-  }
-
-  ["att", "dif", "vel"].forEach(stat => {
-    applyMod(target, stat, 1, []);
-  });
-
-  return true;
-}
-
 /*
  * CENERE
  *
@@ -530,9 +511,6 @@ export function resolveAttacks(
     }
 
     msg += ` (${dmg} danni)`;
-    if (dmg > 0 && triggerToastyIgnifugo(act.target, act.attacker)) {
-      msg += " · Ignifugo: +1 ATT, +1 DIF, +1 VEL";
-    }
 if (
   act.attacker.abilKey === "aragostino_fullhp" &&
   !act.attacker.abilityNullified &&
@@ -993,9 +971,6 @@ export function processAction(
   }
 
   msg += m.damage(dmg);
-  if (dmg > 0 && triggerToastyIgnifugo(act.target, act.attacker)) {
-    msg += ` · ${m.toastyIgnifugo(act.target.nome)}`;
-  }
 
   const abil =
     act.attacker.abilityNullified
@@ -1748,10 +1723,6 @@ export function processActionDual(
 
   msgEn +=
     mEn.damage(dmg);
-  if (dmg > 0 && triggerToastyIgnifugo(act.target, act.attacker)) {
-    msgIt += ` · ${mIt.toastyIgnifugo(act.target.nome)}`;
-    msgEn += ` · ${mEn.toastyIgnifugo(act.target.nome)}`;
-  }
 
   const abil =
     act.attacker.abilityNullified

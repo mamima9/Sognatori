@@ -47,7 +47,6 @@ const SOGNATORI_ORDER = [
   "pequeno",
   "cenere",
   "spinoff",
-  "toasty",
 ];
 
 /* ROSTER ordinato senza modificare il ROSTER originale */
@@ -222,19 +221,6 @@ Ama dondolarsi, e le sue spine ondeggiano leggere nelle sere d'estate.`,
     en: `Spinoff is a Dreamer born from nature's desire not to be forgotten.
 
 He loves to swing, and his spines gently sway on summer evenings.`,
-  },
-
-  toasty: {
-    it: `Toasty era una pallina di riso bullizzata perché era nato senza pesce sulla testa.
-
-Un giorno, imbattendosi in un maestro Konfutaki, scopre che raggiungendo il grado massimo in quell'arte marziale avrebbe ottenuto il Cappelgambero.
-
-Dopo la morte del maestro in un incendio, allena gli allievi della palestra per aiutarli a raggiungere i propri sogni.`,
-    en: `Toasty was a little rice ball bullied for being born without fish on his head.
-
-One day, he met a Konfutaki master and learned that reaching the highest rank in that martial art would earn him the Shrimp Cap.
-
-After his master died in a fire, Toasty began training the students at the dojo, helping them achieve their dreams.`,
   },
 
   uesditti: {
