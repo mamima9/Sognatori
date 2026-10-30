@@ -315,7 +315,7 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
   abil2Desc: "Appena arrivato, non gestisce ancora i poteri.",
     costo: 1,
     theme: "White paper infuocato, Buyback and burn",
-    img: "/images/22- CENERE.jpg",
+    img: "/images/22- CENERE.png",
   },
   {
     id: "icepadel",
