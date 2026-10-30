@@ -89,6 +89,7 @@ const SOGNATORI_ORDER = [
   "pequeno",
   "cenere",
   "spinoff",
+  "toasty",
 ];
 
 
