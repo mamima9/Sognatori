@@ -49,6 +49,7 @@ const SOGNATORI_ORDER = [
   "spinoff",
   "toasty",
   "shoboshi",
+  "elmas",
 ];
 
 /* ROSTER ordinato senza modificare il ROSTER originale */
@@ -239,6 +240,11 @@ After his master died in a fire, Toasty began training the students at the dojo,
   },
 
   shoboshi: {
+    it: `Lore da sbloccare.`,
+    en: `Lore to be unlocked.`,
+  },
+
+  elmas: {
     it: `Lore da sbloccare.`,
     en: `Lore to be unlocked.`,
   },

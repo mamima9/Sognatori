@@ -91,6 +91,7 @@ const SOGNATORI_ORDER = [
   "spinoff",
   "toasty",
   "shoboshi",
+  "elmas",
 ];
 
 

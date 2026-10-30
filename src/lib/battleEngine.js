@@ -161,6 +161,20 @@ function triggerToastyIgnifugo(target, attacker) {
   return true;
 }
 
+function triggerElmasHodl(target) {
+  if (
+    !target ||
+    target.fainted ||
+    target.abilityNullified ||
+    target.abilKey !== "elmas_hodl"
+  ) {
+    return false;
+  }
+
+  applyMod(target, "dif", 2, []);
+  return true;
+}
+
 /*
  * CENERE
  *
@@ -192,6 +206,7 @@ function triggerCenereAbility(
   enemies.forEach(e => {
     if (e && !e.fainted) {
       e.hp = Math.max(0, e.hp - 3);
+      triggerElmasHodl(e);
 
       events.push({
         targetId: e.id,
@@ -548,6 +563,10 @@ export function resolveAttacks(
       act.target.hp - dmg
     );
 
+    if (dmg > 0 && triggerElmasHodl(act.target)) {
+      msg += " · HODL: +2 DIF";
+    }
+
     if (bonus === 5) {
       msg += " — Superefficace!";
     } else if (bonus === -3) {
@@ -686,6 +705,10 @@ if (
             0,
             ea.hp - 3
           );
+
+          if (triggerElmasHodl(ea)) {
+            msg += " · HODL: +2 DIF";
+          }
 
           msg +=
             " · 3 danni all'alleato avversario";
@@ -1016,6 +1039,15 @@ export function processAction(
       act.target.hp - dmg
     );
 
+  if (dmg > 0 && triggerElmasHodl(act.target)) {
+    msgIt += " · HODL: +2 DIF";
+    msgEn += " · HODL: +2 DEF";
+  }
+
+  if (dmg > 0 && triggerElmasHodl(act.target)) {
+    msg += " · HODL: +2 DIF";
+  }
+
   if (bonus === 5) {
     msg += m.superEffective;
   } else if (bonus === -3) {
@@ -1151,6 +1183,15 @@ export function processAction(
             0,
             ea.hp - 3
           );
+
+        if (triggerElmasHodl(ea)) {
+          msgIt += ` · ${mIt.elmasHodl(ea.nome)}`;
+          msgEn += ` · ${mEn.elmasHodl(ea.nome)}`;
+        }
+
+        if (triggerElmasHodl(ea)) {
+          msg += ` · ${m.elmasHodl(ea.nome)}`;
+        }
 
         msg += m.splash;
 
@@ -1934,6 +1975,15 @@ export function processActionDual(
             0,
             ea.hp - 3
           );
+
+        if (triggerElmasHodl(ea)) {
+          msgIt += ` · ${mIt.elmasHodl(ea.nome)}`;
+          msgEn += ` · ${mEn.elmasHodl(ea.nome)}`;
+        }
+
+        if (triggerElmasHodl(ea)) {
+          msg += ` · ${m.elmasHodl(ea.nome)}`;
+        }
 
         msgIt +=
           mIt.splash;

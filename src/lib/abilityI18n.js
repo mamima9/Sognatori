@@ -31,6 +31,10 @@ const ABILITY_EN = {
     name: "Fork",
     desc: "Attacks aimed at its ally are redirected to Shoboshi."
   },
+  elmas_hodl: {
+    name: "HODL",
+    desc: "Every time it takes damage, its DEF increases by 2."
+  },
   long_stable: { name: "Airdrop Claim", desc: "Stat decreases become increases." },
   pepe_memecoin: { name: "Memecoin", desc: "On entry, the ally's lowest base stat gains +4." },
   cillymbu_aura: { name: "Bamboo Thrust", desc: "Ally gain +3 ATT." },

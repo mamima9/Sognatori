@@ -26,6 +26,7 @@ export function bm(lang) {
     debuffAtt: (n) => `${n} -3 ATT (FUD)`,
     auraBuff: (n) => `${n} +2 ATT (Spedizione)`,
     alliesBuff: (n) => en ? `${n}: ally +3 ATK` : `${n}: alleato +3 ATT`,
+    elmasHodl: (n) => en ? `${n}: HODL! +2 DEF` : `${n}: HODL! +2 DIF`,
     spinoffExpansion: (n, reversed) =>
       en
         ? reversed
