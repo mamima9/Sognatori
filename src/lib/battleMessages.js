@@ -34,6 +34,11 @@ export function bm(lang) {
         : reversed
           ? `${n}: Espansione invertita! +1 ATT, +1 DIF, +1 VEL`
           : `${n} perde 1 ATT, 1 DIF e 1 VEL (Espansione)`,
+
+    toastyIgnifugo: (n) =>
+      en
+        ? `${n}: Fireproof! +1 ATK, +1 DEF and +1 SPD`
+        : `${n}: Ignifugo! +1 ATT, +1 DIF e +1 VEL`,
     memecoin: (n, stat) => `${n} +4 ${stat} (Memecoin)`,
     nullified: (n) => en ? `${n}'s ability nullified!` : `Abilità di ${n} annullata!`,
     firstBlocked: (n) => en ? `${n}'s first attack blocked!` : `Primo attacco di ${n} bloccato!`,
