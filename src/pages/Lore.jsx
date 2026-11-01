@@ -314,6 +314,8 @@ export default function Lore() {
   const riwupidoLoreUnlocked = Boolean(user?.user_metadata?.riwupido_nina_lore_unlocked);
   const icepadelLoreUnlocked = Boolean(user?.user_metadata?.icepadel_lore_unlocked);
   const taomarcoLoreUnlocked = Boolean(user?.user_metadata?.taomarco_lore_unlocked);
+  const isDeveloper = user?.email?.trim().toLowerCase() === "bibitoeuro@gmail.com";
+  const [showAllLore, setShowAllLore] = useState(false);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
@@ -384,12 +386,36 @@ export default function Lore() {
           </div>
         </Section>
 
+        {/* STRUMENTI DEVELOPER */}
+        {isDeveloper && (
+          <div className="mb-5 rounded-xl border border-amber-400/30 bg-amber-400/5 p-4 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-bold text-amber-300">Developer · Anteprima Lore</div>
+              <div className="text-xs text-slate-400 mt-1">
+                {showAllLore
+                  ? (lang === "en" ? "All available stories are visible, including locked ones." : "Tutte le storie disponibili sono visibili, anche quelle bloccate.")
+                  : (lang === "en" ? "Normal unlock requirements are active." : "Sono attivi i normali requisiti di sblocco.")}
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showAllLore}
+              onClick={() => setShowAllLore((current) => !current)}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${showAllLore ? "bg-emerald-500" : "bg-slate-600"}`}
+              aria-label={lang === "en" ? "Toggle developer lore preview" : "Attiva o disattiva anteprima Lore developer"}
+            >
+              <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${showAllLore ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+          </div>
+        )}
+
         {/* SOGNATORI */}
         <Section title={t("lore.sognatori")}>
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked) && (s.id !== "taomarco" || taomarcoLoreUnlocked);
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (showAllLore || ((s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked) && (s.id !== "taomarco" || taomarcoLoreUnlocked)));
 
               return (
                 <motion.button
