@@ -230,59 +230,6 @@ const player2Team = resolveTeam(
   match?.player2_team
 );
  
-  // Missione 2: tre vittorie competitive consecutive con Riwupido e Nina.
-  // Ogni match viene registrato una sola volta per evitare doppi conteggi.
-  useEffect(() => {
-    if (
-      !currentUser ||
-      !match ||
-      match.status !== "done" ||
-      match.mode !== "competitive" ||
-      !match.id ||
-      processedMissionMatchRef.current === match.id
-    ) return;
-
-    const metadata = currentUser.user_metadata || {};
-    const processedMatches = Array.isArray(metadata.riwupido_nina_processed_matches)
-      ? metadata.riwupido_nina_processed_matches
-      : [];
-
-    if (processedMatches.includes(match.id)) {
-      processedMissionMatchRef.current = match.id;
-      return;
-    }
-
-    processedMissionMatchRef.current = match.id;
-
-    const myTeam = mySide === "player1" ? player1Team : player2Team;
-    const hasRequiredPair = myTeam.some((s) => s?.id === "riwupido") &&
-      myTeam.some((s) => s?.id === "nina");
-    const won = match.winner === mySide;
-    const alreadyUnlocked = Boolean(metadata.riwupido_nina_lore_unlocked);
-    const previousStreak = Number(metadata.riwupido_nina_competitive_streak || 0);
-    const nextStreak = alreadyUnlocked ? 3 : (won && hasRequiredPair ? Math.min(3, previousStreak + 1) : 0);
-    const newlyUnlocked = !alreadyUnlocked && nextStreak >= 3;
-    const nextProcessedMatches = [...processedMatches, match.id].slice(-30);
-
-    supabase.auth.updateUser({
-      data: {
-        riwupido_nina_competitive_streak: nextStreak,
-        riwupido_nina_lore_unlocked: alreadyUnlocked || newlyUnlocked,
-        riwupido_nina_processed_matches: nextProcessedMatches,
-      },
-    }).then(({ error }) => {
-      if (error) {
-        console.error("Errore aggiornamento Missione 2:", error);
-        processedMissionMatchRef.current = null;
-        return;
-      }
-      if (newlyUnlocked) setMissionCompletionNotice(true);
-    }).catch((error) => {
-      console.error("Errore aggiornamento Missione 2:", error);
-      processedMissionMatchRef.current = null;
-    });
-  }, [currentUser?.id, match?.id, match?.status, match?.winner, match?.mode, mySide, player1Team, player2Team]);
-
 
   /*
    * ============================================================
@@ -391,6 +338,59 @@ const player2Team = resolveTeam(
 
   const mySide = isHost ? "player1" : "player2";
   const oppSide = isHost ? "player2" : "player1";
+
+  // Missione 2: tre vittorie competitive consecutive con Riwupido e Nina.
+  // Ogni match viene registrato una sola volta per evitare doppi conteggi.
+  useEffect(() => {
+    if (
+      !currentUser ||
+      !match ||
+      match.status !== "done" ||
+      match.mode !== "competitive" ||
+      !match.id ||
+      processedMissionMatchRef.current === match.id
+    ) return;
+
+    const metadata = currentUser.user_metadata || {};
+    const processedMatches = Array.isArray(metadata.riwupido_nina_processed_matches)
+      ? metadata.riwupido_nina_processed_matches
+      : [];
+
+    if (processedMatches.includes(match.id)) {
+      processedMissionMatchRef.current = match.id;
+      return;
+    }
+
+    processedMissionMatchRef.current = match.id;
+
+    const myTeam = mySide === "player1" ? player1Team : player2Team;
+    const hasRequiredPair = myTeam.some((s) => s?.id === "riwupido") &&
+      myTeam.some((s) => s?.id === "nina");
+    const won = match.winner === mySide;
+    const alreadyUnlocked = Boolean(metadata.riwupido_nina_lore_unlocked);
+    const previousStreak = Number(metadata.riwupido_nina_competitive_streak || 0);
+    const nextStreak = alreadyUnlocked ? 3 : (won && hasRequiredPair ? Math.min(3, previousStreak + 1) : 0);
+    const newlyUnlocked = !alreadyUnlocked && nextStreak >= 3;
+    const nextProcessedMatches = [...processedMatches, match.id].slice(-30);
+
+    supabase.auth.updateUser({
+      data: {
+        riwupido_nina_competitive_streak: nextStreak,
+        riwupido_nina_lore_unlocked: alreadyUnlocked || newlyUnlocked,
+        riwupido_nina_processed_matches: nextProcessedMatches,
+      },
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Errore aggiornamento Missione 2:", error);
+        processedMissionMatchRef.current = null;
+        return;
+      }
+      if (newlyUnlocked) setMissionCompletionNotice(true);
+    }).catch((error) => {
+      console.error("Errore aggiornamento Missione 2:", error);
+      processedMissionMatchRef.current = null;
+    });
+  }, [currentUser?.id, match?.id, match?.status, match?.winner, match?.mode, mySide, player1Team, player2Team]);
 
 useEffect(() => {
   if (
