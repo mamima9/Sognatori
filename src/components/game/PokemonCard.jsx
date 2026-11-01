@@ -12,6 +12,7 @@ import {
 export default function PokemonCard({ pokemon, selected, onClick }) {
   const { lang } = useLanguage();
   const color = FACTION_COLORS[pokemon.tipo] || "#888";
+  const statLabels = lang === "en" ? ["ATK", "DEF", "SPE"] : ["ATT", "DIF", "VEL"];
   return (
     <div
       onClick={onClick}
@@ -27,9 +28,9 @@ export default function PokemonCard({ pokemon, selected, onClick }) {
           <SognatoreImage s={pokemon} className="w-14 h-14 flex-shrink-0" />
         </div>
         <div className="grid grid-cols-3 gap-1 mt-2 text-[10px]">
-          <Stat label="ATT" value={pokemon.att} />
-          <Stat label="DIF" value={pokemon.dif} />
-          <Stat label="VEL" value={pokemon.vel} />
+          <Stat label={statLabels[0]} value={pokemon.att} />
+          <Stat label={statLabels[1]} value={pokemon.dif} />
+          <Stat label={statLabels[2]} value={pokemon.vel} />
         </div>
         <div className="mt-2 text-[10px] text-slate-300 leading-tight">
   <span className="text-amber-400 font-semibold">
