@@ -157,6 +157,11 @@ setArcadeRanking(arcadeData || []);
     });
   });
 
+  const totalSognatorePicks = Object.values(sogStats).reduce(
+    (total, s) => total + s.picks,
+    0
+  );
+
   const sogRanking = Object.entries(sogStats)
     .map(([id, s]) => {
       const roster = ROSTER.find((r) => r.id === id);
@@ -172,6 +177,10 @@ setArcadeRanking(arcadeData || []);
       return {
         id,
         ...s,
+        pickRate:
+          totalSognatorePicks > 0
+            ? ((s.picks / totalSognatorePicks) * 100).toFixed(1)
+            : "0.0",
         nome: roster?.nome,
         tipo: roster?.tipo,
         img: roster?.img,
@@ -425,7 +434,7 @@ setArcadeRanking(arcadeData || []);
 
                   <div className="text-right">
                     <div className="text-sm font-bold text-amber-400">
-                      {s.picks} {t("rankings.picks")}
+                      {s.pickRate}%
                     </div>
 
                     <div className="text-[10px] text-emerald-400">
