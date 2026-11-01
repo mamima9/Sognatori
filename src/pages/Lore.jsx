@@ -5,6 +5,7 @@ import { FACTIONS, FACTION_COLORS } from "@/lib/typeChart";
 import { ROSTER } from "@/lib/sognatoriData";
 import { FactionBadge } from "@/components/game/HealthBar";
 import { useLanguage } from "@/lib/i18n";
+import { useAuth } from "@/lib/AuthContext";
 
 const FACTION_ICONS = {
   Demone: "👹",
@@ -240,6 +241,11 @@ One day, he met a Konfutaki master and learned that reaching the highest rank in
 After his master died in a fire, Toasty began training the students at the dojo, helping them achieve their dreams.`,
   },
 
+  pepe: {
+    it: `La storia di Pepe è stata sbloccata. Il suo passato e i segreti che custodisce saranno rivelati qui.`,
+    en: `Pepe's story has been unlocked. His past and the secrets he holds will be revealed here.`,
+  },
+
   shoboshi: {
     it: `Lore da sbloccare.`,
     en: `Lore to be unlocked.`,
@@ -276,6 +282,8 @@ He feeds on banknotes and leaves coins along his path.`,
 
 export default function Lore() {
   const { t, lang } = useLanguage();
+  const { user } = useAuth();
+  const pepeLoreUnlocked = Boolean(user?.user_metadata?.pepe_lore_unlocked);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
@@ -351,7 +359,7 @@ export default function Lore() {
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]);
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked);
 
               return (
                 <motion.button
