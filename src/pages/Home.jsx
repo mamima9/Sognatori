@@ -709,7 +709,7 @@ export default function Home() {
 
             <p className="text-slate-400 mb-8 text-sm">
 
-              {result === "win" && arcadeStage === 9
+              {result === "win" && arcadeStage === 10
                 ? "Hai completato tutti e 10 gli Stage dei Sognatori!"
                 : result === "win"
                   ? t("home.victoryMsg")
@@ -717,7 +717,7 @@ export default function Home() {
 
             </p>
 
-            {result === "win" && arcadeStage === 9 && (
+            {result === "win" && arcadeStage === 10 && (
               <div className="text-amber-400 font-bold text-lg mb-8">
                 🎁 Otterrai una ricompensa!
               </div>
