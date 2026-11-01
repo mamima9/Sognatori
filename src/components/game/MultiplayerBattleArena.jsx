@@ -55,11 +55,20 @@ function buildAttacks(actions, myActive, oppActive) {
     const act = actions[i];
 
     if (act && act.type === "attack" && myActive[i]) {
-      const target =
-        oppActive.find(
-          (s) => s && s.id === act.targetId && !s.fainted
-        ) ||
-        oppActive[i];
+      // Prima cerca il bersaglio originale tramite ID.
+      let target = oppActive.find(
+        (s) => s && s.id === act.targetId && !s.fainted
+      );
+
+      // Se è stato sostituito, colpisce chi occupa
+      // lo slot selezionato originariamente.
+      if (!target && Number.isInteger(act.targetSlot)) {
+        const replacement = oppActive[act.targetSlot];
+
+        if (replacement && !replacement.fainted) {
+          target = replacement;
+        }
+      }
 
       if (target) {
         attacks.push({
@@ -1788,15 +1797,19 @@ resolvingRef.current = false;
     if (
       targets.length > 0
     ) {
+      const selectedTarget =
+        targets[
+          Math.floor(
+            Math.random() * targets.length
+          )
+        ];
+
       auto[i] = {
         type: "attack",
-        targetId:
-          targets[
-            Math.floor(
-              Math.random() *
-                targets.length
-            )
-          ].id,
+        targetId: selectedTarget.id,
+        targetSlot: oppActive.findIndex(
+          (enemy) => enemy?.id === selectedTarget.id
+        ),
       };
     }
 
@@ -2926,8 +2939,10 @@ const oppBench =
                                         i,
                                         {
                                           type: "attack",
-                                          targetId:
-                                            e.id,
+                                          targetId: e.id,
+                                          targetSlot: oppActive.findIndex(
+                                            (enemy) => enemy?.id === e.id
+                                          ),
                                         }
                                       )
                                     }
