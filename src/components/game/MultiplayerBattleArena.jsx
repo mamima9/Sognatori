@@ -118,7 +118,6 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showFullLog, setShowFullLog] = useState(false);
   const [missionCompletionNotice, setMissionCompletionNotice] = useState(null);
   const processedMissionMatchRef = useRef(null);
-  const processedCompetitiveCountMatchRef = useRef(null);
   const [animStep, setAnimStep] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
 
