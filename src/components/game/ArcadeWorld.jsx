@@ -269,11 +269,11 @@ const STAGE_NPCS = {
       "Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland. Battimi ed entra davvero a far parte del mondo dei Sognatori",
   },
    10: {
-    name: "NPC 10",
-    emoji: "👑",
+    name: "Mangu",
+    emoji: "🧙",
     world: "Dream Arena",
     dialogue:
-      "Benvenuto nella Dream Arena. Questo è il cuore degli Stage dei Sognatori. Qui non esistono sentieri: esiste solo la battaglia.",
+      "Benvenuto nella Dream Arena! Sono Mangu. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
   }, 
 };
 
