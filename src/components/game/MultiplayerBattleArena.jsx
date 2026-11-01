@@ -117,6 +117,23 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showFullLog, setShowFullLog] = useState(false);
   const [animStep, setAnimStep] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
+
+  const groupedLog = (entries) => {
+    const groups = [];
+    let current = { turn: 0, entries: [] };
+    (entries || []).forEach((entry) => {
+      const marker = typeof entry === "string" ? entry.match(/^__TURN_(\d+)__$/) : null;
+      if (marker) {
+        if (current.entries.length || current.turn > 0) groups.push(current);
+        current = { turn: Number(marker[1]), entries: [] };
+      } else if (entry) {
+        current.entries.push(entry);
+      }
+    });
+    if (current.entries.length || current.turn > 0) groups.push(current);
+    return groups;
+  };
+
   const [myStarters, setMyStarters] = useState([]);
   const [switchChoices, setSwitchChoices] = useState({});
   const [now, setNow] = useState(Date.now());
@@ -3360,8 +3377,15 @@ const oppBench =
               <button onClick={() => setShowFullLog(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
             </div>
             <div className="space-y-1">
-              {(lang === "en" ? (match?.game_state?.log_en || []) : (match?.game_state?.log_it || [])).map((entry, i) => (
-                <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>
+              {groupedLog(lang === "en" ? (match?.game_state?.log_en || []) : (match?.game_state?.log_it || [])).map((group, groupIndex) => (
+                <section key={group.turn || groupIndex} className="mb-4">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-amber-300 mb-2 border-b border-amber-500/20 pb-1">
+                    {group.turn ? (lang === "en" ? `Turn ${group.turn}` : `Turno ${group.turn}`) : (lang === "en" ? "Match start" : "Inizio partita")}
+                  </h4>
+                  <div className="space-y-1">
+                    {group.entries.map((entry, i) => <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>)}
+                  </div>
+                </section>
               ))}
             </div>
           </div>
