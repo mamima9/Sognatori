@@ -9,6 +9,7 @@ import PreMatchSelect from "@/components/game/PreMatchSelect";
 import ArcadeWorld from "@/components/game/ArcadeWorld";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
+import { supabase } from "@/lib/supabase/client";
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -23,6 +24,7 @@ export default function Home() {
   const [battleLog, setBattleLog] = useState([]);
   const [showResultLog, setShowResultLog] = useState(false);
   const [missionNotification, setMissionNotification] = useState(null);
+  const [arcadeHumanOnlyRun, setArcadeHumanOnlyRun] = useState(true);
 
   const groupedLog = (entries) => {
     const groups = [];
@@ -236,6 +238,7 @@ export default function Home() {
                 whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   setArcadePortrait(null);
+                  setArcadeHumanOnlyRun(true);
                   setScreen("arcadePortrait");
                 }}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
@@ -542,6 +545,25 @@ export default function Home() {
                   📖 {lang === "en" ? "View Icepadel's Lore" : "Leggi la Lore di Icepadel"}
                 </Link>
               )}
+            </section>
+            <section className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-900/25 to-orange-950/50 p-5 shadow-xl mt-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-amber-300 uppercase">{lang === "en" ? "MISSION 4" : "MISSIONE 4"}</span>
+                <span className={user?.user_metadata?.taomarco_lore_unlocked ? "text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300" : "text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300"}>{user?.user_metadata?.taomarco_lore_unlocked ? (lang === "en" ? "COMPLETED" : "COMPLETATA") : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}</span>
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-20 h-20 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shrink-0"><img src="/images/10 TAOMARCO.png" alt="Tao Marco" className="w-full h-full object-contain" /></div>
+                <div>
+                  <h2 className="text-xl font-black text-white">{lang === "en" ? "Unlock Tao Marco's Lore" : "Sblocca Lore Taomarco"}</h2>
+                  <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Use Tao Marco more than any other Dreamer in your profile, win 15 Competitive matches, and complete all 10 Arcade stages using only Human-type Dreamers." : "Usa Taomarco più di ogni altro Sognatore nel tuo profilo, vinci 15 partite in competitivo e completa tutti e 10 gli stage Arcade usando solo Sognatori di tipo Umano."}</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-xs text-slate-300">
+                <div className="flex justify-between"><span>{lang === "en" ? "Competitive wins" : "Vittorie competitive"}</span><b className="text-amber-300">{Math.min(15, Number(user?.user_metadata?.taomarco_competitive_wins || 0))}/15</b></div>
+                <div className="flex justify-between"><span>{lang === "en" ? "Human-only Arcade" : "Arcade solo Umano"}</span><b>{user?.user_metadata?.taomarco_human_arcade_completed ? "10/10 ✓" : "0/10"}</b></div>
+                <div className="flex justify-between"><span>{lang === "en" ? "Most used in profile" : "Più utilizzato nel profilo"}</span><b>{user?.user_metadata?.taomarco_is_most_used ? "✓" : "—"}</b></div>
+              </div>
+              {user?.user_metadata?.taomarco_lore_unlocked && <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm">📖 {lang === "en" ? "Read Tao Marco's Lore" : "Leggi la Lore di Taomarco"}</Link>}
             </section>
           </motion.div>
         )}
@@ -888,23 +910,31 @@ export default function Home() {
                 window.setTimeout(() => setMissionNotification(null), 7000);
               }}
               onEnd={(r, fullLog = []) => {
+                const currentTeamIsHumanOnly = (teams?.playerTeam || []).length > 0 &&
+                  teams.playerTeam.every((s) => String(s?.tipo || s?.type || "").toLowerCase() === "umano");
+                const completedHumanStage = arcadeHumanOnlyRun && currentTeamIsHumanOnly && r === "win";
+                setArcadeHumanOnlyRun(completedHumanStage);
                 setResult(r);
                 setBattleLog(fullLog);
                 setShowResultLog(false);
                 setTeams(null);
-
                 if (r === "win") {
-
                   if (arcadeStage < 10) {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
                   } else {
+                    if (completedHumanStage && user) {
+                      supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true } }).then(({ error }) => {
+                        if (error) console.error("Errore salvataggio missione Arcade Taomarco:", error);
+                        else {
+                          setMissionNotification(lang === "en" ? "Mission 4: Human-only Arcade completed!" : "Missione 4: Arcade completato con soli Umani!");
+                          window.setTimeout(() => setMissionNotification(null), 7000);
+                        }
+                      });
+                    }
                     setScreen("result");
                   }
-
-                } else {
-                  setScreen("result");
-                }
+                } else setScreen("result");
               }}
             />
 
