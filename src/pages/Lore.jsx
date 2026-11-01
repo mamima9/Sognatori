@@ -279,8 +279,8 @@ He is a champion of a particular water sport. He sends the Pirimar to trade with
   },
 
   elmas: {
-    it: `Lore da sbloccare.`,
-    en: `Lore to be unlocked.`,
+    it: `Elmas è un antico samurai delle nuvole, agisce soprattutto di notte ma è anche un esperto di tecnologia.\n\nConserva tutto ciò che gli altri considerano inutile, convinto che prima o poi avrà un valore inestimabile. Non spreca mai le proprie risorse e aspetta sempre il momento perfetto per agire.`,
+    en: `Elmas is an ancient samurai of the clouds. He operates mostly at night, but he is also a technology expert.\n\nHe keeps everything others consider useless, convinced that sooner or later it will become invaluable. He never wastes his resources and always waits for the perfect moment to act.`,
   },
 
   "ring-ape": {
