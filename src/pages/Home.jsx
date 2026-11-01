@@ -449,6 +449,53 @@ export default function Home() {
                 </Link>
               )}
             </section>
+
+            <section className="rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-900/25 to-indigo-950/50 p-5 shadow-xl mt-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-cyan-300 uppercase">
+                  {lang === "en" ? "MISSION 2" : "MISSIONE 2"}
+                </span>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${user?.user_metadata?.riwupido_nina_lore_unlocked ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
+                  {user?.user_metadata?.riwupido_nina_lore_unlocked
+                    ? (lang === "en" ? "COMPLETED" : "COMPLETATA")
+                    : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-20 h-20 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                  <img src="/images/11. RIWUPIDO.png" alt="Riwupido" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">
+                    {lang === "en" ? "Unlock Riwupido's Lore" : "Sblocca Lore Riwupido"}
+                  </h2>
+                  <p className="text-sm text-slate-300 mt-1">
+                    {lang === "en"
+                      ? "Win 3 Competitive Multiplayer matches in a row with both Riwupido and Nina on your team."
+                      : "Vinci 3 partite di fila in Multiplayer competitivo con Riwupido e Nina nella tua squadra."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-2 flex justify-between text-xs font-bold">
+                <span className="text-slate-300">{lang === "en" ? "Progress" : "Progressi"}</span>
+                <span className="text-amber-300">
+                  {user?.user_metadata?.riwupido_nina_lore_unlocked ? "3/3" : `${Math.min(3, Number(user?.user_metadata?.riwupido_nina_competitive_streak || 0))}/3`}
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-black/40 overflow-hidden border border-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
+                  style={{ width: `${user?.user_metadata?.riwupido_nina_lore_unlocked ? 100 : Math.min(100, Number(user?.user_metadata?.riwupido_nina_competitive_streak || 0) / 3 * 100)}%` }}
+                />
+              </div>
+              {user?.user_metadata?.riwupido_nina_lore_unlocked && (
+                <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm hover:bg-emerald-500/30">
+                  📖 {lang === "en" ? "View Riwupido's Lore" : "Leggi la Lore di Riwupido"}
+                </Link>
+              )}
+            </section>
           </motion.div>
         )}
 
