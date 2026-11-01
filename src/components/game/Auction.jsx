@@ -487,6 +487,13 @@ if (available.length === 0) {
   return;
 }
 
+const manguPriority = stage === 10
+  ? available.filter((sog) =>
+      ["spinoff", "pepe"].includes(sog.id) &&
+      !aiTeam.some((owned) => owned.id === sog.id)
+    )
+  : [];
+
 const preferred = aiProfile.preferredType
   ? available.filter(
       (sog) => sog.tipo === aiProfile.preferredType
@@ -494,9 +501,11 @@ const preferred = aiProfile.preferredType
   : [];
 
 const candidates =
-  preferred.length > 0
-    ? preferred
-    : available;
+  manguPriority.length > 0
+    ? manguPriority
+    : preferred.length > 0
+      ? preferred
+      : available;
 
 const ranked = [...candidates].sort(
   (a, b) => aiValuation(b) - aiValuation(a)
