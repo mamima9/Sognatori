@@ -43,6 +43,7 @@ export default function Home() {
     7: "Boccinu-R",
     8: "Viaggiatore101",
     9: "Affrescone",
+    10: "Mangu",
   };
 
   const arcadeNPCImages = {
@@ -650,7 +651,7 @@ export default function Home() {
 
                 if (r === "win") {
 
-                  if (arcadeStage < 9) {
+                  if (arcadeStage < 10) {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
                   } else {
@@ -698,7 +699,7 @@ export default function Home() {
 
             <h2 className="text-4xl font-black mb-2">
 
-              {result === "win" && arcadeStage === 9
+              {result === "win" && arcadeStage === 10
                 ? "ARCADE COMPLETATO!"
                 : result === "win"
                   ? t("home.victory")
@@ -709,7 +710,7 @@ export default function Home() {
             <p className="text-slate-400 mb-8 text-sm">
 
               {result === "win" && arcadeStage === 9
-                ? "Hai completato tutti e 9 gli Stage dei Sognatori!"
+                ? "Hai completato tutti e 10 gli Stage dei Sognatori!"
                 : result === "win"
                   ? t("home.victoryMsg")
                   : t("home.defeatMsg")}
