@@ -75,6 +75,12 @@ const ARCADE_AUCTION_PROFILES = {
     pupils: ["deb", "nina", "cancucc"],
     optimalStrategy: true,
   },
+  10: {
+    name: "Mangu",
+    preferredType: null,
+    pupils: ["spinoff", "pepe"],
+    optimalStrategy: true,
+  },
 };
 
 /**
@@ -129,7 +135,10 @@ export default function Auction({
 );
 
   const [playerCredits, setPlayerCredits] = useState(100);
-  const [aiCredits, setAiCredits] = useState(100);
+  const [aiCredits, setAiCredits] = useState(stage === 10 ? 300 : 100);
+  const [playerCallCount, setPlayerCallCount] = useState(0);
+  const [manguTargetCall] = useState(() => Math.floor(Math.random() * 3) + 1);
+  const [manguOfferForCurrent, setManguOfferForCurrent] = useState(0);
 
   /** @type {[Sognatore[], React.Dispatch<React.SetStateAction<Sognatore[]>>]} */
   const [playerTeam, setPlayerTeam] = useState([]);
@@ -502,8 +511,13 @@ const pick =
         currentPool.filter((sog) => sog.id !== pick.id)
       );
 
+      const manguOffer = stage === 10 &&
+        (pick.id === "spinoff" || pick.id === "pepe")
+          ? 100
+          : 1;
       setCurrentSog(pick);
-      setCurrentBid(1);
+      setManguOfferForCurrent(manguOffer > 1 ? manguOffer : 0);
+      setCurrentBid(manguOffer);
       setCurrentBidder("ai");
       setTurn("player");
       return;
@@ -512,10 +526,11 @@ const pick =
     finish();
   };
 
-  const beginBidding = (sog) => {
+  const beginBidding = (sog, openingOffer = 0) => {
     setCurrentSog(sog);
-    setCurrentBid(0);
-    setCurrentBidder(null);
+    setManguOfferForCurrent(openingOffer);
+    setCurrentBid(openingOffer);
+    setCurrentBidder(openingOffer > 0 ? "ai" : null);
     setTurn("player");
   };
 
@@ -533,7 +548,18 @@ const pick =
       return;
     }
 
-    beginBidding(sog);
+    let manguOffer = 0;
+    if (stage === 10) {
+      const callNumber = playerCallCount + 1;
+      setPlayerCallCount(callNumber);
+      if (sog.id === "spinoff" || sog.id === "pepe") {
+        manguOffer = 100;
+      } else if (callNumber <= 3 && callNumber === manguTargetCall) {
+        manguOffer = 99;
+      }
+    }
+
+    beginBidding(sog, manguOffer);
   };
 
   const resolveWin = (winner) => {
@@ -657,7 +683,20 @@ const pick =
         4 - aiTeam.length - 1
       );
 
-      const maxBid = aiCredits - remainingSlots;
+      const maxBid = stage === 10
+        ? aiCredits
+        : aiCredits - remainingSlots;
+
+      if (stage === 10 && manguOfferForCurrent > 0) {
+        if (currentBid < manguOfferForCurrent && manguOfferForCurrent <= maxBid) {
+          setCurrentBid(manguOfferForCurrent);
+          setCurrentBidder("ai");
+          setTurn("player");
+        } else {
+          resolveWin("player");
+        }
+        return;
+      }
 
       if (
         shouldAiBid(currentSog, currentBid) &&
@@ -699,6 +738,8 @@ const pick =
   aiDone,
   aiCredits,
   finished,
+  stage,
+  manguOfferForCurrent,
 ]);
 
   useEffect(() => {
@@ -840,7 +881,7 @@ const pick =
 
         <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-3 text-right">
           <div className="text-xs text-rose-300 font-semibold">
-            {t("auction.opponent")}
+            {stage === 10 ? "Mangu" : t("auction.opponent")}
           </div>
 
        <div className="text-lg font-bold">
