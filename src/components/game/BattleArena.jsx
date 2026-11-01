@@ -142,6 +142,8 @@ arcade_best_streak: newBest,
 
   const [actions, setActions] = useState({});
   const [log, setLog] = useState([m.battleStart]);
+  const logRef = useRef(log);
+  logRef.current = log;
   const [phase, setPhase] = useState("select");
   const [busy, setBusy] = useState(false);
   const [popups, setPopups] = useState([]);
@@ -567,14 +569,14 @@ while (remainingActions.length > 0) {
     if (pAlive === 0) {
       setPhase("done");
       await updateArcadeStreak("lose");
-      onEnd("lose", log);
+      onEnd("lose", logRef.current);
       return;
     }
 
     if (eAlive === 0) {
       setPhase("done");
       await updateArcadeStreak("win");
-      onEnd("win", log);
+      onEnd("win", logRef.current);
       return;
     }
 
