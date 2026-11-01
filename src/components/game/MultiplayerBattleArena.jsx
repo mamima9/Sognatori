@@ -340,57 +340,8 @@ const player2Team = resolveTeam(
   const mySide = isHost ? "player1" : "player2";
   const oppSide = isHost ? "player2" : "player1";
  
-  // Missione 3: completa 10 partite in Multiplayer competitivo.
-  // Vittorie e sconfitte contano; ogni match viene registrato una sola volta.
-  useEffect(() => {
-    if (
-      !currentUser ||
-      !match ||
-      match.status !== "done" ||
-      match.mode !== "competitive" ||
-      !match.id ||
-      processedCompetitiveCountMatchRef.current === match.id
-    ) return;
-
-    const metadata = currentUser.user_metadata || {};
-    const processedMatches = Array.isArray(metadata.icepadel_competitive_processed_matches)
-      ? metadata.icepadel_competitive_processed_matches
-      : [];
-
-    if (processedMatches.includes(match.id)) {
-      processedCompetitiveCountMatchRef.current = match.id;
-      return;
-    }
-
-    processedCompetitiveCountMatchRef.current = match.id;
-    const alreadyUnlocked = Boolean(metadata.icepadel_lore_unlocked);
-    const previousCount = Number(metadata.icepadel_competitive_matches || 0);
-    const nextCount = alreadyUnlocked ? 10 : Math.min(10, previousCount + 1);
-    const newlyUnlocked = !alreadyUnlocked && nextCount >= 10;
-    const nextProcessedMatches = [...processedMatches, match.id].slice(-100);
-
-    supabase.auth.updateUser({
-      data: {
-        icepadel_competitive_matches: nextCount,
-        icepadel_lore_unlocked: alreadyUnlocked || newlyUnlocked,
-        icepadel_competitive_processed_matches: nextProcessedMatches,
-      },
-    }).then(({ error }) => {
-      if (error) {
-        console.error("Errore aggiornamento Missione 3:", error);
-        processedCompetitiveCountMatchRef.current = null;
-        return;
-      }
-      if (newlyUnlocked) setMissionCompletionNotice(3);
-    }).catch((error) => {
-      console.error("Errore aggiornamento Missione 3:", error);
-      processedCompetitiveCountMatchRef.current = null;
-    });
-  }, [currentUser?.id, match?.id, match?.status, match?.mode]);
-
-
-  // Missione 2: tre vittorie competitive consecutive con Riwupido e Nina.
-  // Ogni match viene registrato una sola volta per evitare doppi conteggi.
+  // Missioni multiplayer: aggiorna entrambe le progressioni con una sola scrittura
+  // per evitare aggiornamenti concorrenti dei metadati Supabase.
   useEffect(() => {
     if (
       !currentUser ||
@@ -402,42 +353,58 @@ const player2Team = resolveTeam(
     ) return;
 
     const metadata = currentUser.user_metadata || {};
-    const processedMatches = Array.isArray(metadata.riwupido_nina_processed_matches)
+    const riwuProcessed = Array.isArray(metadata.riwupido_nina_processed_matches)
       ? metadata.riwupido_nina_processed_matches
       : [];
+    const iceProcessed = Array.isArray(metadata.icepadel_competitive_processed_matches)
+      ? metadata.icepadel_competitive_processed_matches
+      : [];
 
-    if (processedMatches.includes(match.id)) {
+    const processRiwu = !riwuProcessed.includes(match.id);
+    const processIcepadel = !iceProcessed.includes(match.id);
+    if (!processRiwu && !processIcepadel) {
       processedMissionMatchRef.current = match.id;
       return;
     }
 
     processedMissionMatchRef.current = match.id;
+    const data = {};
+    let riwuNewlyUnlocked = false;
+    let icepadelNewlyUnlocked = false;
 
-    const myTeam = mySide === "player1" ? player1Team : player2Team;
-    const hasRequiredPair = myTeam.some((s) => s?.id === "riwupido") &&
-      myTeam.some((s) => s?.id === "nina");
-    const won = match.winner === mySide;
-    const alreadyUnlocked = Boolean(metadata.riwupido_nina_lore_unlocked);
-    const previousStreak = Number(metadata.riwupido_nina_competitive_streak || 0);
-    const nextStreak = alreadyUnlocked ? 3 : (won && hasRequiredPair ? Math.min(3, previousStreak + 1) : 0);
-    const newlyUnlocked = !alreadyUnlocked && nextStreak >= 3;
-    const nextProcessedMatches = [...processedMatches, match.id].slice(-30);
+    if (processRiwu) {
+      const myTeam = mySide === "player1" ? player1Team : player2Team;
+      const hasRequiredPair = myTeam.some((s) => s?.id === "riwupido") &&
+        myTeam.some((s) => s?.id === "nina");
+      const alreadyUnlocked = Boolean(metadata.riwupido_nina_lore_unlocked);
+      const previousStreak = Number(metadata.riwupido_nina_competitive_streak || 0);
+      const nextStreak = alreadyUnlocked ? 3 : (match.winner === mySide && hasRequiredPair ? Math.min(3, previousStreak + 1) : 0);
+      riwuNewlyUnlocked = !alreadyUnlocked && nextStreak >= 3;
+      data.riwupido_nina_competitive_streak = nextStreak;
+      data.riwupido_nina_lore_unlocked = alreadyUnlocked || riwuNewlyUnlocked;
+      data.riwupido_nina_processed_matches = [...riwuProcessed, match.id].slice(-30);
+    }
 
-    supabase.auth.updateUser({
-      data: {
-        riwupido_nina_competitive_streak: nextStreak,
-        riwupido_nina_lore_unlocked: alreadyUnlocked || newlyUnlocked,
-        riwupido_nina_processed_matches: nextProcessedMatches,
-      },
-    }).then(({ error }) => {
+    if (processIcepadel) {
+      const alreadyUnlocked = Boolean(metadata.icepadel_lore_unlocked);
+      const previousCount = Number(metadata.icepadel_competitive_matches || 0);
+      const nextCount = alreadyUnlocked ? 10 : Math.min(10, previousCount + 1);
+      icepadelNewlyUnlocked = !alreadyUnlocked && nextCount >= 10;
+      data.icepadel_competitive_matches = nextCount;
+      data.icepadel_lore_unlocked = alreadyUnlocked || icepadelNewlyUnlocked;
+      data.icepadel_competitive_processed_matches = [...iceProcessed, match.id].slice(-100);
+    }
+
+    supabase.auth.updateUser({ data }).then(({ error }) => {
       if (error) {
-        console.error("Errore aggiornamento Missione 2:", error);
+        console.error("Errore aggiornamento missioni multiplayer:", error);
         processedMissionMatchRef.current = null;
         return;
       }
-      if (newlyUnlocked) setMissionCompletionNotice(2);
+      if (icepadelNewlyUnlocked) setMissionCompletionNotice(3);
+      else if (riwuNewlyUnlocked) setMissionCompletionNotice(2);
     }).catch((error) => {
-      console.error("Errore aggiornamento Missione 2:", error);
+      console.error("Errore aggiornamento missioni multiplayer:", error);
       processedMissionMatchRef.current = null;
     });
   }, [currentUser?.id, match?.id, match?.status, match?.winner, match?.mode, mySide, player1Team, player2Team]);
