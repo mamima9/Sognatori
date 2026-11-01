@@ -789,7 +789,7 @@ while (remainingActions.length > 0) {
       ) {
         setPhase("done");
         await updateArcadeStreak("lose");
-        onEnd("lose");
+        onEnd("lose", logRef.current)
         return;
       }
 
@@ -860,7 +860,7 @@ while (remainingActions.length > 0) {
           </button>
 
           <AbandonButton
-            onAbandon={() => onEnd("abandon")}
+            onAbandon={() => onEnd("abandon", logRef.current)}
           />
         </div>
 
