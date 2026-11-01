@@ -25,6 +25,7 @@ export default function Home() {
   const [showResultLog, setShowResultLog] = useState(false);
   const [missionNotification, setMissionNotification] = useState(null);
   const [arcadeHumanOnlyRun, setArcadeHumanOnlyRun] = useState(true);
+  const [arcadeHumanStagesCompleted, setArcadeHumanStagesCompleted] = useState(0);
 
   const groupedLog = (entries) => {
     const groups = [];
@@ -239,6 +240,7 @@ export default function Home() {
                 onClick={() => {
                   setArcadePortrait(null);
                   setArcadeHumanOnlyRun(true);
+                  setArcadeHumanStagesCompleted(0);
                   setScreen("arcadePortrait");
                 }}
                 className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-base shadow-lg shadow-orange-500/30 hover:brightness-110 transition"
@@ -912,8 +914,10 @@ export default function Home() {
               onEnd={(r, fullLog = []) => {
                 const currentTeamIsHumanOnly = (teams?.playerTeam || []).length > 0 &&
                   teams.playerTeam.every((s) => String(s?.tipo || s?.type || "").toLowerCase() === "umano");
-                const completedHumanStage = arcadeHumanOnlyRun && currentTeamIsHumanOnly && r === "win";
+                const isNextArcadeStage = arcadeStage === arcadeHumanStagesCompleted + 1;
+                const completedHumanStage = arcadeHumanOnlyRun && isNextArcadeStage && currentTeamIsHumanOnly && r === "win";
                 setArcadeHumanOnlyRun(completedHumanStage);
+                setArcadeHumanStagesCompleted(completedHumanStage ? arcadeHumanStagesCompleted + 1 : 0);
                 setResult(r);
                 setBattleLog(fullLog);
                 setShowResultLog(false);
@@ -923,7 +927,7 @@ export default function Home() {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
                   } else {
-                    if (completedHumanStage && user) {
+                    if (completedHumanStage && arcadeHumanStagesCompleted === 9 && user) {
                       supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true, taomarco_lore_unlocked: Boolean(user.user_metadata?.taomarco_lore_unlocked) || (Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15 && Boolean(user.user_metadata?.taomarco_is_most_used)) } }).then(({ error }) => {
                         if (error) console.error("Errore salvataggio missione Arcade Taomarco:", error);
                         else {
