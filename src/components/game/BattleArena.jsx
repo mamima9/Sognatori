@@ -567,14 +567,14 @@ while (remainingActions.length > 0) {
     if (pAlive === 0) {
       setPhase("done");
       await updateArcadeStreak("lose");
-      onEnd("lose");
+      onEnd("lose", log);
       return;
     }
 
     if (eAlive === 0) {
       setPhase("done");
       await updateArcadeStreak("win");
-      onEnd("win");
+      onEnd("win", log);
       return;
     }
 
