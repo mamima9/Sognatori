@@ -2897,76 +2897,46 @@ const oppBench =
                       ) : act._picking &&
                         act.type ===
                           "attack" ? (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {oppActive
-                            .filter(
-                              (e) =>
-                                e &&
-                                !e.fainted
-                            )
-                            .map(
-                              (e) => {
-                                const {
-                                  dmg,
-                                  efficacy,
-                                } =
-                                  calcDamage(
-                                    s,
-                                    e
-                                  );
-
-                                const effColor =
-                                  efficacy ===
-                                  "se"
-                                    ? "text-green-400"
-                                    : efficacy ===
-                                      "res"
-                                    ? "text-orange-400"
-                                    : efficacy ===
-                                      "immune"
-                                    ? "text-slate-500"
-                                    : "text-slate-300";
-
+                        <div className="mt-2 space-y-2">
+                          <section className="rounded-lg border border-red-400/30 bg-red-500/5 p-2">
+                            <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-red-300">
+                              {lang === "en" ? "OPPONENT STARTERS" : "TITOLARI AVVERSARI"}
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {oppActive.filter(e => e && !e.fainted).map(e => {
+                                const { dmg, efficacy } = calcDamage(s, e);
+                                const effColor = efficacy === "se" ? "text-green-400" : efficacy === "res" ? "text-orange-400" : efficacy === "immune" ? "text-slate-500" : "text-slate-300";
+                                const effIcon = efficacy === "se" ? "🔥" : efficacy === "res" ? "🛡️" : efficacy === "immune" ? "✕" : "";
                                 return (
-                                  <button
-                                    key={
-                                      e.id
-                                    }
-                                    onClick={() =>
-                                      setAction(
-                                        i,
-                                        {
-                                          type: "attack",
-                                          targetId: e.id,
-                                          targetSlot: oppActive.findIndex(
-                                            (enemy) => enemy?.id === e.id
-                                          ),
-                                        }
-                                      )
-                                    }
-                                    className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 flex items-center gap-1"
-                                  >
-                                    <div className="w-5 h-5 rounded overflow-hidden">
-                                      <SognatoreImage
-                                        s={e}
-                                        className="w-full h-full"
-                                      />
-                                    </div>
-
+                                  <button key={e.id} onClick={() => setAction(i, { type: "attack", targetId: e.id, targetSlot: oppActive.findIndex(enemy => enemy?.id === e.id) })} className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 flex items-center gap-1">
+                                    <div className="w-5 h-5 rounded overflow-hidden"><SognatoreImage s={e} className="w-full h-full" /></div>
                                     {e.nome}
-
-                                    <span
-                                      className={`font-bold ${effColor}`}
-                                    >
-                                      ~
-                                      {
-                                        dmg
-                                      }
-                                    </span>
+                                    <span className={`font-bold ${effColor}`}>~{dmg}{effIcon && ` ${effIcon}`}</span>
                                   </button>
                                 );
-                              }
-                            )}
+                              })}
+                            </div>
+                          </section>
+                          <section className="rounded-lg border border-blue-400/30 bg-blue-500/5 p-2">
+                            <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-blue-300">
+                              {lang === "en" ? "OPPONENT BENCH" : "PANCHINARI AVVERSARI"}
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {oppBench.filter(e => e && !e.fainted).map(e => {
+                                const { dmg, efficacy } = calcDamage(s, e);
+                                const effColor = efficacy === "se" ? "text-green-400" : efficacy === "res" ? "text-orange-400" : efficacy === "immune" ? "text-slate-500" : "text-slate-300";
+                                const effIcon = efficacy === "se" ? "🔥" : efficacy === "res" ? "🛡️" : efficacy === "immune" ? "✕" : "";
+                                return (
+                                  <div key={e.id} className="text-[10px] px-2 py-1 rounded bg-slate-900/70 border border-white/10 flex items-center gap-1">
+                                    <div className="w-5 h-5 rounded overflow-hidden"><SognatoreImage s={e} className="w-full h-full" /></div>
+                                    {e.nome}
+                                    <span className={`font-bold ${effColor}`}>~{dmg}{effIcon && ` ${effIcon}`}</span>
+                                  </div>
+                                );
+                              })}
+                              {oppBench.filter(e => e && !e.fainted).length === 0 && <span className="text-[10px] text-slate-500">{lang === "en" ? "No available bench players" : "Nessun panchinaro disponibile"}</span>}
+                            </div>
+                          </section>
                         </div>
                       ) : act._picking &&
                         act.type ===
