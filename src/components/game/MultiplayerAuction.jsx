@@ -23,6 +23,7 @@ import {
   getAbility2Desc,
 } from "@/lib/abilityI18n";
 import { setMusicMode } from "./GlobalMusicPlayer";
+import TypeChartTable from "./TypeChartTable";
 
 const BID_OPTIONS = [1, 5, 10];
 const AUCTION_SECONDS = 60;
@@ -42,6 +43,7 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
 
   const { user: currentUser } = useAuth();
   const { lang, t } = useLanguage();
+  const [showAffinity, setShowAffinity] = useState(false);
 
   const m = bm(lang);
   const m_it = bm("it");
@@ -1030,6 +1032,32 @@ if (newBid > maxBid) {
           CREDITI & SQUADRE
       ====================================================== */}
 
+      <div className="mb-4 flex justify-center">
+        <button type="button" onClick={() => setShowAffinity(true)} className="rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm font-bold text-amber-300 hover:bg-amber-500/20">
+          ⚔️ {lang === "en" ? "View affinities" : "Vedi affinità"}
+        </button>
+      </div>
+      {showAffinity && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-3">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-amber-500/50 bg-slate-950 p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-lg font-black text-amber-300">
+                {lang === "en" ? "Affinity chart" : "Tabella delle affinità"}
+              </h2>
+              <button type="button" onClick={() => setShowAffinity(false)} className="rounded-lg bg-white/10 px-3 py-1.5 text-sm font-bold hover:bg-white/20">
+                {lang === "en" ? "Close ✕" : "Chiudi ✕"}
+              </button>
+            </div>
+            <TypeChartTable />
+            <div className="mt-3 flex flex-wrap justify-center gap-3 text-xs text-slate-300">
+              <span>🟢 +5 {lang === "en" ? "Bonus" : "Bonus"}</span>
+              <span>🟠 -3 {lang === "en" ? "Penalty" : "Penalità"}</span>
+              <span>✕ {lang === "en" ? "Immune" : "Immune"}</span>
+              <span>· {lang === "en" ? "Neutral" : "Neutro"}</span>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3 mb-4">
 
         {/* MY PLAYER */}
