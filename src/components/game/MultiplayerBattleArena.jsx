@@ -115,46 +115,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [animStep, setAnimStep] = useState(0);
-const [animFrame, setAnimFrame] = useState(null);
   const [turnKey, setTurnKey] = useState(0);
-useEffect(() => {
-  const gs = match?.game_state;
-
-  if (
-    !gs ||
-    gs.phase !== "animating" ||
-    !Array.isArray(gs.turnFrames)
-  ) {
-    setAnimFrame(null);
-    return;
-  }
-
-  const frame = gs.turnFrames[animStep];
-
-if (frame) {
-  setAnimFrame({
-    ...frame,
-    player1_active: frame.player1_active
-      ? frame.player1_active.map((s) => ({ ...s }))
-      : [],
-    player2_active: frame.player2_active
-      ? frame.player2_active.map((s) => ({ ...s }))
-      : [],
-    player1_bench: frame.player1_bench
-      ? frame.player1_bench.map((s) => ({ ...s }))
-      : [],
-    player2_bench: frame.player2_bench
-      ? frame.player2_bench.map((s) => ({ ...s }))
-      : [],
-  });
-}
-
-}, [
-  match?.game_state?.phase,
-  match?.game_state?.turn,
-  match?.game_state?.turnFrames,
-  animStep,
-]);
   const [myStarters, setMyStarters] = useState([]);
   const [switchChoices, setSwitchChoices] = useState({});
   const [now, setNow] = useState(Date.now());
@@ -2283,6 +2244,21 @@ const prematchTimeLeft =
       </div>
     );
   }
+
+  // Calcola il fotogramma direttamente dal game_state ricevuto.
+  // Evita un render intermedio con lo stato finale del turno prima
+  // che un useEffect asincrono aggiorni animFrame.
+  const turnFrames = Array.isArray(gs.turnFrames)
+    ? gs.turnFrames
+    : [];
+  const safeAnimStep = Math.min(
+    animStep,
+    Math.max(0, turnFrames.length - 1)
+  );
+  const animFrame =
+    gs.phase === "animating"
+      ? (turnFrames[safeAnimStep] || null)
+      : null;
 
   /*
    * ============================================================
