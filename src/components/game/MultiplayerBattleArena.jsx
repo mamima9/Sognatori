@@ -114,6 +114,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showTypeChart, setShowTypeChart] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
+  const [showFullLog, setShowFullLog] = useState(false);
   const [animStep, setAnimStep] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
   const [myStarters, setMyStarters] = useState([]);
@@ -3346,6 +3347,22 @@ const oppBench =
       </div>
 
       
+
+      {showFullLog && (
+        <div className="fixed inset-0 z-[60] bg-black/85 flex items-center justify-center p-4" onClick={() => setShowFullLog(false)}>
+          <div className="bg-slate-900 rounded-2xl border border-amber-500/30 p-4 max-w-2xl w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-amber-400">📜 {lang === "en" ? "Complete battle log" : "Log completo della battaglia"}</h3>
+              <button onClick={() => setShowFullLog(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+            </div>
+            <div className="space-y-1">
+              {(lang === "en" ? (match?.game_state?.log_en || []) : (match?.game_state?.log_it || [])).map((entry, i) => (
+                <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showTypeChart && (
         <div
