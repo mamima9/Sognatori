@@ -209,7 +209,7 @@ const HIDDEN_NPCS = {
   4: {
     x: 16,
     y: 12,
-    dialogue: "Il Genesis sta collassando , la fazione degli umani è in difficoltà e se la fazione degli umani sparisce , si rompe l equilibrio e tutti i sognatori saranno in pericolo",
+    dialogue: "Top usage : Cancucc , Nina , Deb",
     dialogueEn: "Genesis is collapsing. The human faction is in trouble, and if the human faction disappears, the balance will be broken and all Dreamers will be in danger.",
   },
 };
