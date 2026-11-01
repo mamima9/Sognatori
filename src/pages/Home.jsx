@@ -487,11 +487,15 @@ export default function Home() {
 
                 <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border-4 border-red-500 bg-white/5 p-2 flex items-center justify-center">
 
-                  <img
-                    src={`/images/${arcadeNPCImages[arcadeStage]}`}
-                    alt={arcadeNPCNames[arcadeStage]}
-                    className="w-full h-full object-contain"
-                  />
+                  {arcadeNPCImages[arcadeStage] ? (
+                    <img
+                      src={`/images/${arcadeNPCImages[arcadeStage]}`}
+                      alt={arcadeNPCNames[arcadeStage]}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-6xl">🧙</span>
+                  )}
 
                 </div>
 
