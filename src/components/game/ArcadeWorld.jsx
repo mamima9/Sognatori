@@ -285,193 +285,231 @@ function DreamArenaStage10({
   portrait,
   nearNpc,
 }) {
+  const pillars = [8, 25, 75, 92];
+
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#120d1c]">
-
-      {/* SKY / BACKGROUND */}
-
+    <div
+      className="absolute inset-0 overflow-hidden"
+      style={{
+        background: "#17152c",
+        imageRendering: "pixelated",
+      }}
+    >
+      {/* PARETI ESTERNE */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, #24163d 0%, #5b315f 48%, #120d1c 100%)",
+            "linear-gradient(180deg, #292347 0%, #51436b 42%, #211d38 100%)",
         }}
       />
 
-      {/* LUNA */}
-
+      {/* SOFFITTO MONUMENTALE */}
       <div
-        className="absolute w-28 h-28 rounded-full bg-amber-100/80 blur-[1px]"
+        className="absolute top-0 left-0 w-full h-[18%]"
         style={{
-          right: "12%",
-          top: "9%",
-          boxShadow: "0 0 45px rgba(255,220,150,.35)",
+          background:
+            "repeating-linear-gradient(90deg, #302847 0px, #302847 42px, #49395b 43px, #49395b 48px)",
+          borderBottom: "8px solid #b58b45",
+          boxShadow: "0 8px 20px #080713",
         }}
       />
 
-      {/* STELLE */}
-
-      <div className="absolute inset-0 opacity-70">
-        <div className="absolute left-[10%] top-[15%] text-amber-200">✦</div>
-        <div className="absolute left-[24%] top-[8%] text-amber-100 text-xs">✦</div>
-        <div className="absolute left-[72%] top-[20%] text-amber-200">✦</div>
-        <div className="absolute left-[84%] top-[12%] text-amber-100 text-xs">✦</div>
-        <div className="absolute left-[62%] top-[8%] text-amber-100 text-xs">✦</div>
+      {/* VETRATA CENTRALE */}
+      <div className="absolute top-[4%] left-1/2 -translate-x-1/2 w-[30%] h-[23%]">
+        <div
+          className="absolute inset-0 border-4 border-amber-500"
+          style={{
+            background:
+              "linear-gradient(135deg, #182d59, #6652a2, #1c2345)",
+            clipPath:
+              "polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)",
+          }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center text-amber-200 text-5xl opacity-80">
+          ✦
+        </div>
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] tracking-[0.3em] text-amber-200 font-black">
+          SOGNATORI
+        </div>
       </div>
 
-      {/* ISOLE / ROCCE SULLO SFONDO */}
-
-      <div className="absolute left-[4%] bottom-[19%] w-28 h-12 bg-[#24182d] rotate-[-5deg] rounded-[45%]" />
-      <div className="absolute right-[4%] bottom-[22%] w-36 h-14 bg-[#24182d] rotate-[5deg] rounded-[45%]" />
-
-      {/* ACQUA SOTTO L'ARENA */}
-
+      {/* PARETI LATERALI */}
       <div
-        className="absolute left-[5%] right-[5%] bottom-[0%] h-[38%] opacity-90"
+        className="absolute left-0 top-[18%] bottom-0 w-[7%]"
         style={{
           background:
-            "repeating-linear-gradient(165deg, #123c55 0px, #123c55 12px, #195673 13px, #195673 22px)",
-          clipPath:
-            "polygon(8% 20%, 92% 20%, 100% 100%, 0% 100%)",
+            "repeating-linear-gradient(180deg, #39304f 0px, #39304f 32px, #51415e 33px, #51415e 38px)",
+          borderRight: "5px solid #a77d42",
+        }}
+      />
+      <div
+        className="absolute right-0 top-[18%] bottom-0 w-[7%]"
+        style={{
+          background:
+            "repeating-linear-gradient(180deg, #39304f 0px, #39304f 32px, #51415e 33px, #51415e 38px)",
+          borderLeft: "5px solid #a77d42",
         }}
       />
 
-      {/* CASCATE LATERALI */}
+      {/* VETRATE LATERALI */}
+      {[10, 27, 73, 90].map((x, i) => (
+        <div
+          key={i}
+          className="absolute top-[25%] h-[18%] w-[8%] border-4 border-amber-700"
+          style={{
+            left: `${x}%`,
+            background:
+              "linear-gradient(180deg, #77b7d5, #394a83 55%, #202342)",
+            boxShadow: "inset 0 0 12px #b6dfff",
+          }}
+        >
+          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-amber-600" />
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-amber-600" />
+        </div>
+      ))}
 
+      {/* PAVIMENTO A SCACCHIERA */}
       <div
-        className="absolute left-[13%] bottom-[5%] w-8 h-32 opacity-70"
+        className="absolute left-[7%] right-[7%] top-[43%] bottom-0"
         style={{
-          background:
-            "linear-gradient(90deg, transparent, #6dc7dc, transparent)",
-          clipPath:
-            "polygon(25% 0, 75% 0, 100% 100%, 0 100%)",
+          backgroundColor: "#51445f",
+          backgroundImage: `
+            linear-gradient(45deg, #62536e 25%, transparent 25%),
+            linear-gradient(-45deg, #62536e 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #62536e 75%),
+            linear-gradient(-45deg, transparent 75%, #62536e 75%)
+          `,
+          backgroundSize: "48px 48px",
+          backgroundPosition:
+            "0 0, 0 24px, 24px -24px, -24px 0px",
+          borderTop: "8px solid #b58b45",
         }}
       />
 
+      {/* CORRIDOIO CENTRALE */}
       <div
-        className="absolute right-[13%] bottom-[5%] w-8 h-32 opacity-70"
+        className="absolute top-[43%] bottom-0 left-[36%] w-[28%]"
         style={{
           background:
-            "linear-gradient(90deg, transparent, #6dc7dc, transparent)",
-          clipPath:
-            "polygon(25% 0, 75% 0, 100% 100%, 0 100%)",
+            "repeating-linear-gradient(90deg, #6c5b70 0px, #6c5b70 28px, #78647a 29px, #78647a 32px)",
+          borderLeft: "4px solid #c09a55",
+          borderRight: "4px solid #c09a55",
         }}
       />
 
-      {/* ARENA OMBRA */}
+      {/* DECORAZIONI DEL PAVIMENTO */}
+      <div className="absolute top-[48%] left-1/2 -translate-x-1/2 text-amber-300 text-5xl opacity-30">
+        ✦
+      </div>
+      <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 text-amber-300 text-4xl opacity-40">
+        ◈
+      </div>
 
+      {/* PIATTAFORMA DEL MAESTRO */}
       <div
-        className="absolute left-1/2 top-[52%] w-[72%] h-[48%]"
+        className="absolute left-1/2 top-[48%] w-[48%] h-[31%]"
+        style={{
+          transform: "translateX(-50%)",
+          background:
+            "linear-gradient(180deg, #c59c57, #73502f)",
+          clipPath:
+            "polygon(12% 0,88% 0,100% 22%,100% 78%,88% 100%,12% 100%,0 78%,0 22%)",
+          boxShadow: "0 10px 20px #090713",
+        }}
+      />
+      <div
+        className="absolute left-1/2 top-[49%] w-[45%] h-[29%]"
+        style={{
+          transform: "translateX(-50%)",
+          background:
+            "repeating-linear-gradient(45deg, #493a53 0px, #493a53 18px, #594660 19px, #594660 36px)",
+          clipPath:
+            "polygon(12% 0,88% 0,100% 22%,100% 78%,88% 100%,12% 100%,0 78%,0 22%)",
+        }}
+      />
+
+      {/* SIGILLO CENTRALE */}
+      <div
+        className="absolute left-1/2 top-[64%] w-[19%] h-[12%]"
         style={{
           transform: "translate(-50%, -50%)",
-          background: "rgba(0,0,0,.45)",
-          filter: "blur(18px)",
-          clipPath:
-            "polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%)",
-        }}
-      />
-
-      {/* BASE DELL'ARENA */}
-
-      <div
-        className="absolute left-1/2 top-[50%] w-[70%] h-[45%]"
-        style={{
-          transform: "translate(-50%, -50%)",
+          border: "4px solid #d7ae61",
           background:
-            "linear-gradient(145deg, #51404d 0%, #302734 55%, #1d1721 100%)",
+            "radial-gradient(circle, #55406e, #211b39)",
           clipPath:
-            "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-          border: "4px solid #8e714c",
+            "polygon(50% 0,100% 50%,50% 100%,0 50%)",
+          boxShadow: "0 0 20px #d7ae61",
         }}
       />
-
-      {/* BORDO ORO */}
-
-      <div
-        className="absolute left-1/2 top-[50%] w-[67%] h-[41%] pointer-events-none"
-        style={{
-          transform: "translate(-50%, -50%)",
-          background:
-            "linear-gradient(145deg, #c9a55a, #72562d)",
-          clipPath:
-            "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-        }}
-      />
-
-      {/* PAVIMENTO */}
-
-      <div
-        className="absolute left-1/2 top-[50%] w-[62%] h-[37%]"
-        style={{
-          transform: "translate(-50%, -50%)",
-          background:
-            "repeating-linear-gradient(45deg, #403541 0px, #403541 18px, #493c49 19px, #493c49 36px)",
-          clipPath:
-            "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-        }}
-      />
-
-      {/* ESAGONO CENTRALE */}
-
-      <div
-        className="absolute left-1/2 top-[50%] w-[27%] h-[34%]"
-        style={{
-          transform: "translate(-50%, -50%)",
-          background:
-            "radial-gradient(circle, #8b6b45 0%, #60482f 60%, #3d2d23 100%)",
-          clipPath:
-            "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-          boxShadow:
-            "inset 0 0 0 5px rgba(212,175,55,.55)",
-        }}
-      />
-
-      {/* SIMBOLO SOGNATORI */}
-
-      <div className="absolute left-1/2 top-[50%] -translate-x-1/2 -translate-y-1/2 text-5xl opacity-20">
+      <div className="absolute left-1/2 top-[64%] -translate-x-1/2 -translate-y-1/2 text-amber-200 text-3xl">
         ✦
       </div>
 
-      {/* TORRI */}
+      {/* COLONNE MONUMENTALI */}
+      {pillars.map((x, i) => (
+        <div
+          key={i}
+          className="absolute top-[39%] h-[32%] w-[5%]"
+          style={{
+            left: `${x}%`,
+            background:
+              "linear-gradient(90deg, #725c68, #d0b18a, #806b72)",
+            borderLeft: "3px solid #d8b77b",
+            borderRight: "3px solid #392b42",
+            boxShadow: "4px 6px 8px #100c1e",
+          }}
+        >
+          <div className="absolute -top-2 -left-2 -right-2 h-3 bg-amber-600 border-2 border-amber-300" />
+          <div className="absolute bottom-0 -left-2 -right-2 h-3 bg-amber-700" />
+        </div>
+      ))}
 
-      <div className="absolute left-[15%] top-[37%] text-5xl drop-shadow-2xl">
+      {/* TORCE DECORATIVE */}
+      {[15, 85].map((x, i) => (
+        <div
+          key={i}
+          className="absolute top-[34%] text-3xl"
+          style={{
+            left: `${x}%`,
+            filter: "drop-shadow(0 0 12px #ff9c35)",
+          }}
+        >
+          🔥
+        </div>
+      ))}
+
+      {/* STATUE LATERALI */}
+      <div className="absolute left-[11%] bottom-[13%] text-5xl">
+        🗿
+      </div>
+      <div className="absolute right-[11%] bottom-[13%] text-5xl">
         🗿
       </div>
 
-      <div className="absolute right-[15%] top-[37%] text-5xl drop-shadow-2xl">
-        🗿
+      {/* STENDARDI */}
+      <div className="absolute left-[20%] top-[19%] text-4xl text-amber-300">
+        ⚑
+      </div>
+      <div className="absolute right-[20%] top-[19%] text-4xl text-amber-300">
+        ⚑
       </div>
 
-      <div className="absolute left-[24%] bottom-[21%] text-4xl drop-shadow-2xl">
-        🏛️
-      </div>
-
-      <div className="absolute right-[24%] bottom-[21%] text-4xl drop-shadow-2xl">
-        🏛️
-      </div>
-
-      {/* BANDIERE */}
-
-      <div className="absolute left-[30%] top-[26%] text-3xl">
-        🚩
-      </div>
-
-      <div className="absolute right-[30%] top-[26%] text-3xl">
-        🚩
-      </div>
-
-      {/* NPC */}
-
+      {/* MANGU */}
       <div
-        className="absolute flex flex-col items-center"
+        className="absolute flex flex-col items-center z-20"
         style={{
           left: "50%",
-          top: "39%",
+          top: "43%",
           transform: "translate(-50%, -50%)",
         }}
       >
-        <div className="w-12 h-12 drop-shadow-2xl">
-
+        <div
+          className="w-14 h-14 flex items-center justify-center"
+          style={{
+            filter: "drop-shadow(0 0 10px #f5bd5c)",
+          }}
+        >
           {npcImage ? (
             <img
               src={`/images/${npcImage}`}
@@ -479,38 +517,24 @@ function DreamArenaStage10({
               className="w-full h-full object-contain"
             />
           ) : (
-            <span className="text-4xl">
-              {npc.emoji}
-            </span>
+            <span className="text-5xl">{npc.emoji}</span>
           )}
-
         </div>
-
-        <div className="text-[10px] font-black text-amber-300 whitespace-nowrap">
+        <div className="px-3 py-1 bg-[#21172d] border-2 border-amber-500 text-amber-300 text-xs font-black whitespace-nowrap">
           {npcName}
         </div>
       </div>
 
-      {/* PLAYER */}
-
+      {/* GIOCATORE */}
       <motion.div
-        className="absolute flex flex-col items-center"
+        className="absolute flex flex-col items-center z-30"
         animate={{
-          left:
-            player.x < 10
-              ? `${25 + player.x * 2}%`
-              : `${25 + player.x * 2}%`,
-          top:
-            player.y < 7
-              ? `${32 + player.y * 2.2}%`
-              : `${32 + player.y * 2.2}%`,
+          left: `${25 + player.x * 2}%`,
+          top: `${32 + player.y * 2.2}%`,
         }}
-        transition={{
-          duration: 0.12,
-        }}
+        transition={{ duration: 0.12 }}
       >
-        <div className="w-12 h-12 drop-shadow-2xl">
-
+        <div className="w-12 h-12 drop-shadow-xl">
           {portrait ? (
             <img
               src={`/images/${portrait}`}
@@ -518,26 +542,32 @@ function DreamArenaStage10({
               className="w-full h-full object-contain"
             />
           ) : (
-            <span className="text-4xl">
-              🧙‍♂️
-            </span>
+            <span className="text-4xl">🧙‍♂️</span>
           )}
-
         </div>
-
-        <div className="text-[10px] font-black text-white">
+        <div className="px-2 py-0.5 bg-slate-950/90 text-white text-[10px] font-black">
           YOU
         </div>
       </motion.div>
 
-      {/* INDICATORE NPC */}
-
+      {/* INDICATORE INTERAZIONE */}
       {nearNpc && (
-        <div className="absolute left-1/2 top-[30%] -translate-x-1/2 text-amber-300 text-xs font-black animate-bounce">
+        <div className="absolute left-1/2 top-[32%] -translate-x-1/2 text-amber-300 text-xl font-black animate-bounce z-40">
           ▼
+          <div className="text-[10px] whitespace-nowrap bg-black/80 px-2 py-1">
+            PREMI E PER PARLARE
+          </div>
         </div>
       )}
 
+      {/* LUCI AMBIENTALI */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(5,4,15,.55) 100%)",
+        }}
+      />
     </div>
   );
 }
