@@ -123,7 +123,7 @@ export default function Home() {
                 {missionNotification}
               </div>
               <div className="text-xs text-slate-300 mt-1">
-                {lang === "en" ? "Pepe's lore is now unlocked." : "La Lore di Pepe è stata sbloccata."}
+                {lang === "en" ? "You have completed this challenge and unlocked its reward." : "Hai completato questa sfida e sbloccato la relativa ricompensa."}
               </div>
             </div>
             <button onClick={() => setMissionNotification(null)} className="text-slate-400 hover:text-white" aria-label={lang === "en" ? "Close notification" : "Chiudi notifica"}>✕</button>
@@ -790,7 +790,7 @@ export default function Home() {
   playerTeam={teams.playerTeam}
   enemyTeam={teams.enemyTeam}
               onMissionComplete={() => {
-                setMissionNotification(lang === "en" ? "Unlock Pepe's Lore" : "Sblocca Lore Pepe");
+                setMissionNotification(lang === "en" ? "Mission 1: Unlock Pepe's Lore" : "Missione 1: Sblocca Lore Pepe");
                 window.setTimeout(() => setMissionNotification(null), 7000);
               }}
               onEnd={(r, fullLog = []) => {
