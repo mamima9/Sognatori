@@ -496,6 +496,53 @@ export default function Home() {
                 </Link>
               )}
             </section>
+
+            <section className="rounded-2xl border border-sky-400/30 bg-gradient-to-br from-sky-900/25 to-blue-950/50 p-5 shadow-xl mt-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-sky-300 uppercase">
+                  {lang === "en" ? "MISSION 3" : "MISSIONE 3"}
+                </span>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${user?.user_metadata?.icepadel_lore_unlocked ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
+                  {user?.user_metadata?.icepadel_lore_unlocked
+                    ? (lang === "en" ? "COMPLETED" : "COMPLETATA")
+                    : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-20 h-20 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                  <img src="/images/23- ICEPADEL.png" alt="Icepadel" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">
+                    {lang === "en" ? "Unlock Icepadel's Lore" : "Sblocca Lore Icepadel"}
+                  </h2>
+                  <p className="text-sm text-slate-300 mt-1">
+                    {lang === "en"
+                      ? "Complete 10 Competitive Multiplayer matches."
+                      : "Completa 10 partite in Multiplayer competitivo."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-2 flex justify-between text-xs font-bold">
+                <span className="text-slate-300">{lang === "en" ? "Progress" : "Progressi"}</span>
+                <span className="text-amber-300">
+                  {user?.user_metadata?.icepadel_lore_unlocked ? "10/10" : `${Math.min(10, Number(user?.user_metadata?.icepadel_competitive_matches || 0))}/10`}
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-black/40 overflow-hidden border border-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-500"
+                  style={{ width: `${user?.user_metadata?.icepadel_lore_unlocked ? 100 : Math.min(100, Number(user?.user_metadata?.icepadel_competitive_matches || 0) / 10 * 100)}%` }}
+                />
+              </div>
+              {user?.user_metadata?.icepadel_lore_unlocked && (
+                <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm hover:bg-emerald-500/30">
+                  📖 {lang === "en" ? "View Icepadel's Lore" : "Leggi la Lore di Icepadel"}
+                </Link>
+              )}
+            </section>
           </motion.div>
         )}
 
