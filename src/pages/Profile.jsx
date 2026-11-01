@@ -163,9 +163,7 @@ export default function Profile() {
 
         const percentage =
           usageTotal > 0
-            ? Math.round(
-                (count / usageTotal) * 100
-              )
+            ? Number(((count / usageTotal) * 100).toFixed(1))
             : 0;
 
         return {
@@ -458,8 +456,8 @@ export default function Profile() {
                   className="px-5 py-3 rounded-xl bg-white/10 border border-white/10 font-bold hover:bg-white/20 disabled:opacity-50"
                 >
                   {emailLoading
-                    ? "{isEnglish ? "Sending..." : "Invio..."}"
-                    : "{isEnglish ? "Change email" : "Cambia email"}"}
+                    ? (isEnglish ? "Sending..." : "Invio...")
+                     : (isEnglish ? "Change email" : "Cambia email")}
                 </button>
 
               </div>
@@ -479,7 +477,7 @@ export default function Profile() {
                 onChange={(e) =>
                   setNewPassword(e.target.value)
                 }
-                placeholder="{isEnglish ? "New password" : "Nuova password"}"
+                placeholder={isEnglish ? "New password" : "Nuova password"}
                 className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400 mb-2"
               />
 
@@ -489,7 +487,7 @@ export default function Profile() {
                 onChange={(e) =>
                   setConfirmPassword(e.target.value)
                 }
-                placeholder="{isEnglish ? "Confirm new password" : "Conferma nuova password"}"
+                placeholder={isEnglish ? "Confirm new password" : "Conferma nuova password"}
                 className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400 mb-3"
               />
 
@@ -499,8 +497,8 @@ export default function Profile() {
                 className="px-5 py-3 rounded-xl bg-white/10 border border-white/10 font-bold hover:bg-white/20 disabled:opacity-50"
               >
                 {passwordLoading
-                  ? "{isEnglish ? "Updating..." : "Aggiornamento..."}"
-                  : "{isEnglish ? "Change password" : "Cambia password"}"}
+                  ? (isEnglish ? "Updating..." : "Aggiornamento...")
+                   : (isEnglish ? "Change password" : "Cambia password")}
               </button>
 
             </div>
@@ -543,7 +541,7 @@ export default function Profile() {
                 />
 
                 <StatCard
-                  label="Win Rate"
+                  label={isEnglish ? "Win Rate" : "Percentuale vittorie"}
                   value={`${stats.winRate}%`}
                 />
 
@@ -653,7 +651,7 @@ export default function Profile() {
                 <div className="text-amber-400 font-black mt-2">
                   {favoriteSognatore.count} {isEnglish ? "uses" : "utilizzi"}
                   {" · "}
-                  {favoriteSognatore.percentage}%
+                  {favoriteSognatore.percentage.toFixed(1)}%
                 </div>
 
               </div>
@@ -707,7 +705,7 @@ export default function Profile() {
 
                       <span className="text-xs text-slate-400">
                         {sognatore.count} {isEnglish ? "uses" : "utilizzi"} ·{" "}
-                        {sognatore.percentage}%
+                        {sognatore.percentage.toFixed(1)}%
                       </span>
 
                     </div>
