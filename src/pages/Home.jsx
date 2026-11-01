@@ -272,6 +272,16 @@ export default function Home() {
                 </Link>
               )}
 
+              {/* MISSIONI */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setScreen("missions")}
+                className="px-6 py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 font-bold text-sm shadow-lg shadow-indigo-500/20 hover:brightness-110 transition border border-violet-300/20"
+              >
+                🎯 Missioni
+              </motion.button>
+
               {/* CLASSIFICHE */}
               <Link to="/rankings">
                 <motion.button
@@ -328,6 +338,89 @@ export default function Home() {
 
             </div>
 
+          </motion.div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MISSIONI */}
+        {/* ========================================================= */}
+        {screen === "missions" && (
+          <motion.div
+            key="missions"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="min-h-screen max-w-3xl mx-auto px-5 py-8"
+          >
+            <button
+              onClick={() => setScreen("menu")}
+              className="text-sm text-slate-400 hover:text-white mb-8"
+            >
+              ← {lang === "en" ? "Back to home" : "Torna alla home"}
+            </button>
+
+            <div className="text-center mb-8">
+              <div className="text-5xl mb-3">🎯</div>
+              <h1 className="text-3xl font-black text-amber-400">
+                {lang === "en" ? "MISSIONS" : "MISSIONI"}
+              </h1>
+              <p className="text-sm text-slate-400 mt-2">
+                {lang === "en" ? "Complete challenges to unlock Dreamer lore." : "Completa le sfide per sbloccare le Lore dei Sognatori."}
+              </p>
+            </div>
+
+            <section className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-900/30 to-indigo-950/50 p-5 shadow-xl">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-violet-300 uppercase">
+                  {lang === "en" ? "MISSION 1" : "MISSIONE 1"}
+                </span>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${user?.user_metadata?.pepe_lore_unlocked ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
+                  {user?.user_metadata?.pepe_lore_unlocked
+                    ? (lang === "en" ? "COMPLETED" : "COMPLETATA")
+                    : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-20 h-20 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                  <img src="/images/19  - PEPE.png" alt="Pepe" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">
+                    {lang === "en" ? "Unlock Pepe's Lore" : "Sblocca Lore Pepe"}
+                  </h2>
+                  <p className="text-sm text-slate-300 mt-1">
+                    {lang === "en"
+                      ? "Win 3 Arcade matches in a row with Pepe in your team."
+                      : "Vinci 3 partite in Arcade di fila con Pepe nella tua squadra."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-2 flex justify-between text-xs font-bold">
+                <span className="text-slate-300">{lang === "en" ? "Progress" : "Progressi"}</span>
+                <span className="text-amber-300">
+                  {user?.user_metadata?.pepe_lore_unlocked ? "3/3" : `${Math.min(3, Number(user?.user_metadata?.pepe_arcade_streak || 0))}/3`}
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-black/40 overflow-hidden border border-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-amber-400 transition-all duration-500"
+                  style={{ width: `${user?.user_metadata?.pepe_lore_unlocked ? 100 : Math.min(100, Number(user?.user_metadata?.pepe_arcade_streak || 0) / 3 * 100)}%` }}
+                />
+              </div>
+
+              {!isAuthenticated && (
+                <p className="mt-4 text-xs text-amber-300">
+                  {lang === "en" ? "Log in to save your mission progress." : "Accedi per salvare i progressi della missione."}
+                </p>
+              )}
+              {user?.user_metadata?.pepe_lore_unlocked && (
+                <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm hover:bg-emerald-500/30">
+                  📖 {lang === "en" ? "View Pepe's Lore" : "Leggi la Lore di Pepe"}
+                </Link>
+              )}
+            </section>
           </motion.div>
         )}
 
