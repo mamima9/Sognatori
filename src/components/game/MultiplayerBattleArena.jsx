@@ -2197,9 +2197,7 @@ const prematchTimeLeft =
             className="px-6 py-3 rounded-full bg-white/10 font-bold hover:bg-white/20 transition"
           >
             📋{" "}
-            {t(
-              "battle.summary"
-            )}
+            {lang === "en" ? "Full battle log" : "Log completo"}
           </button>
         </div>
 
@@ -2586,6 +2584,12 @@ const oppBench =
           </span>
 
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowFullLog(true)}
+              className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+            >
+              📜 {lang === "en" ? "Full log" : "Log completo"}
+            </button>
             <button
               onClick={() =>
                 setShowBench(
