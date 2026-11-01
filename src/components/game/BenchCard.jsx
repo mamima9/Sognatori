@@ -1,8 +1,11 @@
 import React from "react";
 import HealthBar, { SognatoreImage, FactionBadge } from "./HealthBar";
 import { getType } from "@/lib/battleEngine";
+import { useLanguage } from "@/lib/i18n";
 
 export default function BenchCard({ s, side = "player" }) {
+  const { lang } = useLanguage();
+  const statLabels = lang === "en" ? ["ATK", "DEF", "SPE"] : ["ATT", "DIF", "VEL"];
   if (!s) return <div className="flex-1" />;
   const fainted = s.fainted;
   return (
@@ -17,7 +20,7 @@ export default function BenchCard({ s, side = "player" }) {
         </div>
       </div>
       <div className="grid grid-cols-3 gap-0.5 mt-1 text-[8px]">
-        {[["A", s.att + (s.statMods?.att || 0)], ["D", s.dif + (s.statMods?.dif || 0)], ["V", s.vel + (s.statMods?.vel || 0)]].map(([l, v]) => (
+        {[[statLabels[0], s.att + (s.statMods?.att || 0)], [statLabels[1], s.dif + (s.statMods?.dif || 0)], [statLabels[2], s.vel + (s.statMods?.vel || 0)]].map(([l, v]) => (
           <div key={l} className="bg-white/5 rounded px-0.5 text-center"><span className="text-slate-400">{l}</span> <span className="font-bold">{v}</span></div>
         ))}
       </div>
