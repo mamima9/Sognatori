@@ -358,10 +358,14 @@ const player2Team = resolveTeam(
     const iceProcessed = Array.isArray(metadata.icepadel_competitive_processed_matches)
       ? metadata.icepadel_competitive_processed_matches
       : [];
+    const taomarcoProcessed = Array.isArray(metadata.taomarco_competitive_processed_matches)
+      ? metadata.taomarco_competitive_processed_matches
+      : [];
 
     const processRiwu = !riwuProcessed.includes(match.id);
     const processIcepadel = !iceProcessed.includes(match.id);
-    if (!processRiwu && !processIcepadel) {
+    const processTaomarco = !taomarcoProcessed.includes(match.id);
+    if (!processRiwu && !processIcepadel && !processTaomarco) {
       processedMissionMatchRef.current = match.id;
       return;
     }
@@ -370,6 +374,7 @@ const player2Team = resolveTeam(
     const data = {};
     let riwuNewlyUnlocked = false;
     let icepadelNewlyUnlocked = false;
+    let taomarcoNewlyUnlocked = false;
 
     if (processRiwu) {
       const myTeam = mySide === "player1" ? player1Team : player2Team;
@@ -394,13 +399,49 @@ const player2Team = resolveTeam(
       data.icepadel_competitive_processed_matches = [...iceProcessed, match.id].slice(-100);
     }
 
+    if (processTaomarco) {
+      const alreadyUnlocked = Boolean(metadata.taomarco_lore_unlocked);
+      const previousWins = Number(metadata.taomarco_competitive_wins || 0);
+      const nextWins = alreadyUnlocked ? 15 : Math.min(15, previousWins + (match.winner === mySide ? 1 : 0));
+      data.taomarco_competitive_wins = nextWins;
+      data.taomarco_competitive_processed_matches = [...taomarcoProcessed, match.id].slice(-150);
+
+      let taomarcoIsMostUsed = Boolean(metadata.taomarco_is_most_used);
+      if (!taomarcoIsMostUsed && nextWins >= 15) {
+        const { data: history, error: historyError } = await supabase
+          .from("match_history")
+          .select("player1_id, player2_id, player1_team_ids, player2_team_ids")
+          .or(`player1_id.eq.${currentUser.id},player2_id.eq.${currentUser.id}`);
+        if (!historyError) {
+          const counts = {};
+          (history || []).forEach((pastMatch) => {
+            const team = pastMatch.player1_id === currentUser.id ? pastMatch.player1_team_ids : pastMatch.player2_team_ids;
+            (Array.isArray(team) ? team : []).forEach((entry) => {
+              const id = typeof entry === "object" && entry ? (entry.id ?? entry.sognatoreId ?? entry.sognatore_id) : entry;
+              const key = String(id || "").toLowerCase();
+              if (key) counts[key] = (counts[key] || 0) + 1;
+            });
+          });
+          const taoCount = counts.taomarco || 0;
+          const highestOtherCount = Math.max(0, ...Object.entries(counts)
+            .filter(([id]) => id !== "taomarco")
+            .map(([, count]) => count));
+          taomarcoIsMostUsed = taoCount > 0 && taoCount >= highestOtherCount;
+        }
+      }
+      data.taomarco_is_most_used = taomarcoIsMostUsed;
+      taomarcoNewlyUnlocked = !alreadyUnlocked && nextWins >= 15 && taomarcoIsMostUsed && Boolean(metadata.taomarco_human_arcade_completed);
+      data.taomarco_lore_unlocked = alreadyUnlocked || taomarcoNewlyUnlocked;
+    }
+
     supabase.auth.updateUser({ data }).then(({ error }) => {
       if (error) {
         console.error("Errore aggiornamento missioni multiplayer:", error);
         processedMissionMatchRef.current = null;
         return;
       }
-      if (icepadelNewlyUnlocked) setMissionCompletionNotice(3);
+      if (taomarcoNewlyUnlocked) setMissionCompletionNotice(4);
+      else if (icepadelNewlyUnlocked) setMissionCompletionNotice(3);
       else if (riwuNewlyUnlocked) setMissionCompletionNotice(2);
     }).catch((error) => {
       console.error("Errore aggiornamento missioni multiplayer:", error);
