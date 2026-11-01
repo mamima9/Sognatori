@@ -8,17 +8,20 @@ import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
+import { useLanguage } from "@/lib/i18n";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
 export default function Profile() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
+  const isEnglish = lang === "en";
 
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [username, setUsername] = useState("");
-  const [newUsername, setNewUsername] = useState("");
+  const [username, set{isEnglish ? "Username" : "Username"}] = useState("");
+  const [new{isEnglish ? "Username" : "Username"}, setNew{isEnglish ? "Username" : "Username"}] = useState("");
 
   const [newEmail, setNewEmail] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -37,14 +40,14 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return;
 
-    const currentUsername =
+    const current{isEnglish ? "Username" : "Username"} =
       user.user_metadata?.username ||
       user.user_metadata?.full_name ||
       user.email?.split("@")[0] ||
       "";
 
-    setUsername(currentUsername);
-    setNewUsername(currentUsername);
+    set{isEnglish ? "Username" : "Username"}(current{isEnglish ? "Username" : "Username"});
+    setNew{isEnglish ? "Username" : "Username"}(current{isEnglish ? "Username" : "Username"});
   }, [user]);
 
   // ============================================================
@@ -74,7 +77,7 @@ export default function Profile() {
       } catch (err) {
         console.error("Errore caricamento statistiche:", err);
         setError(
-          "Impossibile caricare le statistiche delle partite."
+          isEnglish ? "Unable to load match statistics." : "Impossibile caricare le statistiche delle partite."
         );
       } finally {
         setLoading(false);
@@ -187,14 +190,14 @@ export default function Profile() {
   // CAMBIO USERNAME
   // ============================================================
 
-  const changeUsername = async () => {
+  const change{isEnglish ? "Username" : "Username"} = async () => {
     setMessage("");
     setError("");
 
-    const value = newUsername.trim();
+    const value = new{isEnglish ? "Username" : "Username"}.trim();
 
     if (!value) {
-      setError("Inserisci un username.");
+      setError(isEnglish ? "Enter a username." : "Inserisci un username.");
       return;
     }
 
@@ -208,13 +211,13 @@ export default function Profile() {
 
       if (error) throw error;
 
-      setUsername(value);
-      setMessage("Username aggiornato.");
+      set{isEnglish ? "Username" : "Username"}(value);
+      setMessage(isEnglish ? "{isEnglish ? "Username" : "Username"} updated." : "{isEnglish ? "Username" : "Username"} aggiornato.");
     } catch (err) {
       console.error(err);
       setError(
         err?.message ||
-          "Errore durante il cambio username."
+          isEnglish ? "Error updating username." : "Errore durante il cambio username."
       );
     }
   };
@@ -230,13 +233,13 @@ export default function Profile() {
     const value = newEmail.trim();
 
     if (!value) {
-      setError("Inserisci una nuova email.");
+      setError(isEnglish ? "Enter a new email address." : "Inserisci una nuova email.");
       return;
     }
 
     if (value === user.email) {
       setError(
-        "La nuova email è uguale a quella attuale."
+        isEnglish ? "The new email is the same as the current one." : "La nuova email è uguale a quella attuale."
       );
       return;
     }
@@ -254,13 +257,13 @@ export default function Profile() {
       setNewEmail("");
 
       setMessage(
-        "Richiesta inviata. Controlla la nuova email per confermare il cambio."
+        isEnglish ? "Request sent. Check your new email to confirm the change." : "Richiesta inviata. Controlla la nuova email per confermare il cambio."
       );
     } catch (err) {
       console.error(err);
       setError(
         err?.message ||
-          "Errore durante il cambio email."
+          isEnglish ? "Error changing email." : "Errore durante il cambio email."
       );
     } finally {
       setEmailLoading(false);
@@ -277,14 +280,14 @@ export default function Profile() {
 
     if (newPassword.length < 6) {
       setError(
-        "La password deve contenere almeno 6 caratteri."
+        isEnglish ? "Password must contain at least 6 characters." : "La password deve contenere almeno 6 caratteri."
       );
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError(
-        "Le password non coincidono."
+        isEnglish ? "Passwords do not match." : "Le password non coincidono."
       );
       return;
     }
@@ -302,12 +305,12 @@ export default function Profile() {
       setNewPassword("");
       setConfirmPassword("");
 
-      setMessage("Password aggiornata.");
+      setMessage(isEnglish ? "Password updated." : "Password aggiornata.");
     } catch (err) {
       console.error(err);
       setError(
         err?.message ||
-          "Errore durante il cambio password."
+          isEnglish ? "Error changing password." : "Errore durante il cambio password."
       );
     } finally {
       setPasswordLoading(false);
@@ -328,14 +331,14 @@ export default function Profile() {
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white flex items-center justify-center px-6">
         <div className="text-center">
           <p className="text-slate-400 mb-5">
-            Devi effettuare il login.
+            {isEnglish ? "You need to log in." : "Devi effettuare il login."}
           </p>
 
           <Link
             to="/login"
             className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 font-bold"
           >
-            Vai al login
+            {isEnglish ? "Go to login" : "Vai al login"}
           </Link>
         </div>
       </div>
@@ -355,7 +358,7 @@ export default function Profile() {
           to="/"
           className="text-sm text-slate-400 hover:text-white transition"
         >
-          ← Home
+          ← {isEnglish ? "Home" : "Home"}
         </Link>
 
         <div className="text-center mt-5 mb-8">
@@ -371,7 +374,7 @@ export default function Profile() {
           </h1>
 
           <p className="text-slate-400 text-sm mt-2">
-            Le tue statistiche e le tue impostazioni
+            {isEnglish ? "Your statistics and settings" : "Le tue statistiche e le tue impostazioni"}
           </p>
 
         </div>
@@ -399,7 +402,7 @@ export default function Profile() {
         <section className="rounded-3xl bg-white/5 border border-white/10 p-6 mb-6">
 
           <h2 className="text-xl font-black mb-5">
-            👤 Account
+            👤 {isEnglish ? "Account" : "Account"}
           </h2>
 
           <div className="space-y-5">
@@ -408,21 +411,21 @@ export default function Profile() {
 
             <div>
               <label className="block text-xs uppercase tracking-widest text-slate-400 mb-2">
-                Username
+                {isEnglish ? "Username" : "Username"}
               </label>
 
               <div className="flex flex-col sm:flex-row gap-2">
 
                 <input
-                  value={newUsername}
+                  value={new{isEnglish ? "Username" : "Username"}}
                   onChange={(e) =>
-                    setNewUsername(e.target.value)
+                    setNew{isEnglish ? "Username" : "Username"}(e.target.value)
                   }
                   className="flex-1 px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400"
                 />
 
                 <button
-                  onClick={changeUsername}
+                  onClick={change{isEnglish ? "Username" : "Username"}}
                   className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold"
                 >
                   Salva
@@ -435,7 +438,7 @@ export default function Profile() {
 
             <div>
               <label className="block text-xs uppercase tracking-widest text-slate-400 mb-2">
-                Email attuale
+                {isEnglish ? "Current email" : "Email attuale"}
               </label>
 
               <div className="text-sm text-slate-300 mb-3">
@@ -443,7 +446,7 @@ export default function Profile() {
               </div>
 
               <label className="block text-xs uppercase tracking-widest text-slate-400 mb-2">
-                Nuova email
+                {isEnglish ? "New email" : "Nuova email"}
               </label>
 
               <div className="flex flex-col sm:flex-row gap-2">
@@ -454,7 +457,7 @@ export default function Profile() {
                   onChange={(e) =>
                     setNewEmail(e.target.value)
                   }
-                  placeholder="nuova@email.com"
+                  placeholder={isEnglish ? "new@email.com" : "nuova@email.com"}
                   className="flex-1 px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400"
                 />
 
@@ -464,8 +467,8 @@ export default function Profile() {
                   className="px-5 py-3 rounded-xl bg-white/10 border border-white/10 font-bold hover:bg-white/20 disabled:opacity-50"
                 >
                   {emailLoading
-                    ? "Invio..."
-                    : "Cambia email"}
+                    ? "{isEnglish ? "Sending..." : "Invio..."}"
+                    : "{isEnglish ? "Change email" : "Cambia email"}"}
                 </button>
 
               </div>
@@ -476,7 +479,7 @@ export default function Profile() {
             <div>
 
               <label className="block text-xs uppercase tracking-widest text-slate-400 mb-2">
-                Nuova password
+                {isEnglish ? "New password" : "Nuova password"}
               </label>
 
               <input
@@ -485,7 +488,7 @@ export default function Profile() {
                 onChange={(e) =>
                   setNewPassword(e.target.value)
                 }
-                placeholder="Nuova password"
+                placeholder="{isEnglish ? "New password" : "Nuova password"}"
                 className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400 mb-2"
               />
 
@@ -495,7 +498,7 @@ export default function Profile() {
                 onChange={(e) =>
                   setConfirmPassword(e.target.value)
                 }
-                placeholder="Conferma nuova password"
+                placeholder="{isEnglish ? "Confirm new password" : "Conferma nuova password"}"
                 className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400 mb-3"
               />
 
@@ -505,8 +508,8 @@ export default function Profile() {
                 className="px-5 py-3 rounded-xl bg-white/10 border border-white/10 font-bold hover:bg-white/20 disabled:opacity-50"
               >
                 {passwordLoading
-                  ? "Aggiornamento..."
-                  : "Cambia password"}
+                  ? "{isEnglish ? "Updating..." : "Aggiornamento..."}"
+                  : "{isEnglish ? "Change password" : "Cambia password"}"}
               </button>
 
             </div>
@@ -522,29 +525,29 @@ export default function Profile() {
         <section className="rounded-3xl bg-white/5 border border-white/10 p-6 mb-6">
 
           <h2 className="text-xl font-black mb-6">
-            🏆 Le tue statistiche
+            🏆 {isEnglish ? "Your statistics" : "Le tue statistiche"}
           </h2>
 
           {loading ? (
             <div className="text-center text-slate-400 py-10">
-              Caricamento statistiche...
+              {isEnglish ? "Loading statistics..." : "Caricamento statistiche..."}
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
 
                 <StatCard
-                  label="Partite"
+                  label={isEnglish ? "Matches" : "Partite"}
                   value={stats.total}
                 />
 
                 <StatCard
-                  label="Vittorie"
+                  label={isEnglish ? "Wins" : "Vittorie"}
                   value={stats.wins}
                 />
 
                 <StatCard
-                  label="Sconfitte"
+                  label={isEnglish ? "Losses" : "Sconfitte"}
                   value={stats.losses}
                 />
 
@@ -633,7 +636,7 @@ export default function Profile() {
           <section className="rounded-3xl bg-white/5 border border-white/10 p-6 mb-6">
 
             <h2 className="text-xl font-black mb-5">
-              🧬 Il tuo Sognatore
+              🧬 {isEnglish ? "Your Dreamer" : "Il tuo Sognatore"}
             </h2>
 
             <div className="flex items-center gap-5">
@@ -653,11 +656,11 @@ export default function Profile() {
                 </div>
 
                 <div className="text-sm text-slate-400 mt-1">
-                  Il Sognatore che hai utilizzato di più
+                  {isEnglish ? "Your most used Dreamer" : "Il Sognatore che hai utilizzato di più"}
                 </div>
 
                 <div className="text-amber-400 font-black mt-2">
-                  {favoriteSognatore.count} utilizzi
+                  {favoriteSognatore.count} {isEnglish ? "uses" : "utilizzi"}
                   {" · "}
                   {favoriteSognatore.percentage}%
                 </div>
@@ -676,21 +679,20 @@ export default function Profile() {
         <section className="rounded-3xl bg-white/5 border border-white/10 p-6 mb-8">
 
           <h2 className="text-xl font-black mb-2">
-            📊 Utilizzo Sognatori
+            📊 {isEnglish ? "Dreamer Usage" : "Utilizzo Sognatori"}
           </h2>
 
           <p className="text-xs text-slate-400 mb-6">
-            Percentuale calcolata sulle tue squadre utilizzate
-            nelle partite realmente registrate.
+            {isEnglish ? "Percentage based on the Dreamers in your teams across recorded matches." : "Percentuale calcolata sulle tue squadre utilizzate nelle partite realmente registrate."}
           </p>
 
           {loading ? (
             <div className="text-slate-400 text-sm">
-              Caricamento...
+              {isEnglish ? "Loading..." : "Caricamento..."}
             </div>
           ) : stats.usageTotal === 0 ? (
             <div className="text-center py-8 text-slate-500">
-              Non hai ancora disputato partite registrate.
+              {isEnglish ? "You have not played any recorded matches yet." : "Non hai ancora disputato partite registrate."}
             </div>
           ) : (
             <div className="space-y-4">
@@ -713,7 +715,7 @@ export default function Profile() {
                       </span>
 
                       <span className="text-xs text-slate-400">
-                        {sognatore.count} utilizzi ·{" "}
+                        {sognatore.count} {isEnglish ? "uses" : "utilizzi"} ·{" "}
                         {sognatore.percentage}%
                       </span>
 
@@ -753,7 +755,7 @@ export default function Profile() {
             to="/"
             className="inline-block px-6 py-3 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition font-bold"
           >
-            ← Torna alla Home
+            ← {isEnglish ? "Back to Home" : "Torna alla Home"}
           </Link>
 
         </div>
