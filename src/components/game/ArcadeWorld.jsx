@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/lib/i18n";
 
 const MAPS = {
   1: [
@@ -201,6 +202,8 @@ const STAGE_NPCS = {
     name: "NPC 1",
     emoji: "🌳",
     world: "La Foresta dei Sognatori",
+    worldEn: "The Dreamers’ Forest",
+    dialogueEn: "Welcome to the Dreamers’ Forest. Every choice can change your path. Are you ready to put your true nature to the test?",
     dialogue:
       "Benvenuto nella Foresta dei Sognatori. Qui ogni scelta può cambiare il tuo cammino. Sei pronto/a a mettere alla prova la tua natura?",
   },
@@ -209,6 +212,8 @@ const STAGE_NPCS = {
     name: "NPC 2",
     emoji: "👹",
     world: "Il Vulcano dei Demoni",
+    worldEn: "The Demons’ Volcano",
+    dialogueEn: "Strength alone is not enough here. You must have the courage to change when things get tough. Let’s see what you’re made of.",
     dialogue:
       "Qui dentro non basta essere forte. Devi avere il coraggio di cambiare quando le cose si fanno difficili. Vediamo quanto vali.",
   },
@@ -217,6 +222,8 @@ const STAGE_NPCS = {
     name: "NPC 3",
     emoji: "🌊",
     world: "Splash",
+    worldEn: "Splash",
+    dialogueEn: "Water is always changing direction… just like an auction. Don’t get caught off guard, and think carefully about your next move!",
     dialogue:
       "L'acqua cambia continuamente direzione... proprio come un'asta. Non farti sorprendere e pensa bene alla tua prossima mossa!",
   },
@@ -225,6 +232,8 @@ const STAGE_NPCS = {
     name: "NPC 4",
     emoji: "🍬",
     world: "Sniakerville",
+    worldEn: "Sniakerville",
+    dialogueEn: "Everything looks sweet and peaceful, doesn’t it? Don’t trust appearances. The sweetest things can be the most dangerous.",
     dialogue:
       "Sembra tutto dolce e tranquillo, vero? Non fidarti delle apparenze. Le cose più dolci posso essere le più pericolose.",
   },
@@ -233,6 +242,8 @@ const STAGE_NPCS = {
     name: "NPC 5",
     emoji: "☁️",
     world: "Sulle nuvole",
+    worldEn: "Above the Clouds",
+    dialogueEn: "From up here, everything seems easier. How long can you keep your head in the clouds without losing your mind?",
     dialogue:
       "Da quassù tutto sembra più semplice. Quanto riuscirai a tenere la testa tra le nuvole senza impazzire?",
   },
@@ -241,6 +252,8 @@ const STAGE_NPCS = {
     name: "NPC 6",
     emoji: "🤖",
     world: "Bug City",
+    worldEn: "Bug City",
+    dialogueEn: "System online. Opponent analysis complete. Predicted error: underestimating the auction. Victory assured.",
     dialogue:
       "Sistema attivo. Analisi dell'avversario completata. Errore previsto: sottovalutare l'asta. Vittoria assicurata",
   },
@@ -249,6 +262,8 @@ const STAGE_NPCS = {
     name: "NPC 7",
     emoji: "🏠",
     world: "Una piccola casa",
+    worldEn: "A Little House",
+    dialogueEn: "You let this little house fool you. The strategy here is different… use your best ones. Don’t worry, you’ll be scared until the moment you finally lose.",
     dialogue:
       "Ti sei lasciato/a ingannare da questa casetta. Qui si gioca con una strategia diversa...usare i migliori, tranquillo/a avrai paura fino a quando finalmente avrai perso",
   },
@@ -257,6 +272,8 @@ const STAGE_NPCS = {
     name: "NPC 8",
     emoji: "🧙",
     world: "Accademia dei Sognatori",
+    worldEn: "Dreamers’ Academy",
+    dialogueEn: "Welcome to the Academy. You’ve come a long way. Here, we don’t just learn how to fight: we learn to transcend our reality. I made this same journey a long time ago.",
     dialogue:
       "Benvenuto all'Accademia , hai fatto un bel viaggio. Qui non si impara soltanto a combattere: si impara a trascendere la tua realtà. Ho fatto il tuo stesso viaggio, tempo fa",
   },
@@ -265,6 +282,8 @@ const STAGE_NPCS = {
     name: "NPC 9",
     emoji: "👑",
     world: "Mimmiland",
+    worldEn: "Mimmiland",
+    dialogueEn: "Prove that you are truly worthy of entering the heart of Mimmiland. Defeat me and become part of the world of the Dreamers.",
     dialogue:
       "Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland. Battimi ed entra davvero a far parte del mondo dei Sognatori",
   },
@@ -272,6 +291,8 @@ const STAGE_NPCS = {
     name: "Mangu",
     emoji: "🧙",
     world: "Dream Arena",
+    worldEn: "Dream Arena",
+    dialogueEn: "Welcome to the Dream Arena! I’m Mangu. I have 300 credits, and I’m not here to give anything away: I’m very interested in Spinoff and Pepe. Let’s see if you can beat me at the auction too.",
     dialogue:
       "Benvenuto nella Dream Arena! Sono Mangu. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
   }, 
@@ -555,7 +576,7 @@ function DreamArenaStage10({
         <div className="absolute left-1/2 top-[32%] -translate-x-1/2 text-amber-300 text-xl font-black animate-bounce z-40">
           ▼
           <div className="text-[10px] whitespace-nowrap bg-black/80 px-2 py-1">
-            PREMI E PER PARLARE
+            PRESS E TO TALK
           </div>
         </div>
       )}
@@ -579,10 +600,14 @@ export default function ArcadeWorld({
   onStartAuction,
   onBack,
 }) {
-   const MAP = MAPS[stage] || MAPS[1];
+  const { lang } = useLanguage();
+  const isEnglish = lang === "en";
+  const MAP = MAPS[stage] || MAPS[1];
   const isStage10 = stage === 10;
 
-  const npc = STAGE_NPCS[stage] || STAGE_NPCS[1]; 
+  const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
+  const dialogue = isEnglish ? (npc.dialogueEn || npc.dialogue) : npc.dialogue;
+  const worldName = isEnglish ? (npc.worldEn || npc.world) : npc.world; 
 
   const npcName = npcNames?.[stage] || npc.name;
   const npcImage = npcImages?.[stage];
@@ -684,7 +709,7 @@ export default function ArcadeWorld({
             </div>
 
             <h1 className="text-2xl font-black">
-              {npc.world}
+              {worldName}
             </h1>
           </div>
 
@@ -692,7 +717,7 @@ export default function ArcadeWorld({
             onClick={onBack}
             className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm"
           >
-            ← Indietro
+            ← Back
           </button>
 
         </div>
@@ -890,11 +915,11 @@ export default function ArcadeWorld({
 
         <div className="hidden sm:block text-center mt-4 text-xs text-slate-400">
 
-          <b>WASD</b> / <b>FRECCE</b> per muoverti
+          <><b>WASD</b> / <b>ARROW KEYS</b> to move</>
 
           {nearNpc && (
             <span className="ml-3 text-amber-400 font-bold">
-              • Premi E per parlare
+              • Press E to talk
             </span>
           )}
 
@@ -975,7 +1000,7 @@ export default function ArcadeWorld({
                 onClick={talkToNpc}
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                💬 PARLA CON {npcName}
+                💬 TALK TO {npcName}
               </button>
 
             </motion.div>
@@ -1025,14 +1050,14 @@ export default function ArcadeWorld({
               </div>
 
               <p className="text-sm text-slate-300 mb-5">
-                “{npc.dialogue}”
+                “{dialogue}”
               </p>
 
               <button
                 onClick={() => onStartAuction(stage)}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 font-black hover:brightness-110 transition"
               >
-                🔮 INIZIA L'ASTA
+                🔮 START AUCTION
               </button>
 
             </motion.div>
