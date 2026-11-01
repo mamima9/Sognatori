@@ -30,6 +30,7 @@ import { SognatoreImage, FactionBadge } from "./HealthBar";
 import TypeChartTable from "./TypeChartTable";
 import { useCountdown, TimerBar } from "./Timer";
 import { useAuth } from "@/lib/AuthContext";
+import { supabase } from "@/lib/supabase/client";
 import AbandonButton from "./AbandonButton";
 import { modeLabel } from "@/lib/gameConstants";
 import { useLanguage } from "@/lib/i18n";
@@ -115,6 +116,8 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [showFullLog, setShowFullLog] = useState(false);
+  const [missionCompletionNotice, setMissionCompletionNotice] = useState(false);
+  const processedMissionMatchRef = useRef(null);
   const [animStep, setAnimStep] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
 
@@ -226,6 +229,60 @@ const player2Team = resolveTeam(
   match?.player2_team_ids,
   match?.player2_team
 );
+ 
+  // Missione 2: tre vittorie competitive consecutive con Riwupido e Nina.
+  // Ogni match viene registrato una sola volta per evitare doppi conteggi.
+  useEffect(() => {
+    if (
+      !currentUser ||
+      !match ||
+      match.status !== "done" ||
+      match.mode !== "competitive" ||
+      !match.id ||
+      processedMissionMatchRef.current === match.id
+    ) return;
+
+    const metadata = currentUser.user_metadata || {};
+    const processedMatches = Array.isArray(metadata.riwupido_nina_processed_matches)
+      ? metadata.riwupido_nina_processed_matches
+      : [];
+
+    if (processedMatches.includes(match.id)) {
+      processedMissionMatchRef.current = match.id;
+      return;
+    }
+
+    processedMissionMatchRef.current = match.id;
+
+    const myTeam = mySide === "player1" ? player1Team : player2Team;
+    const hasRequiredPair = myTeam.some((s) => s?.id === "riwupido") &&
+      myTeam.some((s) => s?.id === "nina");
+    const won = match.winner === mySide;
+    const alreadyUnlocked = Boolean(metadata.riwupido_nina_lore_unlocked);
+    const previousStreak = Number(metadata.riwupido_nina_competitive_streak || 0);
+    const nextStreak = alreadyUnlocked ? 3 : (won && hasRequiredPair ? Math.min(3, previousStreak + 1) : 0);
+    const newlyUnlocked = !alreadyUnlocked && nextStreak >= 3;
+    const nextProcessedMatches = [...processedMatches, match.id].slice(-30);
+
+    supabase.auth.updateUser({
+      data: {
+        riwupido_nina_competitive_streak: nextStreak,
+        riwupido_nina_lore_unlocked: alreadyUnlocked || newlyUnlocked,
+        riwupido_nina_processed_matches: nextProcessedMatches,
+      },
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Errore aggiornamento Missione 2:", error);
+        processedMissionMatchRef.current = null;
+        return;
+      }
+      if (newlyUnlocked) setMissionCompletionNotice(true);
+    }).catch((error) => {
+      console.error("Errore aggiornamento Missione 2:", error);
+      processedMissionMatchRef.current = null;
+    });
+  }, [currentUser?.id, match?.id, match?.status, match?.winner, match?.mode, mySide, player1Team, player2Team]);
+
 
   /*
    * ============================================================
@@ -2162,6 +2219,19 @@ const prematchTimeLeft =
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 px-6 py-10">
+        {missionCompletionNotice && (
+          <div className="w-full max-w-md rounded-2xl border border-emerald-400/50 bg-emerald-900/30 p-4 mb-6 shadow-xl">
+            <div className="text-xs font-black uppercase tracking-widest text-emerald-300">
+              {lang === "en" ? "MISSION COMPLETED!" : "MISSIONE COMPLETATA!"}
+            </div>
+            <div className="font-bold text-white mt-1">
+              {lang === "en" ? "Mission 2: Unlock Riwupido's Lore" : "Missione 2: Sblocca Lore Riwupido"}
+            </div>
+            <div className="text-xs text-slate-300 mt-1">
+              {lang === "en" ? "Riwupido's lore is now unlocked." : "La Lore di Riwupido è stata sbloccata."}
+            </div>
+          </div>
+        )}
         <div className="text-7xl mb-4">
           {won ? "🏆" : "💀"}
         </div>
