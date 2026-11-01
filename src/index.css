@@ -91,3 +91,11 @@
     @apply bg-background text-foreground font-body;
   }
 }
+
+/* Mobile: prevent pull-to-refresh / overscroll gestures from reloading or
+   navigating away while the user is interacting with the game. */
+html,
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
