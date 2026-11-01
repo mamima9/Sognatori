@@ -251,12 +251,12 @@ Born from the community, he grows through belief. He is the perfect partner to t
   },
 
   riwupido: {
-    it: `Riwupido è il braccio destro di Nina, addetto principalmente a far sbocciare l'amore.
+    it: `Riwupido è il braccio destro di Nina, addetta principalmente a far sbocciare l'amore.
 
-È un sognatore pungente e poco riservato. Crede che Nina possa resettare il mondo.`,
+È una sognatrice pungente e poco riservata. Crede che Nina possa resettare il mondo.`,
     en: `Riwupido is Nina's right-hand companion, mainly tasked with making love blossom.
 
-He is a sharp-tongued and outspoken Dreamer. He believes Nina can reset the world.`,
+She is a sharp-tongued and outspoken Dreamer. She believes Nina can reset the world.`,
   },
 
   shoboshi: {
