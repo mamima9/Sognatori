@@ -426,7 +426,7 @@ const player2Team = resolveTeam(
           const highestOtherCount = Math.max(0, ...Object.entries(counts)
             .filter(([id]) => id !== "taomarco")
             .map(([, count]) => count));
-          taomarcoIsMostUsed = taoCount > 0 && taoCount >= highestOtherCount;
+          taomarcoIsMostUsed = taoCount > 0 && taoCount > highestOtherCount;
         }
       }
       data.taomarco_is_most_used = taomarcoIsMostUsed;
