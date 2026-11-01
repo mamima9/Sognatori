@@ -147,6 +147,7 @@ arcade_best_streak: newBest,
   const [popups, setPopups] = useState([]);
   const [showTypeChart, setShowTypeChart] = useState(false);
   const [showBench, setShowBench] = useState(false);
+  const [showFullLog, setShowFullLog] = useState(false);
   const [animLogStart, setAnimLogStart] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(0);
@@ -843,6 +844,13 @@ while (remainingActions.length > 0) {
           </button>
 
           <button
+            onClick={() => setShowFullLog(true)}
+            className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
+          >
+            📜 {lang === "en" ? "Full log" : "Log completo"}
+          </button>
+
+          <button
             onClick={() => setShowBench(true)}
             className="text-[10px] px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition"
           >
@@ -1348,6 +1356,23 @@ while (remainingActions.length > 0) {
           )}
 
       </div>
+
+      {showFullLog && (
+        <div className="fixed inset-0 z-[60] bg-black/85 flex items-center justify-center p-4" onClick={() => setShowFullLog(false)}>
+          <div className="bg-slate-900 rounded-2xl border border-amber-500/30 p-4 max-w-2xl w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-amber-400">📜 {lang === "en" ? "Complete battle log" : "Log completo della battaglia"}</h3>
+              <button onClick={() => setShowFullLog(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+            </div>
+            <div className="space-y-1">
+              {log.filter(l => !l.startsWith("__TURN_")).map((entry, i) => (
+                <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>
+              ))}
+              {log.filter(l => !l.startsWith("__TURN_")).length === 0 && <p className="text-sm text-slate-400">{lang === "en" ? "No events yet." : "Nessun evento registrato."}</p>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showBench && (
         <div
