@@ -20,6 +20,8 @@ export default function Home() {
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
   const [result, setResult] = useState(null);
+  const [battleLog, setBattleLog] = useState([]);
+  const [showResultLog, setShowResultLog] = useState(false);
   const [arcadePortrait, setArcadePortrait] = useState(null);
   const [arcadeIntro, setArcadeIntro] = useState(false);
 
@@ -649,8 +651,10 @@ export default function Home() {
   stage={arcadeStage}
   playerTeam={teams.playerTeam}
   enemyTeam={teams.enemyTeam}
-              onEnd={(r) => {
+              onEnd={(r, fullLog = []) => {
                 setResult(r);
+                setBattleLog(fullLog);
+                setShowResultLog(false);
                 setTeams(null);
 
                 if (r === "win") {
@@ -724,6 +728,31 @@ export default function Home() {
             {result === "win" && arcadeStage === 10 && (
               <div className="text-amber-400 font-bold text-lg mb-8">
                 🎁 Otterrai una ricompensa!
+              </div>
+            )}
+
+            <div className="flex flex-wrap justify-center gap-3 mb-4">
+              <button
+                onClick={() => setShowResultLog(true)}
+                className="px-6 py-3 rounded-full bg-white/10 font-bold hover:bg-white/20 transition"
+              >
+                📜 {lang === "en" ? "View complete log" : "Visualizza log completo"}
+              </button>
+            </div>
+
+            {showResultLog && (
+              <div className="fixed inset-0 z-[70] bg-black/85 flex items-center justify-center p-4" onClick={() => setShowResultLog(false)}>
+                <div className="bg-slate-900 rounded-2xl border border-amber-500/30 p-4 max-w-2xl w-full max-h-[85vh] overflow-y-auto text-left" onClick={e => e.stopPropagation()}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-amber-400">📜 {lang === "en" ? "Complete battle log" : "Log completo della battaglia"}</h3>
+                    <button onClick={() => setShowResultLog(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+                  </div>
+                  <div className="space-y-1">
+                    {battleLog.filter(entry => !entry.startsWith("__TURN_")).map((entry, i) => (
+                      <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
