@@ -22,6 +22,23 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
   const [showResultLog, setShowResultLog] = useState(false);
+
+  const groupedLog = (entries) => {
+    const groups = [];
+    let current = { turn: 0, entries: [] };
+    (entries || []).forEach((entry) => {
+      const marker = typeof entry === "string" ? entry.match(/^__TURN_(\d+)__$/) : null;
+      if (marker) {
+        if (current.entries.length || current.turn > 0) groups.push(current);
+        current = { turn: Number(marker[1]), entries: [] };
+      } else if (entry) {
+        current.entries.push(entry);
+      }
+    });
+    if (current.entries.length || current.turn > 0) groups.push(current);
+    return groups;
+  };
+
   const [arcadePortrait, setArcadePortrait] = useState(null);
   const [arcadeIntro, setArcadeIntro] = useState(false);
 
@@ -748,8 +765,15 @@ export default function Home() {
                     <button onClick={() => setShowResultLog(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
                   </div>
                   <div className="space-y-1">
-                    {battleLog.filter(entry => !entry.startsWith("__TURN_")).map((entry, i) => (
-                      <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>
+                    {groupedLog(battleLog).map((group, groupIndex) => (
+                      <section key={group.turn || groupIndex} className="mb-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-amber-300 mb-2 border-b border-amber-500/20 pb-1">
+                          {group.turn ? (lang === "en" ? `Turn ${group.turn}` : `Turno ${group.turn}`) : (lang === "en" ? "Match start" : "Inizio partita")}
+                        </h4>
+                        <div className="space-y-1">
+                          {group.entries.map((entry, i) => <div key={i} className="text-xs text-slate-200 bg-white/5 rounded-lg px-3 py-2">{entry}</div>)}
+                        </div>
+                      </section>
                     ))}
                   </div>
                 </div>
