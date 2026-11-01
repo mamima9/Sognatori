@@ -33,6 +33,7 @@ export default function BattlePokemon({ s, side, popup }) {
   if (!s) return <div className="w-full" />;
 
   const fainted = s.fainted;
+  const statLabels = lang === "en" ? ["ATK", "DEF", "SPE"] : ["ATT", "DIF", "VEL"];
   const eff = popup
     ? EFFICACY[lang][popup.efficacy]
     : null;
@@ -144,15 +145,15 @@ export default function BattlePokemon({ s, side, popup }) {
 
         <div className="flex justify-center gap-0.5 mt-1 text-[8px]">
           <span className="bg-red-500/20 rounded px-1">
-          A{effAtt(s)}
+          {statLabels[0]} {effAtt(s)}
           </span>
 
           <span className="bg-blue-500/20 rounded px-1">
-            D{s.dif + (s.statMods?.dif || 0)}
+            {statLabels[1]} {s.dif + (s.statMods?.dif || 0)}
           </span>
 
           <span className="bg-green-500/20 rounded px-1">
-            V{s.vel + (s.statMods?.vel || 0)}
+            {statLabels[2]} {s.vel + (s.statMods?.vel || 0)}
           </span>
         </div>
 
