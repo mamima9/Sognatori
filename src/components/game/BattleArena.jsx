@@ -122,6 +122,31 @@ arcade_best_streak: newBest,
     } catch (error) {
       console.error("Arcade streak update failed:", error);
     }
+
+    // Missione 1: tre vittorie Arcade consecutive con Pepe nella squadra.
+    try {
+      const hasPepe = playerTeam.some(
+        (s) => String(s?.id || "").toLowerCase() === "pepe"
+      );
+      const previousStreak = Number(user.user_metadata?.pepe_arcade_streak || 0);
+      const alreadyUnlocked = Boolean(user.user_metadata?.pepe_lore_unlocked);
+      const nextStreak = alreadyUnlocked
+        ? 3
+        : result === "win" && hasPepe
+          ? Math.min(3, previousStreak + 1)
+          : 0;
+      const unlocked = alreadyUnlocked || nextStreak >= 3;
+
+      const { error: missionError } = await supabase.auth.updateUser({
+        data: {
+          pepe_arcade_streak: nextStreak,
+          pepe_lore_unlocked: unlocked,
+        },
+      });
+      if (missionError) throw missionError;
+    } catch (error) {
+      console.error("Mission progress update failed:", error);
+    }
   };
 
   const [playerActive, setPlayerActive] = useState(
