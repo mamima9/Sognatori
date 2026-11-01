@@ -20,8 +20,8 @@ export default function Profile() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [username, set{isEnglish ? "Username" : "Username"}] = useState("");
-  const [new{isEnglish ? "Username" : "Username"}, setNew{isEnglish ? "Username" : "Username"}] = useState("");
+  const [username, setUsername] = useState("");
+  const [newUsername, setNewUsername] = useState("");
 
   const [newEmail, setNewEmail] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -40,14 +40,14 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return;
 
-    const current{isEnglish ? "Username" : "Username"} =
+    const currentUsername =
       user.user_metadata?.username ||
       user.user_metadata?.full_name ||
       user.email?.split("@")[0] ||
       "";
 
-    set{isEnglish ? "Username" : "Username"}(current{isEnglish ? "Username" : "Username"});
-    setNew{isEnglish ? "Username" : "Username"}(current{isEnglish ? "Username" : "Username"});
+    setUsername(currentUsername);
+    setNewUsername(currentUsername);
   }, [user]);
 
   // ============================================================
@@ -190,11 +190,11 @@ export default function Profile() {
   // CAMBIO USERNAME
   // ============================================================
 
-  const change{isEnglish ? "Username" : "Username"} = async () => {
+  const changeUsername = async () => {
     setMessage("");
     setError("");
 
-    const value = new{isEnglish ? "Username" : "Username"}.trim();
+    const value = newUsername.trim();
 
     if (!value) {
       setError(isEnglish ? "Enter a username." : "Inserisci un username.");
@@ -211,14 +211,11 @@ export default function Profile() {
 
       if (error) throw error;
 
-      set{isEnglish ? "Username" : "Username"}(value);
-      setMessage(isEnglish ? "{isEnglish ? "Username" : "Username"} updated." : "{isEnglish ? "Username" : "Username"} aggiornato.");
+      setUsername(value);
+      setMessage(isEnglish ? "Username updated." : "Username aggiornato.");
     } catch (err) {
       console.error(err);
-      setError(
-        err?.message ||
-          isEnglish ? "Error updating username." : "Errore durante il cambio username."
-      );
+      setError(err?.message || (isEnglish ? "Error updating username." : "Errore durante il cambio username."));
     }
   };
 
@@ -261,10 +258,7 @@ export default function Profile() {
       );
     } catch (err) {
       console.error(err);
-      setError(
-        err?.message ||
-          isEnglish ? "Error changing email." : "Errore durante il cambio email."
-      );
+      setError(err?.message || (isEnglish ? "Error changing email." : "Errore durante il cambio email."));
     } finally {
       setEmailLoading(false);
     }
@@ -308,10 +302,7 @@ export default function Profile() {
       setMessage(isEnglish ? "Password updated." : "Password aggiornata.");
     } catch (err) {
       console.error(err);
-      setError(
-        err?.message ||
-          isEnglish ? "Error changing password." : "Errore durante il cambio password."
-      );
+      setError(err?.message || (isEnglish ? "Error changing password." : "Errore durante il cambio password."));
     } finally {
       setPasswordLoading(false);
     }
@@ -411,21 +402,21 @@ export default function Profile() {
 
             <div>
               <label className="block text-xs uppercase tracking-widest text-slate-400 mb-2">
-                {isEnglish ? "Username" : "Username"}
+                Username
               </label>
 
               <div className="flex flex-col sm:flex-row gap-2">
 
                 <input
-                  value={new{isEnglish ? "Username" : "Username"}}
+                  value={newUsername}
                   onChange={(e) =>
-                    setNew{isEnglish ? "Username" : "Username"}(e.target.value)
+                    setNewUsername(e.target.value)
                   }
                   className="flex-1 px-4 py-3 rounded-xl bg-black/30 border border-white/10 outline-none focus:border-amber-400"
                 />
 
                 <button
-                  onClick={change{isEnglish ? "Username" : "Username"}}
+                  onClick={changeUsername}
                   className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold"
                 >
                   Salva
