@@ -242,8 +242,12 @@ After his master died in a fire, Toasty began training the students at the dojo,
   },
 
   pepe: {
-    it: `La storia di Pepe è stata sbloccata. Il suo passato e i segreti che custodisce saranno rivelati qui.`,
-    en: `Pepe's story has been unlocked. His past and the secrets he holds will be revealed here.`,
+    it: `Pepe, il mito collettivo.
+
+Nato dalla community, cresce con la fede. È la spalla perfetta dei Sognatori, ma perde il suo potenziale se dimenticato.`,
+    en: `Pepe, the collective myth.
+
+Born from the community, he grows through belief. He is the perfect partner to the Dreamers, but loses his potential if forgotten.`,
   },
 
   shoboshi: {
