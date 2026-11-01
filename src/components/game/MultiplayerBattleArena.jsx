@@ -116,8 +116,9 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [showSummary, setShowSummary] = useState(false);
   const [showBench, setShowBench] = useState(false);
   const [showFullLog, setShowFullLog] = useState(false);
-  const [missionCompletionNotice, setMissionCompletionNotice] = useState(false);
+  const [missionCompletionNotice, setMissionCompletionNotice] = useState(null);
   const processedMissionMatchRef = useRef(null);
+  const processedCompetitiveCountMatchRef = useRef(null);
   const [animStep, setAnimStep] = useState(0);
   const [turnKey, setTurnKey] = useState(0);
 
@@ -338,6 +339,55 @@ const player2Team = resolveTeam(
 
   const mySide = isHost ? "player1" : "player2";
   const oppSide = isHost ? "player2" : "player1";
+ 
+  // Missione 3: completa 10 partite in Multiplayer competitivo.
+  // Vittorie e sconfitte contano; ogni match viene registrato una sola volta.
+  useEffect(() => {
+    if (
+      !currentUser ||
+      !match ||
+      match.status !== "done" ||
+      match.mode !== "competitive" ||
+      !match.id ||
+      processedCompetitiveCountMatchRef.current === match.id
+    ) return;
+
+    const metadata = currentUser.user_metadata || {};
+    const processedMatches = Array.isArray(metadata.icepadel_competitive_processed_matches)
+      ? metadata.icepadel_competitive_processed_matches
+      : [];
+
+    if (processedMatches.includes(match.id)) {
+      processedCompetitiveCountMatchRef.current = match.id;
+      return;
+    }
+
+    processedCompetitiveCountMatchRef.current = match.id;
+    const alreadyUnlocked = Boolean(metadata.icepadel_lore_unlocked);
+    const previousCount = Number(metadata.icepadel_competitive_matches || 0);
+    const nextCount = alreadyUnlocked ? 10 : Math.min(10, previousCount + 1);
+    const newlyUnlocked = !alreadyUnlocked && nextCount >= 10;
+    const nextProcessedMatches = [...processedMatches, match.id].slice(-100);
+
+    supabase.auth.updateUser({
+      data: {
+        icepadel_competitive_matches: nextCount,
+        icepadel_lore_unlocked: alreadyUnlocked || newlyUnlocked,
+        icepadel_competitive_processed_matches: nextProcessedMatches,
+      },
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Errore aggiornamento Missione 3:", error);
+        processedCompetitiveCountMatchRef.current = null;
+        return;
+      }
+      if (newlyUnlocked) setMissionCompletionNotice(3);
+    }).catch((error) => {
+      console.error("Errore aggiornamento Missione 3:", error);
+      processedCompetitiveCountMatchRef.current = null;
+    });
+  }, [currentUser?.id, match?.id, match?.status, match?.mode]);
+
 
   // Missione 2: tre vittorie competitive consecutive con Riwupido e Nina.
   // Ogni match viene registrato una sola volta per evitare doppi conteggi.
@@ -385,7 +435,7 @@ const player2Team = resolveTeam(
         processedMissionMatchRef.current = null;
         return;
       }
-      if (newlyUnlocked) setMissionCompletionNotice(true);
+      if (newlyUnlocked) setMissionCompletionNotice(2);
     }).catch((error) => {
       console.error("Errore aggiornamento Missione 2:", error);
       processedMissionMatchRef.current = null;
@@ -2225,10 +2275,10 @@ const prematchTimeLeft =
               {lang === "en" ? "MISSION COMPLETED!" : "MISSIONE COMPLETATA!"}
             </div>
             <div className="font-bold text-white mt-1">
-              {lang === "en" ? "Mission 2: Unlock Riwupido's Lore" : "Missione 2: Sblocca Lore Riwupido"}
+              {missionCompletionNotice === 2 ? (lang === "en" ? "Mission 2: Unlock Riwupido's Lore" : "Missione 2: Sblocca Lore Riwupido") : (lang === "en" ? "Mission 3: Unlock Icepadel's Lore" : "Missione 3: Sblocca Lore Icepadel")}
             </div>
             <div className="text-xs text-slate-300 mt-1">
-              {lang === "en" ? "Riwupido's lore is now unlocked." : "La Lore di Riwupido è stata sbloccata."}
+              {missionCompletionNotice === 2 ? (lang === "en" ? "Riwupido's lore is now unlocked." : "La Lore di Riwupido è stata sbloccata.") : (lang === "en" ? "Icepadel's lore is now unlocked." : "La Lore di Icepadel è stata sbloccata.")}
             </div>
           </div>
         )}
