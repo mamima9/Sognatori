@@ -250,6 +250,11 @@ Nato dalla community, cresce con la fede. È la spalla perfetta dei Sognatori, m
 Born from the community, he grows through belief. He is the perfect partner to the Dreamers, but loses his potential if forgotten.`,
   },
 
+  taomarco: {
+    it: `Un ragazzo di periferia, nulla da segnalare. Ah sì mastica shuriken. P.S. Nello stage 3 e nello stage 4 noto più di un dialogo.`,
+    en: `A kid from the outskirts, nothing worth reporting. Oh, right, he chews shuriken. P.S. In stage 3 and stage 4, I notice more than one dialogue.`,
+  },
+
   riwupido: {
     it: `Riwupido è il braccio destro di Nina, addetta principalmente a far sbocciare l'amore.
 
@@ -308,6 +313,7 @@ export default function Lore() {
   const pepeLoreUnlocked = Boolean(user?.user_metadata?.pepe_lore_unlocked);
   const riwupidoLoreUnlocked = Boolean(user?.user_metadata?.riwupido_nina_lore_unlocked);
   const icepadelLoreUnlocked = Boolean(user?.user_metadata?.icepadel_lore_unlocked);
+  const taomarcoLoreUnlocked = Boolean(user?.user_metadata?.taomarco_lore_unlocked);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
@@ -383,7 +389,7 @@ export default function Lore() {
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked);
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked) && (s.id !== "taomarco" || taomarcoLoreUnlocked);
 
               return (
                 <motion.button
