@@ -305,6 +305,7 @@ function DreamArenaStage10({
   npcImage,
   portrait,
   nearNpc,
+  isEnglish,
 }) {
   const pillars = [8, 25, 75, 92];
 
@@ -576,7 +577,7 @@ function DreamArenaStage10({
         <div className="absolute left-1/2 top-[32%] -translate-x-1/2 text-amber-300 text-xl font-black animate-bounce z-40">
           ▼
           <div className="text-[10px] whitespace-nowrap bg-black/80 px-2 py-1">
-            PRESS E TO TALK
+            {isEnglish ? "PRESS E TO TALK" : "PREMI E PER PARLARE"}
           </div>
         </div>
       )}
@@ -717,7 +718,7 @@ export default function ArcadeWorld({
             onClick={onBack}
             className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm"
           >
-            ← Back
+            {isEnglish ? "← Back" : "← Indietro"}
           </button>
 
         </div>
@@ -759,6 +760,7 @@ export default function ArcadeWorld({
     npcImage={npcImage}
     portrait={portrait}
     nearNpc={nearNpc}
+    isEnglish={isEnglish}
   />
 ) : (
   <>
@@ -915,11 +917,11 @@ export default function ArcadeWorld({
 
         <div className="hidden sm:block text-center mt-4 text-xs text-slate-400">
 
-          <><b>WASD</b> / <b>ARROW KEYS</b> to move</>
+          <><b>WASD</b> / <b>{isEnglish ? "ARROW KEYS" : "FRECCE"}</b> {isEnglish ? "to move" : "per muoverti"}</>
 
           {nearNpc && (
             <span className="ml-3 text-amber-400 font-bold">
-              • Press E to talk
+              • {isEnglish ? "Press E to talk" : "Premi E per parlare"}
             </span>
           )}
 
@@ -1000,7 +1002,7 @@ export default function ArcadeWorld({
                 onClick={talkToNpc}
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                💬 TALK TO {npcName}
+                💬 {isEnglish ? "TALK TO" : "PARLA CON"} {npcName}
               </button>
 
             </motion.div>
@@ -1057,7 +1059,7 @@ export default function ArcadeWorld({
                 onClick={() => onStartAuction(stage)}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 font-black hover:brightness-110 transition"
               >
-                🔮 START AUCTION
+                🔮 {isEnglish ? "START AUCTION" : "INIZIA L’ASTA"}
               </button>
 
             </motion.div>
