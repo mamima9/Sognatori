@@ -57,6 +57,7 @@ export default function BattleArena({
   playerTeam,
   enemyTeam,
   onEnd,
+  onMissionComplete,
 }) {
   useEffect(() => {
   setMusicMode("battle");
@@ -144,6 +145,9 @@ arcade_best_streak: newBest,
         },
       });
       if (missionError) throw missionError;
+      if (!alreadyUnlocked && unlocked) {
+        onMissionComplete?.();
+      }
     } catch (error) {
       console.error("Mission progress update failed:", error);
     }
