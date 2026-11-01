@@ -109,17 +109,17 @@ const orderedRoster = SOGNATORI_ORDER
 
 const TYPE_EFFECT_STYLES = {
   se: {
-    label: "SOFFERENTE!",
+    label: "SUPER EFFECTIVE!",
     bg: "#16a34a",
   },
 
   res: {
-    label: "ARGINATO",
+    label: "RESISTED",
     bg: "#f97316",
   },
 
   immune: {
-    label: "INVIOLABILE!",
+    label: "IMMUNE!",
     bg: "#475569",
   },
 };
@@ -129,14 +129,14 @@ const TYPE_EFFECT_STYLES = {
    BADGE TIPO
 ========================================================= */
 
-const TypeBadge = ({ type }) => (
+const TypeBadge = ({ type, isEnglish }) => (
   <span
     className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10"
     style={{
       backgroundColor: `${FACTION_COLORS[type]}CC`,
     }}
   >
-    {type}
+    {isEnglish ? ({ Mago: "Mage", Dolce: "Sweet", Nuvola: "Cloud", Marino: "Marine", Umano: "Human", Luce: "Light", Natura: "Nature", Demone: "Demon", Orso: "Bear", Salato: "Savory" }[type] || type) : type}
   </span>
 );
 
@@ -165,7 +165,7 @@ const EffectBadge = ({ effect }) => {
    COMPONENTE AFFINITÀ
 ========================================================= */
 
-const AffinitySection = ({ type }) => {
+const AffinitySection = ({ type, isEnglish }) => {
 
   /*
    * ATTACCO
@@ -215,7 +215,7 @@ const AffinitySection = ({ type }) => {
         <div className="flex items-center gap-2 mb-2">
 
           <span className="text-[10px] font-black text-red-300 uppercase tracking-widest">
-            ⚔️ Affinità Attacco
+            ⚔️ {isEnglish ? "Attack Affinity" : "Affinità Attacco"}
           </span>
 
         </div>
@@ -234,6 +234,7 @@ const AffinitySection = ({ type }) => {
                 <TypeBadge
                   key={type}
                   type={type}
+                  isEnglish={isEnglish}
                 />
               ))}
 
@@ -290,7 +291,7 @@ const AffinitySection = ({ type }) => {
         <div className="flex items-center gap-2 mb-2">
 
           <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest">
-            🛡️ Affinità Difesa
+            🛡️ {isEnglish ? "Defense Affinity" : "Affinità Difesa"}
           </span>
 
         </div>
@@ -391,13 +392,11 @@ export default function SognatoriStats() {
             </h1>
 
             <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-              Scopri statistiche, affinità e abilità di tutti i Sognatori
-              disponibili.
+              {isEnglish ? "Explore the stats, affinities, and abilities of all available Dreamers." : "Scopri statistiche, affinità e abilità di tutti i Sognatori disponibili."}
             </p>
 
             <p className="text-xs text-slate-500 mt-1">
-              Le informazioni riportate qui sono le stesse utilizzate
-              durante le battaglie.
+              {isEnglish ? "The information shown here is the same as the information used in battles." : "Le informazioni riportate qui sono le stesse utilizzate durante le battaglie."}
             </p>
 
           </div>
@@ -420,7 +419,7 @@ export default function SognatoriStats() {
         <div className="mb-6 rounded-2xl bg-white/5 border border-white/10 p-4">
 
           <div className="text-xs font-black text-amber-400 uppercase tracking-widest mb-3">
-            Statistiche
+            {isEnglish ? "Stats" : "Statistiche"}
           </div>
 
 
@@ -436,7 +435,7 @@ export default function SognatoriStats() {
               </div>
 
               <div className="text-[10px] text-slate-400">
-                Attacco
+                {isEnglish ? "Attack" : "Attacco"}
               </div>
 
             </div>
@@ -451,7 +450,7 @@ export default function SognatoriStats() {
               </div>
 
               <div className="text-[10px] text-slate-400">
-                Difesa
+                {isEnglish ? "Defense" : "Difesa"}
               </div>
 
             </div>
@@ -466,7 +465,7 @@ export default function SognatoriStats() {
               </div>
 
               <div className="text-[10px] text-slate-400">
-                Velocità
+                {isEnglish ? "Speed" : "Velocità"}
               </div>
 
             </div>
@@ -535,7 +534,7 @@ export default function SognatoriStats() {
                       s.tipo
                     )}`}
                   >
-                    {s.tipo}
+                    {isEnglish ? ({ Mago: "Mage", Dolce: "Sweet", Nuvola: "Cloud", Marino: "Marine", Umano: "Human", Luce: "Light", Natura: "Nature", Demone: "Demon", Orso: "Bear", Salato: "Savory" }[s.tipo] || s.tipo) : s.tipo}
                   </span>
 
                 </div>
@@ -626,7 +625,7 @@ export default function SognatoriStats() {
                   <div className="pt-3 border-t border-white/10">
 
                     <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">
-                      Abilità 2
+                      {isEnglish ? "Ability 2" : "Abilità 2"}
                     </div>
 
                     <div className="text-sm font-bold text-white">
@@ -646,7 +645,7 @@ export default function SognatoriStats() {
                     AFFINITÀ DEL SOGNATORE
                 ================================================= */}
 
-                <AffinitySection type={s.tipo} />
+                <AffinitySection type={s.tipo} isEnglish={isEnglish} />
 
               </div>
 
