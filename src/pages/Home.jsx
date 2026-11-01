@@ -22,6 +22,7 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
   const [showResultLog, setShowResultLog] = useState(false);
+  const [missionNotification, setMissionNotification] = useState(null);
 
   const groupedLog = (entries) => {
     const groups = [];
@@ -103,6 +104,33 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+      {missionNotification && (
+        <motion.div
+          initial={{ opacity: 0, y: -30, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md rounded-2xl border border-emerald-400/50 bg-slate-900/95 shadow-2xl shadow-emerald-900/40 p-4"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-start gap-3">
+            <div className="text-3xl">🏆</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-black uppercase tracking-widest text-emerald-300">
+                {lang === "en" ? "MISSION COMPLETED!" : "MISSIONE COMPLETATA!"}
+              </div>
+              <div className="font-bold text-white mt-1">
+                {missionNotification}
+              </div>
+              <div className="text-xs text-slate-300 mt-1">
+                {lang === "en" ? "Pepe's lore is now unlocked." : "La Lore di Pepe è stata sbloccata."}
+              </div>
+            </div>
+            <button onClick={() => setMissionNotification(null)} className="text-slate-400 hover:text-white" aria-label={lang === "en" ? "Close notification" : "Chiudi notifica"}>✕</button>
+          </div>
+        </motion.div>
+      )}
+
 
       <AnimatePresence mode="wait">
 
@@ -761,6 +789,10 @@ export default function Home() {
   stage={arcadeStage}
   playerTeam={teams.playerTeam}
   enemyTeam={teams.enemyTeam}
+              onMissionComplete={() => {
+                setMissionNotification(lang === "en" ? "Unlock Pepe's Lore" : "Sblocca Lore Pepe");
+                window.setTimeout(() => setMissionNotification(null), 7000);
+              }}
               onEnd={(r, fullLog = []) => {
                 setResult(r);
                 setBattleLog(fullLog);
