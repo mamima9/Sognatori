@@ -145,7 +145,7 @@ const TypeBadge = ({ type, isEnglish }) => (
    BADGE EFFETTO
 ========================================================= */
 
-const EffectBadge = ({ effect }) => {
+const EffectBadge = ({ effect, isEnglish }) => {
   const style = TYPE_EFFECT_STYLES[effect];
 
   return (
@@ -155,7 +155,7 @@ const EffectBadge = ({ effect }) => {
         color: style.bg,
       }}
     >
-      {style.label}
+      {isEnglish ? style.label : ({ se: "SOFFERENTE!", res: "ARGINATO", immune: "INVIOLABILE!" }[effect])}
     </span>
   );
 };
@@ -228,7 +228,7 @@ const AffinitySection = ({ type, isEnglish }) => {
           {strongAttack.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
 
-              <EffectBadge effect="se" />
+              <EffectBadge effect="se" isEnglish={isEnglish} />
 
               {strongAttack.map((type) => (
                 <TypeBadge
@@ -247,12 +247,13 @@ const AffinitySection = ({ type, isEnglish }) => {
           {resistedAttack.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
 
-              <EffectBadge effect="res" />
+              <EffectBadge effect="res" isEnglish={isEnglish} />
 
               {resistedAttack.map((type) => (
                 <TypeBadge
                   key={type}
                   type={type}
+                  isEnglish={isEnglish}
                 />
               ))}
 
@@ -265,7 +266,7 @@ const AffinitySection = ({ type, isEnglish }) => {
           {immuneAttack.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
 
-              <EffectBadge effect="immune" />
+              <EffectBadge effect="immune" isEnglish={isEnglish} />
 
               {immuneAttack.map((type) => (
                 <TypeBadge
