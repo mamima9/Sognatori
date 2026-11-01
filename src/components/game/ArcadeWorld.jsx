@@ -197,6 +197,23 @@ const NPC_POSITION = {
   y: 9,
 };
 
+// NPC segreti: non vengono disegnati sulla mappa, ma si possono incontrare
+// esplorando le coordinate indicate.
+const HIDDEN_NPCS = {
+  3: {
+    x: 16,
+    y: 5,
+    dialogue: "top usage : cancucc nina Deb",
+    dialogueEn: "top usage : cancucc nina Deb",
+  },
+  4: {
+    x: 16,
+    y: 12,
+    dialogue: "Il Genesis sta collassando , la fazione degli umani è in difficoltà e se la fazione degli umani sparisce , si rompe l equilibrio e tutti i sognatori saranno in pericolo",
+    dialogueEn: "Genesis is collapsing. The human faction is in trouble, and if the human faction disappears, the balance will be broken and all Dreamers will be in danger.",
+  },
+};
+
 const STAGE_NPCS = {
   1: {
     name: "NPC 1",
@@ -615,7 +632,10 @@ export default function ArcadeWorld({
 
   const [player, setPlayer] = useState(PLAYER_START);
   const [nearNpc, setNearNpc] = useState(false);
+  const [nearHiddenNpc, setNearHiddenNpc] = useState(false);
   const [talking, setTalking] = useState(false);
+  const [talkingToHiddenNpc, setTalkingToHiddenNpc] = useState(false);
+  const hiddenNpc = HIDDEN_NPCS[stage];
 
   const isWalkable = (x, y) => {
     if (!MAP[y] || !MAP[y][x]) return false;
@@ -631,6 +651,11 @@ export default function ArcadeWorld({
     return distance <= 1;
   };
 
+  const checkHiddenNpcDistance = (x, y) => {
+    if (!hiddenNpc) return false;
+    return Math.abs(x - hiddenNpc.x) + Math.abs(y - hiddenNpc.y) <= 1;
+  };
+
   const movePlayer = (dx, dy) => {
     setPlayer((current) => {
       const nextX = current.x + dx;
@@ -641,6 +666,7 @@ export default function ArcadeWorld({
       }
 
       setNearNpc(checkNpcDistance(nextX, nextY));
+      setNearHiddenNpc(checkHiddenNpcDistance(nextX, nextY));
 
       return {
         x: nextX,
@@ -650,7 +676,12 @@ export default function ArcadeWorld({
   };
 
   const talkToNpc = () => {
+    if (nearHiddenNpc) {
+      setTalkingToHiddenNpc(true);
+      return;
+    }
     if (nearNpc) {
+      setTalkingToHiddenNpc(false);
       setTalking(true);
     }
   };
@@ -981,7 +1012,7 @@ export default function ArcadeWorld({
 
         <AnimatePresence>
 
-          {nearNpc && !talking && (
+          {(nearNpc || nearHiddenNpc) && !talking && !talkingToHiddenNpc && (
             <motion.div
               initial={{
                 opacity: 0,
@@ -1002,12 +1033,38 @@ export default function ArcadeWorld({
                 onClick={talkToNpc}
                 className="px-8 py-3 rounded-full bg-amber-500 text-slate-950 font-black shadow-lg hover:brightness-110 active:scale-95 transition"
               >
-                💬 {isEnglish ? "TALK TO" : "PARLA CON"} {npcName}
+                💬 {isEnglish ? "TALK" : "PARLA"} {nearHiddenNpc ? (isEnglish ? "TO THE STRANGER" : "CON LO SCONOSCIUTO") : npcName}
               </button>
 
             </motion.div>
           )}
 
+        </AnimatePresence>
+
+        {/* DIALOGO NPC SEGRETO */}
+
+        <AnimatePresence>
+          {talkingToHiddenNpc && hiddenNpc && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="mt-5 mx-auto max-w-md rounded-2xl bg-slate-950 border border-cyan-400/50 p-5 text-center shadow-2xl"
+            >
+              <div className="text-cyan-300 font-black uppercase tracking-widest text-xs mb-3">
+                {isEnglish ? "Mysterious voice" : "Voce misteriosa"}
+              </div>
+              <p className="text-sm leading-relaxed text-slate-200 mb-5">
+                “{isEnglish ? hiddenNpc.dialogueEn : hiddenNpc.dialogue}”
+              </p>
+              <button
+                onClick={() => setTalkingToHiddenNpc(false)}
+                className="w-full py-3 rounded-xl bg-cyan-700 hover:bg-cyan-600 font-black transition"
+              >
+                {isEnglish ? "CLOSE" : "CHIUDI"}
+              </button>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* DIALOGO */}
