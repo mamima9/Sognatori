@@ -250,6 +250,15 @@ Nato dalla community, cresce con la fede. È la spalla perfetta dei Sognatori, m
 Born from the community, he grows through belief. He is the perfect partner to the Dreamers, but loses his potential if forgotten.`,
   },
 
+  riwupido: {
+    it: `Riwupido è il braccio destro di Nina, addetto principalmente a far sbocciare l'amore.
+
+È un sognatore pungente e poco riservato. Crede che Nina possa resettare il mondo.`,
+    en: `Riwupido is Nina's right-hand companion, mainly tasked with making love blossom.
+
+He is a sharp-tongued and outspoken Dreamer. He believes Nina can reset the world.`,
+  },
+
   shoboshi: {
     it: `Lore da sbloccare.`,
     en: `Lore to be unlocked.`,
@@ -288,6 +297,7 @@ export default function Lore() {
   const { t, lang } = useLanguage();
   const { user } = useAuth();
   const pepeLoreUnlocked = Boolean(user?.user_metadata?.pepe_lore_unlocked);
+  const riwupidoLoreUnlocked = Boolean(user?.user_metadata?.riwupido_nina_lore_unlocked);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
@@ -363,7 +373,7 @@ export default function Lore() {
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked);
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked);
 
               return (
                 <motion.button
