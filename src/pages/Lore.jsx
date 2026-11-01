@@ -274,8 +274,8 @@ He is a champion of a particular water sport. He sends the Pirimar to trade with
   },
 
   shoboshi: {
-    it: `Lore da sbloccare.`,
-    en: `Lore to be unlocked.`,
+    it: `Shoboshi è un cucciolo di demone sempre sorridente a cui piace il mare, ma al momento le acque profonde sono ancora troppo pericolose.\n\nLa sua temperatura corporea è così alta che le fiamme escono da ogni parte del suo corpo.`,
+    en: `Shoboshi is an always-smiling young demon who loves the sea, but for now the deep waters are still too dangerous for him.\n\nHis body temperature is so high that flames burst from every part of his body.`,
   },
 
   elmas: {
