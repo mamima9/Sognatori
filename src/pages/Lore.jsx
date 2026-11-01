@@ -259,6 +259,15 @@ Born from the community, he grows through belief. He is the perfect partner to t
 She is a sharp-tongued and outspoken Dreamer. She believes Nina can reset the world.`,
   },
 
+  icepadel: {
+    it: `Icepadel vive nella parte di oceano più fredda ed è lo chef dei Sognatori di tipo marino.
+
+È un campione di un particolare sport acquatico. Manda i Pirimar a fare scambi commerciali con gli umani.`,
+    en: `Icepadel lives in the coldest part of the ocean and is the chef of the Marine-type Dreamers.
+
+He is a champion of a particular water sport. He sends the Pirimar to trade with humans.`,
+  },
+
   shoboshi: {
     it: `Lore da sbloccare.`,
     en: `Lore to be unlocked.`,
@@ -298,6 +307,7 @@ export default function Lore() {
   const { user } = useAuth();
   const pepeLoreUnlocked = Boolean(user?.user_metadata?.pepe_lore_unlocked);
   const riwupidoLoreUnlocked = Boolean(user?.user_metadata?.riwupido_nina_lore_unlocked);
+  const icepadelLoreUnlocked = Boolean(user?.user_metadata?.icepadel_lore_unlocked);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
@@ -373,7 +383,7 @@ export default function Lore() {
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked);
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked);
 
               return (
                 <motion.button
