@@ -2282,10 +2282,18 @@ const prematchTimeLeft =
               {lang === "en" ? "MISSION COMPLETED!" : "MISSIONE COMPLETATA!"}
             </div>
             <div className="font-bold text-white mt-1">
-              {missionCompletionNotice === 2 ? (lang === "en" ? "Mission 2: Unlock Riwupido's Lore" : "Missione 2: Sblocca Lore Riwupido") : (lang === "en" ? "Mission 3: Unlock Icepadel's Lore" : "Missione 3: Sblocca Lore Icepadel")}
+              {missionCompletionNotice === 2
+              ? (lang === "en" ? "Mission 2: Unlock Riwupido's Lore" : "Missione 2: Sblocca Lore Riwupido")
+              : missionCompletionNotice === 3
+                ? (lang === "en" ? "Mission 3: Unlock Icepadel's Lore" : "Missione 3: Sblocca Lore Icepadel")
+                : (lang === "en" ? "Mission 4: Unlock Taomarco's Lore" : "Missione 4: Sblocca Lore Taomarco")}
             </div>
             <div className="text-xs text-slate-300 mt-1">
-              {missionCompletionNotice === 2 ? (lang === "en" ? "Riwupido's lore is now unlocked." : "La Lore di Riwupido è stata sbloccata.") : (lang === "en" ? "Icepadel's lore is now unlocked." : "La Lore di Icepadel è stata sbloccata.")}
+              {missionCompletionNotice === 2
+              ? (lang === "en" ? "Riwupido's lore is now unlocked." : "La Lore di Riwupido è stata sbloccata.")
+              : missionCompletionNotice === 3
+                ? (lang === "en" ? "Icepadel's lore is now unlocked." : "La Lore di Icepadel è stata sbloccata.")
+                : (lang === "en" ? "Taomarco's lore is now unlocked." : "La Lore di Taomarco è stata sbloccata.")}
             </div>
           </div>
         )}
