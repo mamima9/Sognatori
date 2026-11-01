@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import React from "react";
+import { useLanguage } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import { ROSTER } from "@/lib/sognatoriData";
 
@@ -364,6 +365,8 @@ const AffinitySection = ({ type }) => {
 ========================================================= */
 
 export default function SognatoriStats() {
+  const { lang } = useLanguage();
+  const isEnglish = lang === "en";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white px-4 py-8">
@@ -384,7 +387,7 @@ export default function SognatoriStats() {
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black">
-              Statistiche & Abilità
+              {isEnglish ? "Stats & Abilities" : "Statistiche & Abilità"}
             </h1>
 
             <p className="text-sm text-slate-400 mt-2 max-w-2xl">
@@ -608,11 +611,11 @@ export default function SognatoriStats() {
                 </div>
 
                 <div className="text-sm font-bold text-white">
-                  {getAbilityName(s, "it") || "—"}
+                  {getAbilityName(s, isEnglish ? "en" : "it") || "—"}
                 </div>
 
                 <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                  {getAbilityDesc(s, "it") || "—"}
+                  {getAbilityDesc(s, isEnglish ? "en" : "it") || "—"}
                 </p>
 
 
@@ -627,11 +630,11 @@ export default function SognatoriStats() {
                     </div>
 
                     <div className="text-sm font-bold text-white">
-                      {getAbility2Name(s, "it")}
+                      {getAbility2Name(s, isEnglish ? "en" : "it")}
                     </div>
 
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      {getAbility2Desc(s, "it")}
+                      {getAbility2Desc(s, isEnglish ? "en" : "it")}
                     </p>
 
                   </div>
