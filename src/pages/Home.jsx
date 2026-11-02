@@ -557,13 +557,12 @@ export default function Home() {
                 <div className="w-20 h-20 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden shrink-0"><img src="/images/10 TAOMARCO.png" alt="Tao Marco" className="w-full h-full object-contain" /></div>
                 <div>
                   <h2 className="text-xl font-black text-white">{lang === "en" ? "Unlock Tao Marco's Lore" : "Sblocca Lore Taomarco"}</h2>
-                  <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Use Tao Marco more than any other Dreamer in your profile, win 15 Competitive matches, and complete all 10 Arcade stages using only Human-type Dreamers." : "Usa Taomarco più di ogni altro Sognatore nel tuo profilo, vinci 15 partite in competitivo e completa tutti e 10 gli stage Arcade usando solo Sognatori di tipo Umano."}</p>
+                  <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Win 15 Competitive matches and complete all 10 Arcade stages using only Human-type Dreamers." : "Vinci 15 partite in competitivo e completa tutti e 10 gli stage Arcade usando solo Sognatori di tipo Umano."}</p>
                 </div>
               </div>
               <div className="space-y-2 text-xs text-slate-300">
                 <div className="flex justify-between"><span>{lang === "en" ? "Competitive wins" : "Vittorie competitive"}</span><b className="text-amber-300">{Math.min(15, Number(user?.user_metadata?.taomarco_competitive_wins || 0))}/15</b></div>
                 <div className="flex justify-between"><span>{lang === "en" ? "Human-only Arcade" : "Arcade solo Umano"}</span><b>{user?.user_metadata?.taomarco_human_arcade_completed ? "10/10 ✓" : "0/10"}</b></div>
-                <div className="flex justify-between"><span>{lang === "en" ? "Most used in profile" : "Più utilizzato nel profilo"}</span><b>{user?.user_metadata?.taomarco_is_most_used ? "✓" : "—"}</b></div>
               </div>
               {user?.user_metadata?.taomarco_lore_unlocked && <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm">📖 {lang === "en" ? "Read Tao Marco's Lore" : "Leggi la Lore di Taomarco"}</Link>}
             </section>
