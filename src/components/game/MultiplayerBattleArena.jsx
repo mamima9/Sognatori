@@ -406,31 +406,12 @@ const player2Team = resolveTeam(
       data.taomarco_competitive_wins = nextWins;
       data.taomarco_competitive_processed_matches = [...taomarcoProcessed, match.id].slice(-150);
 
-      let taomarcoIsMostUsed = Boolean(metadata.taomarco_is_most_used);
-      if (!taomarcoIsMostUsed && nextWins >= 15) {
-        const { data: history, error: historyError } = await supabase
-          .from("match_history")
-          .select("player1_id, player2_id, player1_team_ids, player2_team_ids")
-          .or(`player1_id.eq.${currentUser.id},player2_id.eq.${currentUser.id}`);
-        if (!historyError) {
-          const counts = {};
-          (history || []).forEach((pastMatch) => {
-            const team = pastMatch.player1_id === currentUser.id ? pastMatch.player1_team_ids : pastMatch.player2_team_ids;
-            (Array.isArray(team) ? team : []).forEach((entry) => {
-              const id = typeof entry === "object" && entry ? (entry.id ?? entry.sognatoreId ?? entry.sognatore_id) : entry;
-              const key = String(id || "").toLowerCase();
-              if (key) counts[key] = (counts[key] || 0) + 1;
-            });
-          });
-          const taoCount = counts.taomarco || 0;
-          const highestOtherCount = Math.max(0, ...Object.entries(counts)
-            .filter(([id]) => id !== "taomarco")
-            .map(([, count]) => count));
-          taomarcoIsMostUsed = taoCount > 0 && taoCount > highestOtherCount;
-        }
-      }
-      data.taomarco_is_most_used = taomarcoIsMostUsed;
-      taomarcoNewlyUnlocked = !alreadyUnlocked && nextWins >= 15 && taomarcoIsMostUsed && Boolean(metadata.taomarco_human_arcade_completed);
+      // La Lore di Taomarco richiede 15 vittorie competitive e il completamento
+      // dell'Arcade umano. Non è più necessario che Taomarco sia il Sognatore più usato.
+      taomarcoNewlyUnlocked =
+        !alreadyUnlocked &&
+        nextWins >= 15 &&
+        Boolean(metadata.taomarco_human_arcade_completed);
       data.taomarco_lore_unlocked = alreadyUnlocked || taomarcoNewlyUnlocked;
     }
 
