@@ -702,8 +702,8 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
     scene.fog = new THREE.Fog("#a8d4e7", 30, 78);
 
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.2));
+    const renderer = new THREE.WebGLRenderer({ antialias: (window.devicePixelRatio || 1) < 1.5, alpha: false, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.0));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Ombre dinamiche disattivate: su smartphone causavano cali di frame.\n    renderer.shadowMap.enabled = false;
     mount.appendChild(renderer.domElement);
