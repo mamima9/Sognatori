@@ -991,7 +991,7 @@ export default function Home() {
 
             <p className="text-slate-400 mb-8 text-sm">
 
-              {result === "win" && arcadeStage === 10
+              {result === "win" && arcadeStage === 11
                 ? "Hai superato i 10 stage e sconfitto il Gym Leader!"
                 : result === "win"
                   ? t("home.victoryMsg")
