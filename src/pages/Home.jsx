@@ -655,6 +655,20 @@ export default function Home() {
                     </button>
                   ))}
 
+                  <button
+                    onClick={() => {
+                      setArcadeStage(11);
+                      setResult("win");
+                      setBattleLog([]);
+                      setShowResultLog(false);
+                      setTeams(null);
+                      setScreen("result");
+                    }}
+                    className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition"
+                  >
+                    FINE STAGE 11
+                  </button>
+
                 </div>
 
               </div>
