@@ -365,289 +365,76 @@ function DreamArenaStage10({
   nearNpc,
   isEnglish,
 }) {
-  const pillars = [8, 25, 75, 92];
+  const crystals = [
+    { left: "8%", top: "23%", color: "#a855f7", size: 74 },
+    { left: "22%", top: "12%", color: "#7c3aed", size: 48 },
+    { left: "76%", top: "17%", color: "#c084fc", size: 68 },
+    { left: "89%", top: "36%", color: "#9333ea", size: 54 },
+    { left: "14%", top: "69%", color: "#d946ef", size: 42 },
+    { left: "83%", top: "73%", color: "#8b5cf6", size: 58 },
+  ];
 
   return (
-    <div
-      className="absolute inset-0 overflow-hidden"
-      style={{
-        background: "#17152c",
-        imageRendering: "pixelated",
-      }}
-    >
-      {/* PARETI ESTERNE */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, #292347 0%, #51436b 42%, #211d38 100%)",
-        }}
-      />
+    <div className="absolute inset-0 overflow-hidden" style={{ background: "radial-gradient(ellipse at 50% 56%, #542078 0%, #241037 48%, #090711 100%)", imageRendering: "pixelated" }}>
+      {/* Volta della caverna e pareti rocciose */}
+      <div className="absolute inset-x-0 top-0 h-[25%]" style={{ background: "linear-gradient(180deg,#080610 0%,#21102f 70%,transparent 100%)", clipPath: "polygon(0 0,100% 0,100% 72%,92% 58%,84% 82%,74% 55%,64% 78%,52% 48%,42% 76%,31% 52%,20% 82%,10% 57%,0 76%)" }} />
+      <div className="absolute inset-x-0 bottom-0 h-[22%]" style={{ background: "linear-gradient(0deg,#080610 0%,#28113a 75%,transparent 100%)", clipPath: "polygon(0 30%,12% 52%,22% 28%,34% 55%,46% 32%,58% 58%,70% 30%,82% 55%,92% 28%,100% 48%,100% 100%,0 100%)" }} />
+      <div className="absolute left-0 top-0 bottom-0 w-[9%]" style={{ background: "linear-gradient(90deg,#080610,#321346,transparent)" }} />
+      <div className="absolute right-0 top-0 bottom-0 w-[9%]" style={{ background: "linear-gradient(270deg,#080610,#321346,transparent)" }} />
 
-      {/* SOFFITTO MONUMENTALE */}
-      <div
-        className="absolute top-0 left-0 w-full h-[18%]"
-        style={{
-          background:
-            "repeating-linear-gradient(90deg, #302847 0px, #302847 42px, #49395b 43px, #49395b 48px)",
-          borderBottom: "8px solid #b58b45",
-          boxShadow: "0 8px 20px #080713",
-        }}
-      />
-
-      {/* VETRATA CENTRALE */}
-      <div className="absolute top-[4%] left-1/2 -translate-x-1/2 w-[30%] h-[23%]">
-        <div
-          className="absolute inset-0 border-4 border-amber-500"
-          style={{
-            background:
-              "linear-gradient(135deg, #182d59, #6652a2, #1c2345)",
-            clipPath:
-              "polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)",
-          }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center text-amber-200 text-5xl opacity-80">
-          ✦
-        </div>
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] tracking-[0.3em] text-amber-200 font-black">
-          SOGNATORI
-        </div>
-      </div>
-
-      {/* PARETI LATERALI */}
-      <div
-        className="absolute left-0 top-[18%] bottom-0 w-[7%]"
-        style={{
-          background:
-            "repeating-linear-gradient(180deg, #39304f 0px, #39304f 32px, #51415e 33px, #51415e 38px)",
-          borderRight: "5px solid #a77d42",
-        }}
-      />
-      <div
-        className="absolute right-0 top-[18%] bottom-0 w-[7%]"
-        style={{
-          background:
-            "repeating-linear-gradient(180deg, #39304f 0px, #39304f 32px, #51415e 33px, #51415e 38px)",
-          borderLeft: "5px solid #a77d42",
-        }}
-      />
-
-      {/* VETRATE LATERALI */}
-      {[10, 27, 73, 90].map((x, i) => (
-        <div
-          key={i}
-          className="absolute top-[25%] h-[18%] w-[8%] border-4 border-amber-700"
-          style={{
-            left: `${x}%`,
-            background:
-              "linear-gradient(180deg, #77b7d5, #394a83 55%, #202342)",
-            boxShadow: "inset 0 0 12px #b6dfff",
-          }}
-        >
-          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-amber-600" />
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-amber-600" />
-        </div>
+      {/* Colonne di roccia e stalattiti */}
+      {[5, 17, 31, 68, 82, 95].map((x, i) => (
+        <div key={i} className="absolute top-0" style={{ left: `${x}%`, width: i % 2 ? "5%" : "3.5%", height: `${18 + (i % 3) * 5}%`, background: "linear-gradient(90deg,#100b19,#56306b,#1b1028)", clipPath: "polygon(0 0,100% 0,82% 70%,58% 100%,34% 68%)", filter: "drop-shadow(0 4px 7px #05030a)" }} />
+      ))}
+      {[12, 38, 62, 88].map((x, i) => (
+        <div key={i} className="absolute bottom-0" style={{ left: `${x}%`, width: "6%", height: `${17 + (i % 2) * 8}%`, background: "linear-gradient(90deg,#100b19,#59316d,#1b1028)", clipPath: "polygon(18% 0,48% 30%,75% 0,100% 100%,0 100%)" }} />
       ))}
 
-      {/* PAVIMENTO A SCACCHIERA */}
-      <div
-        className="absolute left-[7%] right-[7%] top-[43%] bottom-0"
-        style={{
-          backgroundColor: "#51445f",
-          backgroundImage: `
-            linear-gradient(45deg, #62536e 25%, transparent 25%),
-            linear-gradient(-45deg, #62536e 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #62536e 75%),
-            linear-gradient(-45deg, transparent 75%, #62536e 75%)
-          `,
-          backgroundSize: "48px 48px",
-          backgroundPosition:
-            "0 0, 0 24px, 24px -24px, -24px 0px",
-          borderTop: "8px solid #b58b45",
-        }}
-      />
+      {/* Cristalli viola luminosi */}
+      {crystals.map((crystal, i) => (
+        <div key={i} className="absolute" style={{ left: crystal.left, top: crystal.top, width: crystal.size, height: crystal.size * 1.35, background: `linear-gradient(135deg,#f5d0fe,${crystal.color} 38%,#32104d 85%)`, clipPath: "polygon(50% 0,88% 28%,74% 100%,24% 100%,8% 30%)", filter: `drop-shadow(0 0 12px ${crystal.color})`, opacity: 0.9 }} />
+      ))}
+      <div className="absolute left-[13%] top-[45%] w-2 h-2 rounded-full bg-fuchsia-200 shadow-[0_0_18px_8px_#c026d3]" />
+      <div className="absolute right-[18%] top-[52%] w-2 h-2 rounded-full bg-violet-100 shadow-[0_0_18px_8px_#9333ea]" />
 
-      {/* CORRIDOIO CENTRALE */}
-      <div
-        className="absolute top-[43%] bottom-0 left-[36%] w-[28%]"
-        style={{
-          background:
-            "repeating-linear-gradient(90deg, #6c5b70 0px, #6c5b70 28px, #78647a 29px, #78647a 32px)",
-          borderLeft: "4px solid #c09a55",
-          borderRight: "4px solid #c09a55",
-        }}
-      />
+      {/* Pozze di energia velenosa ai lati del sentiero */}
+      <div className="absolute left-[4%] right-[4%] bottom-[9%] h-[18%] rounded-[50%]" style={{ background: "radial-gradient(ellipse,#a21caf 0%,#581c87 38%,transparent 72%)", opacity: 0.75 }} />
+      <div className="absolute left-[8%] top-[58%] w-[19%] h-[8%] rounded-[50%] border border-fuchsia-400/50" style={{ background: "radial-gradient(ellipse,#c026d3aa,#581c87aa,transparent 72%)", boxShadow: "0 0 24px #a21caf" }} />
+      <div className="absolute right-[8%] top-[58%] w-[19%] h-[8%] rounded-[50%] border border-violet-300/50" style={{ background: "radial-gradient(ellipse,#9333eaaa,#4c1d95aa,transparent 72%)", boxShadow: "0 0 24px #7e22ce" }} />
 
-      {/* DECORAZIONI DEL PAVIMENTO */}
-      <div className="absolute top-[48%] left-1/2 -translate-x-1/2 text-amber-300 text-5xl opacity-30">
-        ✦
-      </div>
-      <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 text-amber-300 text-4xl opacity-40">
-        ◈
-      </div>
-
-      {/* PIATTAFORMA DEL MAESTRO */}
-      <div
-        className="absolute left-1/2 top-[48%] w-[48%] h-[31%]"
-        style={{
-          transform: "translateX(-50%)",
-          background:
-            "linear-gradient(180deg, #c59c57, #73502f)",
-          clipPath:
-            "polygon(12% 0,88% 0,100% 22%,100% 78%,88% 100%,12% 100%,0 78%,0 22%)",
-          boxShadow: "0 10px 20px #090713",
-        }}
-      />
-      <div
-        className="absolute left-1/2 top-[49%] w-[45%] h-[29%]"
-        style={{
-          transform: "translateX(-50%)",
-          background:
-            "repeating-linear-gradient(45deg, #493a53 0px, #493a53 18px, #594660 19px, #594660 36px)",
-          clipPath:
-            "polygon(12% 0,88% 0,100% 22%,100% 78%,88% 100%,12% 100%,0 78%,0 22%)",
-        }}
-      />
-
-      {/* SIGILLO CENTRALE */}
-      <div
-        className="absolute left-1/2 top-[64%] w-[19%] h-[12%]"
-        style={{
-          transform: "translate(-50%, -50%)",
-          border: "4px solid #d7ae61",
-          background:
-            "radial-gradient(circle, #55406e, #211b39)",
-          clipPath:
-            "polygon(50% 0,100% 50%,50% 100%,0 50%)",
-          boxShadow: "0 0 20px #d7ae61",
-        }}
-      />
-      <div className="absolute left-1/2 top-[64%] -translate-x-1/2 -translate-y-1/2 text-amber-200 text-3xl">
-        ✦
-      </div>
-
-      {/* COLONNE MONUMENTALI */}
-      {pillars.map((x, i) => (
-        <div
-          key={i}
-          className="absolute top-[39%] h-[32%] w-[5%]"
-          style={{
-            left: `${x}%`,
-            background:
-              "linear-gradient(90deg, #725c68, #d0b18a, #806b72)",
-            borderLeft: "3px solid #d8b77b",
-            borderRight: "3px solid #392b42",
-            boxShadow: "4px 6px 8px #100c1e",
-          }}
-        >
-          <div className="absolute -top-2 -left-2 -right-2 h-3 bg-amber-600 border-2 border-amber-300" />
-          <div className="absolute bottom-0 -left-2 -right-2 h-3 bg-amber-700" />
-        </div>
+      {/* Sentiero di pietra verso il boss */}
+      <div className="absolute left-[31%] right-[31%] top-[23%] bottom-[7%]" style={{ background: "linear-gradient(90deg,#21182c,#51405d 18%,#6a5874 50%,#51405d 82%,#21182c)", clipPath: "polygon(24% 0,76% 0,100% 100%,0 100%)", borderLeft: "2px solid #a78bfa", borderRight: "2px solid #a78bfa", boxShadow: "0 0 32px #7e22ce" }} />
+      {[32, 45, 58, 71].map((y, i) => (
+        <div key={i} className="absolute left-1/2 -translate-x-1/2 h-[2px] w-[25%]" style={{ top: `${y}%`, background: "linear-gradient(90deg,transparent,#c4b5fd,transparent)", opacity: 0.5 }} />
       ))}
 
-      {/* TORCE DECORATIVE */}
-      {[15, 85].map((x, i) => (
-        <div
-          key={i}
-          className="absolute top-[34%] text-3xl"
-          style={{
-            left: `${x}%`,
-            filter: "drop-shadow(0 0 12px #ff9c35)",
-          }}
-        >
-          🔥
-        </div>
-      ))}
+      {/* Altare del guardiano */}
+      <div className="absolute left-1/2 top-[31%] -translate-x-1/2 w-[34%] h-[23%] rounded-t-[48%] border-t-4 border-x-4 border-violet-300/70" style={{ background: "radial-gradient(ellipse at 50% 10%,#a855f7,#3b1758 58%,#160d22)", boxShadow: "0 0 35px #9333ea, inset 0 0 24px #c084fc" }} />
+      <div className="absolute left-1/2 top-[48%] -translate-x-1/2 w-[25%] h-[8%] rounded-[50%] border-2 border-fuchsia-300/70" style={{ background: "radial-gradient(ellipse,#d946ef,#581c87 68%,transparent)", boxShadow: "0 0 22px #c026d3" }} />
 
-      {/* STATUE LATERALI */}
-      <div className="absolute left-[11%] bottom-[13%] text-5xl">
-        🗿
-      </div>
-      <div className="absolute right-[11%] bottom-[13%] text-5xl">
-        🗿
-      </div>
-
-      {/* STENDARDI */}
-      <div className="absolute left-[20%] top-[19%] text-4xl text-amber-300">
-        ⚑
-      </div>
-      <div className="absolute right-[20%] top-[19%] text-4xl text-amber-300">
-        ⚑
-      </div>
-
-      {/* TALPOISONED — BOSS STAGE 10 */}
-      <div
-        className="absolute flex flex-col items-center z-20"
-        style={{
-          left: "50%",
-          top: "43%",
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        <div
-          className="w-14 h-14 flex items-center justify-center"
-          style={{
-            filter: "drop-shadow(0 0 10px #f5bd5c)",
-          }}
-        >
-          {npcImage ? (
-            <img
-              src={`/images/${npcImage}`}
-              alt={npcName}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <span className="text-5xl">{npc.emoji}</span>
-          )}
+      {/* Talpoisoned */}
+      <motion.div className="absolute flex flex-col items-center z-20" style={{ left: "50%", top: "30%", transform: "translateX(-50%)" }} animate={{ y: [0, -5, 0] }} transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}>
+        <div className="w-24 h-24 sm:w-32 sm:h-32" style={{ filter: "drop-shadow(0 0 18px #c026d3)" }}>
+          {npcImage ? <img src={`/images/${npcImage}`} alt={npcName} className="w-full h-full object-contain" /> : <span className="text-6xl">{npc.emoji}</span>}
         </div>
-        <div className="px-3 py-1 bg-[#21172d] border-2 border-amber-500 text-amber-300 text-xs font-black whitespace-nowrap">
-          {npcName}
-        </div>
-      </div>
-
-      {/* GIOCATORE */}
-      <motion.div
-        className="absolute flex flex-col items-center z-30"
-        animate={{
-          left: `${25 + player.x * 2}%`,
-          top: `${32 + player.y * 2.2}%`,
-        }}
-        transition={{ duration: 0.12 }}
-      >
-        <div className="w-12 h-12 drop-shadow-xl">
-          {portrait ? (
-            <img
-              src={`/images/${portrait}`}
-              alt="Ritratto giocatore"
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <span className="text-4xl">🧙‍♂️</span>
-          )}
-        </div>
-        <div className="px-2 py-0.5 bg-slate-950/90 text-white text-[10px] font-black">
-          YOU
-        </div>
+        <div className="px-4 py-1 rounded-md bg-[#160b22]/95 border-2 border-fuchsia-400 text-fuchsia-100 text-xs sm:text-sm font-black tracking-widest shadow-[0_0_18px_#a21caf]">{npcName.toUpperCase()}</div>
       </motion.div>
 
-      {/* INDICATORE INTERAZIONE */}
-      {nearNpc && (
-        <div className="absolute left-1/2 top-[32%] -translate-x-1/2 text-amber-300 text-xl font-black animate-bounce z-40">
-          ▼
-          <div className="text-[10px] whitespace-nowrap bg-black/80 px-2 py-1">
-            {isEnglish ? "PRESS E TO TALK" : "PREMI E PER PARLARE"}
-          </div>
+      {/* Giocatore */}
+      <motion.div className="absolute flex flex-col items-center z-30" animate={{ left: `${25 + player.x * 2.5}%`, top: `${34 + player.y * 2.2}%` }} transition={{ duration: 0.12 }}>
+        <div className="w-12 h-12 drop-shadow-xl">
+          {portrait ? <img src={`/images/${portrait}`} alt="Ritratto giocatore" className="w-full h-full object-contain" /> : <span className="text-4xl">🧙‍♂️</span>}
         </div>
-      )}
+        <div className="px-2 py-0.5 bg-slate-950/90 text-white text-[10px] font-black">YOU</div>
+      </motion.div>
 
-      {/* LUCI AMBIENTALI */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(5,4,15,.55) 100%)",
-        }}
-      />
+      {/* Nome area */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#160b22]/85 border border-violet-400/60 px-3 py-1 text-[9px] sm:text-xs tracking-[0.2em] text-violet-100 font-black whitespace-nowrap">
+        {isEnglish ? "POISON CAVERN · FINAL BOSS" : "CAVERNA VELENOSA · BOSS FINALE"}
+      </div>
+
+      {nearNpc && <div className="absolute left-1/2 top-[58%] -translate-x-1/2 text-fuchsia-200 text-xl font-black animate-bounce z-40">▼</div>}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(4,2,10,.68) 100%)" }} />
     </div>
   );
 }
@@ -1171,7 +958,7 @@ export default function ArcadeWorld({
         {/* MAPPA */}
 
         <div
-          className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl touch-none select-none"
+          className="relative mx-auto overflow-hidden rounded-3xl border shadow-2xl touch-none select-none"
           onPointerDown={(event) => {
             if (event.pointerType !== "touch") return;
             event.currentTarget.dataset.touchStartX = String(event.clientX);
@@ -1201,6 +988,7 @@ export default function ArcadeWorld({
           }}
           style={{
             width: "100%",
+            borderColor: isStage10 ? "rgba(192,132,252,.55)" : "rgba(245,158,11,.3)",
             maxWidth: stage === 11 ? "560px" : "960px",
             aspectRatio: stage === 11 ? "23 / 31" : "20 / 15",
             maxHeight: stage === 11 ? "72vh" : undefined,
@@ -1221,6 +1009,8 @@ export default function ArcadeWorld({
                 ? "linear-gradient(135deg, #4a3020, #8b6b4a)"
                 : stage === 8
                 ? "linear-gradient(135deg, #252052, #5546a8)"
+                : stage === 10
+                ? "linear-gradient(135deg, #090611, #35104f, #13091e)"
                 : stage === 11
                 ? "linear-gradient(135deg, #092c1a, #17633a, #527b35)"
                 : "linear-gradient(135deg, #3b174f, #8b2f8f)",
