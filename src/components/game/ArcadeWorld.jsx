@@ -1259,6 +1259,7 @@ export default function ArcadeWorld({
     player={player}
     npcPosition={activeNpcPosition}
     isEnglish={isEnglish}
+    onMove={movePlayer}
   />
 ) : isStage10 ? (
   <DreamArenaStage10
