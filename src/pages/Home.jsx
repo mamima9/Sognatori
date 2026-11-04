@@ -81,6 +81,7 @@ export default function Home() {
     8: "viaggiatore101.png",
     9: "affrescone.png",
     10: "TALPOISONED.png",
+    11: "ERACLITO.png",
   };
 
   useEffect(() => {
