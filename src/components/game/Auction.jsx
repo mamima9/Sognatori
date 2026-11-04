@@ -77,7 +77,7 @@ const ARCADE_AUCTION_PROFILES = {
     optimalStrategy: true,
   },
   10: {
-    name: "Mangu",
+    name: "Talpoisoned",
     preferredType: null,
     pupils: ["spinoff", "pepe"],
     optimalStrategy: true,
@@ -918,7 +918,7 @@ const pick =
 
         <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-3 text-right">
           <div className="text-xs text-rose-300 font-semibold">
-            {stage === 10 ? "Mangu" : t("auction.opponent")}
+            {stage === 10 ? "Talpoisoned" : t("auction.opponent")}
           </div>
 
        <div className="text-lg font-bold">
