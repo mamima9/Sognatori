@@ -185,36 +185,36 @@ const MAPS = {
   ],
   11: [
     "#######################",
-    "#...........#.........#",
-    "#.###.####..#.#######.#",
-    "#.#...#.....#.......#.#",
-    "#.#.###.#########.#.#.#",
-    "#.#...#...........#.#.#",
-    "#.###.#############.#.#",
-    "#.....#.....#.......#.#",
-    "#######.#.###.#.#####.#",
-    "#.....#.#.....#.......#",
-    "#.#####.###########.#.#",
-    "#.....#.#...#.......#.#",
-    "#.#.#.#.#.#.#.##.####.#",
-    "#.#...#...#...#.....#.#",
-    "#.#.###########.#.###.#",
-    "#.#.........#...#...#.#",
-    "#.#####.#####.#####.#.#",
-    "#...#...#.....#...#...#",
-    "###.#.###.#####.#.#####",
-    "#...#...#.......#...#.#",
-    "#.#####.###########.#.#",
-    "#.#.........#.......#.#",
-    "#.#.#######.#.#######.#",
-    "#.#...#.#...#.#...#...#",
-    "#.###.#.#.###.#.#.#.###",
-    "#.#...#.....#...#.#...#",
-    "#.#.#############.###.#",
-    "#.#.#...........#...#.#",
-    "#.#.#.#######.#####.#.#",
-    "#.#.........#.........#",
-    "#######################",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#.....................#",
+    "#######################"
   ],
 
 };
@@ -229,8 +229,8 @@ const NPC_POSITION = {
   y: 9,
 };
 
-const FOREST_START = { x: 1, y: 1 };
-const FOREST_NPC_POSITION = { x: 21, y: 29 };
+const FOREST_START = { x: 11, y: 1 };
+const FOREST_NPC_POSITION = { x: 11, y: 29 };
 
 // NPC segreti: non vengono disegnati sulla mappa, ma si possono incontrare
 // esplorando le coordinate indicate.
@@ -664,8 +664,8 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
     if (!mount) return undefined;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#9bc9a0");
-    scene.fog = new THREE.Fog("#9bc9a0", 13, 34);
+    scene.background = new THREE.Color("#a8d4e7");
+    scene.fog = new THREE.Fog("#a8d4e7", 22, 58);
 
     const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -684,7 +684,7 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(map[0].length * 1.2 + 4, map.length * 1.2 + 4),
-      new THREE.MeshStandardMaterial({ color: "#78934c", roughness: 1 })
+      new THREE.MeshStandardMaterial({ color: "#83a95a", roughness: 1 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.set((map[0].length - 1) * 0.6, -0.12, (map.length - 1) * 0.6);
@@ -705,7 +705,8 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
 
     map.forEach((row, z) => {
       row.split("").forEach((cell, x) => {
-        const tile = new THREE.Mesh(tileGeo, cell === "#" ? grassMaterial : pathMaterial);
+        const isMainTrail = x >= 9 && x <= 13 || [5, 15, 23].includes(z) && x >= 2 && x <= 20;
+        const tile = new THREE.Mesh(tileGeo, cell === "#" || !isMainTrail ? grassMaterial : pathMaterial);
         tile.position.set(x * 1.2, -0.02, z * 1.2);
         tile.receiveShadow = true;
         scene.add(tile);
@@ -736,6 +737,66 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
         }
       });
     });
+
+    // Cinque aree tematiche aperte: nuvole, luce, marino, demoni e natura.
+    const addLandmark = (x, z, color, labelType) => {
+      const group = new THREE.Group();
+      group.position.set(x * 1.2, 0, z * 1.2);
+      const mat = (hex, emissive = false) => new THREE.MeshStandardMaterial({
+        color: hex, roughness: 0.55, metalness: 0.12,
+        emissive: emissive ? hex : "#000000", emissiveIntensity: emissive ? 0.35 : 0
+      });
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.55, 0.22, 12), mat("#8a7958"));
+      base.position.y = 0.12; base.receiveShadow = true; group.add(base);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.07, 8, 32), mat(color, true));
+      ring.rotation.x = Math.PI / 2; ring.position.y = 0.3; group.add(ring);
+
+      if (labelType === "cloud") {
+        [[-0.48,1.15,0],[0,1.42,0],[0.48,1.15,0]].forEach(([cx,cy,cz]) => {
+          const cloud = new THREE.Mesh(new THREE.SphereGeometry(0.55, 9, 7), mat("#f4f7ff"));
+          cloud.position.set(cx,cy,cz); cloud.scale.set(1.25,0.72,0.9); group.add(cloud);
+        });
+        const mist = new THREE.PointLight("#c9e8ff", 1.5, 5); mist.position.y = 1.5; group.add(mist);
+      } else if (labelType === "light") {
+        const sunCore = new THREE.Mesh(new THREE.SphereGeometry(0.48, 12, 10), mat("#fff1a8", true));
+        sunCore.position.y = 1.8; group.add(sunCore);
+        for (let i=0;i<8;i++) {
+          const ray = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.9,0.12), mat("#ffe18a", true));
+          const a=i*Math.PI/4; ray.position.set(Math.cos(a)*0.85,1.8+Math.sin(a)*0.85,0); ray.rotation.z=-a; group.add(ray);
+        }
+        const glow = new THREE.PointLight("#ffe9a6", 2, 7); glow.position.y=2; group.add(glow);
+      } else if (labelType === "marino") {
+        const pool = new THREE.Mesh(new THREE.CylinderGeometry(1.12,1.12,0.12,24), mat("#168fbd", true));
+        pool.position.y=0.27; group.add(pool);
+        const wave = new THREE.Mesh(new THREE.TorusGeometry(0.72,0.06,8,28), mat("#a4f0ff", true));
+        wave.rotation.x=Math.PI/2; wave.position.y=0.38; group.add(wave);
+        const bubble = new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),mat("#d5fbff"));
+        bubble.position.set(0,1.0,0); group.add(bubble);
+      } else if (labelType === "demoni") {
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.62,1.65,7), mat("#e65b28", true));
+        flame.position.y=1.05; group.add(flame);
+        const ember = new THREE.PointLight("#ff642b", 2, 6); ember.position.y=1.1; group.add(ember);
+        const horns = [-1,1].map(side => {
+          const horn = new THREE.Mesh(new THREE.ConeGeometry(0.18,0.72,6),mat("#39252a"));
+          horn.position.set(side*0.48,1.7,0); horn.rotation.z=side*0.45; group.add(horn); return horn;
+        });
+      } else {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.42,2.1,7),mat("#76502e"));
+        trunk.position.y=1.05; group.add(trunk);
+        for(let i=0;i<3;i++){
+          const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(0.95-i*0.12,1),mat(["#2d7d43","#45964e","#78ae58"][i]));
+          crown.position.set((i-1)*0.18,2.15+i*0.48,0); crown.castShadow=true; group.add(crown);
+        }
+        const aura=new THREE.PointLight("#9bdf79",1.4,6); aura.position.y=2.4; group.add(aura);
+      }
+      scene.add(group);
+      return group;
+    };
+    addLandmark(4, 5, "#bdeaff", "cloud");
+    addLandmark(18, 5, "#ffe18a", "light");
+    addLandmark(4, 15, "#39c5ec", "marino");
+    addLandmark(18, 15, "#ff6a35", "demoni");
+    addLandmark(11, 23, "#82d66c", "natura");
 
     const makeCharacter = (mainColor, accentColor, isBoss = false) => {
       const group = new THREE.Group();
@@ -828,10 +889,10 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
     <div className="absolute inset-0 overflow-hidden bg-[#9bc9a0]">
       <div ref={mountRef} className="absolute inset-0" />
       <div className="absolute top-3 left-3 rounded-xl bg-emerald-950/75 border border-emerald-300/30 px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest text-emerald-100 pointer-events-none">
-        {isEnglish ? "VIRIDIAN FOREST · BONUS QUEST" : "BOSCO SMERALDOPOLI · SFIDA BONUS"}
+        {isEnglish ? "AFFINITY GROVE · BONUS QUEST" : "RADURA DELLE AFFINITÀ · SFIDA BONUS"}
       </div>
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap">
-        {isEnglish ? "Find the path through the forest" : "Trova il sentiero attraverso il bosco"}
+        {isEnglish ? "Explore the five affinity sanctuaries" : "Esplora i cinque santuari delle affinità"}
       </div>
     </div>
   );
