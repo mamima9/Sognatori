@@ -66,7 +66,7 @@ export default function Home() {
     7: "Talpoi",
     8: "Viaggiatore101",
     9: "Affrescone",
-    10: "Mangu",
+    10: "Talpoisoned",
     11: "Aureon",
   };
 
@@ -80,6 +80,7 @@ export default function Home() {
     7: "TALPOI.png",
     8: "viaggiatore101.png",
     9: "affrescone.png",
+    10: "TALPOI.png",
   };
 
   useEffect(() => {
