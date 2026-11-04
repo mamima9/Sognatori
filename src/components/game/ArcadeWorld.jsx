@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/i18n";
 
@@ -652,6 +653,190 @@ function DreamArenaStage10({
     </div>
   );
 }
+
+function ForestMaze3D({ map, player, npcPosition, npcName, portrait, npcImage, isEnglish }) {
+  const mountRef = useRef(null);
+  const playerRef = useRef(player);
+  playerRef.current = player;
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return undefined;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#9bc9a0");
+    scene.fog = new THREE.Fog("#9bc9a0", 13, 34);
+
+    const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    mount.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight("#e5ffe5", "#4b6038", 2.0));
+    const sun = new THREE.DirectionalLight("#fff1c4", 2.4);
+    sun.position.set(-8, 18, 7);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    scene.add(sun);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(map[0].length * 1.2 + 4, map.length * 1.2 + 4),
+      new THREE.MeshStandardMaterial({ color: "#78934c", roughness: 1 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set((map[0].length - 1) * 0.6, -0.12, (map.length - 1) * 0.6);
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const pathMaterial = new THREE.MeshStandardMaterial({ color: "#b99a68", roughness: 1 });
+    const grassMaterial = new THREE.MeshStandardMaterial({ color: "#668d45", roughness: 1 });
+    const trunkMaterial = new THREE.MeshStandardMaterial({ color: "#69452b", roughness: 1 });
+    const leafMaterials = ["#1d633b", "#287747", "#39884b", "#195535"].map(
+      (color) => new THREE.MeshStandardMaterial({ color, roughness: 1 })
+    );
+
+    const tileGeo = new THREE.BoxGeometry(1.18, 0.12, 1.18);
+    const trunkGeo = new THREE.CylinderGeometry(0.13, 0.2, 1.15, 6);
+    const leafGeo = new THREE.ConeGeometry(0.78, 1.65, 7);
+    const rockGeo = new THREE.DodecahedronGeometry(0.22, 0);
+
+    map.forEach((row, z) => {
+      row.split("").forEach((cell, x) => {
+        const tile = new THREE.Mesh(tileGeo, cell === "#" ? grassMaterial : pathMaterial);
+        tile.position.set(x * 1.2, -0.02, z * 1.2);
+        tile.receiveShadow = true;
+        scene.add(tile);
+
+        if (cell === "#") {
+          const tree = new THREE.Group();
+          const trunk = new THREE.Mesh(trunkGeo, trunkMaterial);
+          trunk.position.y = 0.62;
+          trunk.castShadow = true;
+          tree.add(trunk);
+
+          const seed = (x * 17 + z * 31) % leafMaterials.length;
+          [0, 1, 2].forEach((layer) => {
+            const crown = new THREE.Mesh(leafGeo, leafMaterials[(seed + layer) % leafMaterials.length]);
+            crown.position.y = 1.25 + layer * 0.48;
+            crown.scale.set(1 - layer * 0.12, 1, 1 - layer * 0.12);
+            crown.castShadow = true;
+            tree.add(crown);
+          });
+          tree.position.set(x * 1.2, 0, z * 1.2);
+          scene.add(tree);
+        } else if ((x * 13 + z * 7) % 11 === 0) {
+          const rock = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: "#8b9870" }));
+          rock.position.set(x * 1.2 + 0.25, 0.12, z * 1.2 - 0.2);
+          rock.scale.set(1.2, 0.7, 0.9);
+          rock.castShadow = true;
+          scene.add(rock);
+        }
+      });
+    });
+
+    const makeCharacter = (mainColor, accentColor, isBoss = false) => {
+      const group = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(isBoss ? 0.3 : 0.22, isBoss ? 0.42 : 0.28, isBoss ? 0.95 : 0.72, 8),
+        new THREE.MeshStandardMaterial({ color: mainColor, roughness: 0.8 })
+      );
+      body.position.y = isBoss ? 0.72 : 0.58;
+      body.castShadow = true;
+      group.add(body);
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(isBoss ? 0.28 : 0.22, 12, 10),
+        new THREE.MeshStandardMaterial({ color: "#f0c59b" })
+      );
+      head.position.y = isBoss ? 1.42 : 1.12;
+      head.castShadow = true;
+      group.add(head);
+      const accent = new THREE.Mesh(
+        new THREE.ConeGeometry(isBoss ? 0.25 : 0.16, isBoss ? 0.5 : 0.3, 6),
+        new THREE.MeshStandardMaterial({ color: accentColor, metalness: 0.25, roughness: 0.5 })
+      );
+      accent.position.y = isBoss ? 1.82 : 1.38;
+      accent.castShadow = true;
+      group.add(accent);
+      return group;
+    };
+
+    const playerModel = makeCharacter("#3979bd", "#f2d36b");
+    scene.add(playerModel);
+
+    const bossModel = makeCharacter("#e6b84d", "#fff0a6", true);
+    bossModel.position.set(npcPosition.x * 1.2, 0, npcPosition.y * 1.2);
+    scene.add(bossModel);
+
+    // Piccola radura e sigillo che annunciano l'incontro finale.
+    const clearing = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 1.15, 0.08, 12),
+      new THREE.MeshStandardMaterial({ color: "#c4a46a", roughness: 1 })
+    );
+    clearing.position.set(npcPosition.x * 1.2, 0.04, npcPosition.y * 1.2);
+    scene.add(clearing);
+    bossModel.position.y = 0.08;
+
+    const resize = () => {
+      const width = Math.max(1, mount.clientWidth);
+      const height = Math.max(1, mount.clientHeight);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(mount);
+
+    let frame = 0;
+    let running = true;
+    const animate = () => {
+      if (!running) return;
+      frame = requestAnimationFrame(animate);
+      const current = playerRef.current;
+      const px = current.x * 1.2;
+      const pz = current.y * 1.2;
+      playerModel.position.set(px, 0, pz);
+      playerModel.rotation.y = Math.sin(performance.now() * 0.0015) * 0.04;
+      bossModel.rotation.y += 0.002;
+
+      const desired = new THREE.Vector3(px + 7.5, 10.5, pz + 8.5);
+      camera.position.lerp(desired, 0.075);
+      camera.lookAt(px, 0.5, pz + 1.8);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      running = false;
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      renderer.dispose();
+      scene.traverse((object) => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          (Array.isArray(object.material) ? object.material : [object.material]).forEach((material) => material.dispose());
+        }
+      });
+      if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
+    };
+  }, [map, npcPosition.x, npcPosition.y]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden bg-[#9bc9a0]">
+      <div ref={mountRef} className="absolute inset-0" />
+      <div className="absolute top-3 left-3 rounded-xl bg-emerald-950/75 border border-emerald-300/30 px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest text-emerald-100 pointer-events-none">
+        {isEnglish ? "VIRIDIAN FOREST · BONUS QUEST" : "BOSCO SMERALDOPOLI · SFIDA BONUS"}
+      </div>
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap">
+        {isEnglish ? "Find the path through the forest" : "Trova il sentiero attraverso il bosco"}
+      </div>
+    </div>
+  );
+}
+
 export default function ArcadeWorld({
   stage = 1,
   portrait,
@@ -829,7 +1014,17 @@ export default function ArcadeWorld({
           }}
         >
 
-         {isStage10 ? (
+         {stage === 11 ? (
+  <ForestMaze3D
+    map={MAP}
+    player={player}
+    npcPosition={activeNpcPosition}
+    npcName={npcName}
+    portrait={portrait}
+    npcImage={npcImage}
+    isEnglish={isEnglish}
+  />
+) : isStage10 ? (
   <DreamArenaStage10
     player={player}
     npc={npc}
