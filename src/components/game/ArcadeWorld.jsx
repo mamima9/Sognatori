@@ -647,7 +647,6 @@ export default function ArcadeWorld({
   const isEnglish = lang === "en";
   const MAP = MAPS[stage] || MAPS[1];
   const isStage10 = stage === 10;
-  const isStage11 = stage === 11;
 
   const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
   const dialogue = isEnglish ? (npc.dialogueEn || npc.dialogue) : npc.dialogue;
