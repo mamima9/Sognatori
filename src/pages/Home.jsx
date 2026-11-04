@@ -67,6 +67,7 @@ export default function Home() {
     8: "Viaggiatore101",
     9: "Affrescone",
     10: "Mangu",
+    11: "Aureon",
   };
 
   const arcadeNPCImages = {
@@ -637,7 +638,7 @@ export default function Home() {
                 <div className="flex flex-wrap justify-center gap-2">
 
                   {Array.from(
-                    { length: 10 },
+                    { length: 11 },
                     (_, i) => i + 1
                   ).map((testStage) => (
                     <button
@@ -828,9 +829,13 @@ export default function Home() {
             <Auction
               stage={arcadeStage}
               onComplete={(pt, et) => {
+                const gymGuardians = arcadeStage === 11 ? [
+                  { id: "gym-guardian-sol", nome: "Solarius", tipo: "Luce", tipo2: "Demone", att: 20, dif: 20, vel: 20, hp: 30, hpMax: 30, abilKey: null, abil: null, abilDesc: null, img: "/images/affrescone.png", exclusiveArcade: true },
+                  { id: "gym-guardian-abyss", nome: "Abissar", tipo: "Marino", tipo2: "Robot", att: 20, dif: 20, vel: 20, hp: 30, hpMax: 30, abilKey: null, abil: null, abilDesc: null, img: "/images/diouf.png", exclusiveArcade: true },
+                ] : [];
                 setTeams({
                   playerTeam: pt,
-                  enemyTeam: et,
+                  enemyTeam: [...et, ...gymGuardians],
                 });
 
                 setScreen("prematch");
@@ -922,7 +927,7 @@ export default function Home() {
                 setShowResultLog(false);
                 setTeams(null);
                 if (r === "win") {
-                  if (arcadeStage < 10) {
+                  if (arcadeStage < 11) {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
                   } else {
@@ -976,8 +981,8 @@ export default function Home() {
 
             <h2 className="text-4xl font-black mb-2">
 
-              {result === "win" && arcadeStage === 10
-                ? "ARCADE COMPLETATO!"
+              {result === "win" && arcadeStage === 11
+                ? "PALESTRA COMPLETATA!"
                 : result === "win"
                   ? t("home.victory")
                   : t("home.defeat")}
@@ -987,7 +992,7 @@ export default function Home() {
             <p className="text-slate-400 mb-8 text-sm">
 
               {result === "win" && arcadeStage === 10
-                ? "Hai completato tutti e 10 gli Stage dei Sognatori!"
+                ? "Hai superato i 10 stage e sconfitto il Gym Leader!"
                 : result === "win"
                   ? t("home.victoryMsg")
                   : t("home.defeatMsg")}
