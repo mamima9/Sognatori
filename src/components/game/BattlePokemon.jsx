@@ -88,6 +88,7 @@ export default function BattlePokemon({ s, side, popup }) {
 
       <div className="flex gap-1 mb-1 items-center">
         <FactionBadge type={getType(s)} />
+        {s.tipo2 && <FactionBadge type={s.tipo2} />}
         {s.protectedThisTurn && (
           <span className="text-xs">🛡️</span>
         )}
