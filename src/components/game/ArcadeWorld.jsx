@@ -1173,7 +1173,7 @@ export default function ArcadeWorld({
         {/* MAPPA */}
 
         <div
-          className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl touch-pan-y select-none"
+          className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl touch-none select-none"
           onPointerDown={(event) => {
             if (event.pointerType !== "touch") return;
             event.currentTarget.dataset.touchStartX = String(event.clientX);
