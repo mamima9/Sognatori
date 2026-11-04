@@ -748,6 +748,10 @@ while (remainingActions.length > 0) {
 
     resetStatsOnBench(out);
 
+    // A Sognatore appena rientrato non eredita il blocco Proteggi.
+    inc.protectedLastTurn = false;
+    inc.protectedThisTurn = false;
+
     const newActive = [
       ...playerActive
     ];
