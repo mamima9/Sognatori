@@ -343,9 +343,9 @@ const STAGE_NPCS = {
     name: "Talpoisoned",
     world: "Caverna Velenosa",
     worldEn: "Poison Cavern",
-    dialogueEn: "I am Talpoisoned, guardian of the Poison Cavern. My violet power will test your strength. Face me in the final auction!",
+    dialogueEn: "I am Talpoisoned. I have a few extra credits and I play a little dirty. Welcome to the final battle!",
     dialogue:
-      "Sono Talpoisoned, guardiano della Caverna Velenosa. Il mio potere viola metterà alla prova la tua forza. Affrontami nell’asta finale!",
+      "Sono Talpoisoned, ho qualche credito in più e sono un po’ scorretto. Benvenuto nella battaglia finale!",
   },
   11: {
     name: "Eraclito",
