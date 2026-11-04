@@ -654,10 +654,44 @@ function DreamArenaStage10({
   );
 }
 
-function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
+function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
   const mountRef = useRef(null);
   const playerRef = useRef(player);
   playerRef.current = player;
+  const moveRef = useRef(onMove);
+  moveRef.current = onMove;
+  const stickRef = useRef({ active: false, pointerId: null, dx: 0, dy: 0, lastStep: 0 });
+  const [stickPosition, setStickPosition] = useState({ x: 0, y: 0, active: false });
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const stick = stickRef.current;
+      if (!stick.active || (!stick.dx && !stick.dy)) return;
+      const now = Date.now();
+      if (now - stick.lastStep < 190) return;
+      stick.lastStep = now;
+      moveRef.current?.(stick.dx, stick.dy);
+    }, 45);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const updateStick = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const max = rect.width * 0.34;
+    const rawX = event.clientX - centerX;
+    const rawY = event.clientY - centerY;
+    const distance = Math.hypot(rawX, rawY) || 1;
+    const scale = Math.min(1, max / distance);
+    const x = rawX * scale;
+    const y = rawY * scale;
+    const dx = Math.abs(rawX) > Math.abs(rawY) ? (rawX > 0 ? 1 : -1) : 0;
+    const dy = Math.abs(rawY) >= Math.abs(rawX) ? (rawY > 0 ? 1 : -1) : 0;
+    stickRef.current.dx = distance > rect.width * 0.13 ? dx : 0;
+    stickRef.current.dy = distance > rect.width * 0.13 ? dy : 0;
+    setStickPosition({ x, y, active: true });
+  };
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -993,8 +1027,50 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
       <div className="absolute top-3 left-3 rounded-xl bg-emerald-950/75 border border-emerald-300/30 px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest text-emerald-100 pointer-events-none">
         {isEnglish ? "AFFINITY GROVE · BONUS QUEST" : "RADURA DELLE AFFINITÀ · SFIDA BONUS"}
       </div>
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap">
-        {isEnglish ? "Explore all 11 affinity sanctuaries" : "Esplora tutti gli 11 santuari delle affinità"}
+      <div
+        className="absolute bottom-5 left-5 z-20 w-32 h-32 sm:hidden rounded-full border-2 border-white/55 bg-emerald-950/35 backdrop-blur-sm touch-none select-none"
+        style={{ touchAction: "none" }}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          stickRef.current.active = true;
+          stickRef.current.pointerId = event.pointerId;
+          stickRef.current.lastStep = 0;
+          updateStick(event);
+        }}
+        onPointerMove={(event) => {
+          if (stickRef.current.active && stickRef.current.pointerId === event.pointerId) {
+            event.preventDefault();
+            updateStick(event);
+          }
+        }}
+        onPointerUp={(event) => {
+          stickRef.current.active = false;
+          stickRef.current.dx = 0;
+          stickRef.current.dy = 0;
+          stickRef.current.pointerId = null;
+          setStickPosition({ x: 0, y: 0, active: false });
+        }}
+        onPointerCancel={() => {
+          stickRef.current.active = false;
+          stickRef.current.dx = 0;
+          stickRef.current.dy = 0;
+          stickRef.current.pointerId = null;
+          setStickPosition({ x: 0, y: 0, active: false });
+        }}
+        aria-label={isEnglish ? "Touch joystick to move" : "Joystick touch per muoverti"}
+      >
+        <div className="absolute inset-0 flex items-center justify-center text-white/40 text-xl pointer-events-none">✥</div>
+        <div
+          className="absolute left-1/2 top-1/2 w-12 h-12 -ml-6 -mt-6 rounded-full border-2 border-white/80 bg-emerald-300/80 shadow-lg pointer-events-none"
+          style={{ transform: `translate(${stickPosition.x}px, ${stickPosition.y}px)` }}
+        />
+      </div>
+      <div className="absolute bottom-3 right-3 sm:hidden rounded-full bg-black/55 px-3 py-2 text-[10px] text-white/90 pointer-events-none">
+        {isEnglish ? "Drag to walk" : "Trascina per camminare"}
+      </div>
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap hidden sm:block">
+        {isEnglish ? "WASD / arrows to move" : "WASD / frecce per muoverti"}
       </div>
     </div>
   );
