@@ -703,17 +703,15 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
 
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // Ombre dinamiche disattivate: su smartphone causavano cali di frame.\n    renderer.shadowMap.enabled = false;
     mount.appendChild(renderer.domElement);
 
     scene.add(new THREE.HemisphereLight("#e5ffe5", "#4b6038", 2.0));
     const sun = new THREE.DirectionalLight("#fff1c4", 2.4);
     sun.position.set(-8, 18, 7);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.castShadow = false;
     scene.add(sun);
 
     const ground = new THREE.Mesh(
@@ -947,34 +945,23 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
     const observer = new ResizeObserver(resize);
     observer.observe(mount);
 
-    // Camera da avventura: segue il personaggio da dietro e ruota
-    // dolcemente in base all'ultima direzione di movimento.
-    let lastGridPosition = { x: playerRef.current.x, y: playerRef.current.y };
-    const facing = new THREE.Vector2(0, 1);
-    const cameraTarget = new THREE.Vector3();
+    // Camera stabile in terza persona: non ruota a ogni cambio direzione.
+    // Personaggio e camera interpolano tra le caselle per evitare scatti.
+    const renderPosition = new THREE.Vector3(
+      playerRef.current.x * 1.2,
+      0,
+      playerRef.current.y * 1.2
+    );
+    const cameraTarget = new THREE.Vector3(
+      renderPosition.x,
+      0.7,
+      renderPosition.z + 2.5
+    );
     const desiredCameraPosition = new THREE.Vector3();
     const desiredLookTarget = new THREE.Vector3();
+    const clock = new THREE.Clock();
 
-    const getCameraPose = (px, pz) => {
-      const sideX = facing.y;
-      const sideZ = -facing.x;
-      desiredCameraPosition.set(
-        px - facing.x * 8.2 + sideX * 2.8,
-        7.1,
-        pz - facing.y * 8.2 + sideZ * 2.8
-      );
-      desiredLookTarget.set(
-        px + facing.x * 3.1,
-        0.65,
-        pz + facing.y * 3.1
-      );
-    };
-
-    const initialX = playerRef.current.x * 1.2;
-    const initialZ = playerRef.current.y * 1.2;
-    getCameraPose(initialX, initialZ);
-    camera.position.copy(desiredCameraPosition);
-    cameraTarget.copy(desiredLookTarget);
+    camera.position.set(renderPosition.x, 7.2, renderPosition.z - 8.5);
     camera.lookAt(cameraTarget);
 
     let frame = 0;
@@ -982,25 +969,29 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
     const animate = () => {
       if (!running) return;
       frame = requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.05);
+      const smoothing = 1 - Math.exp(-delta * 10);
       const current = playerRef.current;
-      const deltaX = current.x - lastGridPosition.x;
-      const deltaY = current.y - lastGridPosition.y;
+      const targetX = current.x * 1.2;
+      const targetZ = current.y * 1.2;
 
-      if (deltaX !== 0 || deltaY !== 0) {
-        facing.set(deltaX, deltaY).normalize();
-        lastGridPosition = { x: current.x, y: current.y };
+      renderPosition.x = THREE.MathUtils.damp(renderPosition.x, targetX, 11, delta);
+      renderPosition.z = THREE.MathUtils.damp(renderPosition.z, targetZ, 11, delta);
+      playerModel.position.set(renderPosition.x, 0, renderPosition.z);
+
+      // La direzione cambia solo il modello, mai l'orientamento della telecamera.
+      if (Math.abs(targetX - renderPosition.x) > Math.abs(targetZ - renderPosition.z)) {
+        playerModel.rotation.y = targetX > renderPosition.x ? Math.PI / 2 : -Math.PI / 2;
+      } else if (Math.abs(targetZ - renderPosition.z) > 0.02) {
+        playerModel.rotation.y = targetZ > renderPosition.z ? 0 : Math.PI;
       }
 
-      const px = current.x * 1.2;
-      const pz = current.y * 1.2;
-      playerModel.position.set(px, 0, pz);
-      // Il personaggio guarda nella direzione in cui si sta muovendo.
-      playerModel.rotation.y = Math.atan2(facing.x, facing.y);
-      bossModel.rotation.y += 0.002;
+      bossModel.rotation.y += delta * 0.25;
 
-      getCameraPose(px, pz);
-      camera.position.lerp(desiredCameraPosition, 0.085);
-      cameraTarget.lerp(desiredLookTarget, 0.12);
+      desiredCameraPosition.set(renderPosition.x, 7.2, renderPosition.z - 8.5);
+      desiredLookTarget.set(renderPosition.x, 0.7, renderPosition.z + 2.5);
+      camera.position.lerp(desiredCameraPosition, smoothing);
+      cameraTarget.lerp(desiredLookTarget, smoothing);
       camera.lookAt(cameraTarget);
       renderer.render(scene, camera);
     };
