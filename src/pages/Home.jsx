@@ -832,7 +832,7 @@ export default function Home() {
               stage={arcadeStage}
               onComplete={(pt, et) => {
                 const gymGuardians = arcadeStage === 11 ? [
-                  { id: "gym-guardian-sol", nome: "Biglia", tipo: "Luce", tipo2: "Demone", att: 20, dif: 20, vel: 20, hp: 30, hpMax: 30, abilKey: null, abil: null, abilDesc: null, img: "/images/BIGLIA.jpg", exclusiveArcade: true },
+                  { id: "gym-guardian-sol", nome: "Biglia", tipo: "Luce", tipo2: "Demone", att: 20, dif: 20, vel: 20, hp: 30, hpMax: 30, abilKey: null, abil: null, abilDesc: null, img: "/images/BIGLIA.png", exclusiveArcade: true },
                   { id: "gym-guardian-abyss", nome: "Bengu", tipo: "Marino", tipo2: "Robot", att: 20, dif: 20, vel: 20, hp: 30, hpMax: 30, abilKey: null, abil: null, abilDesc: null, img: "/images/BENGU.png", exclusiveArcade: true },
                 ] : [];
                 setTeams({
