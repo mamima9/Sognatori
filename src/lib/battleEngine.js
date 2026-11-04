@@ -245,12 +245,10 @@ export function calcDamage(attacker, defender) {
 
   const attackerTypes = [attacker.tipo, attacker.tipo2].filter(Boolean);
   const defenderTypes = [defender.tipo, defender.tipo2].filter(Boolean);
-  const bonus = Math.max(
-    0,
-    ...attackerTypes.flatMap((attackType) =>
-      defenderTypes.map((defendType) => typeBonus(attackType, defendType))
-    )
+  const matchupBonuses = attackerTypes.flatMap((attackType) =>
+    defenderTypes.map((defendType) => typeBonus(attackType, defendType))
   );
+  const bonus = matchupBonuses.length ? Math.max(...matchupBonuses) : 0;
 
   if (bonus === -15) {
     return {
