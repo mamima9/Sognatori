@@ -931,7 +931,7 @@ export default function Home() {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
                   } else {
-                    if (completedHumanStage && arcadeHumanStagesCompleted === 9 && user) {
+                    if (completedHumanStage && arcadeHumanStagesCompleted === 10 && user) {
                       supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true, taomarco_lore_unlocked: Boolean(user.user_metadata?.taomarco_lore_unlocked) || (Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15 && Boolean(user.user_metadata?.taomarco_is_most_used)) } }).then(({ error }) => {
                         if (error) console.error("Errore salvataggio missione Arcade Taomarco:", error);
                         else {
