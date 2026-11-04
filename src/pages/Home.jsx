@@ -67,7 +67,7 @@ export default function Home() {
     8: "Viaggiatore101",
     9: "Affrescone",
     10: "Talpoisoned",
-    11: "Aureon",
+    11: "Eraclito",
   };
 
   const arcadeNPCImages = {
