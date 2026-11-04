@@ -350,10 +350,10 @@ const STAGE_NPCS = {
   11: {
     name: "Aureon",
     emoji: "👑",
-    world: "La Palestra dei Campioni",
-    worldEn: "Champion's Gym",
-    dialogueEn: "You have conquered the auction. Now face the true test: four auctioned Dreamers and two ancient Guardians. Their dual affinities and perfect stats will test every choice you made.",
-    dialogue: "Hai superato l'asta. Ora affronta la vera prova: quattro Sognatori scelti all'asta e due Guardiani antichi. Le loro doppie affinità e le statistiche perfette metteranno alla prova ogni tua scelta.",
+    world: "Il Labirinto di Smeraldopoli",
+    worldEn: "Viridian Forest Labyrinth",
+    dialogueEn: "You made it through the forest. Aureon and the two ancient Guardians are waiting at the end of the maze. The final trial begins here.",
+    dialogue: "Sei riuscito ad attraversare il bosco. Aureon e i due Guardiani antichi ti aspettano alla fine del labirinto. La prova bonus comincia qui.",
   },
 };
 
@@ -803,7 +803,7 @@ export default function ArcadeWorld({
           className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl"
           style={{
             width: "100%",
-            maxWidth: "960px",
+            maxWidth: stage === 11 ? "560px" : "960px",
             aspectRatio: stage === 11 ? "23 / 31" : "20 / 15",
             maxHeight: stage === 11 ? "72vh" : undefined,
             background:
@@ -824,7 +824,7 @@ export default function ArcadeWorld({
                 : stage === 8
                 ? "linear-gradient(135deg, #252052, #5546a8)"
                 : stage === 11
-                ? "linear-gradient(135deg, #20133f, #6d3b91, #b58b45)"
+                ? "linear-gradient(135deg, #092c1a, #17633a, #527b35)"
                 : "linear-gradient(135deg, #3b174f, #8b2f8f)",
           }}
         >
