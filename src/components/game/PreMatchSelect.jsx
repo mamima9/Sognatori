@@ -31,12 +31,18 @@ export default function PreMatchSelect({ playerTeam, enemyTeam, onComplete, onBa
     const benchIdx = [0, 1, 2, 3].filter(i => !auto.includes(i));
     const reorderedPlayer = [...auto.map(i => playerTeam[i]), ...benchIdx.map(i => playerTeam[i])];
     // AI picks the 2 starters with highest total stats (att + dif + vel)
-    const enemySorted = [0, 1, 2, 3].sort((a, b) => {
-      const sa = enemyTeam[a].att + enemyTeam[a].dif + enemyTeam[a].vel;
-      const sb = enemyTeam[b].att + enemyTeam[b].dif + enemyTeam[b].vel;
-      return sb - sa;
-    });
-    const reorderedEnemy = [...enemySorted.slice(0, 2).map(i => enemyTeam[i]), ...enemySorted.slice(2).map(i => enemyTeam[i])];
+    const auctionEnemy = enemyTeam.filter((s) => !s.exclusiveArcade);
+    const exclusiveBosses = enemyTeam.filter((s) => s.exclusiveArcade);
+    const enemySorted = auctionEnemy
+      .map((s, i) => ({ s, i }))
+      .sort((a, b) =>
+        (b.s.att + b.s.dif + b.s.vel) - (a.s.att + a.s.dif + a.s.vel)
+      );
+    const reorderedEnemy = [
+      ...enemySorted.slice(0, 2).map(({ s }) => s),
+      ...enemySorted.slice(2).map(({ s }) => s),
+      ...exclusiveBosses,
+    ];
     onComplete(reorderedPlayer, reorderedEnemy);
   };
 
