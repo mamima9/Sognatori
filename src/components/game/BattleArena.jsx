@@ -92,7 +92,7 @@ export default function BattleArena({
           newStreak
         );
         const completedNow =
-  stage === 9 && !profile.arcade_completed;
+  stage === 11 && !profile.arcade_completed;
 
         const { error } = await supabase
           .from("profiles")
