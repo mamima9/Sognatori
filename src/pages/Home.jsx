@@ -927,11 +927,12 @@ export default function Home() {
                 setShowResultLog(false);
                 setTeams(null);
                 if (r === "win") {
-                  if (arcadeStage < 11) {
+                  if (arcadeStage < 10) {
                     setArcadeStage((prev) => prev + 1);
                     setScreen("arcadeWorld");
-                  } else {
-                    if (completedHumanStage && arcadeHumanStagesCompleted === 10 && user) {
+                  } else if (arcadeStage === 10) {
+                    // The main Arcade campaign ends here. Stage 11 is an optional bonus challenge.
+                    if (completedHumanStage && arcadeHumanStagesCompleted === 9 && user) {
                       supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true, taomarco_lore_unlocked: Boolean(user.user_metadata?.taomarco_lore_unlocked) || (Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15 && Boolean(user.user_metadata?.taomarco_is_most_used)) } }).then(({ error }) => {
                         if (error) console.error("Errore salvataggio missione Arcade Taomarco:", error);
                         else {
@@ -981,28 +982,44 @@ export default function Home() {
 
             <h2 className="text-4xl font-black mb-2">
 
-              {result === "win" && arcadeStage === 11
-                ? "PALESTRA COMPLETATA!"
-                : result === "win"
-                  ? t("home.victory")
-                  : t("home.defeat")}
+              {result === "win" && arcadeStage === 10
+                ? "ARCADE COMPLETATO!"
+                : result === "win" && arcadeStage === 11
+                  ? "SFIDA BONUS COMPLETATA!"
+                  : result === "win"
+                    ? t("home.victory")
+                    : t("home.defeat")}
 
             </h2>
 
             <p className="text-slate-400 mb-8 text-sm">
 
-              {result === "win" && arcadeStage === 11
-                ? "Hai superato i 10 stage e sconfitto il Gym Leader!"
-                : result === "win"
-                  ? t("home.victoryMsg")
-                  : t("home.defeatMsg")}
+              {result === "win" && arcadeStage === 10
+                ? "Hai superato tutti e 10 gli stage dell'Arcade. La Palestra dei Campioni è una sfida bonus facoltativa!"
+                : result === "win" && arcadeStage === 11
+                  ? "Hai completato anche la sfida bonus della Palestra dei Campioni!"
+                  : result === "win"
+                    ? t("home.victoryMsg")
+                    : t("home.defeatMsg")}
 
             </p>
 
             {result === "win" && arcadeStage === 10 && (
-              <div className="text-amber-400 font-bold text-lg mb-8">
-                🎁 Otterrai una ricompensa!
+              <div className="text-amber-400 font-bold text-lg mb-6">
+                🏆 CAMPAGNA ARCADE COMPLETATA · 10/10
+                <p className="text-sm font-medium text-amber-200/80 mt-2">🎁 Ricompensa sbloccata: accesso alla Palestra dei Campioni!</p>
               </div>
+            )}
+            {result === "win" && arcadeStage === 10 && (
+              <button
+                onClick={() => {
+                  setArcadeStage(11);
+                  setScreen("arcadeWorld");
+                }}
+                className="mb-6 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-amber-500 font-black shadow-lg hover:brightness-110 transition"
+              >
+                👑 {lang === "en" ? "ENTER BONUS GYM — STAGE 11" : "SFIDA BONUS: PALESTRA — STAGE 11"}
+              </button>
             )}
 
             <div className="flex flex-wrap justify-center gap-3 mb-4">
