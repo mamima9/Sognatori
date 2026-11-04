@@ -80,7 +80,7 @@ export default function Home() {
     7: "TALPOI.png",
     8: "viaggiatore101.png",
     9: "affrescone.png",
-    10: "TALPOI.png",
+    10: "TALPOISONED.png",
   };
 
   useEffect(() => {
