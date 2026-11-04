@@ -1018,48 +1018,6 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish, onMove }) {
       <div className="absolute top-3 left-3 rounded-xl bg-emerald-950/75 border border-emerald-300/30 px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest text-emerald-100 pointer-events-none">
         {isEnglish ? "AFFINITY GROVE · BONUS QUEST" : "RADURA DELLE AFFINITÀ · SFIDA BONUS"}
       </div>
-      <div
-        className="absolute bottom-5 left-5 z-20 w-32 h-32 sm:hidden rounded-full border-2 border-white/55 bg-emerald-950/35 backdrop-blur-sm touch-none select-none"
-        style={{ touchAction: "none" }}
-        onPointerDown={(event) => {
-          event.preventDefault();
-          event.currentTarget.setPointerCapture(event.pointerId);
-          stickRef.current.active = true;
-          stickRef.current.pointerId = event.pointerId;
-          stickRef.current.lastStep = 0;
-          updateStick(event);
-        }}
-        onPointerMove={(event) => {
-          if (stickRef.current.active && stickRef.current.pointerId === event.pointerId) {
-            event.preventDefault();
-            updateStick(event);
-          }
-        }}
-        onPointerUp={(event) => {
-          stickRef.current.active = false;
-          stickRef.current.dx = 0;
-          stickRef.current.dy = 0;
-          stickRef.current.pointerId = null;
-          setStickPosition({ x: 0, y: 0, active: false });
-        }}
-        onPointerCancel={() => {
-          stickRef.current.active = false;
-          stickRef.current.dx = 0;
-          stickRef.current.dy = 0;
-          stickRef.current.pointerId = null;
-          setStickPosition({ x: 0, y: 0, active: false });
-        }}
-        aria-label={isEnglish ? "Touch joystick to move" : "Joystick touch per muoverti"}
-      >
-        <div className="absolute inset-0 flex items-center justify-center text-white/40 text-xl pointer-events-none">✥</div>
-        <div
-          className="absolute left-1/2 top-1/2 w-12 h-12 -ml-6 -mt-6 rounded-full border-2 border-white/80 bg-emerald-300/80 shadow-lg pointer-events-none"
-          style={{ transform: `translate(${stickPosition.x}px, ${stickPosition.y}px)` }}
-        />
-      </div>
-      <div className="absolute bottom-3 right-3 sm:hidden rounded-full bg-black/55 px-3 py-2 text-[10px] text-white/90 pointer-events-none">
-        {isEnglish ? "Drag to walk" : "Trascina per camminare"}
-      </div>
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap hidden sm:block">
         {isEnglish ? "WASD / arrows to move" : "WASD / frecce per muoverti"}
       </div>
@@ -1215,7 +1173,34 @@ export default function ArcadeWorld({
         {/* MAPPA */}
 
         <div
-          className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl"
+          className="relative mx-auto overflow-hidden rounded-3xl border border-amber-500/30 shadow-2xl touch-pan-y select-none"
+          onPointerDown={(event) => {
+            if (event.pointerType !== "touch") return;
+            event.currentTarget.dataset.touchStartX = String(event.clientX);
+            event.currentTarget.dataset.touchStartY = String(event.clientY);
+          }}
+          onPointerUp={(event) => {
+            if (event.pointerType !== "touch") return;
+            const startX = Number(event.currentTarget.dataset.touchStartX);
+            const startY = Number(event.currentTarget.dataset.touchStartY);
+            if (!Number.isFinite(startX) || !Number.isFinite(startY)) return;
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+            if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return;
+            if (Math.abs(dx) > Math.abs(dy)) {
+              movePlayer(dx > 0 ? 1 : -1, 0);
+            } else {
+              // Nella visuale 3D, verso l'alto significa avanzare verso Eraclito.
+              const forward = stage === 11;
+              movePlayer(0, dy > 0 ? (forward ? -1 : 1) : (forward ? 1 : -1));
+            }
+            delete event.currentTarget.dataset.touchStartX;
+            delete event.currentTarget.dataset.touchStartY;
+          }}
+          onPointerCancel={(event) => {
+            delete event.currentTarget.dataset.touchStartX;
+            delete event.currentTarget.dataset.touchStartY;
+          }}
           style={{
             width: "100%",
             maxWidth: stage === 11 ? "560px" : "960px",
@@ -1431,55 +1416,7 @@ export default function ArcadeWorld({
 
         </div>
 
-        {/* PAD MOBILE */}
-
-        <div className="sm:hidden flex justify-center mt-5">
-
-          <div className="grid grid-cols-3 gap-2">
-
-            <div />
-
-            <button
-              onClick={() =>
-                movePlayer(0, -1)
-              }
-              className="w-16 h-14 rounded-xl bg-white/10 border border-white/10 text-2xl active:scale-90"
-            >
-              ▲
-            </button>
-
-            <div />
-
-            <button
-              onClick={() =>
-                movePlayer(-1, 0)
-              }
-              className="w-16 h-14 rounded-xl bg-white/10 border border-white/10 text-2xl active:scale-90"
-            >
-              ◀
-            </button>
-
-            <button
-              onClick={() =>
-                movePlayer(0, 1)
-              }
-              className="w-16 h-14 rounded-xl bg-white/10 border border-white/10 text-2xl active:scale-90"
-            >
-              ▼
-            </button>
-
-            <button
-              onClick={() =>
-                movePlayer(1, 0)
-              }
-              className="w-16 h-14 rounded-xl bg-white/10 border border-white/10 text-2xl active:scale-90"
-            >
-              ▶
-            </button>
-
-          </div>
-
-        </div>
+        {/* Movimento touch diretto sulla mappa: trascina nella direzione desiderata. */}
 
         {/* PARLA */}
 
