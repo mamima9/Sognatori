@@ -349,12 +349,12 @@ const STAGE_NPCS = {
       "Benvenuto nella Dream Arena! Sono Mangu. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
   },
   11: {
-    name: "Aureon",
+    name: "Eraclito",
     emoji: "👑",
-    world: "Il Labirinto di Smeraldopoli",
-    worldEn: "Viridian Forest Labyrinth",
-    dialogueEn: "You made it through the forest. Aureon and the two ancient Guardians are waiting at the end of the maze. The final trial begins here.",
-    dialogue: "Sei riuscito ad attraversare il bosco. Aureon e i due Guardiani antichi ti aspettano alla fine del labirinto. La prova bonus comincia qui.",
+    world: "La Radura delle Affinità",
+    worldEn: "The Affinity Grove",
+    dialogueEn: "Ahahahah. I see I've almost taken possession of you too. Allow me to introduce myself: I'm Eraclito. There's only one way to escape me. But if you're here, I don't think you intend to stop.",
+    dialogue: "Ahahahah. Vedo che mi sono già quasi impossessato anche di te. Mi presento, sono Eraclito. C'è solo un modo per sfuggirmi. Ma se sei qui non credo che hai intenzione di smettere.",
   },
 };
 
