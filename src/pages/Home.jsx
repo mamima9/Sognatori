@@ -944,6 +944,9 @@ export default function Home() {
                       });
                     }
                     setScreen("result");
+                  } else if (arcadeStage === 11) {
+                    // Stage 11 victory triggers Eraclito's secret ending.
+                    setScreen("result");
                   }
                 } else setScreen("result");
               }}
