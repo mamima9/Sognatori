@@ -183,24 +183,38 @@ const MAPS = {
     "....................",
   ],
   11: [
-    "####################",
-    "#..................#",
-    "#..##..........##..#",
-    "#..##..........##..#",
-    "#..................#",
-    "#....####..####....#",
-    "#..................#",
-    "#...#..........#...#",
-    "#...#..........#...#",
-    "#...#.....N....#...#",
-    "#..................#",
-    "#..##..........##..#",
-    "#..##..........##..#",
-    "#..................#",
-    "####################",
+    "#######################",
+    "#...........#.........#",
+    "#.###.####..#.#######.#",
+    "#.#...#.....#.......#.#",
+    "#.#.###.#########.#.#.#",
+    "#.#...#...........#.#.#",
+    "#.###.#############.#.#",
+    "#.....#.....#.......#.#",
+    "#######.#.###.#.#####.#",
+    "#.....#.#.....#.......#",
+    "#.#####.###########.#.#",
+    "#.....#.#...#.......#.#",
+    "#.#.#.#.#.#.#.##.####.#",
+    "#.#...#...#...#.....#.#",
+    "#.#.###########.#.###.#",
+    "#.#.........#...#...#.#",
+    "#.#####.#####.#####.#.#",
+    "#...#...#.....#...#...#",
+    "###.#.###.#####.#.#####",
+    "#...#...#.......#...#.#",
+    "#.#####.###########.#.#",
+    "#.#.........#.......#.#",
+    "#.#.#######.#.#######.#",
+    "#.#...#.#...#.#...#...#",
+    "#.###.#.#.###.#.#.#.###",
+    "#.#...#.....#...#.#...#",
+    "#.#.#############.###.#",
+    "#.#.#...........#...#.#",
+    "#.#.#.#######.#####.#.#",
+    "#.#.........#.........#",
+    "#######################",
   ],
-
-
 
 };
 
@@ -213,6 +227,9 @@ const NPC_POSITION = {
   x: 10,
   y: 9,
 };
+
+const FOREST_START = { x: 1, y: 1 };
+const FOREST_NPC_POSITION = { x: 21, y: 29 };
 
 // NPC segreti: non vengono disegnati sulla mappa, ma si possono incontrare
 // esplorando le coordinate indicate.
@@ -655,7 +672,8 @@ export default function ArcadeWorld({
   const npcName = npcNames?.[stage] || npc.name;
   const npcImage = npcImages?.[stage];
 
-  const [player, setPlayer] = useState(PLAYER_START);
+  const [player, setPlayer] = useState(stage === 11 ? FOREST_START : PLAYER_START);
+  const activeNpcPosition = stage === 11 ? FOREST_NPC_POSITION : NPC_POSITION;
   const [nearNpc, setNearNpc] = useState(false);
   const [nearHiddenNpc, setNearHiddenNpc] = useState(false);
   const [talking, setTalking] = useState(false);
@@ -670,8 +688,8 @@ export default function ArcadeWorld({
 
   const checkNpcDistance = (x, y) => {
     const distance =
-      Math.abs(x - NPC_POSITION.x) +
-      Math.abs(y - NPC_POSITION.y);
+      Math.abs(x - activeNpcPosition.x) +
+      Math.abs(y - activeNpcPosition.y);
 
     return distance <= 1;
   };
@@ -786,7 +804,8 @@ export default function ArcadeWorld({
           style={{
             width: "100%",
             maxWidth: "960px",
-            aspectRatio: "20 / 15",
+            aspectRatio: stage === 11 ? "23 / 31" : "20 / 15",
+            maxHeight: stage === 11 ? "72vh" : undefined,
             background:
               stage === 1
                 ? "linear-gradient(135deg, #16351f, #244d2c)"
@@ -837,12 +856,14 @@ export default function ArcadeWorld({
                 <div
                   key={`${x}-${y}`}
                   className={
-                    cell === "~"
+                    stage === 11
+                      ? cell === "#"
+                        ? "bg-gradient-to-br from-emerald-950 via-green-950 to-[#102b1b] border border-emerald-900/70 shadow-inner"
+                        : "bg-gradient-to-br from-[#8b7045] via-[#6f5838] to-[#4d482b] border border-emerald-900/30"
+                      : cell === "~"
                       ? "bg-gradient-to-br from-yellow-400 via-orange-600 to-red-800 border border-orange-500/30 animate-pulse"
                       : cell === "#"
-                      ? stage === 11
-                        ? "bg-amber-950 border border-amber-500/40 shadow-inner"
-                        : stage === 1
+                      ? stage === 1
                         ? "bg-emerald-950 border border-emerald-900"
                         : stage === 2
                         ? "bg-stone-950 border border-stone-800"
@@ -881,17 +902,15 @@ export default function ArcadeWorld({
                   }
                 >
 
-                  {cell !== "#" &&
-                    cell !== "~" &&
-                    Math.random() > 0.82 && (
-                      <div className="w-full h-full flex items-center justify-center text-xs opacity-70">
-                        {stage === 1
-                          ? "🌿"
-                          : stage === 2
-                          ? "🪨"
-                          : ""}
-                      </div>
-                    )}
+                  {Math.random() > (stage === 11 ? 0.58 : 0.82) && (
+                    <div className="w-full h-full flex items-center justify-center text-xs opacity-75 pointer-events-none">
+                      {stage === 11
+                        ? cell === "#" ? "🌳" : (Math.random() > 0.5 ? "🌿" : "🍂")
+                        : cell !== "#" && cell !== "~"
+                        ? stage === 1 ? "🌿" : stage === 2 ? "🪨" : ""
+                        : ""}
+                    </div>
+                  )}
 
                 </div>
               ))
@@ -903,8 +922,8 @@ export default function ArcadeWorld({
           <div
             className="absolute flex flex-col items-center justify-center pointer-events-none"
             style={{
-              left: `${NPC_POSITION.x * tileWidth}%`,
-              top: `${NPC_POSITION.y * tileHeight}%`,
+              left: `${activeNpcPosition.x * tileWidth}%`,
+              top: `${activeNpcPosition.y * tileHeight}%`,
               width: `${tileWidth}%`,
               height: `${tileHeight}%`,
             }}
