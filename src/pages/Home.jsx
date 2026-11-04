@@ -63,7 +63,7 @@ export default function Home() {
     4: "Marsmellow",
     5: "Spaxio",
     6: "Gubbo",
-    7: "Boccinu-R",
+    7: "Talpoi",
     8: "Viaggiatore101",
     9: "Affrescone",
     10: "Mangu",
@@ -77,7 +77,7 @@ export default function Home() {
     4: "marsmellow.png",
     5: "spaxio.png",
     6: "gubbo.png",
-    7: "boccinu-r.png",
+    7: "TALPOI.png",
     8: "viaggiatore101.png",
     9: "affrescone.png",
   };

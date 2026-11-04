@@ -340,17 +340,15 @@ const STAGE_NPCS = {
       "Dimostrami di essere davvero degno di entrare nel cuore di Mimmiland. Battimi ed entra davvero a far parte del mondo dei Sognatori",
   },
    10: {
-    name: "Mangu",
-    emoji: "🧙",
+    name: "Talpoisoned",
     world: "Dream Arena",
     worldEn: "Dream Arena",
-    dialogueEn: "Welcome to the Dream Arena! I’m Mangu. I have 300 credits, and I’m not here to give anything away: I’m very interested in Spinoff and Pepe. Let’s see if you can beat me at the auction too.",
+    dialogueEn: "Welcome to the Dream Arena! I’m Talpoisoned. I have 300 credits, and I’m not here to give anything away: I’m very interested in Spinoff and Pepe. Let’s see if you can beat me at the auction too.",
     dialogue:
-      "Benvenuto nella Dream Arena! Sono Mangu. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
+      "Benvenuto nella Dream Arena! Sono Talpoisoned. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
   },
   11: {
     name: "Eraclito",
-    emoji: "👑",
     world: "La Radura delle Affinità",
     worldEn: "The Affinity Grove",
     dialogueEn: "Ahahahah. I see I've almost taken possession of you too. Allow me to introduce myself: I'm Eraclito. There's only one way to escape me. But if you're here, I don't think you intend to stop.",
