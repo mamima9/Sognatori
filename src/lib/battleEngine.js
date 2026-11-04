@@ -4,8 +4,8 @@ import { bm } from "./battleMessages";
 export function initBattleSognatore(t) {
   return {
     ...t,
-    hp: 20,
-    hpMax: 20,
+    hp: Number.isFinite(t.hp) ? t.hp : 20,
+    hpMax: Number.isFinite(t.hpMax) ? t.hpMax : (Number.isFinite(t.hp) ? t.hp : 20),
     statMods: { att: 0, dif: 0, vel: 0 },
     protectedLastTurn: false,
     protectedThisTurn: false,
@@ -243,7 +243,14 @@ export function calcDamage(attacker, defender) {
     };
   }
 
-  const bonus = typeBonus(atkType, defType);
+  const attackerTypes = [attacker.tipo, attacker.tipo2].filter(Boolean);
+  const defenderTypes = [defender.tipo, defender.tipo2].filter(Boolean);
+  const bonus = Math.max(
+    0,
+    ...attackerTypes.flatMap((attackType) =>
+      defenderTypes.map((defendType) => typeBonus(attackType, defendType))
+    )
+  );
 
   if (bonus === -15) {
     return {
