@@ -654,7 +654,7 @@ function DreamArenaStage10({
   );
 }
 
-function ForestMaze3D({ map, player, npcPosition, npcName, portrait, npcImage, isEnglish }) {
+function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
   const mountRef = useRef(null);
   const playerRef = useRef(player);
   playerRef.current = player;
@@ -1019,9 +1019,6 @@ export default function ArcadeWorld({
     map={MAP}
     player={player}
     npcPosition={activeNpcPosition}
-    npcName={npcName}
-    portrait={portrait}
-    npcImage={npcImage}
     isEnglish={isEnglish}
   />
 ) : isStage10 ? (
