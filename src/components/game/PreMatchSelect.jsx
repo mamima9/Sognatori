@@ -58,7 +58,7 @@ export default function PreMatchSelect({ playerTeam, enemyTeam, onComplete, onBa
         <SognatoreImage s={s} className="w-12 h-12" />
         <div className="flex-1 min-w-0">
           <div className="text-xs font-bold truncate">{s.nome}</div>
-          <FactionBadge type={s.tipo} />
+          <div className="flex flex-wrap gap-1 items-center"><FactionBadge type={s.tipo} />{s.tipo2 && <FactionBadge type={s.tipo2} />}</div>
           <div className="flex gap-1 mt-0.5 text-[8px]">
             <span className="bg-red-500/20 rounded px-1">ATT {s.att}</span>
             <span className="bg-blue-500/20 rounded px-1">DIF {s.dif}</span>
