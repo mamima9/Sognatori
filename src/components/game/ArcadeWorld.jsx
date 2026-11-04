@@ -738,65 +738,127 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
       });
     });
 
-    // Cinque aree tematiche aperte: nuvole, luce, marino, demoni e natura.
-    const addLandmark = (x, z, color, labelType) => {
+    // Le undici piazze delle affinità, disposte lungo una grande radura esplorabile.
+    const addLandmark = (x, z, color, labelType, label) => {
       const group = new THREE.Group();
       group.position.set(x * 1.2, 0, z * 1.2);
       const mat = (hex, emissive = false) => new THREE.MeshStandardMaterial({
         color: hex, roughness: 0.55, metalness: 0.12,
         emissive: emissive ? hex : "#000000", emissiveIntensity: emissive ? 0.35 : 0
       });
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.55, 0.22, 12), mat("#8a7958"));
-      base.position.y = 0.12; base.receiveShadow = true; group.add(base);
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.07, 8, 32), mat(color, true));
-      ring.rotation.x = Math.PI / 2; ring.position.y = 0.3; group.add(ring);
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.22, 0.18, 12), mat("#8a7958"));
+      base.position.y = 0.1; base.receiveShadow = true; group.add(base);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.055, 8, 32), mat(color, true));
+      ring.rotation.x = Math.PI / 2; ring.position.y = 0.24; group.add(ring);
 
       if (labelType === "cloud") {
-        [[-0.48,1.15,0],[0,1.42,0],[0.48,1.15,0]].forEach(([cx,cy,cz]) => {
-          const cloud = new THREE.Mesh(new THREE.SphereGeometry(0.55, 9, 7), mat("#f4f7ff"));
+        [[-0.42,0.95,0],[0,1.2,0],[0.42,0.95,0]].forEach(([cx,cy,cz]) => {
+          const cloud = new THREE.Mesh(new THREE.SphereGeometry(0.43, 9, 7), mat("#f4f7ff"));
           cloud.position.set(cx,cy,cz); cloud.scale.set(1.25,0.72,0.9); group.add(cloud);
         });
-        const mist = new THREE.PointLight("#c9e8ff", 1.5, 5); mist.position.y = 1.5; group.add(mist);
       } else if (labelType === "light") {
-        const sunCore = new THREE.Mesh(new THREE.SphereGeometry(0.48, 12, 10), mat("#fff1a8", true));
-        sunCore.position.y = 1.8; group.add(sunCore);
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.36, 12, 10), mat("#fff1a8", true));
+        core.position.y = 1.45; group.add(core);
         for (let i=0;i<8;i++) {
-          const ray = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.9,0.12), mat("#ffe18a", true));
-          const a=i*Math.PI/4; ray.position.set(Math.cos(a)*0.85,1.8+Math.sin(a)*0.85,0); ray.rotation.z=-a; group.add(ray);
+          const ray = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.65,0.1), mat("#ffe18a", true));
+          const a=i*Math.PI/4; ray.position.set(Math.cos(a)*0.65,1.45+Math.sin(a)*0.65,0); ray.rotation.z=-a; group.add(ray);
         }
-        const glow = new THREE.PointLight("#ffe9a6", 2, 7); glow.position.y=2; group.add(glow);
       } else if (labelType === "marino") {
-        const pool = new THREE.Mesh(new THREE.CylinderGeometry(1.12,1.12,0.12,24), mat("#168fbd", true));
-        pool.position.y=0.27; group.add(pool);
-        const wave = new THREE.Mesh(new THREE.TorusGeometry(0.72,0.06,8,28), mat("#a4f0ff", true));
-        wave.rotation.x=Math.PI/2; wave.position.y=0.38; group.add(wave);
-        const bubble = new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),mat("#d5fbff"));
-        bubble.position.set(0,1.0,0); group.add(bubble);
+        const pool = new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,0.12,24), mat("#168fbd", true));
+        pool.position.y=0.23; group.add(pool);
+        const wave = new THREE.Mesh(new THREE.TorusGeometry(0.58,0.05,8,28), mat("#a4f0ff", true));
+        wave.rotation.x=Math.PI/2; wave.position.y=0.34; group.add(wave);
+        const bubble = new THREE.Mesh(new THREE.SphereGeometry(0.17,10,8),mat("#d5fbff"));
+        bubble.position.set(0,0.9,0); group.add(bubble);
       } else if (labelType === "demoni") {
-        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.62,1.65,7), mat("#e65b28", true));
-        flame.position.y=1.05; group.add(flame);
-        const ember = new THREE.PointLight("#ff642b", 2, 6); ember.position.y=1.1; group.add(ember);
-        const horns = [-1,1].map(side => {
-          const horn = new THREE.Mesh(new THREE.ConeGeometry(0.18,0.72,6),mat("#39252a"));
-          horn.position.set(side*0.48,1.7,0); horn.rotation.z=side*0.45; group.add(horn); return horn;
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.52,1.4,7), mat("#e65b28", true));
+        flame.position.y=0.95; group.add(flame);
+        [-1,1].forEach(side => {
+          const horn = new THREE.Mesh(new THREE.ConeGeometry(0.14,0.58,6),mat("#39252a"));
+          horn.position.set(side*0.38,1.48,0); horn.rotation.z=side*0.45; group.add(horn);
         });
-      } else {
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.42,2.1,7),mat("#76502e"));
-        trunk.position.y=1.05; group.add(trunk);
+      } else if (labelType === "natura") {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.34,1.55,7),mat("#76502e"));
+        trunk.position.y=0.78; group.add(trunk);
         for(let i=0;i<3;i++){
-          const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(0.95-i*0.12,1),mat(["#2d7d43","#45964e","#78ae58"][i]));
-          crown.position.set((i-1)*0.18,2.15+i*0.48,0); crown.castShadow=true; group.add(crown);
+          const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(0.72-i*0.1,1),mat(["#2d7d43","#45964e","#78ae58"][i]));
+          crown.position.set((i-1)*0.12,1.65+i*0.36,0); crown.castShadow=true; group.add(crown);
         }
-        const aura=new THREE.PointLight("#9bdf79",1.4,6); aura.position.y=2.4; group.add(aura);
+      } else if (labelType === "mago") {
+        const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.72,0),mat("#a56be0",true));
+        crystal.position.y=1.05; crystal.rotation.y=Math.PI/4; group.add(crystal);
+        const orbit = new THREE.Mesh(new THREE.TorusGeometry(0.68,0.045,8,24),mat("#d9b5ff",true));
+        orbit.position.y=1.05; orbit.rotation.x=0.8; group.add(orbit);
+      } else if (labelType === "umano") {
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.38,1.45,8),mat("#44464b"));
+        pillar.position.y=0.75; group.add(pillar);
+        const crest = new THREE.Mesh(new THREE.SphereGeometry(0.34,10,8),mat("#e0c49a"));
+        crest.position.y=1.65; group.add(crest);
+      } else if (labelType === "dolce") {
+        const sweet = new THREE.Mesh(new THREE.SphereGeometry(0.58,12,10),mat("#f4a9c8",true));
+        sweet.position.y=0.88; group.add(sweet);
+        const topping = new THREE.Mesh(new THREE.ConeGeometry(0.42,0.48,8),mat("#fff0d8"));
+        topping.position.y=1.42; group.add(topping);
+      } else if (labelType === "robot") {
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.9,0.72),mat("#aeb8c2",true));
+        body.position.y=0.9; group.add(body);
+        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.12,0.08),mat("#4bd9ef",true));
+        eye.position.set(0,1.02,0.39); group.add(eye);
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.45,6),mat("#d9e1e8"));
+        antenna.position.y=1.62; group.add(antenna);
+      } else if (labelType === "orso") {
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.55,10,8),mat("#9a6840"));
+        body.position.y=0.75; body.scale.set(1,1.15,0.8); group.add(body);
+        [-0.34,0.34].forEach(side => {
+          const ear = new THREE.Mesh(new THREE.SphereGeometry(0.2,8,6),mat("#704526"));
+          ear.position.set(side*1.4,1.22,0); group.add(ear);
+        });
+        const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6),mat("#e4c39b"));
+        muzzle.position.set(0,0.78,0.43); group.add(muzzle);
+      } else if (labelType === "salato") {
+        const crystal = new THREE.Mesh(new THREE.DodecahedronGeometry(0.62,0),mat("#ffa630",true));
+        crystal.position.y=0.95; group.add(crystal);
+        const spikes = [-1,0,1].map((v) => {
+          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.55,5),mat("#ffe0a0"));
+          spike.position.set(v*0.42,1.55,0); group.add(spike); return spike;
+        });
       }
+
+      // Etichetta leggibile sopra ogni monumento, sempre rivolta verso la telecamera.
+      const canvas = document.createElement("canvas");
+      canvas.width = 512; canvas.height = 128;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "rgba(8,18,15,0.82)";
+      ctx.beginPath(); ctx.roundRect(8, 8, 496, 112, 28); ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 8; ctx.stroke();
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 48px Arial";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(label.toUpperCase(), 256, 66);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+      badge.position.y = 2.45;
+      badge.scale.set(3.0, 0.75, 1);
+      group.add(badge);
+
+      const aura = new THREE.PointLight(color, 0.8, 3.8);
+      aura.position.y = 1.1;
+      group.add(aura);
       scene.add(group);
       return group;
     };
-    addLandmark(4, 5, "#bdeaff", "cloud");
-    addLandmark(18, 5, "#ffe18a", "light");
-    addLandmark(4, 15, "#39c5ec", "marino");
-    addLandmark(18, 15, "#ff6a35", "demoni");
-    addLandmark(11, 23, "#82d66c", "natura");
+
+    addLandmark(3, 5, "#d5d5d0", "cloud", "Nuvola");
+    addLandmark(11, 5, "#ffd700", "light", "Luce");
+    addLandmark(19, 5, "#1e90ff", "marino", "Marino");
+    addLandmark(3, 13, "#e83232", "demoni", "Demone");
+    addLandmark(11, 13, "#2d8b2d", "natura", "Natura");
+    addLandmark(19, 13, "#b8b8b8", "robot", "Robot");
+    addLandmark(3, 21, "#7b3ca8", "mago", "Mago");
+    addLandmark(7, 25, "#3a3a3a", "umano", "Umano");
+    addLandmark(11, 21, "#c8a165", "dolce", "Dolce");
+    addLandmark(15, 25, "#8b5a2b", "orso", "Orso");
+    addLandmark(19, 21, "#ffa630", "salato", "Salato");
 
     const makeCharacter = (mainColor, accentColor, isBoss = false) => {
       const group = new THREE.Group();
@@ -932,7 +994,7 @@ function ForestMaze3D({ map, player, npcPosition, isEnglish }) {
         {isEnglish ? "AFFINITY GROVE · BONUS QUEST" : "RADURA DELLE AFFINITÀ · SFIDA BONUS"}
       </div>
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[10px] text-white/90 pointer-events-none whitespace-nowrap">
-        {isEnglish ? "Explore the five affinity sanctuaries" : "Esplora i cinque santuari delle affinità"}
+        {isEnglish ? "Explore all 11 affinity sanctuaries" : "Esplora tutti gli 11 santuari delle affinità"}
       </div>
     </div>
   );
