@@ -970,6 +970,31 @@ export default function Home() {
             className="min-h-screen flex flex-col items-center justify-center text-center px-6"
           >
 
+            {result === "win" && arcadeStage === 11 ? (
+              <div className="max-w-2xl w-full rounded-3xl border border-violet-500/40 bg-gradient-to-b from-slate-900 via-purple-950 to-black p-8 shadow-[0_0_80px_rgba(124,58,237,0.25)]">
+                <div className="text-7xl mb-5">👁️</div>
+                <img
+                  src={arcadeNPCImages[11] ? `/images/${arcadeNPCImages[11]}` : "/images/ERACLITO.png"}
+                  alt="Eraclito"
+                  className="h-36 w-36 object-contain mx-auto mb-5 drop-shadow-[0_0_24px_rgba(168,85,247,0.5)]"
+                />
+                <h2 className="text-3xl md:text-4xl font-black mb-5 text-violet-200">
+                  {lang === "en" ? "YOU WON... BUT YOU LOST." : "COMPLIMENTI... HAI VINTO, MA HAI PERSO."}
+                </h2>
+                <p className="text-lg md:text-xl leading-relaxed text-slate-100 mb-8">
+                  {lang === "en"
+                    ? "Congratulations, you won this battle too... but... you didn't escape... and now you're part of the game... so I win!"
+                    : "Complimenti, hai vinto anche questa battaglia... ma... non sei scappato... e ormai fai parte del gioco... quindi ho vinto io!"}
+                </p>
+                <button
+                  onClick={() => setScreen("menu")}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 font-black shadow-lg hover:brightness-110 transition"
+                >
+                  {lang === "en" ? "RETURN TO MENU" : "TORNA AL MENU"}
+                </button>
+              </div>
+            ) : (
+              <>
             <div className="text-7xl mb-4">
               {result === "win"
                 ? "🏆"
@@ -1077,6 +1102,8 @@ export default function Home() {
               </button>
 
             </div>
+              </>
+            )}
 
           </motion.div>
         )}
