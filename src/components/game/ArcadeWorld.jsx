@@ -182,6 +182,23 @@ const MAPS = {
     "....................",
     "....................",
   ],
+  11: [
+    "####################",
+    "#..................#",
+    "#..##..........##..#",
+    "#..##..........##..#",
+    "#..................#",
+    "#....####..####....#",
+    "#..................#",
+    "#...#..........#...#",
+    "#...#..........#...#",
+    "#...#....N.....#...#",
+    "#..................#",
+    "#..##..........##..#",
+    "#..##..........##..#",
+    "#..................#",
+    "####################",
+  ],
 
 
 
@@ -312,7 +329,15 @@ const STAGE_NPCS = {
     dialogueEn: "Welcome to the Dream Arena! I’m Mangu. I have 300 credits, and I’m not here to give anything away: I’m very interested in Spinoff and Pepe. Let’s see if you can beat me at the auction too.",
     dialogue:
       "Benvenuto nella Dream Arena! Sono Mangu. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
-  }, 
+  },
+  11: {
+    name: "Aureon",
+    emoji: "👑",
+    world: "La Palestra dei Campioni",
+    worldEn: "Champion's Gym",
+    dialogueEn: "You have conquered the auction. Now face the true test: four auctioned Dreamers and two ancient Guardians. Their dual affinities and perfect stats will test every choice you made.",
+    dialogue: "Hai superato l'asta. Ora affronta la vera prova: quattro Sognatori scelti all'asta e due Guardiani antichi. Le loro doppie affinità e le statistiche perfette metteranno alla prova ogni tua scelta.",
+  },
 };
 
 function DreamArenaStage10({
@@ -622,6 +647,7 @@ export default function ArcadeWorld({
   const isEnglish = lang === "en";
   const MAP = MAPS[stage] || MAPS[1];
   const isStage10 = stage === 10;
+  const isStage11 = stage === 11;
 
   const npc = STAGE_NPCS[stage] || STAGE_NPCS[1];
   const dialogue = isEnglish ? (npc.dialogueEn || npc.dialogue) : npc.dialogue;
@@ -779,6 +805,8 @@ export default function ArcadeWorld({
                 ? "linear-gradient(135deg, #4a3020, #8b6b4a)"
                 : stage === 8
                 ? "linear-gradient(135deg, #252052, #5546a8)"
+                : stage === 11
+                ? "linear-gradient(135deg, #20133f, #6d3b91, #b58b45)"
                 : "linear-gradient(135deg, #3b174f, #8b2f8f)",
           }}
         >
@@ -813,7 +841,9 @@ export default function ArcadeWorld({
                     cell === "~"
                       ? "bg-gradient-to-br from-yellow-400 via-orange-600 to-red-800 border border-orange-500/30 animate-pulse"
                       : cell === "#"
-                      ? stage === 1
+                      ? stage === 11
+                        ? "bg-amber-950 border border-amber-500/40 shadow-inner"
+                        : stage === 1
                         ? "bg-emerald-950 border border-emerald-900"
                         : stage === 2
                         ? "bg-stone-950 border border-stone-800"
@@ -830,6 +860,8 @@ export default function ArcadeWorld({
                         : stage === 8
                         ? "bg-indigo-950 border border-indigo-900"
                         : "bg-purple-950 border border-purple-900"
+                      : stage === 11
+                      ? ((x + y) % 2 === 0 ? "bg-violet-900 border border-amber-500/30" : "bg-violet-800 border border-amber-400/20")
                       : stage === 1
                       ? "bg-emerald-800/70 border border-emerald-700/20"
                       : stage === 2
