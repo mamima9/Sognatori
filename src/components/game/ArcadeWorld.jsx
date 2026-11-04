@@ -341,11 +341,11 @@ const STAGE_NPCS = {
   },
    10: {
     name: "Talpoisoned",
-    world: "Dream Arena",
-    worldEn: "Dream Arena",
-    dialogueEn: "Welcome to the Dream Arena! I’m Talpoisoned. I have 300 credits, and I’m not here to give anything away: I’m very interested in Spinoff and Pepe. Let’s see if you can beat me at the auction too.",
+    world: "Caverna Velenosa",
+    worldEn: "Poison Cavern",
+    dialogueEn: "I am Talpoisoned, guardian of the Poison Cavern. My violet power will test your strength. Face me in the final auction!",
     dialogue:
-      "Benvenuto nella Dream Arena! Sono Talpoisoned. Ho 300 crediti e oggi non sono qui per fare beneficenza: Spinoff e Pepe mi interessano parecchio. Vediamo se riesci a battermi anche all’asta.",
+      "Sono Talpoisoned, guardiano della Caverna Velenosa. Il mio potere viola metterà alla prova la tua forza. Affrontami nell’asta finale!",
   },
   11: {
     name: "Eraclito",
@@ -575,7 +575,7 @@ function DreamArenaStage10({
         ⚑
       </div>
 
-      {/* MANGU */}
+      {/* TALPOISONED — BOSS STAGE 10 */}
       <div
         className="absolute flex flex-col items-center z-20"
         style={{
