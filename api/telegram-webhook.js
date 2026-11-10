@@ -41,7 +41,7 @@ export default async function handler(req, res) {
             inline_keyboard: [
               [
                 {
-                  text: "🎮 GIOCA A SOGNATORI",
+                  text: "🎮 PLAY TO SOGNATORI",
                   web_app: {
                     url: "https://sognatori.vercel.app/"
                   }
