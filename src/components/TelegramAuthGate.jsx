@@ -61,7 +61,9 @@ export default function TelegramAuthGate({ children }) {
     return () => {
       active = false;
     };
-  // Esegui il controllo una sola volta quando il Mini App viene aperto.\n  // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);
+    // Esegui il controllo una sola volta quando il Mini App viene aperto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const linkExistingAccount = async (session) => {
     const { data, error } = await supabase.functions.invoke(
