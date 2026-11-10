@@ -43,7 +43,7 @@ export default async function handler(req, res) {
             "🏆 Challenge other players in Multiplayer battles.\n" +
             "✨ Discover unique creatures, build your team and prove your strategy.\n\n" +
             "🌌 We are all dreamers.\n\n" +
-            "Are you ready to enter the world of Sognatori?",
+            "🌙 Are you ready to take your first step into Sognatori? 🎮☁️",
           reply_markup: {
             inline_keyboard: [
               [
