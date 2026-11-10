@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { supabase } from "@/lib/supabase";
 
 export default function TelegramAuthGate({ children }) {
-  const { isAuthenticated, loginWithTelegramToken } = useAuth();
+  const { loginWithTelegramToken } = useAuth();
   const [telegram, setTelegram] = useState(null);
   const [mode, setMode] = useState("loading");
   const [email, setEmail] = useState("");
@@ -61,7 +61,7 @@ export default function TelegramAuthGate({ children }) {
     return () => {
       active = false;
     };
-  }, [loginWithTelegramToken]);
+  // Esegui il controllo una sola volta quando il Mini App viene aperto.\n  // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);
 
   const linkExistingAccount = async (session) => {
     const { data, error } = await supabase.functions.invoke(
