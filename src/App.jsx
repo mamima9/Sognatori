@@ -25,6 +25,7 @@ import SognatoriStats from '@/pages/SognatoriStats';
 import TestRandom from '@/pages/TestRandom';
 import Profile from '@/pages/Profile';
 import Avventura from '@/pages/Avventura';
+import TelegramAuthGate from '@/components/TelegramAuthGate';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -77,7 +78,9 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
-            <AuthenticatedApp />
+            <TelegramAuthGate>
+              <AuthenticatedApp />
+            </TelegramAuthGate>
           </Router>
           <Toaster />
         </QueryClientProvider>
