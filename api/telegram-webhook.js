@@ -36,14 +36,7 @@ export default async function handler(req, res) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text:
-            "🌙 Welcome to the world of Sognatori!\n\n" +
-            "🎮 A strategic turn-based battle game where dreams come alive.\n\n" +
-            "⚔️ Explore Arcade Mode and embark on epic adventures.\n" +
-            "🏆 Challenge other players in Multiplayer battles.\n" +
-            "✨ Discover unique creatures, build your team and prove your strategy.\n\n" +
-            "🌌 We are all dreamers.\n\n" +
-            "🌙 Are you ready to take your first step into Sognatori? 🎮☁️",
+          text: "🌙 Are you ready to take your first step into Sognatori? 🎮☁️",
           reply_markup: {
             inline_keyboard: [
               [
