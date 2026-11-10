@@ -88,6 +88,49 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
+  // ACCESSO TRAMITE TELEGRAM MINI APP
+  const loginWithTelegramToken = async ({
+    email,
+    token_hash,
+    type = "magiclink",
+  }) => {
+    if (!email || !token_hash) {
+      throw new Error("Dati di accesso Telegram incompleti");
+    }
+
+    setIsLoadingAuth(true);
+    setAuthError(null);
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token_hash,
+        type,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setUser(data.user ?? null);
+      setIsAuthenticated(!!data.session);
+      setAuthChecked(true);
+
+      return data;
+    } catch (error) {
+      console.error("Telegram authentication error:", error);
+
+      setAuthError({
+        type: "unknown",
+        message: error.message || "Accesso Telegram non riuscito",
+      });
+
+      throw error;
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -112,6 +155,7 @@ export const AuthProvider = ({ children }) => {
         navigateToLogin,
         checkUserAuth,
         checkAppState,
+        loginWithTelegramToken,
       }}
     >
       {children}
