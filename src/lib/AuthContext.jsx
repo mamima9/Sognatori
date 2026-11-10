@@ -103,7 +103,6 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
         token_hash,
         type,
       });
