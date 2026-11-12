@@ -97,6 +97,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
     const lost = next.playerActive.every((s) => !s || s.fainted || s.hp <= 0);
     next.turn += 1;
     setBattle(next);
+    setPlayerModes(["attack", "attack"]);
     setLogs((old) => [...old, `— ${lang === "en" ? "Turn" : "Turno"} ${next.turn - 1} —`, ...turnLogs].slice(-35));
     if (won || lost) setResult(won ? "win" : "loss");
     setBusy(false);
