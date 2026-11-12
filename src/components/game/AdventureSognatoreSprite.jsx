@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 /**
- * Uses the official artwork assigned to each Sognatore in sognatoriData.js.
- * No generated silhouettes or faction placeholders: the character identity
- * always comes from s.img.
+ * Pixel sprite generated from the official Sognatore artwork in ROSTER.img.
+ * The original design is preserved; only the rendering resolution is reduced
+ * to create a GBA-like pixel look.
  */
 export default function AdventureSognatoreSprite({
   s,
@@ -11,10 +11,55 @@ export default function AdventureSognatoreSprite({
   walking = false,
   className = "",
 }) {
+  const canvasRef = useRef(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !s?.img) {
+      setFailed(true);
+      return;
+    }
+
+    let cancelled = false;
+    const source = new Image();
+    source.onload = () => {
+      if (cancelled) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setFailed(true);
+        return;
+      }
+      const resolution = 32;
+      canvas.width = resolution;
+      canvas.height = resolution;
+      ctx.clearRect(0, 0, resolution, resolution);
+      ctx.imageSmoothingEnabled = false;
+
+      const scale = Math.min(resolution / source.width, resolution / source.height);
+      const width = Math.max(1, Math.round(source.width * scale));
+      const height = Math.max(1, Math.round(source.height * scale));
+      const x = Math.floor((resolution - width) / 2);
+      const y = Math.floor((resolution - height) / 2);
+      ctx.drawImage(source, x, y, width, height);
+    };
+    source.onerror = () => {
+      if (!cancelled) setFailed(true);
+    };
+    source.src = s.img;
+
+    return () => {
+      cancelled = true;
+      source.onload = null;
+      source.onerror = null;
+    };
+  }, [s?.img]);
+
   if (!s) return null;
 
-  const artwork = s.img;
-  const animationName = walking ? "officialSognatoreWalk" : "officialSognatoreIdle";
+  const animation = walking
+    ? "officialSognatoreWalk .38s steps(2,end) infinite"
+    : "officialSognatoreIdle 1.25s ease-in-out infinite";
 
   return (
     <div
@@ -57,28 +102,28 @@ export default function AdventureSognatoreSprite({
         }}
       />
 
-      {artwork ? (
-        <img
-          src={artwork}
-          alt={s.nome || "Sognatore"}
-          draggable={false}
-          loading="eager"
-          style={{
-            position: "relative",
-            zIndex: 1,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            objectPosition: "center bottom",
-            imageRendering: "pixelated",
-            filter: "drop-shadow(0 3px 2px rgba(0,0,0,.6))",
-            transformOrigin: "center bottom",
-            animation: animationName + (walking ? " .38s steps(2,end) infinite" : " 1.25s ease-in-out infinite"),
-          }}
-        />
-      ) : (
-        <span className="text-[9px] font-bold text-red-200">Sprite mancante</span>
-      )}
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", animation }}>
+        {failed ? (
+          <img
+            src={s.img}
+            alt={s.nome || "Sognatore"}
+            draggable={false}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 3px 2px rgba(0,0,0,.6))" }}
+          />
+        ) : (
+          <canvas
+            ref={canvasRef}
+            aria-label={s.nome || "Sognatore"}
+            style={{
+              width: size,
+              height: size,
+              imageRendering: "pixelated",
+              objectFit: "contain",
+              filter: "drop-shadow(0 3px 2px rgba(0,0,0,.6))",
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
