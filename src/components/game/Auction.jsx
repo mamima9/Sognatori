@@ -132,9 +132,16 @@ export default function Auction({
 
 
 
-  const [pool, setPool] = useState(() =>
-  ROSTER.sort(() => Math.random() - 0.5)
-);
+  const [pool, setPool] = useState(() => {
+    const shuffled = [...ROSTER];
+
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+  });
 
   const [playerCredits, setPlayerCredits] = useState(100);
   const [aiCredits, setAiCredits] = useState(stage === 10 ? 300 : 100);
@@ -210,8 +217,6 @@ export default function Auction({
   // --------------------------------
   // 1. VALORE BASE
   // --------------------------------
-
-  value += Math.round((Math.random() - 0.5) * 6);
 
   // --------------------------------
   // 2. PUPILLI
@@ -509,14 +514,17 @@ const candidates =
       ? preferred
       : available;
 
-const ranked = [...candidates].sort(
-  (a, b) => aiValuation(b) - aiValuation(a)
-);
+const ranked = candidates
+  .map(sog => ({
+    sog,
+    value: aiValuation(sog),
+  }))
+  .sort((a, b) => b.value - a.value);
 
 const limit = Math.min(3, ranked.length);
 
 const pick =
-  ranked[Math.floor(Math.random() * limit)];
+  ranked[Math.floor(Math.random() * limit)]?.sog;
 
       setPool((currentPool) =>
         currentPool.filter((sog) => sog.id !== pick.id)
