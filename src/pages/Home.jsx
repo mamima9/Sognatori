@@ -949,7 +949,7 @@ export default function Home() {
                   } else if (arcadeStage === 10) {
                     // The main Arcade campaign ends here. Stage 11 is an optional bonus challenge.
                     if (completedHumanStage && arcadeHumanStagesCompleted === 9 && user) {
-                      supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true, taomarco_lore_unlocked: Boolean(user.user_metadata?.taomarco_lore_unlocked) || (Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15 && Boolean(user.user_metadata?.taomarco_is_most_used)) } }).then(({ error }) => {
+                      supabase.auth.updateUser({ data: { taomarco_human_arcade_completed: true, taomarco_lore_unlocked: Boolean(user.user_metadata?.taomarco_lore_unlocked) || (Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15) } }).then(({ error }) => {
                         if (error) console.error("Errore salvataggio missione Arcade Taomarco:", error);
                         else {
                           setMissionNotification(lang === "en" ? "Mission 4: Human-only Arcade completed!" : "Missione 4: Arcade completato con soli Umani!");
