@@ -1906,8 +1906,16 @@ export default function Avventura() {
           setChallengerEncounter(null);
         }}
         onPauseChange={(paused) => { battleOpenRef.current = paused; }}
-        onWildClose={() => {
-          if (encounter?.id) wildCooldownRef.current[encounter.id] = Date.now() + 20000;
+        onWildClose={(recruited) => {
+          if (encounter?.id) {
+            wildCooldownRef.current[encounter.id] = Date.now() + 20000;
+            if (recruited) {
+              wildRef.current = wildRef.current.filter((s) => s.id !== encounter.id);
+              setWildSognatori(wildRef.current.map((s) => ({ ...s })));
+              setMessage("✦ " + encounter.name + " ha scelto di viaggiare con te!");
+              setTimeout(() => setMessage(""), 2200);
+            }
+          }
           encounterOpenRef.current = false;
           setEncounter(null);
         }}
