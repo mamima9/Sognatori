@@ -45,7 +45,7 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange }) {
+export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
@@ -179,7 +179,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
 
       {player && followers.map((s, index) => (
         <div key={s.id} className="pointer-events-none absolute z-30 flex flex-col items-center"
-          style={{ left: "50%", top: "calc(50% + " + (42 + index * 34) + "px)", marginLeft: (index % 2 ? 22 : -22) + "px", animation: "followerBob " + (1.05 + index * 0.12) + "s ease-in-out infinite", filter: "drop-shadow(0 3px 3px rgba(0,0,0,.7))" }}>
+          style={{ left: "calc(50% + " + (-facing.x * 42 + (index % 2 ? 18 : -18)) + "px)", top: "calc(50% + " + (-facing.y * 42 + Math.floor(index / 2) * 30) + "px)", animation: "followerBob " + (1.05 + index * 0.12) + "s ease-in-out infinite", filter: "drop-shadow(0 3px 3px rgba(0,0,0,.7))" }}>
           <AdventureSognatoreSprite s={s} size={34} walking={walking} />
         </div>
       ))}
