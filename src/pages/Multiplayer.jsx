@@ -72,7 +72,11 @@ export default function Multiplayer() {
   // Cambia solo il valore mode salvato nel match.
   // ============================================================
 
-  const findMatch = async (selectedMode, code = "") => {
+  const findMatch = async (
+    selectedMode,
+    code = "",
+    createPrivateRoom = false
+  ) => {
     setError("");
 
     if (!user) {
@@ -80,107 +84,140 @@ export default function Multiplayer() {
       return;
     }
 
+    const playerName =
+      user.user_metadata?.username ||
+      user.user_metadata?.full_name ||
+      user.email ||
+      "Player";
+
     try {
-      // Pulizia preventiva dei waiting rimasti aperti
-      const fiveMinAgo = new Date(
-        Date.now() - 5 * 60 * 1000
-      ).toISOString();
+      // ==========================================
+      // PRIVATE ROOMS
+      // ==========================================
+      if (selectedMode === "private") {
+        const normalizedCode = code.trim().toUpperCase();
 
-      await supabase
-        .from("matches")
-        .delete()
-        .eq("status", "waiting")
-        .lt("created_at", fiveMinAgo);
+        if (!normalizedCode) {
+          setError("Inserisci un codice stanza.");
+          return;
+        }
 
-      // Questo utente non deve avere più di un waiting aperto
-      await supabase
-        .from("matches")
-        .delete()
-        .eq("status", "waiting")
-        .eq("player1_id", user.id)
-        .is("player2_id", null);
+        const { data: waiting, error: searchError } =
+          await supabase
+            .from("matches")
+            .select("*")
+            .eq("status", "waiting")
+            .eq("mode", "private")
+            .eq("room_code", normalizedCode)
+            .is("player2_id", null)
+            .limit(1)
+            .maybeSingle();
 
-      let query = supabase
-        .from("matches")
-        .select("*")
-        .eq("status", "waiting")
-        .eq("mode", selectedMode)
-        .is("player2_id", null);
+        if (searchError) throw searchError;
 
-      if (selectedMode === "private" && code) {
-        query = query.eq("room_code", code);
-      }
+        if (waiting) {
+          // The room owner can reopen their own waiting room.
+          if (waiting.player1_id === user.id) {
+            setMatch(waiting);
+            setMatchId(waiting.id);
+            setMode("private");
+            setRoomCode(normalizedCode);
+            setScreen("lobby");
+            return;
+          }
 
-      const { data: waiting, error: searchError } = await query;
+          // Conditional update prevents two guests taking the same slot.
+          const { data: updatedMatch, error: updateError } =
+            await supabase
+              .from("matches")
+              .update({
+                player2_id: user.id,
+                player2_name: playerName,
+              })
+              .eq("id", waiting.id)
+              .eq("status", "waiting")
+              .is("player2_id", null)
+              .select()
+              .maybeSingle();
 
-      if (searchError) throw searchError;
+          if (updateError) throw updateError;
 
-      const joinable = (waiting || []).filter(
-        (m) =>
-          m.player1_id !== user.id &&
-          !m.player2_id
-      );
+          if (!updatedMatch) {
+            setError("La stanza è già stata occupata.");
+            return;
+          }
 
-      if (joinable.length > 0) {
-        const m = [...joinable].sort(
-          (a, b) =>
-            new Date(b.created_at) -
-            new Date(a.created_at)
-        )[0];
+          setMatch(updatedMatch);
+          setMatchId(updatedMatch.id);
+          setMode("private");
+          setRoomCode(normalizedCode);
+          setScreen("auction");
+          return;
+        }
 
-        const {
-          data: updatedMatch,
-          error: updateError
-        } = await supabase
-          .from("matches")
-          .update({
-            player2_id: user.id,
-            player2_name:
-  user.user_metadata?.username ||
-  user.user_metadata?.full_name ||
-  user.email,
-          })
-          .eq("id", m.id)
-          .eq("status", "waiting")
-          .is("player2_id", null)
-          .select()
-          .single();
+        // Entering a code must never create a room implicitly.
+        if (!createPrivateRoom) {
+          setError("Codice stanza non valido o non più disponibile.");
+          return;
+        }
 
-        if (updateError) throw updateError;
+        const { data: existingCode, error: codeError } =
+          await supabase
+            .from("matches")
+            .select("id")
+            .eq("room_code", normalizedCode)
+            .limit(1)
+            .maybeSingle();
 
-        setMatch(updatedMatch);
-        setMatchId(updatedMatch.id);
-        setMode(selectedMode);
-        setScreen("auction");
-      } else {
-        const rc =
-          selectedMode === "private"
-            ? code || generateRoomCode()
-            : null;
+        if (codeError) throw codeError;
 
-        const {
-          data: newMatch,
-          error: createError
-        } = await supabase
-          .from("matches")
-          .insert({
-            player1_id: user.id,
-            player1_name:
-  user.user_metadata?.username ||
-  user.user_metadata?.full_name ||
-  user.email,
-            status: "waiting",
-            mode: selectedMode,
-            room_code: rc,
-          })
-          .select()
-          .single();
+        if (existingCode) {
+          setError("Codice già utilizzato. Generane un altro.");
+          return;
+        }
+
+        const { data: newMatch, error: createError } =
+          await supabase
+            .from("matches")
+            .insert({
+              player1_id: user.id,
+              player1_name: playerName,
+              status: "waiting",
+              mode: "private",
+              room_code: normalizedCode,
+            })
+            .select()
+            .single();
 
         if (createError) throw createError;
 
         setMatch(newMatch);
         setMatchId(newMatch.id);
-        setMode(selectedMode);
+        setMode("private");
+        setRoomCode(normalizedCode);
+        setScreen("lobby");
+        return;
+      }
+
+      // ==========================================
+      // ATOMIC PUBLIC MATCHMAKING
+      // ==========================================
+      const { data: publicMatch, error: matchError } =
+        await supabase.rpc("find_or_create_public_match", {
+          p_mode: selectedMode,
+          p_player_name: playerName,
+        });
+
+      if (matchError) throw matchError;
+      if (!publicMatch) throw new Error("Matchmaking failed");
+
+      setMatch(publicMatch);
+      setMatchId(publicMatch.id);
+      setMode(selectedMode);
+
+      if (publicMatch.player2_id === user.id) {
+        setScreen("auction");
+      } else {
         setScreen("lobby");
       }
     } catch (e) {
@@ -448,7 +485,8 @@ export default function Multiplayer() {
 
                     findMatch(
                       "private",
-                      newCode
+                      newCode,
+                      true
                     );
                   }}
                   className="text-xs text-purple-400 hover:text-purple-300 mt-2"
