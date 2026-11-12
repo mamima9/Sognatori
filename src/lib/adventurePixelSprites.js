@@ -207,9 +207,6 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   const id=s?.id||"";
   const type=s?.tipo||"Natura";
-  const variants={
-    canc ucc:{shape:"bun",main:"#d9a77b",light:"#f4d4a5",dark:"#76503c",accent:"#fff0d2"},
-  };
   const palettes={
     Dolce:["#a96a91","#f0b9d4","#653e68","#fff0df"],Nuvola:["#7c9ec8","#d9e9f7","#425b82","#fff8ed"],
     Robot:["#4d9ba5","#b9e7dc","#254c5e","#e4f2e8"],Marino:["#3187a1","#a7dfe0","#194d68","#eff8e7"],
