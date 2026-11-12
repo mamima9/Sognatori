@@ -1437,23 +1437,104 @@ const [message, setMessage] = useState("");
 */
 
 function drawPlayer(ctx, p) {
-  // Allenatore in pixel art 16-bit, ancorato ai piedi.
+  // Protagonista pixel-art con silhouette, zaino e accessori leggibili.
   ctx.save();
   ctx.translate(Math.round(p.x / 4) * 4, Math.round(p.y / 4) * 4);
-  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.fillRect(-13, 17, 26, 6);
-  ctx.fillStyle = "#34251f"; ctx.fillRect(-10, 11, 8, 7); ctx.fillRect(3, 11, 8, 7);
-  ctx.fillStyle = "#344c78"; ctx.fillRect(-10, 3, 20, 10); ctx.fillRect(-8, 10, 7, 7); ctx.fillRect(2, 10, 7, 7);
-  ctx.fillStyle = "#e5a43c"; ctx.fillRect(-12, -10, 24, 16);
-  ctx.fillStyle = "#f6c65c"; ctx.fillRect(-8, -8, 16, 12);
-  ctx.fillStyle = "#e8b98d"; ctx.fillRect(-16, -7, 5, 13); ctx.fillRect(11, -7, 5, 13);
-  ctx.fillStyle = "#d99b70"; ctx.fillRect(-5, -15, 10, 7);
-  ctx.fillStyle = "#f0c69d"; ctx.fillRect(-10, -29, 20, 16);
-  ctx.fillStyle = "#38271f"; ctx.fillRect(-11, -30, 22, 7); ctx.fillRect(-9, -35, 18, 5);
-  ctx.fillStyle = "#d65d3e"; ctx.fillRect(-12, -38, 24, 5); ctx.fillRect(-7, -42, 14, 4);
-  ctx.fillStyle = "#29221e"; ctx.fillRect(-6, -24, 3, 3); ctx.fillRect(4, -24, 3, 3);
+
+  ctx.fillStyle = "rgba(0,0,0,.34)";
+  ctx.beginPath();
+  ctx.ellipse(1, 19, 19, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Zaino e spallacci.
+  ctx.fillStyle = "#49362d";
+  ctx.fillRect(-14, -12, 8, 22);
+  ctx.fillStyle = "#9a623d";
+  ctx.fillRect(-15, -10, 7, 14);
+  ctx.fillStyle = "#d49a55";
+  ctx.fillRect(-14, -8, 4, 5);
+  ctx.fillStyle = "#55382c";
+  ctx.fillRect(-8, -12, 4, 17);
+  ctx.fillRect(5, -12, 4, 17);
+
+  // Gambe, pantaloni e stivali.
+  ctx.fillStyle = "#26344e";
+  ctx.fillRect(-9, 5, 8, 12);
+  ctx.fillRect(2, 5, 8, 12);
+  ctx.fillStyle = "#40577e";
+  ctx.fillRect(-8, 7, 5, 7);
+  ctx.fillRect(3, 7, 5, 7);
+  ctx.fillStyle = "#30272a";
+  ctx.fillRect(-11, 15, 10, 5);
+  ctx.fillRect(2, 15, 11, 5);
+  ctx.fillStyle = "#b88955";
+  ctx.fillRect(-10, 15, 7, 2);
+  ctx.fillRect(3, 15, 7, 2);
+
+  // Giacca da viaggiatore a strati.
+  ctx.fillStyle = "#8e452f";
+  ctx.fillRect(-13, -14, 26, 22);
+  ctx.fillStyle = "#d36b3f";
+  ctx.fillRect(-10, -13, 20, 18);
+  ctx.fillStyle = "#f0ad52";
+  ctx.fillRect(-7, -12, 14, 14);
+  ctx.fillStyle = "#8e452f";
+  ctx.fillRect(-2, -12, 4, 17);
+  ctx.fillStyle = "#f6d18a";
+  ctx.fillRect(-1, -8, 2, 3);
+  ctx.fillRect(-1, -1, 2, 3);
+
+  // Braccia con guanti e polsini.
+  ctx.fillStyle = "#d99b70";
+  ctx.fillRect(-17, -11, 5, 14);
+  ctx.fillRect(12, -11, 5, 14);
+  ctx.fillStyle = "#c45c3d";
+  ctx.fillRect(-17, -13, 5, 5);
+  ctx.fillRect(12, -13, 5, 5);
+  ctx.fillStyle = "#302a32";
+  ctx.fillRect(-17, 1, 6, 5);
+  ctx.fillRect(11, 1, 6, 5);
+
+  // Collo, volto e capelli.
+  ctx.fillStyle = "#b87956";
+  ctx.fillRect(-5, -19, 10, 7);
+  ctx.fillStyle = "#efc49a";
+  ctx.fillRect(-10, -34, 20, 17);
+  ctx.fillStyle = "#d99f78";
+  ctx.fillRect(-10, -23, 4, 5);
+  ctx.fillRect(6, -23, 4, 5);
+  ctx.fillStyle = "#33272a";
+  ctx.fillRect(-11, -36, 22, 7);
+  ctx.fillRect(-9, -41, 18, 6);
+  ctx.fillRect(-12, -33, 5, 7);
+  ctx.fillRect(7, -34, 5, 6);
+  ctx.fillStyle = "#f2bd55";
+  ctx.fillRect(-12, -42, 24, 5);
+  ctx.fillRect(-7, -46, 14, 4);
+  ctx.fillStyle = "#f7d58b";
+  ctx.fillRect(-7, -41, 13, 2);
+  ctx.fillStyle = "#29242a";
+  ctx.fillRect(-6, -27, 3, 3);
+  ctx.fillRect(4, -27, 3, 3);
+
+  // Sciarpa rossa, elemento iconico del protagonista.
+  ctx.fillStyle = "#7e2638";
+  ctx.fillRect(-8, -17, 16, 5);
+  ctx.fillStyle = "#d84e4d";
+  ctx.fillRect(-7, -17, 14, 3);
+  ctx.fillRect(5, -14, 5, 15);
+  ctx.fillStyle = "#f08a65";
+  ctx.fillRect(6, -13, 2, 8);
+
+  // Riflessi pixel e dettagli del tessuto.
+  ctx.fillStyle = "rgba(255,226,163,.55)";
+  ctx.fillRect(-8, -11, 3, 2);
+  ctx.fillRect(6, -9, 2, 4);
+  ctx.fillStyle = "#e6bd79";
+  ctx.fillRect(-9, 4, 3, 2);
+  ctx.fillRect(6, 4, 3, 2);
   ctx.restore();
 }
-
 /*
   ============================================
   TREE
