@@ -91,7 +91,7 @@ export function setMusicMode(mode) {
   );
 }
 
-export default function GlobalMusicPlayer() {
+export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) {
   const location = useLocation();
 
   const [musicMode, setMusicModeState] = useState("main");
@@ -358,8 +358,10 @@ export default function GlobalMusicPlayer() {
     );
   };
 
+  if (location.pathname === "/avventura" && !insideAdventureMenu) return null;
+
   return (
-    <div className={location.pathname === "/avventura" ? "fixed top-[calc(100svh+12px)] left-5 z-[100] px-0 py-0" : "w-full flex justify-center px-4 py-4"}>
+    <div className={insideAdventureMenu ? "w-full flex justify-start px-0 py-3" : "w-full flex justify-center px-4 py-4"}>
       <div className="relative">
 
         {/* PLAYLIST */}
