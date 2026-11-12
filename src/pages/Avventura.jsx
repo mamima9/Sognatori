@@ -282,6 +282,42 @@ const ZONES = [
   },
 ];
 
+
+/* GBA tile ground: texture deterministica, limitata all'area visibile. */
+function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale) {
+  const tile = 48;
+  const halfW = viewWidth / (2 * scale) + tile * 2;
+  const halfH = viewHeight / (2 * scale) + tile * 2;
+  const left = Math.max(0, Math.floor((camera.x - halfW) / tile) * tile);
+  const right = Math.min(WORLD.width, camera.x + halfW);
+  const top = Math.max(0, Math.floor((camera.y - halfH) / tile) * tile);
+  const bottom = Math.min(WORLD.height, camera.y + halfH);
+  const palettes = {
+    "Prato dei Sogni": ["#5f984e", "#639d51", "#588f49", "#6aa456", "#568b48"],
+    "Bosco delle Ombre": ["#315d42", "#356447", "#2e573d", "#3a6949", "#315b40"],
+    "Monti di Cenere": ["#71695d", "#786f63", "#696256", "#817768", "#6d665b"],
+    "Valle Dorata": ["#a78d49", "#ad9550", "#9e8543", "#b49a55", "#a18845"],
+  };
+  for (let y = top; y < bottom; y += tile) {
+    for (let x = left; x < right; x += tile) {
+      const zone = ZONES.find(z => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) || ZONES[0];
+      const seed = Math.abs(((x / tile) * 73856093) ^ ((y / tile) * 19349663));
+      ctx.fillStyle = palettes[zone.name][seed % 5];
+      ctx.fillRect(x, y, tile, tile);
+      if (seed % 4 === 0) {
+        ctx.fillStyle = zone.name === "Monti di Cenere" ? "#8d8374" : "#477b43";
+        ctx.fillRect(x + 8 + seed % 17, y + 9 + seed % 19, 8, 4);
+        ctx.fillRect(x + 12 + seed % 17, y + 5 + seed % 19, 4, 4);
+      }
+      if (seed % 7 === 0) {
+        ctx.fillStyle = zone.name === "Valle Dorata" ? "#d0b86c" : "#80ad5a";
+        ctx.fillRect(x + 29, y + 28, 5, 5);
+        ctx.fillRect(x + 33, y + 24, 4, 4);
+      }
+    }
+  }
+}
+
 function circleRectCollision(
   cx,
   cy,
@@ -1043,9 +1079,10 @@ export default function Avventura() {
 
       ctx.globalAlpha = 1;
 
-      /*
-        SENTIERI
-      */
+      // Dettaglio del terreno a tile GBA.
+      drawGroundTiles(ctx, cam, w, h, scale);
+
+      /* SENTIERI */
 
       ctx.fillStyle =
         "#c7a56a";
@@ -2050,112 +2087,20 @@ export default function Avventura() {
 */
 
 function drawPlayer(ctx, p) {
+  // Allenatore in pixel art 16-bit, ancorato ai piedi.
   ctx.save();
-
-  ctx.translate(
-    p.x,
-    p.y
-  );
-
-  /*
-    Ombra
-  */
-
-  ctx.fillStyle =
-    "rgba(0,0,0,.25)";
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    0,
-    18,
-    18,
-    7,
-    0,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Corpo
-  */
-
-  ctx.fillStyle =
-    "#f2c14e";
-
-  ctx.beginPath();
-
-  ctx.roundRect(
-    -14,
-    -4,
-    28,
-    34,
-    9
-  );
-
-  ctx.fill();
-
-  /*
-    Testa
-  */
-
-  ctx.fillStyle =
-    "#f4d7b5";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    -14,
-    16,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Capelli
-  */
-
-  ctx.fillStyle =
-    "#2d211d";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    -18,
-    16,
-    Math.PI,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Occhi
-  */
-
-  ctx.fillStyle =
-    "#111";
-
-  ctx.fillRect(
-    -6,
-    -16,
-    3,
-    4
-  );
-
-  ctx.fillRect(
-    3,
-    -16,
-    3,
-    4
-  );
-
+  ctx.translate(Math.round(p.x / 4) * 4, Math.round(p.y / 4) * 4);
+  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.fillRect(-13, 17, 26, 6);
+  ctx.fillStyle = "#34251f"; ctx.fillRect(-10, 11, 8, 7); ctx.fillRect(3, 11, 8, 7);
+  ctx.fillStyle = "#344c78"; ctx.fillRect(-10, 3, 20, 10); ctx.fillRect(-8, 10, 7, 7); ctx.fillRect(2, 10, 7, 7);
+  ctx.fillStyle = "#e5a43c"; ctx.fillRect(-12, -10, 24, 16);
+  ctx.fillStyle = "#f6c65c"; ctx.fillRect(-8, -8, 16, 12);
+  ctx.fillStyle = "#e8b98d"; ctx.fillRect(-16, -7, 5, 13); ctx.fillRect(11, -7, 5, 13);
+  ctx.fillStyle = "#d99b70"; ctx.fillRect(-5, -15, 10, 7);
+  ctx.fillStyle = "#f0c69d"; ctx.fillRect(-10, -29, 20, 16);
+  ctx.fillStyle = "#38271f"; ctx.fillRect(-11, -30, 22, 7); ctx.fillRect(-9, -35, 18, 5);
+  ctx.fillStyle = "#d65d3e"; ctx.fillRect(-12, -38, 24, 5); ctx.fillRect(-7, -42, 14, 4);
+  ctx.fillStyle = "#29221e"; ctx.fillRect(-6, -24, 3, 3); ctx.fillRect(4, -24, 3, 3);
   ctx.restore();
 }
 
@@ -2165,86 +2110,16 @@ function drawPlayer(ctx, p) {
   ============================================
 */
 
-function drawTree(
-  ctx,
-  x,
-  y,
-  r
-) {
-  /*
-    Tronco
-  */
-
-  ctx.fillStyle =
-    "#573b27";
-
-  ctx.fillRect(
-    x - 8,
-    y,
-    16,
-    r * 1.8
-  );
-
-  /*
-    Chioma scura
-  */
-
-  ctx.fillStyle =
-    "#183f2a";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x,
-    y - 12,
-    r,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Chioma sinistra
-  */
-
-  ctx.fillStyle =
-    "#27613b";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x -
-      r * 0.35,
-    y -
-      r * 0.35,
-    r * 0.62,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Chioma destra
-  */
-
-  ctx.fillStyle =
-    "#3e7d48";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x +
-      r * 0.35,
-    y -
-      r * 0.2,
-    r * 0.5,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
+function drawTree(ctx, x, y, r) {
+  const size = Math.max(28, Math.round(r * 1.7 / 4) * 4);
+  const left = Math.round(x - size / 2), top = Math.round(y - size * 1.25);
+  ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.fillRect(left + 7, y + size * .45, size - 4, 10);
+  ctx.fillStyle = "#173d2a"; ctx.fillRect(left + 8, top + 8, size - 16, size - 4);
+  ctx.fillRect(left + 4, top + 16, size - 8, size - 18); ctx.fillRect(left + 12, top, size - 24, size);
+  ctx.fillStyle = "#28613a"; ctx.fillRect(left + 12, top + 8, size - 24, size - 20); ctx.fillRect(left + 4, top + 20, size - 8, size - 28);
+  ctx.fillStyle = "#43824a"; ctx.fillRect(left + 12, top + 8, 12, 10); ctx.fillRect(left + 26, top + 18, 10, 8); ctx.fillRect(left + size - 22, top + 12, 8, 8);
+  ctx.fillStyle = "#65452d"; ctx.fillRect(x - 7, y + 3, 14, 25);
+  ctx.fillStyle = "#8a5b36"; ctx.fillRect(x - 3, y + 4, 5, 20);
 }
 
 /*
@@ -2253,88 +2128,17 @@ function drawTree(
   ============================================
 */
 
-function drawHouse(
-  ctx,
-  x,
-  y,
-  color
-) {
-  /*
-    Corpo
-  */
-
-  ctx.fillStyle =
-    color;
-
-  ctx.fillRect(
-    x,
-    y,
-    190,
-    130
-  );
-
-  /*
-    Tetto
-  */
-
-  ctx.fillStyle =
-    "#40251b";
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    x - 20,
-    y
-  );
-
-  ctx.lineTo(
-    x + 95,
-    y - 95
-  );
-
-  ctx.lineTo(
-    x + 210,
-    y
-  );
-
-  ctx.closePath();
-
-  ctx.fill();
-
-  /*
-    Porta
-  */
-
-  ctx.fillStyle =
-    "#d9c29c";
-
-  ctx.fillRect(
-    x + 72,
-    y + 58,
-    42,
-    72
-  );
-
-  /*
-    Finestre
-  */
-
-  ctx.fillStyle =
-    "#8ed1dc";
-
-  ctx.fillRect(
-    x + 25,
-    y + 35,
-    35,
-    35
-  );
-
-  ctx.fillRect(
-    x + 130,
-    y + 35,
-    35,
-    35
-  );
+function drawHouse(ctx, x, y, color) {
+  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.fillRect(x - 8, y + 112, 208, 30);
+  ctx.fillStyle = "#3a2925"; ctx.fillRect(x - 12, y - 54, 214, 72); ctx.fillRect(x + 4, y - 72, 178, 24);
+  ctx.fillStyle = "#754638"; ctx.fillRect(x - 5, y - 50, 200, 58);
+  ctx.fillStyle = "#9a5c43";
+  for (let row = 0; row < 4; row++) for (let col = 0; col < 7; col++) ctx.fillRect(x + col * 28 + (row % 2) * 8, y - 44 + row * 13, 18, 5);
+  ctx.fillStyle = color; ctx.fillRect(x + 8, y + 5, 174, 105);
+  ctx.fillStyle = "#d8bd91"; ctx.fillRect(x + 75, y + 58, 38, 52);
+  ctx.fillStyle = "#4b3025"; ctx.fillRect(x + 80, y + 62, 28, 48);
+  ctx.fillStyle = "#82c9d8"; ctx.fillRect(x + 24, y + 28, 34, 30); ctx.fillRect(x + 132, y + 28, 34, 30);
+  ctx.fillStyle = "#e7e0bd"; ctx.fillRect(x + 39, y + 28, 4, 30); ctx.fillRect(x + 24, y + 41, 34, 4); ctx.fillRect(x + 147, y + 28, 4, 30); ctx.fillRect(x + 132, y + 41, 34, 4);
 }
 
 /*
@@ -2343,115 +2147,15 @@ function drawHouse(
   ============================================
 */
 
-function drawNpc(
-  ctx,
-  npc
-) {
-  ctx.save();
-
-  ctx.translate(
-    npc.x,
-    npc.y
-  );
-
-  /*
-    Ombra
-  */
-
-  ctx.fillStyle =
-    "rgba(0,0,0,.25)";
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    0,
-    25,
-    20,
-    7,
-    0,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Corpo
-  */
-
-  ctx.fillStyle =
-    npc.color;
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    0,
-    19,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Testa
-  */
-
-  ctx.fillStyle =
-    "#f4d7b5";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    0,
-    -20,
-    12,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  /*
-    Occhi
-  */
-
-  ctx.fillStyle =
-    "#111";
-
-  ctx.fillRect(
-    -5,
-    -22,
-    3,
-    4
-  );
-
-  ctx.fillRect(
-    3,
-    -22,
-    3,
-    4
-  );
-
-  /*
-    Nome
-  */
-
-  ctx.fillStyle =
-    "#fff";
-
-  ctx.font =
-    "bold 14px system-ui";
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillText(
-    npc.name,
-    0,
-    43
-  );
-
+function drawNpc(ctx, npc) {
+  ctx.save(); ctx.translate(Math.round(npc.x / 3) * 3, Math.round(npc.y / 3) * 3);
+  ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(-13, 18, 26, 6);
+  ctx.fillStyle = "#34304a"; ctx.fillRect(-9, 2, 18, 16);
+  ctx.fillStyle = npc.color; ctx.fillRect(-12, -9, 24, 14);
+  ctx.fillStyle = "#e9bd96"; ctx.fillRect(-9, -27, 18, 18);
+  ctx.fillStyle = "#382a27"; ctx.fillRect(-10, -30, 20, 7); ctx.fillRect(-8, -34, 16, 5);
+  ctx.fillStyle = "#211d1b"; ctx.fillRect(-5, -21, 3, 3); ctx.fillRect(3, -21, 3, 3);
+  ctx.fillStyle = "#fff"; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.fillText(npc.name, 0, 40);
   ctx.restore();
 }
+
