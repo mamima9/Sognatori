@@ -122,6 +122,9 @@ const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   team: buildCityTeam(city.faction, city.id),
   vision: 190,
   speed: 38,
+  homeX: city.x,
+  homeY: city.y,
+  radius: 76,
   color: city.color,
 }));
 
@@ -763,30 +766,24 @@ export default function Avventura() {
               2;
           }
 
-          const nx = clamp(
-            c.x +
-              Math.cos(angle) *
-                c.speed *
-                dt,
+          let nx = clamp(
+            c.x + Math.cos(angle) * c.speed * dt,
             80,
             WORLD.width - 80
           );
-
-          const ny = clamp(
-            c.y +
-              Math.sin(angle) *
-                c.speed *
-                dt,
+          let ny = clamp(
+            c.y + Math.sin(angle) * c.speed * dt,
             80,
             WORLD.height - 80
           );
 
-          return {
-            ...c,
-            x: nx,
-            y: ny,
-            angle,
-          };
+          if (Math.hypot(nx - c.homeX, ny - c.homeY) > c.radius) {
+            angle = Math.atan2(c.homeY - c.y, c.homeX - c.x);
+            nx = c.x + Math.cos(angle) * c.speed * dt;
+            ny = c.y + Math.sin(angle) * c.speed * dt;
+          }
+
+          return { ...c, x: nx, y: ny, angle };
         });
 
       /*
