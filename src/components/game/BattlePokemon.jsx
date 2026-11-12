@@ -27,7 +27,7 @@ const EFFICACY = {
   },
 };
 
-export default function BattlePokemon({ s, side, popup }) {
+export default function BattlePokemon({ s, side, popup, cinematic = false }) {
   const { lang } = useLanguage();
 
   if (!s) return <div className="w-full" />;
@@ -48,7 +48,7 @@ export default function BattlePokemon({ s, side, popup }) {
         opacity: 1,
         y: 0
       }}
-      className="relative flex flex-col items-center"
+      className={cinematic ? "relative flex flex-col items-center drop-shadow-[0_8px_10px_rgba(0,0,0,.45)]" : "relative flex flex-col items-center"}
     >
       <AnimatePresence>
         {eff && (
@@ -112,7 +112,7 @@ export default function BattlePokemon({ s, side, popup }) {
       >
         <SognatoreImage
           s={s}
-          className="w-20 h-20 sm:w-24 sm:h-24"
+          className={cinematic ? "h-28 w-28 sm:h-36 sm:w-36" : "w-20 h-20 sm:w-24 sm:h-24"}
         />
       </motion.div>
 
