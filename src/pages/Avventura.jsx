@@ -955,7 +955,7 @@ const [message, setMessage] = useState("");
       */
       for (const wild of wildRef.current) {
         const image = sognatoreImagesRef.current.get(wild.name.toLowerCase());
-        if (!image?.complete || !image.naturalWidth) continue;
+        if (!image) continue;
 
         const frameIndex = Math.floor(performance.now() / 420) % 2;
         const drawWidth = 48;
