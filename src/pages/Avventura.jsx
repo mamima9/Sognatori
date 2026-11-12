@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
+import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
 
 /*
@@ -1334,7 +1335,7 @@ const [message, setMessage] = useState("");
   */
 
   return (
-    <div className="relative min-h-[calc(100svh+170px)] overflow-x-hidden overflow-y-auto bg-black text-white select-none touch-pan-y">
+    <div className="fixed inset-0 overflow-hidden bg-black text-white select-none touch-none">
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none"
@@ -1585,10 +1586,74 @@ const [message, setMessage] = useState("");
       </div>
 
       {/* =====================================
-          HUD
+          CONTROLLI DESKTOP
           ===================================== */}
 
-      <div className="pointer-events-none absolute left-4 right-4 top-4 flex items-start justify-between gap-4">
+      <div className="absolute bottom-1 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
+        <span className="font-bold text-white">
+          WASD / FRECCE
+        </span>{" "}
+        · muovi
+        <br />
+        <span className="font-bold text-white">
+          E
+        </span>{" "}
+        · interagisci
+      </div>
+
+      {/* =====================================
+          INTERAGISCI
+          ===================================== */}
+
+      <button
+        type="button"
+        onClick={interact}
+        className="fixed bottom-5 right-5 z-[56] rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
+      >
+        E · INTERAGISCI
+      </button>
+
+      {/* =====================================
+          MESSAGGIO
+          ===================================== */}
+
+      {message && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/75 px-6 py-3 text-sm font-bold shadow-2xl backdrop-blur-md">
+          {message}
+        </div>
+      )}
+
+      {/* =====================================
+          DIALOGO NPC
+          ===================================== */}
+
+      {dialogue && (
+        <div className="absolute inset-x-4 bottom-5 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
+          <div className="mb-2 text-sm font-black uppercase tracking-widest text-yellow-200">
+            {dialogue.name}
+          </div>
+
+          <div className="text-base leading-7 text-white/85">
+            {dialogue.dialogue}
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setDialogue(null)
+            }
+            className="mt-5 rounded-xl bg-white px-5 py-2 text-sm font-black text-black"
+          >
+            Continua
+          </button>
+        </div>
+      )}
+
+      <AdventureCampaign
+        menuContent={(
+      <div className="space-y-3">
+
+      <div className="flex items-start justify-between gap-3">
         <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 shadow-2xl backdrop-blur-md">
           <div className="text-xs font-bold uppercase tracking-[0.25em] text-white/50">
             Sognatori
@@ -1619,11 +1684,9 @@ const [message, setMessage] = useState("");
         </div>
       </div>
 
-      {/* =====================================
-          MINIMAP COMPATTA
-          ===================================== */}
+      <div className="h-36 w-full overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg">
 
-      <div className="absolute right-3 top-24 z-40 h-24 w-32 overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
+      <div className="h-36 w-full overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
         <div className="relative h-full w-full">
           {ZONES.map((z) => (
             <div
@@ -1683,72 +1746,9 @@ const [message, setMessage] = useState("");
           />
         </div>
       </div>
-
-      {/* =====================================
-          CONTROLLI DESKTOP
-          ===================================== */}
-
-      <div className="absolute bottom-1 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
-        <span className="font-bold text-white">
-          WASD / FRECCE
-        </span>{" "}
-        · muovi
-        <br />
-        <span className="font-bold text-white">
-          E
-        </span>{" "}
-        · interagisci
       </div>
-
-      {/* =====================================
-          INTERAGISCI
-          ===================================== */}
-
-      <button
-        type="button"
-        onClick={interact}
-        className="fixed top-[calc(100svh+12px)] right-5 z-[56] rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
-      >
-        E · INTERAGISCI
-      </button>
-
-      {/* =====================================
-          MESSAGGIO
-          ===================================== */}
-
-      {message && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/75 px-6 py-3 text-sm font-bold shadow-2xl backdrop-blur-md">
-          {message}
-        </div>
-      )}
-
-      {/* =====================================
-          DIALOGO NPC
-          ===================================== */}
-
-      {dialogue && (
-        <div className="absolute inset-x-4 bottom-5 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
-          <div className="mb-2 text-sm font-black uppercase tracking-widest text-yellow-200">
-            {dialogue.name}
-          </div>
-
-          <div className="text-base leading-7 text-white/85">
-            {dialogue.dialogue}
-          </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              setDialogue(null)
-            }
-            className="mt-5 rounded-xl bg-white px-5 py-2 text-sm font-black text-black"
-          >
-            Continua
-          </button>
-        </div>
-      )}
-
-      <AdventureCampaign
+          <GlobalMusicPlayer insideAdventureMenu />
+        )}
         userKey={user?.id || user?.email}
         player={player}
         facing={playerFacingRef.current}
