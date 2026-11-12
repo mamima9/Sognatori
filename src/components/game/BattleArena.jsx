@@ -12,6 +12,7 @@ import {
   resetStatsOnBench
 } from "@/lib/battleEngine";
 import BattlePokemon from "./BattlePokemon";
+import AdventureTravelerSprite from "./AdventureTravelerSprite";
 import { setMusicMode } from "./GlobalMusicPlayer";
 import BenchCard from "./BenchCard";
 import { SognatoreImage } from "./HealthBar";
@@ -60,6 +61,8 @@ export default function BattleArena({
   onMissionComplete,
   adventureMode = false,
   opponentName,
+  opponentTraveler,
+  opponentFaction,
 }) {
   useEffect(() => {
   setMusicMode("battle");
@@ -888,6 +891,11 @@ while (remainingActions.length > 0) {
       <div className="relative flex-1 px-4 pt-5 pb-3 max-w-4xl mx-auto w-full">
 
         <div className="flex items-center gap-3 mb-2">
+          {adventureMode && opponentTraveler && (
+            <div className="flex h-[72px] w-[64px] shrink-0 items-end justify-center">
+              <AdventureTravelerSprite traveler={opponentTraveler} faction={opponentFaction} size={62} />
+            </div>
+          )}
           <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
             {opponentName || t("battle.vgc")}
           </span>
