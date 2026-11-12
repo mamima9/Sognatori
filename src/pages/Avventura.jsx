@@ -1666,8 +1666,8 @@ export default function Avventura() {
                 }}
               >
                 {close && (
-                  <div className="mb-1 rounded-full border border-red-300/30 bg-red-950/85 px-2 py-0.5 text-[8px] font-black text-red-100">
-                    ! TI HA VISTO
+                  <div className="mb-1 rounded-full border border-amber-300/30 bg-amber-950/85 px-2 py-0.5 text-[8px] font-black text-amber-100">
+                    E · PARLA
                   </div>
                 )}
 
