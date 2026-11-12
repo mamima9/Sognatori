@@ -808,31 +808,34 @@ const [message, setMessage] = useState("");
       // Dettaglio del terreno a tile GBA.
       drawGroundTiles(ctx, cam, w, h, scale);
 
-      /* SENTIERI */
+      /* SENTIERI: bordi d'erba, terra calda e tracce di ghiaia. */
+      const paths = [
+        { x: 0, y: 1002, w: WORLD.width, h: 116, horizontal: true },
+        { x: 1732, y: 0, w: 136, h: WORLD.height, horizontal: false },
+        { x: 792, y: 542, w: 2116, h: 86, horizontal: true },
+      ];
+      for (const path of paths) {
+        ctx.fillStyle = "rgba(37,42,29,.3)";
+        ctx.fillRect(path.x, path.y, path.w, path.h);
+        ctx.fillStyle = "#92744b";
+        ctx.fillRect(path.x, path.y + 5, path.w, path.h - 10);
+        ctx.fillStyle = "#c7a56a";
+        ctx.fillRect(path.x, path.y + 9, path.w, path.h - 18);
+        ctx.fillStyle = "rgba(246,218,157,.34)";
+        ctx.fillRect(path.x, path.y + 12, path.w, 5);
+        ctx.fillStyle = "rgba(102,76,47,.22)";
+        ctx.fillRect(path.x, path.y + path.h - 15, path.w, 5);
 
-      ctx.fillStyle =
-        "#c7a56a";
-
-      ctx.fillRect(
-        0,
-        1010,
-        WORLD.width,
-        100
-      );
-
-      ctx.fillRect(
-        1740,
-        0,
-        120,
-        WORLD.height
-      );
-
-      ctx.fillRect(
-        800,
-        550,
-        2100,
-        70
-      );
+        const step = 54;
+        for (let n = 0; n < (path.horizontal ? path.w : path.h); n += step) {
+          const px = path.horizontal ? path.x + n + ((n / step) % 2) * 9 : path.x + 24 + (n % 3) * 18;
+          const py = path.horizontal ? path.y + 25 + (n % 3) * 17 : path.y + n + ((n / step) % 2) * 8;
+          ctx.fillStyle = "rgba(245,220,171,.45)";
+          ctx.fillRect(px, py, 7, 3);
+          ctx.fillStyle = "rgba(106,79,49,.24)";
+          ctx.fillRect(px + 13, py + 10, 5, 3);
+        }
+      }
 
       /*
         LAGO
