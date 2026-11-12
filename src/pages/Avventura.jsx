@@ -958,7 +958,10 @@ const [message, setMessage] = useState("");
 
       for (const traveler of CHALLENGERS) {
         const travelerFrame = Math.floor(performance.now() / 380) % 2;
-        drawAdventureTraveler(ctx, traveler.traveler || traveler.name, traveler.faction, traveler.x, traveler.y, travelerFrame, 1);
+        const faceX = playerRef.current.x - traveler.x;
+        const faceY = playerRef.current.y - traveler.y;
+        const facing = Math.abs(faceX) > Math.abs(faceY) ? (faceX < 0 ? "left" : "right") : (faceY < 0 ? "up" : "down");
+        drawAdventureTraveler(ctx, traveler.traveler || traveler.name, traveler.faction, traveler.x, traveler.y, travelerFrame, 1, facing);
         if (Math.hypot(playerRef.current.x - traveler.x, playerRef.current.y - traveler.y) < 220) {
           ctx.save();
           ctx.font = "bold 10px monospace";
