@@ -30,7 +30,8 @@ export default function AdventureSognatoreSprite({
         setFailed(true);
         return;
       }
-      const resolution = 32;
+      // Preserve more detail from the official artwork; 32x32 blurred the designs.
+      const resolution = 128;
       canvas.width = resolution;
       canvas.height = resolution;
       ctx.clearRect(0, 0, resolution, resolution);
