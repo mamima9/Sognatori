@@ -54,64 +54,48 @@ const WILD_STARTS = [
     x: 1460,
     y: 470,
     name: "Cancucc",
-    speed: 38,
-    behavior: "wander",
   },
   {
     id: "wild-2",
     x: 1050,
     y: 1320,
     name: "Cillymbu",
-    speed: 30,
-    behavior: "wander",
   },
   {
     id: "wild-3",
     x: 2250,
     y: 720,
     name: "Nina",
-    speed: 34,
-    behavior: "shy",
   },
   {
     id: "wild-4",
     x: 2900,
     y: 1320,
     name: "Dragociocco",
-    speed: 28,
-    behavior: "wander",
   },
   {
     id: "wild-5",
     x: 680,
     y: 1880,
     name: "Pepe",
-    speed: 42,
-    behavior: "shy",
   },
   {
     id: "wild-6",
     x: 3150,
     y: 520,
     name: "Icepadel",
-    speed: 35,
-    behavior: "wander",
   },
   {
     id: "wild-7",
     x: 2350,
     y: 1960,
     name: "Eroe",
-    speed: 31,
-    behavior: "wander",
   },
   {
     id: "wild-8",
     x: 1380,
     y: 2050,
     name: "Uesditti",
-    speed: 45,
-    behavior: "shy",
   },
 ];
 
@@ -121,7 +105,6 @@ const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   name: city.traveler,
   team: buildCityTeam(city.faction, city.id),
   vision: 190,
-  speed: 38,
   homeX: city.x,
   homeY: city.y,
   radius: 76,
@@ -1172,8 +1155,7 @@ const [message, setMessage] = useState("");
           if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
           return (
             <div key={s.id} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: sx, top: sy }}>
-              <div className="mb-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">{s.name}</div>
-              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} />
+              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={88} />
               <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40"><div className="h-full w-full rounded-full bg-emerald-400" /></div>
             </div>
           );
@@ -1254,12 +1236,6 @@ const [message, setMessage] = useState("");
                   </span>
                 </div>
 
-                <div className="mt-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
-                  {c.name}
-                </div>
-                <div className="whitespace-nowrap text-center text-[8px] font-bold text-amber-100/80 drop-shadow-[0_2px_2px_black]">
-                  {c.city}
-                </div>
               </div>
             );
           }
