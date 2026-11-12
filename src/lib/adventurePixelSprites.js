@@ -93,7 +93,7 @@ export function createTravelerSpriteSheet(faction, traveler){
     ctx.translate(col*24,row*32);
     if(direction==="left"){ctx.translate(24,0);ctx.scale(-1,1);}
     if(direction==="up"){ctx.globalAlpha=.82;}
-    drawAdventureTraveler(ctx,traveler||faction,faction,12,31,frame,.72);
+    drawAdventureTraveler(ctx,traveler||faction,faction,12,31,frame,.45);
     ctx.restore();
   }));
   return sheet;
