@@ -4,10 +4,9 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
-import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
-import { createWildSognatoreSpriteSheet } from "@/lib/adventurePixelSprites";
+import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
 
 /*
   SOGNATORI — AVVENTURA
@@ -314,20 +313,6 @@ function circleRectCollision(
 export default function Avventura() {
   const canvasRef = useRef(null);
   const worldFrameRef = useRef(null);
-  const sognatoreImagesRef = useRef(new Map());
-
-  useEffect(() => {
-    const images = new Map();
-    ROSTER.forEach((sognatore) => {
-      if (!sognatore?.nome) return;
-      images.set(sognatore.nome.toLowerCase(), createWildSognatoreSpriteSheet(sognatore));
-    });
-    sognatoreImagesRef.current = images;
-    return () => {
-      images.forEach((image) => { image.onload = null; });
-    };
-  }, []);
-
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -953,34 +938,36 @@ const [message, setMessage] = useState("");
         Gli artwork ufficiali vengono disegnati nel mondo, non in un layer HTML
         separato: così condividono scala, camera e profondità con il giocatore.
       */
+      const spriteFrame = Math.floor(performance.now() / 360) % 2;
       for (const wild of wildRef.current) {
-        const image = sognatoreImagesRef.current.get(wild.name.toLowerCase());
-        if (!image) continue;
-
-        const frameIndex = Math.floor(performance.now() / 420) % 2;
-        const drawWidth = 48;
-        const drawHeight = 48;
-        const left = Math.round(wild.x - drawWidth / 2);
-        const top = Math.round(wild.y - drawHeight);
-
-        ctx.save();
-        ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = "rgba(5,12,9,.42)";
-        ctx.beginPath();
-        ctx.ellipse(wild.x, wild.y - 1, 13, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.drawImage(image, frameIndex * 24, 0, 24, 24, left, top, drawWidth, drawHeight);
-        ctx.restore();
-
+        const creature = ROSTER.find((entry) => entry.nome.toLowerCase() === wild.name.toLowerCase());
+        if (!creature) continue;
+        drawAdventureWildSognatore(ctx, creature, wild.x, wild.y, spriteFrame, 1.65);
         if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           ctx.save();
           ctx.font = "bold 10px monospace";
           ctx.textAlign = "center";
           const labelWidth = ctx.measureText(wild.name).width + 18;
           ctx.fillStyle = "rgba(8,16,13,.82)";
-          ctx.fillRect(wild.x - labelWidth / 2, top - 24, labelWidth, 19);
+          ctx.fillRect(wild.x - labelWidth / 2, wild.y - 66, labelWidth, 19);
           ctx.fillStyle = "#f3f0df";
-          ctx.fillText(wild.name, wild.x, top - 10);
+          ctx.fillText(wild.name, wild.x, wild.y - 52);
+          ctx.restore();
+        }
+      }
+
+      for (const traveler of CHALLENGERS) {
+        const travelerFrame = Math.floor(performance.now() / 380) % 2;
+        drawAdventureTraveler(ctx, traveler.traveler || traveler.name, traveler.faction, traveler.x, traveler.y, travelerFrame, 1);
+        if (Math.hypot(playerRef.current.x - traveler.x, playerRef.current.y - traveler.y) < 220) {
+          ctx.save();
+          ctx.font = "bold 10px monospace";
+          ctx.textAlign = "center";
+          const labelWidth = ctx.measureText(traveler.traveler || traveler.name).width + 18;
+          ctx.fillStyle = "rgba(8,16,13,.82)";
+          ctx.fillRect(traveler.x - labelWidth / 2, traveler.y - 91, labelWidth, 18);
+          ctx.fillStyle = "#f4dfb0";
+          ctx.fillText(traveler.traveler || traveler.name, traveler.x, traveler.y - 78);
           ctx.restore();
         }
       }
@@ -1206,80 +1193,6 @@ const [message, setMessage] = useState("");
       <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-190px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
-      <div className="pointer-events-none absolute inset-0">
-      {/* =====================================
-            SFIDANTI
-            ===================================== */}
-
-        {challengerRef.current.map(
-          (c) => {
-            const frame = worldFrameRef.current;
-            const w = frame?.clientWidth || 0;
-            const h = frame?.clientHeight || 0;
-            const scale = Math.min(w / 1100, h / 825);
-
-            const sx =
-              w / 2 +
-              (c.x - player.x) *
-                scale;
-
-            const sy =
-              h / 2 +
-              (c.y - player.y) *
-                scale;
-
-            if (
-              sx < -120 ||
-              sx > w + 120 ||
-              sy < -150 ||
-              sy > h + 150
-            ) {
-              return null;
-            }
-
-            const cooldownUntil =
-              challengerCooldownRef
-                .current[c.id] ||
-              0;
-
-            const available =
-              Date.now() >=
-              cooldownUntil;
-
-            const close =
-              available &&
-              Math.hypot(
-                player.x - c.x,
-                player.y - c.y
-              ) < c.vision;
-
-            return (
-              <div
-                key={c.id}
-                className="absolute -translate-x-1/2 -translate-y-full"
-                style={{
-                  left: sx,
-                  top: sy,
-                  opacity: available
-                    ? 1
-                    : 0.55,
-                }}
-              >
-                {close && (
-                  <div className="mb-1 rounded-full border border-amber-300/30 bg-amber-950/85 px-2 py-0.5 text-[8px] font-black text-amber-100">
-                    E · PARLA
-                  </div>
-                )}
-
-                <div className="mx-auto flex h-[76px] w-[68px] items-end justify-center">
-                  <AdventureTravelerSprite traveler={c.name} faction={c.faction} size={66} />
-                </div>
-
-              </div>
-            );
-          }
-        )}
-      </div>
       </div>
 
       {/* CONTROLLI ESTERNI AL MONDO */}
