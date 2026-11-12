@@ -45,7 +45,7 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, walking = false, encounter, wildEncounter, onClose, onWildClose }) {
+export default function AdventureCampaign({ userKey, player, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
@@ -60,6 +60,11 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
   useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(save)); } catch {}
   }, [save, storageKey]);
+
+  useEffect(() => {
+    onPauseChange?.(phase !== "idle" || !!panel);
+    return () => onPauseChange?.(false);
+  }, [phase, panel, onPauseChange]);
 
   useEffect(() => {
     if (!save.introDone) setPhase("intro");
@@ -287,7 +292,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
           <div className="w-full max-w-md rounded-3xl border border-red-300/20 bg-slate-950 p-6 text-center text-white">
             <div className="text-4xl">✦</div><h2 className="mt-2 text-2xl font-black">Il legame vacilla</h2>
             <p className="mt-2 text-sm text-white/60">Il Viaggiatore ti ha sconfitto. Riposa, prepara la squadra e torna quando sarai pronto.</p>
-            <button onClick={() => { setPhase("traveler"); onClose?.(); }} className="mt-5 w-full rounded-xl bg-white/10 py-3 font-bold">Torna alla città</button>
+            <button onClick={() => setPhase("traveler")} className="mt-5 w-full rounded-xl bg-white/10 py-3 font-bold">Torna alla città</button>
           </div>
         </div>
       )}
