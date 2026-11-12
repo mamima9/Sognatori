@@ -17,13 +17,12 @@ export const ADVENTURE_CITIES = [
 export function buildCityTeam(faction, cityId) {
   const pool = ROSTER.filter((s) => (s.tipo || s.fazione) === faction);
   if (!pool.length) return [];
-  const roles = ["Guardia", "Esploratore", "Custode", "Sentinella"];
   return Array.from({ length: 4 }, (_, index) => {
     const base = pool[index % pool.length];
-    const repeatedFactionMember = pool.length < 4;
     return {
       ...base,
-      nome: repeatedFactionMember ? base.nome + " · " + roles[index] : base.nome,
+      // Mantieni sempre il nome ufficiale del Sognatore: nessun ruolo aggiunto.
+      nome: base.nome,
       id: base.id + "-traveler-" + cityId + "-" + index,
       originalId: base.id,
     };
