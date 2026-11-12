@@ -1,29 +1,38 @@
-import React, { useEffect, useRef } from "react";
-import { createAdventurePixelSprite } from "@/lib/adventurePixelSprites";
+import React, { useEffect, useState } from "react";
+import { createWildSognatoreSpriteSheet } from "@/lib/adventurePixelSprites";
 
-export default function AdventureSognatoreSprite({ s, size = 88, className = "" }) {
-  const canvasRef = useRef(null);
+/**
+ * Sprite originale overworld del Sognatore: silhouette per tipologia,
+ * dettagli individuali e animazione idle a due frame in pixel art.
+ */
+export default function AdventureSognatoreSprite({ s, size = 88, className = "", walking = true }) {
+  const [sheetUrl, setSheetUrl] = useState("");
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !s?.img) return undefined;
-    let active = true;
-    const image = new Image();
-    image.onload = () => {
-      if (!active) return;
-      const sprite = createAdventurePixelSprite(image, 32);
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      canvas.width = sprite.width;
-      canvas.height = sprite.height;
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(sprite, 0, 0);
-    };
-    image.src = s.img;
-    return () => { active = false; image.onload = null; };
-  }, [s?.img]);
-  if (!s?.img) return null;
-  return <div className={className} title={s.nome || "Sognatore"} aria-label={s.nome || "Sognatore"} style={{ width:size, height:size+8, display:"flex", alignItems:"flex-end", justifyContent:"center", flex:"0 0 auto" }}>
-    <canvas ref={canvasRef} style={{ width:size, height:size, objectFit:"contain", imageRendering:"pixelated", display:"block" }} />
-  </div>;
+    if (!s) { setSheetUrl(""); return; }
+    const sheet = createWildSognatoreSpriteSheet(s);
+    setSheetUrl(sheet.toDataURL());
+  }, [s?.id, s?.nome, s?.tipo]);
+  if (!s) return null;
+  return (
+    <div
+      className={className}
+      title={s.nome || "Sognatore"}
+      role="img"
+      aria-label={s.nome || "Sognatore"}
+      style={{
+        width: size,
+        height: size,
+        flex: "0 0 auto",
+        backgroundImage: sheetUrl ? "url(" + sheetUrl + ")" : "none",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "200% 100%",
+        backgroundPosition: "0% 0%",
+        imageRendering: "pixelated",
+        filter: "drop-shadow(0 2px 2px rgba(0,0,0,.38))",
+        animation: walking ? "sognatori-wild-idle .42s steps(2,end) infinite" : "none"
+      }}
+    >
+      <style>{`@keyframes sognatori-wild-idle { from { background-position-x: 0%; } to { background-position-x: 100%; } }`}</style>
+    </div>
+  );
 }
