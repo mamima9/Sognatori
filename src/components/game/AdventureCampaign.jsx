@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ROSTER } from "@/lib/sognatoriData";
-import BattleArena from "@/components/game/BattleArena";
+import AdventureBattleArena from "@/components/game/AdventureBattleArena";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import { getStarterPair, getCityRewards, buildCityTeam } from "@/lib/adventureCampaignData";
@@ -323,7 +323,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       )}
 
       {encounter && phase === "battle" && (
-        <BattleArena
+        <AdventureBattleArena
           key={battleKey}
           stage={0}
           opponentName={(encounter.traveler || encounter.name) + " · " + encounter.city}
