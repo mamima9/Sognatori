@@ -144,3 +144,61 @@ export function createWildSognatoreSpriteSheet(s){
   }
   return sheet;
 }
+
+
+const TRAVELER_DESIGNS = {
+  Vark:{coat:"#6e293b",trim:"#e7a35e",hair:"#292238",skin:"#e7b18e",accent:"#d85d58",hat:"horn"},
+  "Unit-07":{coat:"#315c70",trim:"#a9e3d9",hair:"#243b50",skin:"#a9d8cf",accent:"#55c3c2",hat:"antenna"},
+  Silva:{coat:"#416b42",trim:"#b7d77b",hair:"#4b3529",skin:"#e4b58b",accent:"#83b75d",hat:"leaf"},
+  Cirrus:{coat:"#607da9",trim:"#e2eaf5",hair:"#c7d8ed",skin:"#ead7d0",accent:"#b6d4f0",hat:"cloud"},
+  Mira:{coat:"#8a523d",trim:"#e4bd83",hair:"#382b2b",skin:"#d99c78",accent:"#bd4e4b",hat:"scarf"},
+  Aurelia:{coat:"#a78335",trim:"#fff0b0",hair:"#ead99d",skin:"#f0d2a7",accent:"#f6df83",hat:"halo"},
+  Miel:{coat:"#a65f91",trim:"#ffe0ed",hair:"#71496a",skin:"#edc1c6",accent:"#f3a9d1",hat:"bow"},
+  Nerio:{coat:"#28677d",trim:"#b7e9e8",hair:"#29485b",skin:"#a1d3d4",accent:"#58b8c5",hat:"fin"},
+  Bruma:{coat:"#795536",trim:"#e4c28a",hair:"#403027",skin:"#d6a97f",accent:"#b88b55",hat:"fur"},
+  Merl:{coat:"#59447e",trim:"#e1d2a5",hair:"#302847",skin:"#d9b6a2",accent:"#aa8cdb",hat:"hat"},
+  Saleh:{coat:"#686d69",trim:"#e8d8b1",hair:"#3b4147",skin:"#d4d1c5",accent:"#c5c8b8",hat:"crystal"}
+};
+function px(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, scale=1){
+  const d=TRAVELER_DESIGNS[traveler]||TRAVELER_DESIGNS.Mira;
+  ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
+  const bob=frame?1:0;
+  // grounding shadow and separated feet
+  ctx.fillStyle="rgba(4,10,13,.34)";ctx.beginPath();ctx.ellipse(0,1,15,4,0,0,Math.PI*2);ctx.fill();
+  px(ctx,-9, -9+bob,7,9,"#30303a");px(ctx,2,-9+(frame?0:1),7,9,"#30303a");
+  px(ctx,-10,-2+bob,9,3,"#252630");px(ctx,2,-2+(frame?0:1),9,3,"#252630");
+  // backpack and silhouette
+  px(ctx,-13,-35+bob,6,19,"#332d36");px(ctx,-12,-33+bob,4,13,d.trim);
+  px(ctx,-10,-35+bob,20,25,"#292b39");
+  px(ctx,-9,-34+bob,18,23,d.coat);px(ctx,-4,-33+bob,8,20,d.trim);
+  px(ctx,-2,-34+bob,4,22,d.coat);
+  // sleeves, gloves and belt
+  px(ctx,-15,-31+bob,5,16,d.coat);px(ctx,10,-31+bob,5,16,d.coat);
+  px(ctx,-15,-17+bob,5,4,d.skin);px(ctx,10,-17+bob,5,4,d.skin);
+  px(ctx,-8,-13+bob,16,3,d.accent);px(ctx,-2,-12+bob,4,3,d.trim);
+  // neck and face
+  px(ctx,-4,-42+bob,8,8,d.skin);px(ctx,-8,-55+bob,16,15,d.skin);
+  px(ctx,-9,-53+bob,3,7,d.skin);px(ctx,6,-53+bob,3,7,d.skin);
+  px(ctx,-9,-58+bob,18,7,d.hair);px(ctx,-7,-61+bob,14,4,d.hair);
+  px(ctx,-9,-54+bob,4,5,d.hair);px(ctx,5,-54+bob,4,5,d.hair);
+  px(ctx,-5,-49+bob,2,2,"#24232b");px(ctx,3,-49+bob,2,2,"#24232b");
+  px(ctx,-1,-44+bob,3,1,"#9e5f58");
+  // recognizable faction headpiece
+  if(d.hat==="horn"){px(ctx,-9,-65+bob,4,7,d.trim);px(ctx,5,-65+bob,4,7,d.trim);}
+  if(d.hat==="antenna"){px(ctx,-1,-68+bob,3,8,d.trim);px(ctx,-3,-69+bob,7,3,d.accent);}
+  if(d.hat==="leaf"){px(ctx,-11,-64+bob,7,8,"#72a94e");px(ctx,4,-65+bob,8,8,"#9cc86b");}
+  if(d.hat==="cloud"){px(ctx,-10,-63+bob,7,4,d.trim);px(ctx,4,-63+bob,7,4,d.trim);}
+  if(d.hat==="scarf"){px(ctx,-9,-43+bob,18,5,d.accent);px(ctx,6,-40+bob,4,13,d.accent);}
+  if(d.hat==="halo"){px(ctx,-10,-67+bob,20,2,d.trim);px(ctx,-8,-69+bob,16,2,d.trim);}
+  if(d.hat==="bow"){px(ctx,-12,-60+bob,6,5,d.accent);px(ctx,6,-60+bob,6,5,d.accent);}
+  if(d.hat==="fin"){px(ctx,-13,-55+bob,5,10,d.accent);px(ctx,8,-55+bob,5,10,d.accent);}
+  if(d.hat==="fur"){px(ctx,-10,-64+bob,6,6,d.trim);px(ctx,-3,-66+bob,7,5,d.trim);px(ctx,5,-64+bob,6,6,d.trim);}
+  if(d.hat==="hat"){px(ctx,-12,-61+bob,24,4,d.hair);px(ctx,-7,-68+bob,14,8,d.hair);px(ctx,-10,-58+bob,20,2,d.trim);}
+  if(d.hat==="crystal"){px(ctx,-8,-66+bob,4,7,d.trim);px(ctx,-2,-69+bob,4,10,d.accent);px(ctx,5,-66+bob,4,7,d.trim);}
+  // stitch highlights and walk-step pixels
+  px(ctx,-7,-31+bob,3,5,d.accent);px(ctx,5,-27+bob,2,7,d.trim);
+  if(frame){px(ctx,-10,-3,6,2,d.trim);px(ctx,4,-2,6,2,d.trim);}
+  ctx.restore();
+}
+
