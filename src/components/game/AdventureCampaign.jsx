@@ -304,6 +304,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
           key={battleKey}
           stage={0}
           opponentName={(encounter.traveler || encounter.name) + " · " + encounter.city}
+          opponentTraveler={encounter.traveler || encounter.name}
+          opponentFaction={encounter.faction}
           playerTeam={party}
           enemyTeam={cityTeam}
           adventureMode
