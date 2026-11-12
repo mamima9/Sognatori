@@ -284,20 +284,39 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       )}
       {encounter && phase === "traveler" && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-3xl border border-amber-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
-            <div className="text-[10px] font-black uppercase tracking-[.3em] text-amber-200/70">{encounter.city} · Fazione {encounter.faction}</div>
-            <div className="my-2 flex justify-center">
-              <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={104} />
+        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-amber-100/20 bg-gradient-to-br from-[#20233b] via-[#111a2b] to-[#172d31] text-white shadow-[0_24px_80px_rgba(0,0,0,.65)]">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent" />
+            <div className="grid grid-cols-[112px_1fr] gap-3 px-4 pt-5 sm:grid-cols-[180px_1fr] sm:gap-5 sm:px-7 sm:pt-7">
+              <div className="relative flex min-h-[190px] items-end justify-center sm:min-h-[230px]">
+                <div className="absolute bottom-2 h-7 w-28 rounded-full bg-black/35 blur-md" />
+                <div className="relative z-[1]">
+                  <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={150} />
+                </div>
+                <div className="absolute bottom-0 left-1/2 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
+              </div>
+              <div className="min-w-0 self-center py-3">
+                <div className="text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">{encounter.city} · {encounter.faction}</div>
+                <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">{encounter.traveler || encounter.name}</h2>
+                <p className="mt-3 max-w-md text-xs leading-6 text-white/75 sm:text-sm">{encounter.line || "Il viaggiatore ti osserva in silenzio."}</p>
+                <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-white/35">
+                  <span className="h-px w-7 bg-amber-200/50" /> {lang === "en" ? "THE CHALLENGE" : "LA SFIDA"}
+                </div>
+              </div>
             </div>
-            <h2 className="mt-2 text-3xl font-black">{encounter.traveler || encounter.name}</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">{encounter.line || "Il viaggiatore ti osserva in silenzio."}</p>
-            <div className="my-5 flex justify-center gap-3">
-              {cityTeam.map((s) => <div key={s.id} className="flex flex-col items-center"><AdventureSognatoreSprite s={s} size={54}/><span className="mt-1 max-w-16 truncate text-[9px] font-bold">{s.nome}</span></div>)}
+            <div className="mx-4 mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:mx-7 sm:p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[9px] font-black uppercase tracking-[.22em] text-amber-100/60">{lang === "en" ? "RIVAL TEAM" : "SQUADRA DEL RIVALE"}</span>
+                <span className="text-[9px] font-bold text-white/35">4 {lang === "en" ? "DREAMERS" : "SOGNATORI"}</span>
+              </div>
+              <div className="flex justify-around gap-1">
+                {cityTeam.map((s) => <div key={s.id} className="flex min-w-0 flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={52}/><span className="mt-1 max-w-full truncate text-[8px] font-bold text-white/75">{s.nome}</span></div>)}
+              </div>
             </div>
-            <p className="text-xs text-white/45">La sua squadra è composta da 4 Sognatori della fazione {encounter.faction}.</p>
-            <button disabled={owned.length < 2} onClick={startCityBattle} className="mt-5 w-full rounded-xl bg-amber-300 py-3 font-black text-black disabled:opacity-30">{party.length < 2 ? "CONVINCI ALTRI SOGNATORI PER SFIDARLO" : "ACCETTA LA SFIDA"}</button>
-            <button onClick={() => { onClose?.(); setPhase("idle"); }} className="mt-2 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Torna a esplorare</button>
+            <div className="grid grid-cols-2 gap-2 p-4 sm:px-7 sm:pb-7">
+              <button onClick={() => { onClose?.(); setPhase("idle"); }} className="rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold text-white/70 transition hover:bg-white/10">{lang === "en" ? "LEAVE" : "TORNA A ESPLORARE"}</button>
+              <button disabled={party.length < 2 || cityTeam.length !== 4} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : lang === "en" ? "ACCEPT CHALLENGE" : "ACCETTA LA SFIDA"}</button>
+            </div>
           </div>
         </div>
       )}
