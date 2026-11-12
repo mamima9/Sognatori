@@ -202,3 +202,66 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
   ctx.restore();
 }
 
+
+
+export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
+  const id=s?.id||"";
+  const type=s?.tipo||"Natura";
+  const variants={
+    canc ucc:{shape:"bun",main:"#d9a77b",light:"#f4d4a5",dark:"#76503c",accent:"#fff0d2"},
+  };
+  const palettes={
+    Dolce:["#a96a91","#f0b9d4","#653e68","#fff0df"],Nuvola:["#7c9ec8","#d9e9f7","#425b82","#fff8ed"],
+    Robot:["#4d9ba5","#b9e7dc","#254c5e","#e4f2e8"],Marino:["#3187a1","#a7dfe0","#194d68","#eff8e7"],
+    Umano:["#a86e4d","#e7bd8e","#53382f","#f5e0b9"],Luce:["#d1aa43","#fff0a7","#80602a","#fffbe0"],
+    Demone:["#a74755","#e27a68","#4b273d","#ffd08a"],Natura:["#568c4b","#a8c96c","#294f38","#e2dda1"],
+    Orso:["#91623d","#d0a36a","#493326","#f0d6a1"],Mago:["#765ca6","#c7b1eb","#392c5d","#f6df9a"],
+    Salato:["#828c84","#d1d0bd","#414a4d","#f3e4bf"]
+  };
+  const p=palettes[type]||palettes.Natura;const [main,light,dark,shine]=p;
+  const seed=Array.from(id).reduce((a,ch)=>a+ch.charCodeAt(0),0);
+  const bob=frame?1:0;
+  ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
+  ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(0,1,12,3,0,0,Math.PI*2);ctx.fill();
+  // unique silhouette families, deliberately not cropped artwork
+  if(type==="Marino"){
+    px(ctx,-12,-12+bob,24,10,dark);px(ctx,-10,-16+bob,20,12,main);px(ctx,-7,-18+bob,14,9,light);
+    px(ctx,-15,-12+bob,6,10,main);px(ctx,9,-12+bob,6,10,main);px(ctx,-4,-22+bob,8,5,shine);
+  }else if(type==="Robot"){
+    px(ctx,-10,-20+bob,20,20,dark);px(ctx,-8,-18+bob,16,16,main);px(ctx,-7,-24+bob,14,7,light);
+    px(ctx,-3,-27+bob,6,4,shine);px(ctx,-15,-15+bob,5,10,main);px(ctx,10,-15+bob,5,10,main);
+  }else if(type==="Nuvola"){
+    px(ctx,-10,-15+bob,20,14,main);px(ctx,-14,-12+bob,9,9,light);px(ctx,5,-13+bob,9,10,light);
+    px(ctx,-7,-20+bob,14,10,light);px(ctx,-3,-24+bob,7,5,shine);
+  }else if(type==="Demone"){
+    px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-20+bob,16,10,light);
+    px(ctx,-11,-27+bob,5,11,dark);px(ctx,6,-27+bob,5,11,dark);
+    px(ctx,-10,-28+bob,3,7,shine);px(ctx,7,-28+bob,3,7,shine);
+  }else if(type==="Natura"){
+    px(ctx,-9,-14+bob,18,14,main);px(ctx,-7,-20+bob,14,10,light);
+    px(ctx,-15,-23+bob,10,8,main);px(ctx,5,-25+bob,10,10,light);
+    px(ctx,-3,-28+bob,7,9,shine);
+  }else if(type==="Orso"){
+    px(ctx,-11,-15+bob,22,15,main);px(ctx,-9,-20+bob,18,10,light);
+    px(ctx,-13,-26+bob,8,9,dark);px(ctx,5,-26+bob,8,9,dark);
+    px(ctx,-11,-25+bob,4,4,shine);px(ctx,7,-25+bob,4,4,shine);
+  }else if(type==="Luce"){
+    px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
+    px(ctx,-3,-28+bob,6,6,shine);px(ctx,-14,-20+bob,6,7,shine);px(ctx,8,-20+bob,6,7,shine);
+  }else if(type==="Mago"){
+    px(ctx,-9,-14+bob,18,14,main);px(ctx,-7,-20+bob,14,10,light);
+    px(ctx,-13,-24+bob,26,4,dark);px(ctx,-8,-30+bob,16,8,dark);px(ctx,-2,-28+bob,5,4,shine);
+  }else if(type==="Dolce"){
+    px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-21+bob,16,10,light);
+    px(ctx,-11,-25+bob,7,7,shine);px(ctx,4,-25+bob,7,7,shine);px(ctx,-3,-28+bob,7,5,light);
+  }else{
+    px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
+    px(ctx,-3,-28+bob,6,10,shine);px(ctx,-13,-14+bob,5,8,dark);px(ctx,8,-14+bob,5,8,dark);
+  }
+  // individual markings and face; deterministic variation per official id
+  px(ctx,-6,-13+bob,3,3,"#24232b");px(ctx,3,-13+bob,3,3,"#24232b");
+  px(ctx,-2,-7+bob,5,2,dark);px(ctx,-8,-4+bob,5,3,main);px(ctx,4,-4+bob,5,3,main);
+  if(seed%2===0)px(ctx,-1,-23+bob,4,3,shine);else px(ctx,6,-18+bob,3,4,shine);
+  if(frame){px(ctx,-8,-1,5,2,light);px(ctx,4,-1,5,2,light);}
+  ctx.restore();
+}
