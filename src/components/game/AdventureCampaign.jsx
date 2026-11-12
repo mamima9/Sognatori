@@ -77,6 +77,8 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
     } else if (encounter) {
       setPersuasionError(false);
       setPhase(save.completedCities.includes(encounter.id) ? "completed" : "traveler");
+    } else if (!save.introDone) {
+      setPhase("intro");
     } else if (phase !== "intro") {
       setPhase("idle");
     }
