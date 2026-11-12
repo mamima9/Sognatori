@@ -260,6 +260,15 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   px(ctx,-6,-13+bob,3,3,"#24232b");px(ctx,3,-13+bob,3,3,"#24232b");
   px(ctx,-2,-7+bob,5,2,dark);px(ctx,-8,-4+bob,5,3,main);px(ctx,4,-4+bob,5,3,main);
   if(seed%2===0)px(ctx,-1,-23+bob,4,3,shine);else px(ctx,6,-18+bob,3,4,shine);
+  // Iconic details for the eight first wild encounters.
+  if(id==="cancucc"){px(ctx,-5,-29+bob,10,5,"#d7a16f");px(ctx,-3,-31+bob,6,3,"#f5d8a6");px(ctx,-1,-26+bob,3,2,"#fff0d2");}
+  if(id==="cillymbu"){px(ctx,-3,-32+bob,3,12,"#4d9a4e");px(ctx,3,-29+bob,3,10,"#80bd58");px(ctx,-2,-20+bob,8,2,"#d6e59b");}
+  if(id==="nina"){px(ctx,-15,-18+bob,7,9,shine);px(ctx,8,-18+bob,7,9,shine);px(ctx,-7,-32+bob,14,2,"#fff2b4");px(ctx,-4,-34+bob,8,2,"#fff2b4");}
+  if(id==="dragociocco"){px(ctx,-11,-29+bob,5,9,"#8c3d3d");px(ctx,6,-29+bob,5,9,"#8c3d3d");px(ctx,-15,-16+bob,6,8,"#d78a68");px(ctx,9,-16+bob,6,8,"#d78a68");}
+  if(id==="pepe"){px(ctx,-10,-26+bob,7,7,"#78a95b");px(ctx,4,-26+bob,7,7,"#78a95b");px(ctx,-8,-27+bob,3,3,"#f1e7b0");px(ctx,5,-27+bob,3,3,"#f1e7b0");}
+  if(id==="icepadel"){px(ctx,-13,-18+bob,6,10,"#d9e6e9");px(ctx,7,-18+bob,6,10,"#d9e6e9");px(ctx,-4,-29+bob,8,3,"#e8f5f5");}
+  if(id==="eroe"){px(ctx,-13,-21+bob,8,7,"#e5f0fa");px(ctx,5,-21+bob,8,7,"#e5f0fa");px(ctx,-4,-30+bob,8,5,"#f5f8ff");}
+  if(id==="uesditti"){px(ctx,-13,-28+bob,26,4,"#392b5d");px(ctx,-8,-34+bob,16,7,"#49346f");px(ctx,-1,-31+bob,3,3,"#f4d88b");}
   if(frame){px(ctx,-8,-1,5,2,light);px(ctx,4,-1,5,2,light);}
   ctx.restore();
 }
