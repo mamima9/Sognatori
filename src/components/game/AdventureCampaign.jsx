@@ -45,7 +45,7 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange }) {
+export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, menuContent }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
@@ -185,9 +185,10 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       ))}
 
-      <div className="fixed top-[calc(100svh+12px)] right-[190px] z-[56] flex flex-col items-end gap-2">
+      <div className="fixed top-4 right-4 z-[56] flex flex-col items-end gap-2">
         {menuOpen && (
-          <div className="mb-1 w-52 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/95 p-2 text-white shadow-2xl backdrop-blur-md">
+          <div className="fixed right-4 top-16 bottom-4 z-[55] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
+            {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
               Il tuo viaggio · {save.completedCities.length}/11 città
             </div>
