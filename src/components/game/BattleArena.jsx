@@ -992,9 +992,19 @@ while (remainingActions.length > 0) {
           </div>
         )}
 
-        <div className="relative rounded-3xl bg-gradient-to-b from-rose-950/30 via-slate-900/40 to-emerald-950/30 border border-white/10 p-4 sm:p-6">
+        <div className={adventureMode
+          ? "relative isolate overflow-hidden rounded-3xl border border-amber-100/15 bg-gradient-to-b from-[#342b45] via-[#1d293b] to-[#183b39] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_18px_48px_rgba(0,0,0,.28)] sm:p-6"
+          : "relative rounded-3xl bg-gradient-to-b from-rose-950/30 via-slate-900/40 to-emerald-950/30 border border-white/10 p-4 sm:p-6"}>
+          {adventureMode && (
+            <>
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-200/10 to-transparent" />
+              <div className="pointer-events-none absolute -left-12 top-10 h-36 w-36 rounded-full bg-amber-300/10 blur-3xl" />
+              <div className="pointer-events-none absolute -right-12 bottom-0 h-40 w-40 rounded-full bg-cyan-300/10 blur-3xl" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 border-t border-white/5 bg-gradient-to-t from-black/20 to-transparent" />
+            </>
+          )}
 
-          <div className="text-center text-[10px] uppercase tracking-widest text-rose-400 font-bold mb-1">
+          <div className="relative z-[1] text-center text-[10px] uppercase tracking-widest text-rose-300 font-bold mb-1">
             {t("battle.opponent")}
           </div>
 
