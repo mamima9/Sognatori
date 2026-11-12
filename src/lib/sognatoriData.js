@@ -133,7 +133,7 @@ export const ROSTER = [
     att: 17,
     dif: 13,
     vel: 5.5,
-   abilKey: "taomarco_def_buff",
+   abilKey: "taomarco_defeat_buff",
 abil: "Errare Swap",
 abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     costo: 1,
