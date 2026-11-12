@@ -881,7 +881,9 @@ while (remainingActions.length > 0) {
         : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col">
+    <div className={adventureMode
+      ? "fixed inset-0 z-[300] h-[100dvh] min-h-0 w-screen overflow-y-auto bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col"
+      : "min-h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col"}>
 
       <div className="relative flex-1 px-4 pt-5 pb-3 max-w-4xl mx-auto w-full">
 
