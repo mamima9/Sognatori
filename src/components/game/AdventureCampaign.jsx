@@ -22,6 +22,13 @@ const WRONG = [
   "Non mi interessa ascoltare, seguimi e basta.",
 ];
 
+function persuasionOptionsFor(s) {
+  const options = [ANSWERS[s?.tipo] || ANSWERS.Natura, ...WRONG];
+  const seed = Array.from(String(s?.id || s?.nome || "")).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const shift = seed % options.length;
+  return options.slice(shift).concat(options.slice(0, shift));
+}
+
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -237,7 +244,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
               <h2 className="text-3xl font-black">{wildSognatore.nome}</h2>
               <p className="mt-2 text-sm text-white/60">Non puoi catturarlo. Puoi solo provare a conquistare la sua fiducia con le parole.</p>
               <div className="mt-5 grid gap-2">
-                {[ANSWERS[wildSognatore.tipo] || ANSWERS.Natura, ...WRONG].map((answer) => <button key={answer} onClick={() => {
+                {persuasionOptionsFor(wildSognatore).map((answer) => <button key={answer} onClick={() => {
                   if (answer !== (ANSWERS[wildSognatore.tipo] || ANSWERS.Natura)) { setWildError(true); return; }
                   setSave((old) => {
                     const ownedIds = old.ownedIds.includes(wildSognatore.id) ? old.ownedIds : [...old.ownedIds, wildSognatore.id];
@@ -304,7 +311,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
             <div className="text-xl font-black">{currentReward.nome}</div>
             <p className="mt-2 text-sm text-white/65">Il Sognatore ti osserva. Non vuole essere catturato: devi convincerlo che il tuo viaggio merita la sua fiducia.</p>
             <div className="mt-4 grid gap-2">
-              {[ANSWERS[currentReward.tipo] || ANSWERS.Natura, ...WRONG].map((answer) => <button key={answer} onClick={() => convince({ ...currentReward, _answer: answer })} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
+              {persuasionOptionsFor(currentReward).map((answer) => <button key={answer} onClick={() => convince({ ...currentReward, _answer: answer })} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
             </div>
             {persuasionError && <p className="mt-3 text-sm font-bold text-amber-300">Non è ancora convinto. Ascoltalo meglio e riprova.</p>}
           </div>
