@@ -7,6 +7,7 @@ import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
+import { createAdventurePixelSprite } from "@/lib/adventurePixelSprites";
 
 /*
   SOGNATORI — AVVENTURA
@@ -320,7 +321,7 @@ export default function Avventura() {
     ROSTER.forEach((sognatore) => {
       if (!sognatore?.nome || !sognatore?.img) return;
       const image = new Image();
-      image.onload = () => sognatoreImagesRef.current.set(sognatore.nome.toLowerCase(), image);
+      image.onload = () => sognatoreImagesRef.current.set(sognatore.nome.toLowerCase(), createAdventurePixelSprite(image, 32));
       image.src = sognatore.img;
       images.set(sognatore.nome.toLowerCase(), image);
     });
@@ -959,29 +960,24 @@ const [message, setMessage] = useState("");
         const image = sognatoreImagesRef.current.get(wild.name.toLowerCase());
         if (!image?.complete || !image.naturalWidth) continue;
 
-        const maxWidth = 116;
-        const maxHeight = 112;
-        const ratio = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
-        const drawWidth = image.naturalWidth * ratio;
-        const drawHeight = image.naturalHeight * ratio;
+        const drawHeight = 48;
+        const ratio = Math.min(1, 42 / image.width);
+        const drawWidth = image.width * ratio;
         const left = Math.round(wild.x - drawWidth / 2);
         const top = Math.round(wild.y - drawHeight);
 
         ctx.save();
-        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = "rgba(5,12,9,.42)";
         ctx.beginPath();
-        ctx.ellipse(wild.x, wild.y - 2, Math.max(15, drawWidth * .31), 7, 0, 0, Math.PI * 2);
+        ctx.ellipse(wild.x, wild.y - 1, Math.max(8, drawWidth * .34), 4, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowColor = "rgba(0,0,0,.32)";
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetY = 3;
         ctx.drawImage(image, left, top, drawWidth, drawHeight);
         ctx.restore();
 
         if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           ctx.save();
-          ctx.font = "bold 13px system-ui";
+          ctx.font = "bold 10px monospace";
           ctx.textAlign = "center";
           const labelWidth = ctx.measureText(wild.name).width + 18;
           ctx.fillStyle = "rgba(8,16,13,.82)";
