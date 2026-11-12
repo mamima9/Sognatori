@@ -622,153 +622,9 @@ const [message, setMessage] = useState("");
       }
 
       /*
-        ============================
-        IA SOGNATORI SELVATICI
-        ============================
+        SOGNATORI SELVATICI E SFIDANTI STATICI.
+        Le coordinate iniziali restano fisse: si muove soltanto il giocatore.
       */
-
-      wildRef.current =
-        wildRef.current.map((s) => {
-          const d = Math.hypot(
-            playerRef.current.x - s.x,
-            playerRef.current.y - s.y
-          );
-
-          let angle =
-            s.angle ??
-            Math.random() *
-              Math.PI *
-              2;
-
-          let speed = s.speed;
-
-          /*
-            Sognatori timidi scappano
-            se il giocatore si avvicina.
-          */
-
-          if (
-            s.behavior === "shy" &&
-            d < 180
-          ) {
-            angle = Math.atan2(
-              s.y -
-                playerRef.current.y,
-              s.x -
-                playerRef.current.x
-            );
-
-            speed *= 1.7;
-          } else if (
-            Math.random() <
-            0.012
-          ) {
-            angle =
-              Math.random() *
-              Math.PI *
-              2;
-          }
-
-          const nx = clamp(
-            s.x +
-              Math.cos(angle) *
-                speed *
-                dt,
-            60,
-            WORLD.width - 60
-          );
-
-          const ny = clamp(
-            s.y +
-              Math.sin(angle) *
-                speed *
-                dt,
-            60,
-            WORLD.height - 60
-          );
-
-          return {
-            ...s,
-            x: nx,
-            y: ny,
-            angle,
-          };
-        });
-
-      /*
-        ============================
-        SFIDANTI
-        ============================
-
-        IMPORTANTISSIMO:
-        NON inseguono più il giocatore.
-
-        Pattugliano la loro zona.
-      */
-
-      challengerRef.current =
-        challengerRef.current.map((c) => {
-          let angle =
-            c.angle ??
-            Math.random() *
-              Math.PI *
-              2;
-
-          /*
-            Movimento casuale lento.
-          */
-
-          if (
-            Math.random() <
-            0.008
-          ) {
-            angle =
-              Math.random() *
-              Math.PI *
-              2;
-          }
-
-          let nx = clamp(
-            c.x + Math.cos(angle) * c.speed * dt,
-            80,
-            WORLD.width - 80
-          );
-          let ny = clamp(
-            c.y + Math.sin(angle) * c.speed * dt,
-            80,
-            WORLD.height - 80
-          );
-
-          if (Math.hypot(nx - c.homeX, ny - c.homeY) > c.radius) {
-            angle = Math.atan2(c.homeY - c.y, c.homeX - c.x);
-            nx = c.x + Math.cos(angle) * c.speed * dt;
-            ny = c.y + Math.sin(angle) * c.speed * dt;
-          }
-
-          return { ...c, x: nx, y: ny, angle };
-        });
-
-      /*
-        Aggiorniamo il rendering
-        delle entità ogni ~120ms.
-      */
-
-      if (
-        now -
-          lastEntityRenderRef.current >
-        120
-      ) {
-        lastEntityRenderRef.current =
-          now;
-
-        setWildSognatori(
-          wildRef.current.map(
-            (s) => ({
-              ...s,
-            })
-          )
-        );
-      }
 
       // Gli incontri non partono più automaticamente:
       // il giocatore sceglie quando interagire premendo E.
@@ -1487,7 +1343,7 @@ const [message, setMessage] = useState("");
                 {s.name}
               </div>
 
-              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} walking />
+              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} />
 
               <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40">
                 <div className="h-full w-full rounded-full bg-emerald-400" />
