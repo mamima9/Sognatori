@@ -15,7 +15,7 @@ import { useLanguage } from "@/lib/i18n";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
-export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidante", isWild = false, onFinish }) {
+export default function AdventureBattle({ enemyTeam = [], playerRoster, opponentName = "Sfidante", isWild = false, onFinish }) {
   const { lang } = useLanguage();
   const mIt = useMemo(() => bm("it"), []);
   const mEn = useMemo(() => bm("en"), []);
@@ -27,15 +27,17 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const available = useMemo(() => ROSTER.filter((s) => s && s.id), []);
+  const available = useMemo(() => (Array.isArray(playerRoster) ? playerRoster : ROSTER).filter((s) => s && s.id), [playerRoster]);
   const chosen = chosenIds.map((id) => available.find((s) => String(s.id) === String(id))).filter(Boolean);
 
   const startBattle = () => {
     if (chosen.length !== 2 || !enemyTeam.length) return;
-    const playerActive = chosen.map((s) => initBattleSognatore({ ...s, hp: 20, hpMax: 20 }));
-    const enemyActive = enemyTeam.slice(0, 2).map((s, index) =>
-      initBattleSognatore({ ...s, id: `adventure-enemy-${index}-${s.id}`, hp: 20, hpMax: 20 })
-    );
+    const playerTeam = chosen.map((s) => initBattleSognatore({ ...s, hp: 20, hpMax: 20 }));
+    const enemyTeamReady = enemyTeam.map((s, index) => initBattleSognatore({ ...s, id: `adventure-enemy-${index}-${s.id}`, hp: 20, hpMax: 20 }));
+    const playerActive = playerTeam.slice(0, 2);
+    const playerBench = playerTeam.slice(2);
+    const enemyActive = enemyTeamReady.slice(0, 2);
+    const enemyBench = enemyTeamReady.slice(2);
     const entryLogs = [];
     playerActive.forEach((s) => {
       const entry = onEntryDual(s, playerActive, enemyActive, mIt, mEn);
@@ -45,7 +47,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
       const entry = onEntryDual(s, enemyActive, playerActive, mIt, mEn);
       entryLogs.push(...(lang === "en" ? entry.log_en : entry.log_it));
     });
-    setBattle({ playerActive, enemyActive, turn: 1 });
+    setBattle({ playerActive, enemyActive, playerBench, enemyBench, turn: 1 });
     setLogs(entryLogs.length ? entryLogs : [lang === "en" ? "The battle begins!" : "La battaglia ha inizio!"]);
   };
 
@@ -93,8 +95,32 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
     const end = applyEndOfTurnDual([...next.playerActive, ...next.enemyActive], mIt, mEn);
     turnLogs.push(...(lang === "en" ? end.log_en : end.log_it));
 
-    const won = next.enemyActive.every((s) => !s || s.fainted || s.hp <= 0);
-    const lost = next.playerActive.every((s) => !s || s.fainted || s.hp <= 0);
+    const playerBench = [...(next.playerBench || [])];
+    const enemyBench = [...(next.enemyBench || [])];
+    next.playerActive = next.playerActive.map((s, index) => {
+      if ((!s || s.fainted || s.hp <= 0) && playerBench.length) {
+        const incoming = playerBench.shift();
+        const fresh = initBattleSognatore({ ...incoming, hp: 20, hpMax: 20 });
+        const entry = onEntryDual(fresh, next.playerActive, next.enemyActive, mIt, mEn);
+        turnLogs.push(...(lang === "en" ? entry.log_en : entry.log_it));
+        return fresh;
+      }
+      return s;
+    });
+    next.enemyActive = next.enemyActive.map((s, index) => {
+      if ((!s || s.fainted || s.hp <= 0) && enemyBench.length) {
+        const incoming = enemyBench.shift();
+        const fresh = initBattleSognatore({ ...incoming, hp: 20, hpMax: 20 });
+        const entry = onEntryDual(fresh, next.enemyActive, next.playerActive, mIt, mEn);
+        turnLogs.push(...(lang === "en" ? entry.log_en : entry.log_it));
+        return fresh;
+      }
+      return s;
+    });
+    next.playerBench = playerBench;
+    next.enemyBench = enemyBench;
+    const won = next.enemyActive.every((s) => !s || s.fainted || s.hp <= 0) && enemyBench.length === 0;
+    const lost = next.playerActive.every((s) => !s || s.fainted || s.hp <= 0) && playerBench.length === 0;
     next.turn += 1;
     setBattle(next);
     setPlayerModes(["attack", "attack"]);
@@ -106,7 +132,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
   const toggleChoice = (id) => {
     setChosenIds((old) => old.includes(id)
       ? old.filter((value) => value !== id)
-      : old.length < 2 ? [...old, id] : [old[1], id]
+      : old.length < 4 ? [...old, id] : [old[1], old[2], old[3], id]
     );
   };
 
@@ -125,7 +151,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
 
         {!battle && (
           <>
-            <p className="mb-3 text-sm text-white/65">{lang === "en" ? "Choose two Sognatori for your team." : "Scegli due Sognatori per la tua squadra."} <b className="text-amber-300">{chosen.length}/2</b></p>
+            <p className="mb-3 text-sm text-white/65">{lang === "en" ? "Choose two Sognatori for your team." : "Scegli da 2 a 4 Sognatori per la tua squadra."} <b className="text-amber-300">{chosen.length}/4</b></p>
             <div className="grid max-h-[48vh] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-5">
               {available.map((s) => {
                 const selected = chosenIds.includes(s.id);
@@ -138,7 +164,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
               })}
             </div>
             <div className="mt-4 flex gap-2">
-              <button disabled={chosen.length !== 2} onClick={startBattle} className="flex-1 rounded-xl bg-amber-300 py-3 font-black text-black disabled:cursor-not-allowed disabled:opacity-30">{lang === "en" ? "START BATTLE" : "INIZIA LA BATTAGLIA"}</button>
+              <button disabled={chosen.length < 2} onClick={startBattle} className="flex-1 rounded-xl bg-amber-300 py-3 font-black text-black disabled:cursor-not-allowed disabled:opacity-30">{lang === "en" ? "START BATTLE" : "INIZIA LA BATTAGLIA"}</button>
             </div>
           </>
         )}
