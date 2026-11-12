@@ -60,12 +60,17 @@ export function getPriority(s) {
   return 0;
 }
 
-function isDebuffImmune(target, allies) {
+function isDebuffImmune(target, allies, stat) {
   if (!target) return false;
 
   const abil = target.abilityNullified ? null : target.abilKey;
 
-  if (abil === "cancucc_immune") return true;
+  if (
+    abil === "cancucc_immune" &&
+    (stat === "att" || stat === "dif")
+  ) {
+    return true;
+  }
 
   if (
     allies &&
@@ -96,7 +101,7 @@ function applyMod(target, stat, amount, allies) {
     amount = Math.abs(amount);
   }
 
-  if (amount < 0 && isDebuffImmune(target, allies)) {
+  if (amount < 0 && isDebuffImmune(target, allies, stat)) {
     return false;
   }
 
@@ -1376,6 +1381,40 @@ export function onEntryDual(
   s.blockFirstAttack = false;
 
   switch (abil) {
+    case "ring_ape_spargimiele": {
+      [...allies, ...enemies].forEach(target => {
+        if (!target || target.fainted || target.id === s.id) return;
+
+        const targetTeam = allies.some(
+          a => a?.id === target.id
+        ) ? allies : enemies;
+
+        if (target.tipo === "Dolce") {
+          applyMod(target, "att", 2, targetTeam);
+          applyMod(target, "vel", 2, targetTeam);
+
+          log_it.push(
+            target.nome + " è ricoperto di miele: +2 ATT, +2 VEL"
+          );
+          log_en.push(
+            target.nome + " is covered in honey: +2 ATK, +2 SPD"
+          );
+        } else if (target.tipo === "Salato") {
+          applyMod(target, "att", -2, targetTeam);
+          applyMod(target, "dif", -2, targetTeam);
+
+          log_it.push(
+            target.nome + " viene appesantito dal miele: -2 ATT, -2 DIF"
+          );
+          log_en.push(
+            target.nome + " is weighed down by honey: -2 ATK, -2 DEF"
+          );
+        }
+      });
+
+      break;
+    }
+
     case "sparkly_debuff":
       enemies.forEach(e => {
         if (
