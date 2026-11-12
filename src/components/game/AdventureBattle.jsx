@@ -173,7 +173,7 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
           <>
             <div className="mb-4 grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-red-300/15 bg-red-950/20 p-3">
-                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-red-200/60">{opponentName}</div>
+                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-red-200/60">{opponentName} · {battle.enemyBench?.length || 0} in panchina</div>
                 <div className="grid grid-cols-2 gap-2">
                   {battle.enemyActive.map((s, i) => s ? <div key={s.id} className="rounded-xl bg-black/20 p-2 text-center">
                     <AdventureSognatoreSprite s={s} size={64} className={s.fainted ? "opacity-30 grayscale" : ""} />
@@ -184,7 +184,7 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
                 </div>
               </div>
               <div className="rounded-2xl border border-emerald-300/15 bg-emerald-950/20 p-3">
-                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-200/60">{lang === "en" ? "Your team" : "La tua squadra"}</div>
+                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-200/60">{lang === "en" ? "Your team" : "La tua squadra"} · {battle.playerBench?.length || 0} in panchina</div>
                 <div className="grid grid-cols-2 gap-2">
                   {battle.playerActive.map((s) => <div key={s.id} className="rounded-xl bg-black/20 p-2 text-center">
                     <AdventureSognatoreSprite s={s} size={64} className={s.fainted ? "opacity-30 grayscale" : ""} />
