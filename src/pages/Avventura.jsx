@@ -125,11 +125,6 @@ const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   color: city.color,
 }));
 
-const spriteFor = (name) =>
-  ROSTER.find(
-    (s) => s.nome?.toLowerCase() === name.toLowerCase()
-  )?.img || "/images/1. ADLI.png";
-
 const clamp = (v, min, max) =>
   Math.max(min, Math.min(max, v));
 
@@ -156,6 +151,8 @@ function buildWorld() {
     const x = 80 + rand() * (WORLD.width - 160);
     const y = 80 + rand() * (WORLD.height - 160);
 
+    if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 250)) continue;
+
     if (
       Math.abs(x - 1800) < 420 &&
       Math.abs(y - 1200) < 300
@@ -172,12 +169,10 @@ function buildWorld() {
   }
 
   for (let i = 0; i < 65; i++) {
-    rocks.push({
-      id: `rock-${i}`,
-      x: 80 + rand() * (WORLD.width - 160),
-      y: 80 + rand() * (WORLD.height - 160),
-      r: 13 + rand() * 13,
-    });
+    const x = 80 + rand() * (WORLD.width - 160);
+    const y = 80 + rand() * (WORLD.height - 160);
+    if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 220)) continue;
+    rocks.push({ id: `rock-${i}`, x, y, r: 13 + rand() * 13 });
   }
 
   for (let i = 0; i < 28; i++) {
@@ -1779,6 +1774,9 @@ export default function Avventura() {
 
       <div className="absolute right-3 top-24 z-40 h-24 w-32 overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
         <div className="relative h-full w-full">
+          {ADVENTURE_CITIES.map((city) => (
+            <div key={city.id} title={city.city + " · " + city.faction} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/60" style={{ left: (city.x / WORLD.width * 100) + "%", top: (city.y / WORLD.height * 100) + "%", background: city.color }} />
+          ))}
           {ZONES.map((z) => (
             <div
               key={z.name}
