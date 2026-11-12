@@ -1173,8 +1173,10 @@ const [message, setMessage] = useState("");
           if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
           return (
             <div key={s.id} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: sx, top: sy }}>
-              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={88} />
-              <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40"><div className="h-full w-full rounded-full bg-emerald-400" /></div>
+              <AdventureSognatoreSprite
+                s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())}
+                size={104}
+              />
             </div>
           );
         })}
