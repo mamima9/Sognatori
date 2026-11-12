@@ -359,7 +359,7 @@ export default function GlobalMusicPlayer() {
   };
 
   return (
-    <div className="w-full flex justify-center px-4 py-4">
+    <div className={location.pathname === "/avventura" ? "fixed bottom-1 left-1/2 z-[100] -translate-x-1/2 px-0 py-0" : "w-full flex justify-center px-4 py-4"}>
       <div className="relative">
 
         {/* PLAYLIST */}
