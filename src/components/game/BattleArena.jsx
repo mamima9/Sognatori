@@ -58,6 +58,8 @@ export default function BattleArena({
   enemyTeam,
   onEnd,
   onMissionComplete,
+  adventureMode = false,
+  opponentName,
 }) {
   useEffect(() => {
   setMusicMode("battle");
@@ -614,14 +616,14 @@ while (remainingActions.length > 0) {
 
     if (pAlive === 0) {
       setPhase("done");
-      await updateArcadeStreak("lose");
+      if (!adventureMode) await updateArcadeStreak("lose");
       onEnd("lose", logRef.current);
       return;
     }
 
     if (eAlive === 0) {
       setPhase("done");
-      await updateArcadeStreak("win");
+      if (!adventureMode) await updateArcadeStreak("win");
       onEnd("win", logRef.current);
       return;
     }
@@ -838,7 +840,7 @@ while (remainingActions.length > 0) {
         ).length === 0
       ) {
         setPhase("done");
-        await updateArcadeStreak("lose");
+        if (!adventureMode) await updateArcadeStreak("lose");
         onEnd("lose", logRef.current)
         return;
       }
@@ -885,7 +887,7 @@ while (remainingActions.length > 0) {
 
         <div className="flex items-center gap-3 mb-2">
           <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
-            {t("battle.vgc")}
+            {opponentName || t("battle.vgc")}
           </span>
 
           <button
