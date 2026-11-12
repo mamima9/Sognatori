@@ -64,7 +64,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   useEffect(() => {
     onPauseChange?.(phase !== "idle" || !!panel);
     return () => onPauseChange?.(false);
-  }, [phase, panel]);
+  }, [phase, panel, onPauseChange]);
 
   useEffect(() => {
     if (!save.introDone) setPhase("intro");
