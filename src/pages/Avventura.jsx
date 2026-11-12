@@ -1334,17 +1334,17 @@ const [message, setMessage] = useState("");
   */
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black text-white select-none touch-none">
+    <div className="relative min-h-[calc(100svh+170px)] overflow-x-hidden overflow-y-auto bg-black text-white select-none touch-pan-y">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0"
+        className="fixed inset-0 pointer-events-none"
       />
 
       {/* =====================================
           PAD MOBILE
           ===================================== */}
 
-      <div className="absolute bottom-1 left-5 z-50 md:hidden">
+      <div className="fixed bottom-1 left-5 z-50 md:hidden">
         <div className="relative h-36 w-36">
           <button
             type="button"
@@ -1707,7 +1707,7 @@ const [message, setMessage] = useState("");
       <button
         type="button"
         onClick={interact}
-        className="absolute bottom-5 right-5 rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
+        className="fixed top-[calc(100svh+12px)] right-5 z-[56] rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
       >
         E · INTERAGISCI
       </button>
