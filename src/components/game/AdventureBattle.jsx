@@ -22,6 +22,7 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
   const [chosenIds, setChosenIds] = useState([]);
   const [battle, setBattle] = useState(null);
   const [targets, setTargets] = useState([0, 0]);
+  const [playerModes, setPlayerModes] = useState(["attack", "attack"]);
   const [logs, setLogs] = useState([]);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -52,8 +53,22 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
     if (!battle || busy || result) return;
     setBusy(true);
     const next = clone(battle);
+    const turnLogs = [];
+    next.playerActive.forEach((attacker, index) => {
+      if (attacker && !attacker.fainted && playerModes[index] === "protect") {
+        attacker.protectedThisTurn = true;
+        turnLogs.push(lang === "en" ? attacker.nome + " takes a defensive stance." : attacker.nome + " si mette in protezione.");
+      }
+    });
+    const aiActions = aiChooseActions(next.enemyActive, next.playerActive, []);
+    next.enemyActive.forEach((attacker, index) => {
+      if (attacker && !attacker.fainted && aiActions[index]?.type === "protect") {
+        attacker.protectedThisTurn = true;
+        turnLogs.push(lang === "en" ? attacker.nome + " protects itself." : attacker.nome + " si protegge.");
+      }
+    });
     const playerAttacks = next.playerActive.map((attacker, index) => {
-      if (!attacker || attacker.fainted) return null;
+      if (!attacker || attacker.fainted || playerModes[index] === "protect") return null;
       const aliveTargets = next.enemyActive.filter((s) => s && !s.fainted);
       if (!aliveTargets.length) return null;
       const preferred = next.enemyActive[targets[index]];
@@ -61,7 +76,6 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
       return { attacker, target };
     }).filter(Boolean);
 
-    const aiActions = aiChooseActions(next.enemyActive, next.playerActive, []);
     const enemyAttacks = aiActions.map((action, index) => {
       const attacker = next.enemyActive[index];
       if (!attacker || attacker.fainted || !action || action.type !== "attack") return null;
@@ -71,7 +85,6 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
     }).filter(Boolean);
 
     const ordered = orderActions(next.playerActive, next.enemyActive, playerAttacks, enemyAttacks);
-    const turnLogs = [];
     ordered.forEach((action) => {
       const outcome = processActionDual(action, mIt, mEn);
       turnLogs.push(...(lang === "en" ? outcome.log_en : outcome.log_it));
@@ -157,12 +170,19 @@ export default function AdventureBattle({ enemyTeam = [], opponentName = "Sfidan
             </div>
 
             {!result && <div className="mb-3 grid gap-2 sm:grid-cols-2">
-              {battle.playerActive.map((s, index) => !s.fainted && <label key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
-                <span className="mb-2 block font-bold">{lang === "en" ? "Target for" : "Bersaglio di"} {s.nome}</span>
-                <select value={targets[index]} onChange={(e) => setTargets((old) => old.map((v, i) => i === index ? Number(e.target.value) : v))} className="w-full rounded-lg bg-slate-800 p-2 text-white">
-                  {battle.enemyActive.map((enemy, enemyIndex) => enemy && !enemy.fainted && <option key={enemy.id} value={enemyIndex}>{enemy.nome}</option>)}
+              {battle.playerActive.map((s, index) => !s.fainted && <div key={s.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
+                <span className="mb-2 block font-bold">{s.nome}</span>
+                <select value={playerModes[index]} onChange={(e) => setPlayerModes((old) => old.map((v, i) => i === index ? e.target.value : v))} className="mb-2 w-full rounded-lg bg-slate-800 p-2 text-white">
+                  <option value="attack">{lang === "en" ? "Attack" : "Attacca"}</option>
+                  <option value="protect">{lang === "en" ? "Protect" : "Proteggi"}</option>
                 </select>
-              </label>)}
+                {playerModes[index] === "attack" && <>
+                  <span className="mb-1 block text-white/55">{lang === "en" ? "Target" : "Bersaglio"}</span>
+                  <select value={targets[index]} onChange={(e) => setTargets((old) => old.map((v, i) => i === index ? Number(e.target.value) : v))} className="w-full rounded-lg bg-slate-800 p-2 text-white">
+                    {battle.enemyActive.map((enemy, enemyIndex) => enemy && !enemy.fainted && <option key={enemy.id} value={enemyIndex}>{enemy.nome}</option>)}
+                  </select>
+                </>}
+              </div>)}
             </div>}
 
             <div className="mb-3 max-h-32 overflow-y-auto rounded-xl border border-white/10 bg-black/30 p-3 text-xs leading-relaxed text-white/75">
