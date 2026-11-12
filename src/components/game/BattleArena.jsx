@@ -1008,13 +1008,14 @@ while (remainingActions.length > 0) {
             {t("battle.opponent")}
           </div>
 
-          <div className="flex justify-around items-end min-h-[120px]">
+          <div className={adventureMode ? "relative z-[1] flex justify-around items-end min-h-[190px] gap-2 px-1 sm:min-h-[230px] sm:px-6" : "flex justify-around items-end min-h-[120px]"}>
             {enemyActive.map(
               (s, i) => (
                 <BattlePokemon
                   key={s.id + i}
                   s={s}
                   side="enemy"
+                  cinematic={adventureMode}
                   popup={popups.find(
                     p =>
                       p.targetId ===
@@ -1027,13 +1028,14 @@ while (remainingActions.length > 0) {
 
           <div className="my-3 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-          <div className="flex justify-around items-start min-h-[120px]">
+          <div className={adventureMode ? "relative z-[1] flex justify-around items-start min-h-[190px] gap-2 px-1 sm:min-h-[230px] sm:px-6" : "flex justify-around items-start min-h-[120px]"}>
             {playerActive.map(
               (s, i) => (
                 <BattlePokemon
                   key={s.id + i}
                   s={s}
                   side="player"
+                  cinematic={adventureMode}
                   popup={popups.find(
                     p =>
                       p.targetId ===
