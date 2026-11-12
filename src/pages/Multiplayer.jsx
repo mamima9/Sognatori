@@ -51,14 +51,6 @@ export default function Multiplayer() {
           .eq("status", "waiting")
           .lt("created_at", fiveMinAgo);
 
-        // Questo utente non deve avere più di un waiting aperto
-        await supabase
-          .from("matches")
-          .delete()
-          .eq("status", "waiting")
-          .eq("player1_id", user.id)
-          .is("player2_id", null);
-
       } catch (e) {
         console.error("Waiting cleanup failed:", e);
       }
