@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
-import AdventureBattle from "@/components/game/AdventureBattle";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
@@ -1092,6 +1091,16 @@ export default function Avventura() {
         "#604b72"
       );
 
+      for (const city of ADVENTURE_CITIES) {
+        drawHouse(ctx, city.x - 78, city.y - 48, city.color);
+        ctx.fillStyle = "rgba(0,0,0,.62)";
+        ctx.fillRect(city.x - 82, city.y + 90, 164, 28);
+        ctx.fillStyle = "#fff4cf";
+        ctx.font = "bold 15px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(city.city, city.x, city.y + 110);
+      }
+
       // Undici città-fazione: ogni viaggiatore presidia la propria città.
       for (const city of ADVENTURE_CITIES) {
         drawHouse(ctx, city.x - 78, city.y - 48, city.color);
@@ -1901,6 +1910,7 @@ export default function Avventura() {
           challengerEncounterOpenRef.current = false;
           setChallengerEncounter(null);
         }}
+        onPauseChange={(paused) => { battleOpenRef.current = paused; }}
         onWildClose={() => {
           if (encounter?.id) wildCooldownRef.current[encounter.id] = Date.now() + 20000;
           encounterOpenRef.current = false;
