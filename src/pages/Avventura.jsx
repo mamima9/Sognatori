@@ -492,7 +492,7 @@ export default function Avventura() {
 
       last = now;
 
-      if (battleOpenRef.current) {
+      if (battleOpenRef.current || encounterOpenRef.current || challengerEncounterOpenRef.current) {
         animation = requestAnimationFrame(loop);
         return;
       }
@@ -1092,6 +1092,17 @@ export default function Avventura() {
         "#604b72"
       );
 
+      // Undici città-fazione: ogni viaggiatore presidia la propria città.
+      for (const city of ADVENTURE_CITIES) {
+        drawHouse(ctx, city.x - 78, city.y - 48, city.color);
+        ctx.fillStyle = "rgba(0,0,0,.62)";
+        ctx.fillRect(city.x - 82, city.y + 90, 164, 28);
+        ctx.fillStyle = "#fff4cf";
+        ctx.font = "bold 15px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(city.city, city.x, city.y + 110);
+      }
+
       /*
         ALBERI
       */
@@ -1674,6 +1685,9 @@ export default function Avventura() {
                 <div className="mt-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
                   {c.name}
                 </div>
+                <div className="whitespace-nowrap text-center text-[8px] font-bold text-amber-100/80 drop-shadow-[0_2px_2px_black]">
+                  {c.city}
+                </div>
               </div>
             );
           }
@@ -1882,15 +1896,17 @@ export default function Avventura() {
         walking={!!(keysRef.current.w || keysRef.current.a || keysRef.current.s || keysRef.current.d || keysRef.current.arrowup || keysRef.current.arrowdown || keysRef.current.arrowleft || keysRef.current.arrowright)}
         encounter={challengerEncounter}
         wildEncounter={encounter}
-        onClose={() => setChallengerEncounter(null)}
+        onClose={() => {
+          if (challengerEncounter?.id) challengerCooldownRef.current[challengerEncounter.id] = Date.now() + 30000;
+          challengerEncounterOpenRef.current = false;
+          setChallengerEncounter(null);
+        }}
         onWildClose={() => {
           if (encounter?.id) wildCooldownRef.current[encounter.id] = Date.now() + 20000;
           encounterOpenRef.current = false;
           setEncounter(null);
         }}
       />
-
-}
     </div>
   );
 }
