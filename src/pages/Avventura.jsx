@@ -1750,8 +1750,8 @@ const [message, setMessage] = useState("");
           />
         </div>
       </div>
-      </div>
           <GlobalMusicPlayer insideAdventureMenu />
+      </div>
         )}
         userKey={user?.id || user?.email}
         player={player}
