@@ -20,22 +20,36 @@ export default function Rankings() {
   const [arcadeRanking, setArcadeRanking] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadHistory = async () => {
       setLoading(true);
-const { data: arcadeData, error: arcadeError } = await supabase
-  .from("profiles")
-.select(
-  "id, username, avatar, arcade_wins, arcade_current_streak, arcade_best_streak, arcade_completed"
-)
-  .order("arcade_best_streak", { ascending: false })
-  .order("arcade_wins", { ascending: false })
-  .limit(20);
 
-if (arcadeError) throw arcadeError;
+      // Caricamento classifica Arcade
+      try {
+        const { data: arcadeData, error: arcadeError } = await supabase
+          .from("profiles")
+          .select(
+            "id, username, avatar, arcade_wins, arcade_current_streak, arcade_best_streak, arcade_completed"
+          )
+          .order("arcade_best_streak", { ascending: false })
+          .order("arcade_wins", { ascending: false })
+          .limit(20);
 
-setArcadeRanking(arcadeData || []);
+        if (arcadeError) throw arcadeError;
 
+        if (!cancelled) {
+          setArcadeRanking(arcadeData || []);
+        }
+      } catch (error) {
+        console.error("Failed to load Arcade ranking:", error);
 
+        if (!cancelled) {
+          setArcadeRanking([]);
+        }
+      }
+
+      // Caricamento classifica competitiva
       try {
         const { data, error } = await supabase
           .from("match_history")
@@ -46,16 +60,27 @@ setArcadeRanking(arcadeData || []);
 
         if (error) throw error;
 
-        setHistory(data || []);
+        if (!cancelled) {
+          setHistory(data || []);
+        }
       } catch (error) {
         console.error("Failed to load match history:", error);
-        setHistory([]);
+
+        if (!cancelled) {
+          setHistory([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ============================================
