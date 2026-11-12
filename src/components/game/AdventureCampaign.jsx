@@ -49,6 +49,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [phase, setPhase] = useState("idle");
   const [starterChoice, setStarterChoice] = useState("Natura");
   const [rewardIndex, setRewardIndex] = useState(0);
@@ -184,15 +185,22 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       ))}
 
-      <div className="absolute right-4 top-1/2 z-[55] flex -translate-y-1/2 flex-col gap-2">
-        <div className="rounded-xl border border-amber-200/30 bg-slate-950/90 px-3 py-2 text-center text-[10px] font-black text-amber-100 shadow-xl">
-          CITTÀ {save.completedCities.length}/11
-        </div>
-        <button onClick={() => setPanel(panel === "party" ? "" : "party")} className="rounded-xl border border-emerald-200/30 bg-slate-950/90 px-3 py-2 text-xs font-black text-emerald-100 shadow-xl">
-          SQUADRA {party.length}/4
-        </button>
-        <button onClick={() => setPanel(panel === "box" ? "" : "box")} className="rounded-xl border border-violet-200/30 bg-slate-950/90 px-3 py-2 text-xs font-black text-violet-100 shadow-xl">
-          DEPOSITO {deposit.length}
+      <div className="absolute bottom-[88px] right-5 z-[56] flex flex-col items-end gap-2">
+        {menuOpen && (
+          <div className="mb-1 w-52 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/95 p-2 text-white shadow-2xl backdrop-blur-md">
+            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
+              Il tuo viaggio · {save.completedCities.length}/11 città
+            </div>
+            <button onClick={() => { setPanel("party"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-emerald-100 hover:bg-white/10">
+              <span>SQUADRA</span><span className="text-emerald-200">{party.length}/4</span>
+            </button>
+            <button onClick={() => { setPanel("box"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-violet-100 hover:bg-white/10">
+              <span>DEPOSITO</span><span className="text-violet-200">{deposit.length}</span>
+            </button>
+          </div>
+        )}
+        <button onClick={() => setMenuOpen((open) => !open)} className="rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
+          {menuOpen ? "CHIUDI MENU" : "☰ MENU"}
         </button>
       </div>
 
