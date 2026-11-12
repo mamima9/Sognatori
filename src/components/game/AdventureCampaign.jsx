@@ -64,7 +64,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
   useEffect(() => {
     onPauseChange?.(phase !== "idle" || !!panel);
     return () => onPauseChange?.(false);
-  }, [phase, panel, onPauseChange]);
+  }, [phase, panel]);
 
   useEffect(() => {
     if (!save.introDone) setPhase("intro");
@@ -183,6 +183,9 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
       ))}
 
       <div className="absolute right-4 top-1/2 z-[55] flex -translate-y-1/2 flex-col gap-2">
+        <div className="rounded-xl border border-amber-200/30 bg-slate-950/90 px-3 py-2 text-center text-[10px] font-black text-amber-100 shadow-xl">
+          CITTÀ {save.completedCities.length}/11
+        </div>
         <button onClick={() => setPanel(panel === "party" ? "" : "party")} className="rounded-xl border border-emerald-200/30 bg-slate-950/90 px-3 py-2 text-xs font-black text-emerald-100 shadow-xl">
           SQUADRA {party.length}/4
         </button>
