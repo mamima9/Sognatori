@@ -1,5 +1,5 @@
 -- Atomic public matchmaking for Sognatori.
--- Run through Supabase migrations / SQL editor before using the updated frontend.
+-- Run through Supabase SQL Editor after deploying the matching frontend.
 
 create or replace function public.find_or_create_public_match(
   p_mode text,
@@ -11,7 +11,8 @@ security definer
 set search_path = public
 as $$
 declare
-  v_user uuid := auth.uid();
+  -- matches.player1_id / player2_id are TEXT in this project.
+  v_user text := auth.uid()::text;
   v_match public.matches;
 begin
   if v_user is null then
@@ -22,12 +23,13 @@ begin
     raise exception 'Invalid matchmaking mode';
   end if;
 
-  -- Serialize matchmaking requests by mode so two simultaneous players
-  -- cannot both observe an empty queue and create separate waiting rooms.
+  -- Serialize matchmaking requests by mode so simultaneous searches
+  -- cannot both create separate waiting rooms.
   perform pg_advisory_xact_lock(
     hashtext('sognatori-matchmaking:' || p_mode)
   );
 
+  -- Remove stale waiting rooms.
   delete from public.matches
   where status = 'waiting'
     and created_at < now() - interval '5 minutes';
