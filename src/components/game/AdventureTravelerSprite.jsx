@@ -6,7 +6,7 @@ export default function AdventureTravelerSprite({ traveler, faction, size = 58, 
   useEffect(()=>{
     const sheet=createTravelerSpriteSheet(faction, traveler);
     setSheetUrl(sheet.toDataURL());
-  },[faction]);
+  },[faction, traveler]);
   const row=({down:0,left:1,right:2,up:3})[direction] ?? 0;
   return <div role="img" aria-label={traveler || "Viaggiatore"} style={{
     width:size,height:size*1.34,display:"block",flex:"0 0 auto",
