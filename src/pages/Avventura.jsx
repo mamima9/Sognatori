@@ -307,6 +307,12 @@ function circleRectCollision(
 export default function Avventura() {
   const canvasRef = useRef(null);
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
   const { user, isLoadingAuth, authChecked } = useAuth();
 
   const testerAllowed =
@@ -1335,7 +1341,7 @@ const [message, setMessage] = useState("");
   */
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black text-white select-none touch-none">
+    <div className="fixed inset-0 h-[100dvh] w-screen overflow-hidden bg-black text-white select-none touch-auto">
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none"
