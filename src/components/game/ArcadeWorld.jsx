@@ -1233,11 +1233,15 @@ export default function ArcadeWorld({
         </>
         )}
 
-          {stage >= 1 && stage <= 10 && (
+        </div>
+
+        {/* JOYSTICK TOUCH: separato dalla mappa, non copre lo stage */}
+        {stage >= 1 && stage <= 10 && (
+          <div className="mt-3 flex justify-start sm:hidden">
             <div
               role="presentation"
               aria-label={isEnglish ? "Movement joystick" : "Joystick di movimento"}
-              className="absolute bottom-4 left-4 z-50 flex h-28 w-28 items-center justify-center rounded-full border-2 border-white/45 bg-slate-950/55 shadow-[0_0_24px_rgba(0,0,0,.45)] backdrop-blur-sm"
+              className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-white/45 bg-slate-950/70 shadow-[0_0_20px_rgba(0,0,0,.4)]"
               style={{ touchAction: "none", userSelect: "none" }}
               onPointerDown={(event) => {
                 event.preventDefault();
@@ -1260,13 +1264,12 @@ export default function ArcadeWorld({
               <div className="pointer-events-none absolute h-1 w-7 rounded-full bg-white/35" />
               <div className="pointer-events-none absolute h-7 w-1 rounded-full bg-white/35" />
               <div
-                className="pointer-events-none relative h-11 w-11 rounded-full border-2 border-white/70 bg-gradient-to-br from-slate-200/90 to-slate-500/90 shadow-lg"
+                className="pointer-events-none relative h-10 w-10 rounded-full border-2 border-white/70 bg-gradient-to-br from-slate-200/90 to-slate-500/90 shadow-lg"
                 style={{ transform: `translate(${joystickPosition.x}px, ${joystickPosition.y}px)` }}
               />
             </div>
-          )}
-
-        </div>
+          </div>
+        )}
 
         {/* CONTROLLI DESKTOP */}
 
