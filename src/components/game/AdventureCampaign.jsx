@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ROSTER } from "@/lib/sognatoriData";
 import BattleArena from "@/components/game/BattleArena";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
+import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import { getStarterPair, getCityRewards, buildCityTeam } from "@/lib/adventureCampaignData";
 
 const ANSWERS = {
