@@ -1,62 +1,95 @@
 import React from "react";
 
-const DESIGNS = {
-  Demone: { main: "#8f3047", dark: "#401c32", light: "#f28a73", trim: "#f3c16a", hair: "#281b2b", gear: "horns" },
-  Robot: { main: "#4b9eaf", dark: "#244b64", light: "#a8f1e9", trim: "#e0b86b", hair: "#d9f2ed", gear: "antenna" },
-  Natura: { main: "#4c8b55", dark: "#254b37", light: "#a9d878", trim: "#e8d29a", hair: "#493b2b", gear: "leaf" },
-  Nuvola: { main: "#778cc9", dark: "#3b477c", light: "#d9e8ff", trim: "#f3d8ff", hair: "#e6edff", gear: "cloud" },
-  Umano: { main: "#b4774f", dark: "#603c35", light: "#f0c49a", trim: "#e9d18c", hair: "#382b2b", gear: "scarf" },
-  Luce: { main: "#d2ad48", dark: "#785d2d", light: "#fff1a6", trim: "#fff8dc", hair: "#fff0b8", gear: "halo" },
-  Dolce: { main: "#c778a7", dark: "#713e71", light: "#ffd2e9", trim: "#f4d68d", hair: "#754b69", gear: "ribbon" },
-  Marino: { main: "#328da8", dark: "#204d70", light: "#9de7ee", trim: "#e1dca7", hair: "#274a61", gear: "fin" },
-  Orso: { main: "#9a7045", dark: "#4e392d", light: "#d7b17b", trim: "#e8d2a2", hair: "#382b24", gear: "fur" },
-  Mago: { main: "#7656a8", dark: "#382b65", light: "#c7a9f2", trim: "#f2d78b", hair: "#302b48", gear: "hat" },
-  Salato: { main: "#8f928b", dark: "#494e52", light: "#e0ded0", trim: "#d5ad72", hair: "#343b43", gear: "salt" },
+const STYLES = {
+  Demone: { skin:"#e7a18b", hair:"#30202c", base:"#762d42", shadow:"#351b32", light:"#e66d62", metal:"#e7b36b", cloth:"#a83d4e", silhouette:"horns" },
+  Robot: { skin:"#a8e6df", hair:"#244653", base:"#315d72", shadow:"#172d43", light:"#55b8bd", metal:"#d5e5d7", cloth:"#397f91", silhouette:"antenna" },
+  Natura: { skin:"#e8bd91", hair:"#493a2b", base:"#365c3c", shadow:"#20392d", light:"#8cbd61", metal:"#d6c18a", cloth:"#668a49", silhouette:"leaves" },
+  Nuvola: { skin:"#e8d8d1", hair:"#c5d9ef", base:"#536c9b", shadow:"#293654", light:"#a9c8ed", metal:"#f0d8e8", cloth:"#829ed0", silhouette:"cloud" },
+  Umano: { skin:"#d99b72", hair:"#352a2b", base:"#79503d", shadow:"#382a2d", light:"#d28b52", metal:"#dfc18a", cloth:"#b46b45", silhouette:"scarf" },
+  Luce: { skin:"#f3d5a1", hair:"#f3e5b7", base:"#b28a35", shadow:"#5e492a", light:"#f7e18c", metal:"#fff1c4", cloth:"#e0b84c", silhouette:"halo" },
+  Dolce: { skin:"#f0c1c9", hair:"#744768", base:"#985b8d", shadow:"#4d3158", light:"#e9a6d0", metal:"#f5d99b", cloth:"#ca79aa", silhouette:"ribbon" },
+  Marino: { skin:"#9dd4d8", hair:"#25475a", base:"#28647d", shadow:"#17374d", light:"#5eb7c4", metal:"#d7e6d4", cloth:"#348da0", silhouette:"fins" },
+  Orso: { skin:"#d5a779", hair:"#3a2b24", base:"#745033", shadow:"#38291f", light:"#bd8a4d", metal:"#e2c18a", cloth:"#a87843", silhouette:"fur" },
+  Mago: { skin:"#d9b7a4", hair:"#302746", base:"#59417e", shadow:"#2b2449", light:"#a48bd8", metal:"#e6d18d", cloth:"#8064ad", silhouette:"hat" },
+  Salato: { skin:"#d5d1c4", hair:"#353b43", base:"#646b6a", shadow:"#30383d", light:"#c5c5b4", metal:"#d8b477", cloth:"#898d83", silhouette:"crystal" },
 };
 
+const INK = "#171b2b";
+
+function FactionHead({ kind, p }) {
+  switch (kind) {
+    case "horns": return <><path d="M34 35 23 13 43 27M62 35 73 13 53 27" fill={p.light} stroke={INK} strokeWidth="4" strokeLinejoin="round"/><path d="M31 39Q27 17 48 17Q69 17 65 39L59 34 52 38 45 33 37 39Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "antenna": return <><path d="M48 23V8" stroke={p.metal} strokeWidth="4"/><path d="M39 12 48 4 57 12 48 19Z" fill={p.light} stroke={INK} strokeWidth="3"/><path d="M30 34Q30 19 48 19Q66 19 66 34L61 42H35Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "leaves": return <><path d="M39 31Q21 7 13 25Q20 42 39 38M51 29Q60 3 79 14Q77 34 51 38Z" fill={p.light} stroke={INK} strokeWidth="3"/><path d="M31 39Q32 19 49 19Q66 19 66 39L59 44H37Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "cloud": return <><path d="M23 33Q17 20 31 17Q37 5 49 14Q63 7 72 22Q78 34 64 38H31Z" fill={p.light} stroke={INK} strokeWidth="3"/><path d="M34 40Q34 22 49 22Q64 22 64 40L58 45H39Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "halo": return <><ellipse cx="48" cy="13" rx="24" ry="7" fill="none" stroke={p.metal} strokeWidth="5"/><path d="M33 39Q33 19 48 19Q63 19 63 39L58 45H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "ribbon": return <><path d="M39 33Q13 7 14 28Q18 43 41 39M57 33Q83 7 82 28Q78 43 55 39" fill={p.light} stroke={INK} strokeWidth="3"/><path d="M33 39Q33 19 48 19Q63 19 63 39L58 45H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "fins": return <><path d="M32 35Q10 15 17 46L35 48M64 35Q86 15 79 46L61 48" fill={p.light} stroke={INK} strokeWidth="3"/><path d="M33 39Q33 19 48 19Q63 19 63 39L58 45H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "fur": return <><path d="M24 38 17 19 34 28 40 10 49 26 61 10 64 29 79 20 69 44Z" fill={p.metal} stroke={INK} strokeWidth="3"/><path d="M31 42Q31 21 48 21Q65 21 65 42L58 47H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "hat": return <><path d="M21 36 48 2 75 36Z" fill={p.shadow} stroke={INK} strokeWidth="4"/><path d="M19 36H77" stroke={p.metal} strokeWidth="6" strokeLinecap="round"/><path d="M33 43Q33 24 48 24Q63 24 63 43L58 48H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    case "crystal": return <><path d="M25 36 32 13 42 26 49 5 57 26 68 13 72 37Z" fill={p.metal} stroke={INK} strokeWidth="3"/><path d="M33 42Q33 21 48 21Q63 21 63 42L58 47H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/></>;
+    default: return <path d="M32 40Q32 20 48 20Q64 20 64 40L58 47H38Z" fill={p.hair} stroke={INK} strokeWidth="3"/>;
+  }
+}
+
 export default function AdventureTravelerSprite({ traveler, faction, size = 58 }) {
-  const p = DESIGNS[faction] || DESIGNS.Umano;
+  const p = STYLES[faction] || STYLES.Umano;
   const seed = (traveler || "").split("").reduce((n, ch) => n + ch.charCodeAt(0), 0);
   const variant = seed % 3;
+
   return (
     <svg
       width={size}
-      height={size * 1.12}
-      viewBox="0 0 96 108"
+      height={size * 1.34}
+      viewBox="0 0 96 128"
       role="img"
       aria-label={traveler || "Viaggiatore"}
-      style={{ display: "block", imageRendering: "pixelated", overflow: "visible", filter: "drop-shadow(0 4px 3px rgba(0,0,0,.65))" }}
+      style={{ display:"block", imageRendering:"pixelated", overflow:"visible", filter:"drop-shadow(0 5px 3px rgba(0,0,0,.58))" }}
     >
-      <ellipse cx="48" cy="101" rx="24" ry="5" fill="#07111b" opacity=".7" />
-      <path d="M27 58 L17 87 L30 94 L42 76 L54 76 L66 94 L79 87 L69 58Z" fill={p.dark} stroke="#171a28" strokeWidth="3" />
-      <path d="M32 58 L26 83 L39 87 L47 72 L55 72 L63 87 L76 83 L64 58Z" fill={p.main} stroke="#171a28" strokeWidth="2.5" />
-      <path d="M39 76 L34 96 L45 97 L49 78 M57 78 L61 97 L72 96 L65 76" fill={p.dark} stroke="#171a28" strokeWidth="3" />
-      <path d="M32 94 L29 101 L47 101 L47 96 M61 96 L61 101 L80 101 L76 94" fill="#252638" stroke="#111827" strokeWidth="2" />
-      <path d="M28 43 Q16 48 19 67 L30 70 L38 54 M68 43 Q80 48 77 67 L66 70 L58 54" fill={p.main} stroke="#171a28" strokeWidth="3" />
-      <path d="M35 49 L31 66 L48 76 L65 66 L61 49Z" fill={p.light} stroke="#171a28" strokeWidth="2.5" />
-      <path d="M39 52 L48 60 L57 52" fill="none" stroke={p.trim} strokeWidth="3" />
-      <path d="M37 29 Q48 20 59 29 L64 46 Q62 58 48 61 Q34 58 32 46Z" fill={p.light} stroke="#171a28" strokeWidth="3" />
-      <path d="M34 39 Q35 25 49 25 Q62 25 63 39 L58 35 L53 38 L46 34 L39 39Z" fill={p.hair} stroke="#171a28" strokeWidth="2.5" />
-      <rect x="39" y="43" width="4" height="4" fill="#172033" />
-      <rect x="54" y="43" width="4" height="4" fill="#172033" />
-      <path d="M44 52 Q48 55 52 52" fill="none" stroke="#8d4d55" strokeWidth="2" strokeLinecap="round" />
-      <path d="M29 48 L20 57 L28 62 M67 48 L76 57 L68 62" fill="none" stroke={p.trim} strokeWidth="3" />
-      {p.gear === "horns" && <path d="M37 31 L29 18 L42 25 M58 31 L67 18 L54 25" fill={p.light} stroke="#171a28" strokeWidth="3" />}
-      {p.gear === "antenna" && <><path d="M48 25 L48 10" stroke={p.trim} strokeWidth="3"/><circle cx="48" cy="8" r="5" fill={p.light} stroke="#172033" strokeWidth="2"/></>}
-      {p.gear === "leaf" && <path d="M49 29 Q44 7 67 12 Q65 28 49 29Z" fill={p.light} stroke="#172033" strokeWidth="2.5"/>}
-      {p.gear === "cloud" && <path d="M30 25 Q26 14 38 14 Q43 4 53 13 Q66 8 68 23 Q59 30 30 25Z" fill={p.light} stroke="#172033" strokeWidth="2.5"/>}
-      {p.gear === "scarf" && <path d="M33 55 Q48 63 64 54 L61 65 Q49 72 34 63Z" fill={p.trim} stroke="#172033" strokeWidth="2"/>}
-      {p.gear === "halo" && <ellipse cx="48" cy="12" rx="19" ry="5" fill="none" stroke={p.trim} strokeWidth="4"/>}
-      {p.gear === "ribbon" && <path d="M40 27 Q27 10 22 22 Q27 34 40 31 M56 27 Q69 10 74 22 Q69 34 56 31" fill={p.trim} stroke="#172033" strokeWidth="2.5"/>}
-      {p.gear === "fin" && <path d="M61 34 Q78 18 76 40 L63 47Z" fill={p.light} stroke="#172033" strokeWidth="2.5"/>}
-      {p.gear === "fur" && <path d="M31 34 L24 22 L36 27 L43 16 L49 26 L59 17 L61 30 L71 25 L64 40Z" fill={p.trim} stroke="#172033" strokeWidth="2.5"/>}
-      {p.gear === "hat" && <path d="M29 29 L48 4 L67 29Z" fill={p.dark} stroke="#171a28" strokeWidth="3"/><path d="M26 29 L70 29" stroke={p.trim} strokeWidth="5" strokeLinecap="round"/>}
-      {p.gear === "salt" && <path d="M31 28 L34 12 L42 23 L49 8 L56 23 L65 12 L66 29Z" fill={p.trim} stroke="#172033" strokeWidth="2.5"/>}
-      <path d="M22 70 L12 78 L18 84 L31 77 M74 70 L84 78 L78 84 L65 77" fill="none" stroke={p.trim} strokeWidth="4" strokeLinecap="square"/>
-      {variant === 1 && <path d="M29 62 L15 75 L22 81 L36 68" fill="none" stroke={p.light} strokeWidth="4"/>}
-      {variant === 2 && <path d="M67 61 L81 73 L75 81 L61 68" fill="none" stroke={p.light} strokeWidth="4"/>}
-      <path d="M48 62 L48 75" stroke={p.trim} strokeWidth="3"/>
-      <rect x="44" y="66" width="8" height="8" fill={p.dark} stroke={p.trim} strokeWidth="1.5"/>
+      <ellipse cx="48" cy="120" rx="25" ry="5" fill="#080d18" opacity=".72"/>
+      {/* Mantello e silhouette posteriori */}
+      <path d="M31 58 17 91 25 112 48 103 71 112 79 91 65 58Z" fill={p.shadow} stroke={INK} strokeWidth="4" strokeLinejoin="round"/>
+      <path d="M34 61 25 91 31 103 48 97 65 103 71 91 62 61Z" fill={p.base} stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
+      <path d="M35 69 29 91 40 88 48 96 56 88 67 91 61 69Z" fill={p.cloth} opacity=".9"/>
+      {/* Gambe, ginocchiere e stivali */}
+      <path d="M36 91 33 109 43 114 48 96 53 114 64 109 60 91Z" fill={p.base} stroke={INK} strokeWidth="3"/>
+      <path d="M31 105 28 119 48 119 48 111 42 108Z M53 111 53 119 76 119 72 106 62 108Z" fill="#282a38" stroke={INK} strokeWidth="3"/>
+      <path d="M32 115H46M57 115H72" stroke={p.metal} strokeWidth="3"/>
+      {/* Braccia e guanti */}
+      <path d="M31 57 19 69 13 91 24 95 38 72M65 57 77 69 83 91 72 95 58 72Z" fill={p.base} stroke={INK} strokeWidth="4" strokeLinejoin="round"/>
+      <path d="M16 87 12 95 25 99 29 91M80 87 84 95 71 99 67 91Z" fill={p.shadow} stroke={INK} strokeWidth="3"/>
+      {/* Corpetto stratificato */}
+      <path d="M32 53 48 61 64 53 69 83 48 96 27 83Z" fill={p.light} stroke={INK} strokeWidth="4" strokeLinejoin="round"/>
+      <path d="M38 60 48 68 58 60 61 81 48 89 35 81Z" fill={p.base} stroke={INK} strokeWidth="2"/>
+      <path d="M48 66V91" stroke={p.metal} strokeWidth="3"/>
+      <path d="M34 73 43 78M62 73 53 78" stroke={p.metal} strokeWidth="3"/>
+      <path d="M40 84 48 89 56 84" fill="none" stroke={p.shadow} strokeWidth="3"/>
+      {/* Cintura e stemma */}
+      <path d="M29 86 48 94 67 86 65 94 48 102 31 94Z" fill={p.shadow} stroke={INK} strokeWidth="2"/>
+      <path d="M43 91 48 87 53 91 48 98Z" fill={p.metal} stroke={INK} strokeWidth="2"/>
+      {/* Collo, volto e capelli */}
+      <path d="M41 48H55V61Q48 68 41 61Z" fill={p.skin} stroke={INK} strokeWidth="3"/>
+      <path d="M33 34Q34 20 48 20Q63 20 64 36L61 52Q57 62 48 63Q38 61 34 52Z" fill={p.skin} stroke={INK} strokeWidth="3"/>
+      <FactionHead kind={p.silhouette} p={p}/>
+      <path d="M36 42 43 40M53 40 60 42" stroke={p.shadow} strokeWidth="2"/>
+      <rect x="39" y="44" width="4" height="5" rx="1" fill="#172033"/>
+      <rect x="54" y="44" width="4" height="5" rx="1" fill="#172033"/>
+      <path d="M44 55Q48 58 52 55" fill="none" stroke="#9b5556" strokeWidth="2" strokeLinecap="round"/>
+      {/* Accessori di fazione */}
+      {p.silhouette === "scarf" && <path d="M32 58Q48 70 65 57L62 69 48 76 34 68Z M60 67 72 86 66 90 57 72Z" fill={p.metal} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "antenna" && <><path d="M25 64 15 78 25 84M71 64 81 78 71 84" fill="none" stroke={p.metal} strokeWidth="4"/><circle cx="48" cy="76" r="5" fill={p.metal} stroke={INK} strokeWidth="2"/></>}
+      {p.silhouette === "leaves" && <path d="M27 65Q8 60 12 83Q25 88 32 72M69 65Q88 60 84 83Q71 88 64 72" fill={p.light} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "cloud" && <path d="M28 70Q17 58 10 72Q9 84 27 83M68 70Q79 58 86 72Q87 84 69 83" fill={p.light} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "halo" && <path d="M23 75 13 91 27 87M73 75 83 91 69 87" fill="none" stroke={p.metal} strokeWidth="4"/>}
+      {p.silhouette === "ribbon" && <path d="M29 63Q13 51 11 67Q15 80 33 74M67 63Q83 51 85 67Q81 80 63 74" fill={p.light} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "fins" && <path d="M28 66 8 59 17 83 31 78M68 66 88 59 79 83 65 78" fill={p.light} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "fur" && <path d="M30 63 18 54 21 72 31 78M66 63 78 54 75 72 65 78" fill={p.metal} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "hat" && <path d="M66 72 82 80 73 91 62 82" fill={p.light} stroke={INK} strokeWidth="3"/>}
+      {p.silhouette === "crystal" && <path d="M27 69 19 59 16 79 29 84M69 69 77 59 80 79 67 84" fill={p.metal} stroke={INK} strokeWidth="3"/>}
+      {/* Differenziazione sottile per ogni viaggiatore */}
+      {variant === 1 && <path d="M27 58 8 70 16 77 34 67" fill={p.cloth} stroke={INK} strokeWidth="3"/>}
+      {variant === 2 && <path d="M69 58 88 70 80 77 62 67" fill={p.cloth} stroke={INK} strokeWidth="3"/>}
+      <path d="M48 102 48 111" stroke={p.metal} strokeWidth="3"/>
     </svg>
   );
 }
