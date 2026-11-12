@@ -261,12 +261,12 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
                   });
                   setWildError(false);
                   setPhase("idle");
-                  onWildClose?.();
+                  onWildClose?.(true);
                 }} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
               </div>
               {wildError && <p className="mt-3 text-sm font-bold text-amber-300">Non si fida ancora. Prova ad ascoltarlo meglio.</p>}
             </> : <p className="mt-4">Questo Sognatore non è presente nel roster attuale.</p>}
-            <button onClick={() => { setPhase("idle"); onWildClose?.(); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Lascialo andare</button>
+            <button onClick={() => { setPhase("idle"); onWildClose?.(false); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Lascialo andare</button>
           </div>
         </div>
       )}
@@ -296,6 +296,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
             <div className="text-4xl">✦</div><h2 className="mt-2 text-2xl font-black">Il legame vacilla</h2>
             <p className="mt-2 text-sm text-white/60">Il Viaggiatore ti ha sconfitto. Riposa, prepara la squadra e torna quando sarai pronto.</p>
             <button onClick={() => setPhase("traveler")} className="mt-5 w-full rounded-xl bg-white/10 py-3 font-bold">Riprova la sfida</button>
+            <button onClick={() => { setPhase("idle"); onClose?.(); }} className="mt-2 w-full rounded-xl bg-white/5 py-3 text-sm font-bold text-white/70">Torna a esplorare</button>
           </div>
         </div>
       )}
