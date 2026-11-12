@@ -1167,17 +1167,10 @@ const [message, setMessage] = useState("");
 
         {challengerRef.current.map(
           (c) => {
-            const w =
-              window.innerWidth;
-
-            const h =
-              window.innerHeight;
-
-            const scale =
-              Math.min(
-                w / 1100,
-                h / 700
-              );
+            const frame = worldFrameRef.current;
+            const w = frame?.clientWidth || 0;
+            const h = frame?.clientHeight || 0;
+            const scale = Math.min(w / 1100, h / 825);
 
             const sx =
               w / 2 +
