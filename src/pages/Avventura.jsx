@@ -235,7 +235,7 @@ const ZONES = [
 ];
 
 
-/* GBA tile ground: texture deterministica, limitata all'area visibile. */
+/* Terreno HD pixel-art: variazioni organiche e dettagli per bioma, senza griglia piatta. */
 function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale) {
   const tile = 48;
   const halfW = viewWidth / (2 * scale) + tile * 2;
@@ -245,26 +245,49 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale) {
   const top = Math.max(0, Math.floor((camera.y - halfH) / tile) * tile);
   const bottom = Math.min(WORLD.height, camera.y + halfH);
   const palettes = {
-    "Prato dei Sogni": ["#5f984e", "#639d51", "#588f49", "#6aa456", "#568b48"],
-    "Bosco delle Ombre": ["#315d42", "#356447", "#2e573d", "#3a6949", "#315b40"],
-    "Monti di Cenere": ["#71695d", "#786f63", "#696256", "#817768", "#6d665b"],
-    "Valle Dorata": ["#a78d49", "#ad9550", "#9e8543", "#b49a55", "#a18845"],
+    "Prato dei Sogni": ["#568d49", "#5e984e", "#659f54", "#548747", "#70a85b"],
+    "Bosco delle Ombre": ["#294f3b", "#315c42", "#386648", "#2c563d", "#416d4a"],
+    "Monti di Cenere": ["#686258", "#746c60", "#7d7568", "#625d55", "#898071"],
+    "Valle Dorata": ["#9a8242", "#a88d48", "#b29650", "#967c3d", "#baa15b"],
   };
+  const flowerColors = ["#f4e8c4", "#e8a8c8", "#d7e9ef", "#f1cf72"];
   for (let y = top; y < bottom; y += tile) {
     for (let x = left; x < right; x += tile) {
       const zone = ZONES.find(z => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) || ZONES[0];
       const seed = Math.abs(((x / tile) * 73856093) ^ ((y / tile) * 19349663));
-      ctx.fillStyle = palettes[zone.name][seed % 5];
+      const palette = palettes[zone.name];
+      ctx.fillStyle = palette[seed % palette.length];
       ctx.fillRect(x, y, tile, tile);
-      if (seed % 4 === 0) {
-        ctx.fillStyle = zone.name === "Monti di Cenere" ? "#8d8374" : "#477b43";
-        ctx.fillRect(x + 8 + seed % 17, y + 9 + seed % 19, 8, 4);
-        ctx.fillRect(x + 12 + seed % 17, y + 5 + seed % 19, 4, 4);
+
+      // Ombre e riflessi spezzano la ripetizione dei quadrati.
+      ctx.fillStyle = "rgba(12,24,20,.07)";
+      ctx.fillRect(x, y, tile, 3);
+      ctx.fillRect(x, y, 3, tile);
+      ctx.fillStyle = "rgba(235,224,170,.055)";
+      ctx.fillRect(x + 5, y + 6, 17 + seed % 15, 3);
+      ctx.fillRect(x + 10, y + 12, 4, 3);
+
+      if (seed % 3 === 0) {
+        const gx = x + 7 + seed % 29;
+        const gy = y + 8 + (seed >> 3) % 27;
+        ctx.fillStyle = zone.name === "Monti di Cenere" ? "#aaa08d" : zone.name === "Valle Dorata" ? "#d1b66a" : "#83b365";
+        ctx.fillRect(gx, gy, 3, 7);
+        ctx.fillRect(gx + 4, gy - 3, 3, 6);
+        ctx.fillRect(gx + 8, gy + 1, 3, 5);
       }
-      if (seed % 7 === 0) {
-        ctx.fillStyle = zone.name === "Valle Dorata" ? "#d0b86c" : "#80ad5a";
-        ctx.fillRect(x + 29, y + 28, 5, 5);
-        ctx.fillRect(x + 33, y + 24, 4, 4);
+      if (seed % 11 === 0 && zone.name !== "Monti di Cenere") {
+        const fx = x + 12 + seed % 24;
+        const fy = y + 13 + (seed >> 4) % 22;
+        ctx.fillStyle = flowerColors[(seed >> 2) % flowerColors.length];
+        ctx.fillRect(fx, fy, 4, 4);
+        ctx.fillRect(fx + 4, fy - 3, 3, 3);
+        ctx.fillStyle = "rgba(255,244,198,.65)";
+        ctx.fillRect(fx + 1, fy - 2, 2, 2);
+      }
+      if (seed % 13 === 0) {
+        ctx.fillStyle = "rgba(20,34,27,.16)";
+        ctx.fillRect(x + 31, y + 32, 8, 3);
+        ctx.fillRect(x + 34, y + 28, 3, 7);
       }
     }
   }
@@ -1438,15 +1461,52 @@ function drawPlayer(ctx, p) {
 */
 
 function drawTree(ctx, x, y, r) {
-  const size = Math.max(28, Math.round(r * 1.7 / 4) * 4);
-  const left = Math.round(x - size / 2), top = Math.round(y - size * 1.25);
-  ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.fillRect(left + 7, y + size * .45, size - 4, 10);
-  ctx.fillStyle = "#173d2a"; ctx.fillRect(left + 8, top + 8, size - 16, size - 4);
-  ctx.fillRect(left + 4, top + 16, size - 8, size - 18); ctx.fillRect(left + 12, top, size - 24, size);
-  ctx.fillStyle = "#28613a"; ctx.fillRect(left + 12, top + 8, size - 24, size - 20); ctx.fillRect(left + 4, top + 20, size - 8, size - 28);
-  ctx.fillStyle = "#43824a"; ctx.fillRect(left + 12, top + 8, 12, 10); ctx.fillRect(left + 26, top + 18, 10, 8); ctx.fillRect(left + size - 22, top + 12, 8, 8);
-  ctx.fillStyle = "#65452d"; ctx.fillRect(x - 7, y + 3, 14, 25);
-  ctx.fillStyle = "#8a5b36"; ctx.fillRect(x - 3, y + 4, 5, 20);
+  const size = Math.max(32, Math.round(r * 1.9 / 4) * 4);
+  const left = Math.round(x - size / 2);
+  const top = Math.round(y - size * 1.38);
+  ctx.save();
+  ctx.fillStyle = "rgba(7,18,15,.3)";
+  ctx.beginPath();
+  ctx.ellipse(x + 7, y + 17, size * .62, size * .2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tronco leggibile sotto la chioma.
+  ctx.fillStyle = "#493426";
+  ctx.fillRect(x - 7, y - 8, 14, 34);
+  ctx.fillStyle = "#795039";
+  ctx.fillRect(x - 3, y - 5, 5, 27);
+  ctx.fillStyle = "#a4774c";
+  ctx.fillRect(x + 3, y + 1, 3, 13);
+
+  // Chioma a livelli, con masse sovrapposte e luce dall'alto a sinistra.
+  ctx.fillStyle = "#173d2b";
+  ctx.fillRect(left + size * .22, top + size * .28, size * .58, size * .66);
+  ctx.fillRect(left + size * .08, top + size * .43, size * .84, size * .38);
+  ctx.fillRect(left + size * .31, top + size * .08, size * .42, size * .72);
+
+  ctx.fillStyle = "#24583a";
+  ctx.fillRect(left + size * .2, top + size * .3, size * .6, size * .54);
+  ctx.fillRect(left + size * .12, top + size * .47, size * .76, size * .27);
+  ctx.fillRect(left + size * .34, top + size * .16, size * .34, size * .56);
+
+  ctx.fillStyle = "#397b48";
+  ctx.fillRect(left + size * .24, top + size * .24, size * .22, size * .17);
+  ctx.fillRect(left + size * .49, top + size * .18, size * .2, size * .15);
+  ctx.fillRect(left + size * .12, top + size * .48, size * .23, size * .14);
+  ctx.fillRect(left + size * .58, top + size * .46, size * .23, size * .14);
+
+  ctx.fillStyle = "#65a65b";
+  ctx.fillRect(left + size * .29, top + size * .23, size * .13, size * .08);
+  ctx.fillRect(left + size * .52, top + size * .2, size * .1, size * .07);
+  ctx.fillRect(left + size * .17, top + size * .48, size * .1, size * .07);
+  ctx.fillStyle = "rgba(179,215,116,.65)";
+  ctx.fillRect(left + size * .34, top + size * .14, size * .08, size * .05);
+
+  // Piccoli ciuffi laterali: chioma meno geometrica e più naturale.
+  ctx.fillStyle = "#2d6841";
+  ctx.fillRect(left + size * .02, top + size * .55, size * .2, size * .17);
+  ctx.fillRect(left + size * .76, top + size * .39, size * .2, size * .2);
+  ctx.restore();
 }
 
 /*
