@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
+import AdventureBattle from "@/components/game/AdventureBattle";
 
 /*
   SOGNATORI — AVVENTURA
@@ -355,6 +356,7 @@ export default function Avventura() {
 
   const keysRef = useRef({});
   const interactRef = useRef(null);
+  const battleOpenRef = useRef(false);
 
   const playerRef = useRef({
     ...PLAYER_START,
@@ -418,6 +420,7 @@ export default function Avventura() {
 
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
+  const [activeBattle, setActiveBattle] = useState(null);
 
   const [wildSognatori, setWildSognatori] =
     useState(WILD_STARTS);
@@ -508,6 +511,11 @@ export default function Avventura() {
       );
 
       last = now;
+
+      if (battleOpenRef.current) {
+        animation = requestAnimationFrame(loop);
+        return;
+      }
 
       const keys = keysRef.current;
 
@@ -1936,11 +1944,18 @@ export default function Avventura() {
                   Date.now() +
                   30000;
 
-                challengerEncounterOpenRef.current =
-                  false;
-
-                window.location.href =
-                  "/test-random";
+                challengerEncounterOpenRef.current = false;
+                const enemyTeam = challengerEncounter.team
+                  .map((name) => ROSTER.find((s) => s.nome?.toLowerCase() === name.toLowerCase()))
+                  .filter(Boolean);
+                if (!enemyTeam.length) {
+                  setMessage("Squadra dello sfidante non disponibile.");
+                  setTimeout(() => setMessage(""), 1800);
+                  return;
+                }
+                battleOpenRef.current = true;
+                setActiveBattle({ opponentName: challengerEncounter.name, enemyTeam, isWild: false });
+                setChallengerEncounter(null);
               }}
               className="mt-6 w-full rounded-xl bg-red-400 py-3 font-black text-black"
             >
@@ -2000,11 +2015,16 @@ export default function Avventura() {
                   Date.now() +
                   5000;
 
-                encounterOpenRef.current =
-                  false;
-
-                window.location.href =
-                  "/test-random";
+                encounterOpenRef.current = false;
+                const wildSognatore = ROSTER.find((s) => s.nome?.toLowerCase() === encounter.name.toLowerCase());
+                if (!wildSognatore) {
+                  setMessage("Sognatore selvatico non disponibile nel roster.");
+                  setTimeout(() => setMessage(""), 1800);
+                  return;
+                }
+                battleOpenRef.current = true;
+                setActiveBattle({ opponentName: encounter.name, enemyTeam: [wildSognatore], isWild: true });
+                setEncounter(null);
               }}
               className="mt-7 w-full rounded-xl bg-yellow-300 py-3 font-black text-black"
             >
@@ -2031,6 +2051,28 @@ export default function Avventura() {
             </button>
           </div>
         </div>
+      )}
+
+      {activeBattle && (
+        <AdventureBattle
+          opponentName={activeBattle.opponentName}
+          enemyTeam={activeBattle.enemyTeam}
+          isWild={activeBattle.isWild}
+          onFinish={(outcome) => {
+            const id = activeBattle.isWild ? encounter?.id : challengerEncounter?.id;
+            if (activeBattle.isWild && id) {
+              wildCooldownRef.current[id] = Date.now() + 20000;
+            }
+            if (!activeBattle.isWild && id) {
+              challengerCooldownRef.current[id] = Date.now() + 60000;
+            }
+            battleOpenRef.current = false;
+            keysRef.current = {};
+            setActiveBattle(null);
+            setMessage(outcome === "win" ? "★ Vittoria! Sei pronto a continuare l'esplorazione." : outcome === "loss" ? "La squadra è stata sconfitta. Riprenditi e riprova." : "");
+            if (outcome) setTimeout(() => setMessage(""), 2400);
+          }}
+        />
       )}
     </div>
   );
