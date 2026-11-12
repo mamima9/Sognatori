@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
@@ -334,6 +334,7 @@ export default function Avventura() {
   const keysRef = useRef({});
   const interactRef = useRef(null);
   const battleOpenRef = useRef(false);
+  const setCampaignPause = useCallback((paused) => { battleOpenRef.current = paused; }, []);
 
   const playerRef = useRef({
     ...PLAYER_START,
@@ -1907,7 +1908,7 @@ export default function Avventura() {
           challengerEncounterOpenRef.current = false;
           setChallengerEncounter(null);
         }}
-        onPauseChange={(paused) => { battleOpenRef.current = paused; }}
+        onPauseChange={setCampaignPause}
         onWildClose={(recruited) => {
           if (encounter?.id) {
             wildCooldownRef.current[encounter.id] = Date.now() + 20000;
