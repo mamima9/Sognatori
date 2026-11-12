@@ -1,65 +1,29 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { createAdventurePixelSprite } from "@/lib/adventurePixelSprites";
 
-/**
- * Rendering degli artwork ufficiali dei Sognatori come personaggi NPC
- * dell'Avventura. Mantiene il PNG originale: niente downsampling su canvas,
- * cornici, badge o indicatori da interfaccia.
- */
-export default function AdventureSognatoreSprite({
-  s,
-  size = 88,
-  className = "",
-}) {
+export default function AdventureSognatoreSprite({ s, size = 88, className = "" }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !s?.img) return undefined;
+    let active = true;
+    const image = new Image();
+    image.onload = () => {
+      if (!active) return;
+      const sprite = createAdventurePixelSprite(image, 32);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      canvas.width = sprite.width;
+      canvas.height = sprite.height;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(sprite, 0, 0);
+    };
+    image.src = s.img;
+    return () => { active = false; image.onload = null; };
+  }, [s?.img]);
   if (!s?.img) return null;
-
-  return (
-    <div
-      className={className}
-      title={s.nome || "Sognatore"}
-      aria-label={s.nome || "Sognatore"}
-      style={{
-        width: size,
-        height: size + 12,
-        position: "relative",
-        flex: "0 0 auto",
-        display: "flex",
-        alignItems: "flex-end",
-        justifyContent: "center",
-        pointerEvents: "none",
-      }}
-    >
-      {/* Ombra aderente al terreno: ancora visivamente il PNG alla mappa. */}
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "23%",
-          right: "23%",
-          bottom: 2,
-          height: Math.max(5, size * 0.075),
-          borderRadius: "50%",
-          background: "rgba(5, 12, 9, .48)",
-          filter: "blur(3px)",
-        }}
-      />
-      <img
-        src={s.img}
-        alt={s.nome || "Sognatore"}
-        draggable={false}
-        loading="eager"
-        decoding="async"
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "block",
-          width: size,
-          height: size,
-          objectFit: "contain",
-          objectPosition: "center bottom",
-          imageRendering: "auto",
-          filter: "drop-shadow(0 2px 2px rgba(0,0,0,.42))",
-        }}
-      />
-    </div>
-  );
+  return <div className={className} title={s.nome || "Sognatore"} aria-label={s.nome || "Sognatore"} style={{ width:size, height:size+8, display:"flex", alignItems:"flex-end", justifyContent:"center", flex:"0 0 auto" }}>
+    <canvas ref={canvasRef} style={{ width:size, height:size, objectFit:"contain", imageRendering:"pixelated", display:"block" }} />
+  </div>;
 }
