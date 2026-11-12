@@ -300,21 +300,21 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">{encounter.traveler || encounter.name}</h2>
                 <p className="mt-3 max-w-md text-xs leading-6 text-white/75 sm:text-sm">{encounter.line || "Il viaggiatore ti osserva in silenzio."}</p>
                 <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-white/35">
-                  <span className="h-px w-7 bg-amber-200/50" /> {lang === "en" ? "THE CHALLENGE" : "LA SFIDA"}
+                  <span className="h-px w-7 bg-amber-200/50" /> LA SFIDA
                 </div>
               </div>
             </div>
             <div className="mx-4 mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:mx-7 sm:p-4">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-[.22em] text-amber-100/60">{lang === "en" ? "RIVAL TEAM" : "SQUADRA DEL RIVALE"}</span>
-                <span className="text-[9px] font-bold text-white/35">4 {lang === "en" ? "DREAMERS" : "SOGNATORI"}</span>
+                <span className="text-[9px] font-black uppercase tracking-[.22em] text-amber-100/60">SQUADRA DEL RIVALE</span>
+                <span className="text-[9px] font-bold text-white/35">4 SOGNATORI</span>
               </div>
               <div className="flex justify-around gap-1">
                 {cityTeam.map((s) => <div key={s.id} className="flex min-w-0 flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={52}/><span className="mt-1 max-w-full truncate text-[8px] font-bold text-white/75">{s.nome}</span></div>)}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 p-4 sm:px-7 sm:pb-7">
-              <button onClick={() => { onClose?.(); setPhase("idle"); }} className="rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold text-white/70 transition hover:bg-white/10">{lang === "en" ? "LEAVE" : "TORNA A ESPLORARE"}</button>
+              <button onClick={() => { onClose?.(); setPhase("idle"); }} className="rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold text-white/70 transition hover:bg-white/10">TORNA A ESPLORARE</button>
               <button disabled={party.length < 2 || cityTeam.length !== 4} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : lang === "en" ? "ACCEPT CHALLENGE" : "ACCETTA LA SFIDA"}</button>
             </div>
           </div>
