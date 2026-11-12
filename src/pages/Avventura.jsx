@@ -7,7 +7,7 @@ import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
-import { createAdventurePixelSprite } from "@/lib/adventurePixelSprites";
+import { createWildSognatoreSpriteSheet } from "@/lib/adventurePixelSprites";
 
 /*
   SOGNATORI — AVVENTURA
@@ -319,11 +319,8 @@ export default function Avventura() {
   useEffect(() => {
     const images = new Map();
     ROSTER.forEach((sognatore) => {
-      if (!sognatore?.nome || !sognatore?.img) return;
-      const image = new Image();
-      image.onload = () => sognatoreImagesRef.current.set(sognatore.nome.toLowerCase(), createAdventurePixelSprite(image, 32));
-      image.src = sognatore.img;
-      images.set(sognatore.nome.toLowerCase(), image);
+      if (!sognatore?.nome) return;
+      images.set(sognatore.nome.toLowerCase(), createWildSognatoreSpriteSheet(sognatore));
     });
     sognatoreImagesRef.current = images;
     return () => {
@@ -960,9 +957,9 @@ const [message, setMessage] = useState("");
         const image = sognatoreImagesRef.current.get(wild.name.toLowerCase());
         if (!image?.complete || !image.naturalWidth) continue;
 
+        const frameIndex = Math.floor(performance.now() / 420) % 2;
+        const drawWidth = 48;
         const drawHeight = 48;
-        const ratio = Math.min(1, 42 / image.width);
-        const drawWidth = image.width * ratio;
         const left = Math.round(wild.x - drawWidth / 2);
         const top = Math.round(wild.y - drawHeight);
 
@@ -970,9 +967,9 @@ const [message, setMessage] = useState("");
         ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = "rgba(5,12,9,.42)";
         ctx.beginPath();
-        ctx.ellipse(wild.x, wild.y - 1, Math.max(8, drawWidth * .34), 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(wild.x, wild.y - 1, 13, 4, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.drawImage(image, left, top, drawWidth, drawHeight);
+        ctx.drawImage(image, frameIndex * 24, 0, 24, 24, left, top, drawWidth, drawHeight);
         ctx.restore();
 
         if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
