@@ -1267,8 +1267,6 @@ const [message, setMessage] = useState("");
       </div>
       </div>
 
-      </div>
-
       {/* CONTROLLI ESTERNI AL MONDO */}
       <div className="flex w-full max-w-[1100px] items-center justify-between gap-3 px-2 pb-1">
         <div className="grid grid-cols-3 gap-1 touch-none">
