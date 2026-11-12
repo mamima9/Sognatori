@@ -4,7 +4,6 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
-import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
@@ -314,6 +313,22 @@ function circleRectCollision(
 export default function Avventura() {
   const canvasRef = useRef(null);
   const worldFrameRef = useRef(null);
+  const sognatoreImagesRef = useRef(new Map());
+
+  useEffect(() => {
+    const images = new Map();
+    ROSTER.forEach((sognatore) => {
+      if (!sognatore?.nome || !sognatore?.img) return;
+      const image = new Image();
+      image.onload = () => sognatoreImagesRef.current.set(sognatore.nome.toLowerCase(), image);
+      image.src = sognatore.img;
+      images.set(sognatore.nome.toLowerCase(), image);
+    });
+    sognatoreImagesRef.current = images;
+    return () => {
+      images.forEach((image) => { image.onload = null; });
+    };
+  }, []);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -939,14 +954,53 @@ const [message, setMessage] = useState("");
       }
 
       /*
+        SOGNATORI NPC
+        Gli artwork ufficiali vengono disegnati nel mondo, non in un layer HTML
+        separato: così condividono scala, camera e profondità con il giocatore.
+      */
+      for (const wild of wildRef.current) {
+        const image = sognatoreImagesRef.current.get(wild.name.toLowerCase());
+        if (!image?.complete || !image.naturalWidth) continue;
+
+        const maxWidth = 116;
+        const maxHeight = 112;
+        const ratio = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+        const drawWidth = image.naturalWidth * ratio;
+        const drawHeight = image.naturalHeight * ratio;
+        const left = Math.round(wild.x - drawWidth / 2);
+        const top = Math.round(wild.y - drawHeight);
+
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.fillStyle = "rgba(5,12,9,.42)";
+        ctx.beginPath();
+        ctx.ellipse(wild.x, wild.y - 2, Math.max(15, drawWidth * .31), 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowColor = "rgba(0,0,0,.32)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 3;
+        ctx.drawImage(image, left, top, drawWidth, drawHeight);
+        ctx.restore();
+
+        if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
+          ctx.save();
+          ctx.font = "bold 13px system-ui";
+          ctx.textAlign = "center";
+          const labelWidth = ctx.measureText(wild.name).width + 18;
+          ctx.fillStyle = "rgba(8,16,13,.82)";
+          ctx.fillRect(wild.x - labelWidth / 2, top - 24, labelWidth, 19);
+          ctx.fillStyle = "#f3f0df";
+          ctx.fillText(wild.name, wild.x, top - 10);
+          ctx.restore();
+        }
+      }
+
+      /*
         NPC
       */
 
       for (const npc of NPCS) {
-        drawNpc(
-          ctx,
-          npc
-        );
+        drawNpc(ctx, npc);
       }
 
       /*
@@ -1163,23 +1217,6 @@ const [message, setMessage] = useState("");
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
       <div className="pointer-events-none absolute inset-0">
-        {wildSognatori.map((s) => {
-          const frame = worldFrameRef.current;
-          const w = frame?.clientWidth || 0;
-          const h = frame?.clientHeight || 0;
-          const scale = Math.min(w / 1100, h / 825);
-          const sx = w / 2 + (s.x - player.x) * scale;
-          const sy = h / 2 + (s.y - player.y) * scale;
-          if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
-          return (
-            <div key={s.id} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: sx, top: sy }}>
-              <AdventureSognatoreSprite
-                s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())}
-                size={104}
-              />
-            </div>
-          );
-        })}
       {/* =====================================
             SFIDANTI
             ===================================== */}
