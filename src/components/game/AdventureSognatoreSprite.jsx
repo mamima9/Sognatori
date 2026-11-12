@@ -18,6 +18,19 @@ const SHAPES = [
   ["00011000","00111100","01122110","11233211","12222221","01222210","00122100","01100110","11011011","10000001"],
   ["00111100","01122110","11233211","12222221","12222221","01222210","00122100","01111110","11000011","10000001"],
 ];
+const ACCESSORIES = {
+  Demone: [[18, 5, 14, 14], [68, 5, 14, 14]],
+  Robot: [[46, 0, 8, 18], [38, 0, 24, 5]],
+  Natura: [[24, 0, 18, 12], [58, 0, 18, 12]],
+  Nuvola: [[0, 30, 16, 28], [84, 30, 16, 28]],
+  Umano: [[24, 0, 52, 12]],
+  Luce: [[18, 0, 64, 5], [24, 0, 6, 8], [70, 0, 6, 8]],
+  Dolce: [[18, 4, 16, 16], [66, 4, 16, 16]],
+  Marino: [[0, 38, 16, 24], [84, 38, 16, 24]],
+  Orso: [[16, 0, 18, 18], [66, 0, 18, 18]],
+  Mago: [[20, 0, 60, 10], [35, 0, 30, 5]],
+  Salato: [[42, 0, 16, 14], [30, 8, 8, 8], [62, 8, 8, 8]],
+};
 export default function AdventureSognatoreSprite({ s, size = 56, walking = false, className = "" }) {
   if (!s) return null;
   const faction = s.tipo || s.fazione || "Natura";
@@ -39,6 +52,9 @@ export default function AdventureSognatoreSprite({ s, size = 56, walking = false
           return <span key={i} style={{ background:color, boxShadow:p === "3" ? "inset 0 0 0 1px " + palette[3] : undefined }} />;
         })}
       </div>
+      {(ACCESSORIES[faction] || []).map(([left, top, width, height], index) => (
+        <span key={index} style={{ position:"absolute", left:left + "%", top:top + "%", width:width + "%", height:height + "%", background:palette[3], border:"2px solid #201d26", boxSizing:"border-box" }} />
+      ))}
     </div>
   );
 }
