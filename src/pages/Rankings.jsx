@@ -287,7 +287,7 @@ export default function Rankings() {
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
           </div>
-        ) : history.length === 0 ? (
+        ) : history.length === 0 && tab !== "arcade" ? (
           <div className="text-center text-slate-400 py-20">
             <div className="text-5xl mb-4">📊</div>
 
