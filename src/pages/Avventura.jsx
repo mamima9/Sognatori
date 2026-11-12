@@ -877,50 +877,9 @@ const [message, setMessage] = useState("");
       }
 
       /*
-        CASE
+        EDIFICI RIMOSSI
+        Le case non esplorabili sono state eliminate dal mondo.
       */
-
-      drawHouse(
-        ctx,
-        1730,
-        1010,
-        "#7c4f35"
-      );
-
-      drawHouse(
-        ctx,
-        2380,
-        1460,
-        "#694d39"
-      );
-
-      drawHouse(
-        ctx,
-        1210,
-        650,
-        "#604b72"
-      );
-
-      for (const city of ADVENTURE_CITIES) {
-        drawHouse(ctx, city.x - 78, city.y - 48, city.color);
-        ctx.fillStyle = "rgba(0,0,0,.62)";
-        ctx.fillRect(city.x - 82, city.y + 90, 164, 28);
-        ctx.fillStyle = "#fff4cf";
-        ctx.font = "bold 15px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(city.city, city.x, city.y + 110);
-      }
-
-      // Undici città-fazione: ogni viaggiatore presidia la propria città.
-      for (const city of ADVENTURE_CITIES) {
-        drawHouse(ctx, city.x - 78, city.y - 48, city.color);
-        ctx.fillStyle = "rgba(0,0,0,.62)";
-        ctx.fillRect(city.x - 82, city.y + 90, 164, 28);
-        ctx.fillStyle = "#fff4cf";
-        ctx.font = "bold 15px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(city.city, city.x, city.y + 110);
-      }
 
       /*
         ALBERI
