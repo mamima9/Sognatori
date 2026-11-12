@@ -287,6 +287,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-xl rounded-3xl border border-amber-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
             <div className="text-[10px] font-black uppercase tracking-[.3em] text-amber-200/70">{encounter.city} · Fazione {encounter.faction}</div>
+            <div className="my-2 flex justify-center">
+              <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={104} />
+            </div>
             <h2 className="mt-2 text-3xl font-black">{encounter.traveler || encounter.name}</h2>
             <p className="mt-3 text-sm leading-6 text-white/65">{encounter.line || "Il viaggiatore ti osserva in silenzio."}</p>
             <div className="my-5 flex justify-center gap-3">
