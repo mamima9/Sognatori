@@ -82,18 +82,19 @@ function drawFrame(ctx, faction, direction, frame){
   pixel(ctx,8,25,3,1,p.light);pixel(ctx,13,25,3,1,p.light);
 }
 
-export function createTravelerSpriteSheet(faction){
+export function createTravelerSpriteSheet(faction, traveler){
   const sheet=document.createElement("canvas");
   sheet.width=48; sheet.height=128;
   const ctx=sheet.getContext("2d");
   if(!ctx) return sheet;
-  const dirs=["down","left","right","up"];
-  dirs.forEach((dir,row)=>[0,1].forEach((frame,col)=>{
-    const cell=document.createElement("canvas"); cell.width=24; cell.height=32;
-    const cellCtx=cell.getContext("2d"); if(!cellCtx)return;
-    drawFrame(cellCtx,faction,dir,frame);
-    ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(cell,col*24,row*32);
+  const directions=["down","left","right","up"];
+  directions.forEach((direction,row)=>[0,1].forEach((frame,col)=>{
+    ctx.save();
+    ctx.translate(col*24,row*32);
+    if(direction==="left"){ctx.translate(24,0);ctx.scale(-1,1);}
+    if(direction==="up"){ctx.globalAlpha=.82;}
+    drawAdventureTraveler(ctx,traveler||faction,faction,12,31,frame,.72);
+    ctx.restore();
   }));
   return sheet;
 }
@@ -135,12 +136,12 @@ function wildFrame(ctx,s,frame){
   if(frame){wildPixel(ctx,6,21,4,1,main);wildPixel(ctx,14,21,4,1,main);}
 }
 export function createWildSognatoreSpriteSheet(s){
-  const sheet=document.createElement("canvas");sheet.width=48;sheet.height=24;
+  const sheet=document.createElement("canvas");sheet.width=48;sheet.height=64;
   const ctx=sheet.getContext("2d");if(!ctx)return sheet;
   for(let frame=0;frame<2;frame++){
-    const cell=document.createElement("canvas");cell.width=24;cell.height=24;
-    wildFrame(cell.getContext("2d"),s,frame);
-    ctx.imageSmoothingEnabled=false;ctx.drawImage(cell,frame*24,0);
+    ctx.save();ctx.translate(frame*24,0);
+    drawAdventureWildSognatore(ctx,s,12,31,frame,.9);
+    ctx.restore();
   }
   return sheet;
 }
