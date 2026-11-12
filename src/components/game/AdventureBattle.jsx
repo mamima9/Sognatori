@@ -9,7 +9,7 @@ import {
   processActionDual,
   applyEndOfTurnDual,
 } from "@/lib/battleEngine";
-import { SognatoreImage } from "@/components/game/HealthBar";
+import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import { bm } from "@/lib/battleMessages";
 import { useLanguage } from "@/lib/i18n";
 
@@ -156,7 +156,7 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
               {available.map((s) => {
                 const selected = chosenIds.includes(s.id);
                 return <button key={s.id} onClick={() => toggleChoice(s.id)} className={`rounded-xl border p-2 text-center transition ${selected ? "border-amber-300 bg-amber-300/15" : "border-white/10 bg-white/5 hover:bg-white/10"}`}>
-                  <SognatoreImage s={s} className="mx-auto h-14 w-14" />
+                  <AdventureSognatoreSprite s={s} size={56} className="mx-auto" />
                   <div className="mt-1 truncate text-xs font-bold">{s.nome}</div>
                   <div className="text-[9px] text-white/45">{s.tipo}</div>
                   {selected && <div className="mt-1 text-[9px] font-black text-amber-300">{lang === "en" ? "SELECTED" : "SCELTO"}</div>}
@@ -176,7 +176,7 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
                 <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-red-200/60">{opponentName}</div>
                 <div className="grid grid-cols-2 gap-2">
                   {battle.enemyActive.map((s, i) => s ? <div key={s.id} className="rounded-xl bg-black/20 p-2 text-center">
-                    <SognatoreImage s={s} className={`mx-auto h-16 w-16 ${s.fainted ? "opacity-30 grayscale" : ""}`} />
+                    <AdventureSognatoreSprite s={s} size={64} className={s.fainted ? "opacity-30 grayscale" : ""} />
                     <div className="truncate text-xs font-bold">{s.nome}</div>
                     <div className="mt-1 h-2 overflow-hidden rounded bg-white/10"><div className="h-full bg-red-400" style={{ width: `${Math.max(0, s.hp / s.hpMax * 100)}%` }} /></div>
                     <div className="text-[10px] text-white/55">{Math.max(0, s.hp)}/{s.hpMax} PS</div>
@@ -187,7 +187,7 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
                 <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-200/60">{lang === "en" ? "Your team" : "La tua squadra"}</div>
                 <div className="grid grid-cols-2 gap-2">
                   {battle.playerActive.map((s) => <div key={s.id} className="rounded-xl bg-black/20 p-2 text-center">
-                    <SognatoreImage s={s} className={`mx-auto h-16 w-16 ${s.fainted ? "opacity-30 grayscale" : ""}`} />
+                    <AdventureSognatoreSprite s={s} size={64} className={s.fainted ? "opacity-30 grayscale" : ""} />
                     <div className="truncate text-xs font-bold">{s.nome}</div>
                     <div className="mt-1 h-2 overflow-hidden rounded bg-white/10"><div className="h-full bg-emerald-400" style={{ width: `${Math.max(0, s.hp / s.hpMax * 100)}%` }} /></div>
                     <div className="text-[10px] text-white/55">{Math.max(0, s.hp)}/{s.hpMax} PS</div>
