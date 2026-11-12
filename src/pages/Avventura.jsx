@@ -1619,14 +1619,165 @@ function drawHouse(ctx, x, y, color) {
 */
 
 function drawNpc(ctx, npc) {
-  ctx.save(); ctx.translate(Math.round(npc.x / 3) * 3, Math.round(npc.y / 3) * 3);
-  ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(-13, 18, 26, 6);
-  ctx.fillStyle = "#34304a"; ctx.fillRect(-9, 2, 18, 16);
-  ctx.fillStyle = npc.color; ctx.fillRect(-12, -9, 24, 14);
-  ctx.fillStyle = "#e9bd96"; ctx.fillRect(-9, -27, 18, 18);
-  ctx.fillStyle = "#382a27"; ctx.fillRect(-10, -30, 20, 7); ctx.fillRect(-8, -34, 16, 5);
-  ctx.fillStyle = "#211d1b"; ctx.fillRect(-5, -21, 3, 3); ctx.fillRect(3, -21, 3, 3);
-  ctx.fillStyle = "#fff"; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.fillText(npc.name, 0, 40);
+  ctx.save();
+  ctx.translate(Math.round(npc.x / 3) * 3, Math.round(npc.y / 3) * 3);
+  ctx.imageSmoothingEnabled = false;
+
+  // Ombra a terra e piedi ben separati.
+  ctx.fillStyle = "rgba(7,14,18,.34)";
+  ctx.beginPath(); ctx.ellipse(1, 22, 18, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#302b36";
+  ctx.fillRect(-10, 12, 8, 9); ctx.fillRect(3, 12, 8, 9);
+  ctx.fillStyle = "#b68a5d";
+  ctx.fillRect(-10, 18, 8, 3); ctx.fillRect(3, 18, 8, 3);
+
+  // Mantello, tunica e cintura.
+  ctx.fillStyle = "#273449";
+  ctx.fillRect(-13, -5, 26, 20);
+  ctx.fillRect(-16, -2, 5, 13); ctx.fillRect(11, -2, 5, 13);
+  ctx.fillStyle = npc.color;
+  ctx.fillRect(-11, -8, 22, 20);
+  ctx.fillStyle = "rgba(255,255,255,.28)";
+  ctx.fillRect(-8, -6, 5, 13);
+  ctx.fillStyle = "#e5c17f";
+  ctx.fillRect(-10, 8, 20, 3);
+  ctx.fillRect(-2, 6, 4, 6);
+
+  // Braccia, collo e volto.
+  ctx.fillStyle = "#d99e79";
+  ctx.fillRect(-16, -5, 5, 13); ctx.fillRect(11, -5, 5, 13);
+  ctx.fillRect(-4, -15, 8, 8);
+  ctx.fillStyle = "#efc69f";
+  ctx.fillRect(-10, -31, 20, 19);
+  ctx.fillStyle = "#b97759";
+  ctx.fillRect(-10, -17, 3, 4); ctx.fillRect(7, -17, 3, 4);
+
+  // Capelli e copricapo con un tratto distintivo per gli NPC.
+  ctx.fillStyle = npc.id === "elder" ? "#e5e0d0" : npc.id === "smith" ? "#49312b" : "#34465a";
+  ctx.fillRect(-11, -33, 22, 7);
+  ctx.fillRect(-9, -37, 18, 6);
+  if (npc.id === "elder") {
+    ctx.fillRect(-13, -29, 4, 13); ctx.fillRect(9, -29, 4, 13);
+    ctx.fillStyle = "#f4d35e"; ctx.fillRect(-13, -40, 26, 3);
+  } else if (npc.id === "smith") {
+    ctx.fillStyle = "#d5a15a"; ctx.fillRect(-13, -39, 26, 5);
+    ctx.fillStyle = "#754b34"; ctx.fillRect(-8, -44, 16, 6);
+  } else {
+    ctx.fillStyle = "#7fc5e8"; ctx.fillRect(-11, -39, 22, 3);
+    ctx.fillRect(8, -37, 5, 9);
+  }
+  ctx.fillStyle = "#282532";
+  ctx.fillRect(-6, -23, 3, 3); ctx.fillRect(4, -23, 3, 3);
+  ctx.fillStyle = "#fff0d4";
+  ctx.fillRect(-4, -15, 8, 2);
+
+  // Piccolo nome su targhetta scura, senza badge flottante.
+  ctx.fillStyle = "rgba(12,18,27,.82)";
+  ctx.fillRect(-29, 29, 58, 16);
+  ctx.fillStyle = npc.color;
+  ctx.fillRect(-29, 29, 3, 16);
+  ctx.fillStyle = "#fff4df";
+  ctx.font = "bold 11px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(npc.name, 0, 41);
+  ctx.restore();
+}
+
+function drawCityLandmark(ctx, city) {
+  const x = Math.round(city.x / 4) * 4;
+  const y = Math.round((city.y - 66) / 4) * 4;
+  const accent = city.color || "#e5c17f";
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.imageSmoothingEnabled = false;
+
+  // Piattaforma in pietra, ombra e iscrizione della città.
+  ctx.fillStyle = "rgba(5,12,18,.32)";
+  ctx.fillRect(-48, 27, 96, 12);
+  ctx.fillStyle = "#4a4a50";
+  ctx.fillRect(-46, 17, 92, 12);
+  ctx.fillStyle = "#77747a";
+  ctx.fillRect(-42, 17, 84, 5);
+  ctx.fillStyle = accent;
+  ctx.fillRect(-34, 13, 68, 3);
+
+  // Ogni città ha un landmark astratto diverso dalla propria fazione.
+  switch (city.faction) {
+    case "Demone":
+      ctx.fillStyle = "#4c2838"; ctx.fillRect(-27, -17, 54, 32);
+      ctx.fillStyle = "#b94e5d"; ctx.fillRect(-22, -25, 44, 12);
+      ctx.fillStyle = "#e98b69";
+      ctx.beginPath(); ctx.moveTo(-25, -22); ctx.lineTo(-40, -48); ctx.lineTo(-12, -31); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(25, -22); ctx.lineTo(40, -48); ctx.lineTo(12, -31); ctx.fill();
+      ctx.fillStyle = "#f3c477"; ctx.fillRect(-4, -12, 8, 18); break;
+    case "Robot":
+      ctx.fillStyle = "#344d62"; ctx.fillRect(-27, -25, 54, 42);
+      ctx.fillStyle = "#65c3c6"; ctx.fillRect(-18, -17, 36, 23);
+      ctx.fillStyle = "#c8e6d9"; ctx.fillRect(-4, -42, 8, 17);
+      ctx.fillRect(-35, -7, 8, 20); ctx.fillRect(27, -7, 8, 20);
+      ctx.fillStyle = "#193444"; ctx.fillRect(-11, -10, 7, 6); ctx.fillRect(4, -10, 7, 6); break;
+    case "Natura":
+      ctx.fillStyle = "#5a4930"; ctx.fillRect(-8, -25, 16, 42);
+      ctx.fillStyle = "#38734b";
+      ctx.beginPath(); ctx.moveTo(0, -58); ctx.lineTo(-31, -13); ctx.lineTo(31, -13); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0, -44); ctx.lineTo(-38, 0); ctx.lineTo(38, 0); ctx.fill();
+      ctx.fillStyle = "#b7d77d"; ctx.fillRect(-3, -38, 6, 8); break;
+    case "Nuvola":
+      ctx.fillStyle = "#6b82ad"; ctx.fillRect(-6, -20, 12, 37);
+      ctx.fillStyle = "#c6d8f2";
+      ctx.beginPath(); ctx.arc(-14, -24, 16, 0, Math.PI * 2); ctx.arc(8, -31, 22, 0, Math.PI * 2); ctx.arc(25, -20, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#8bbbe3"; ctx.fillRect(-3, -14, 6, 25); break;
+    case "Umano":
+      ctx.fillStyle = "#73513d"; ctx.fillRect(-31, -19, 62, 36);
+      ctx.fillStyle = "#d5a36c"; ctx.fillRect(-24, -12, 48, 26);
+      ctx.fillStyle = "#483b3a"; ctx.fillRect(-7, -34, 14, 51);
+      ctx.fillStyle = "#f0d5a1"; ctx.fillRect(-3, -27, 6, 8); break;
+    case "Luce":
+      ctx.fillStyle = "#a47e36"; ctx.fillRect(-8, -18, 16, 35);
+      ctx.fillStyle = "#f3df9a";
+      for (let n = 0; n < 8; n++) { const a = n * Math.PI / 4; ctx.fillRect(Math.cos(a) * 27 - 3, -34 + Math.sin(a) * 27, 6, 13); }
+      ctx.fillStyle = "#fff0bc"; ctx.beginPath(); ctx.arc(0, -34, 17, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#e2b94f"; ctx.beginPath(); ctx.arc(0, -34, 8, 0, Math.PI * 2); ctx.fill(); break;
+    case "Dolce":
+      ctx.fillStyle = "#a45d92"; ctx.fillRect(-26, -16, 52, 33);
+      ctx.fillStyle = "#f0b2d4"; ctx.fillRect(-20, -28, 40, 12);
+      ctx.fillStyle = "#fff0df"; ctx.fillRect(-13, -9, 26, 21);
+      ctx.fillStyle = "#e48bbb"; ctx.fillRect(-4, -23, 8, 7); break;
+    case "Marino":
+      ctx.fillStyle = "#286d83"; ctx.fillRect(-27, -15, 54, 32);
+      ctx.fillStyle = "#65c8d2";
+      ctx.beginPath(); ctx.moveTo(-28, -16); ctx.lineTo(-42, -42); ctx.lineTo(-8, -24); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(28, -16); ctx.lineTo(42, -42); ctx.lineTo(8, -24); ctx.fill();
+      ctx.fillStyle = "#d2eff0"; ctx.fillRect(-5, -34, 10, 40);
+      ctx.fillStyle = "#1e526d"; ctx.fillRect(-17, -5, 34, 5); break;
+    case "Orso":
+      ctx.fillStyle = "#684a32"; ctx.fillRect(-29, -15, 58, 32);
+      ctx.fillStyle = "#b78b56";
+      ctx.beginPath(); ctx.moveTo(-29, -14); ctx.lineTo(-38, -43); ctx.lineTo(-9, -24); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(29, -14); ctx.lineTo(38, -43); ctx.lineTo(9, -24); ctx.fill();
+      ctx.fillStyle = "#e3c18a"; ctx.fillRect(-15, -7, 30, 18);
+      ctx.fillStyle = "#513b2e"; ctx.fillRect(-5, -2, 10, 6); break;
+    case "Mago":
+      ctx.fillStyle = "#59447e"; ctx.fillRect(-26, -18, 52, 35);
+      ctx.fillStyle = "#b19ae7";
+      ctx.beginPath(); ctx.moveTo(0, -62); ctx.lineTo(-30, -14); ctx.lineTo(30, -14); ctx.fill();
+      ctx.fillStyle = "#f2d68a"; ctx.fillRect(-4, -35, 8, 8);
+      ctx.fillStyle = "#d4c3f4"; ctx.fillRect(-2, -10, 4, 22); break;
+    case "Salato":
+      ctx.fillStyle = "#60696a"; ctx.fillRect(-27, -17, 54, 34);
+      ctx.fillStyle = "#c7c6b8";
+      ctx.beginPath(); ctx.moveTo(0, -61); ctx.lineTo(-23, -16); ctx.lineTo(0, -25); ctx.lineTo(23, -16); ctx.fill();
+      ctx.fillStyle = "#e8d8b1"; ctx.fillRect(-5, -12, 10, 22); break;
+    default:
+      ctx.fillStyle = accent; ctx.fillRect(-20, -22, 40, 39);
+  }
+
+  // Gemma luminosa centrale e piccoli pixel di riflesso.
+  ctx.fillStyle = "#fff0bd";
+  ctx.fillRect(-2, 2, 4, 4);
+  ctx.fillStyle = "rgba(255,255,255,.48)";
+  ctx.fillRect(-30, 20, 12, 2);
+  ctx.fillRect(18, 20, 12, 2);
   ctx.restore();
 }
 
