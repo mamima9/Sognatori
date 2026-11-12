@@ -177,17 +177,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   };
 
   const currentReward = rewardQueue[rewardIndex];
-  const followers = party.slice(0, 4);
 
   return (
     <>
-      {phase !== "battle" && player && followers.map((s, index) => (
-        <div key={s.id} className="pointer-events-none absolute z-30 flex flex-col items-center"
-          style={{ left: "calc(50% + " + (-facing.x * 42 + (index % 2 ? 18 : -18)) + "px)", top: "calc(50% + " + (-facing.y * 42 + Math.floor(index / 2) * 30) + "px)", filter: "drop-shadow(0 3px 3px rgba(0,0,0,.7))" }}>
-          <AdventureSognatoreSprite s={s} size={34} walking={walking} />
-        </div>
-      ))}
-
       {phase !== "battle" && <div className="pointer-events-none fixed inset-0 z-[210]">
         {menuOpen && (
           <div className="pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
