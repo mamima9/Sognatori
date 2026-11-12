@@ -838,6 +838,51 @@ export default function ArcadeWorld({
   const [talkingToHiddenNpc, setTalkingToHiddenNpc] = useState(false);
   const hiddenNpc = HIDDEN_NPCS[stage];
 
+  // Joystick touch per gli stage 1-10; lo stage 11 mantiene i propri controlli.
+  const joystickRef = useRef({ active: false, pointerId: null, dx: 0, dy: 0, lastStep: 0 });
+  const [joystickPosition, setJoystickPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (stage < 1 || stage > 10) return undefined;
+    const timer = window.setInterval(() => {
+      const stick = joystickRef.current;
+      if (!stick.active || (!stick.dx && !stick.dy)) return;
+      const now = Date.now();
+      if (now - stick.lastStep < 190) return;
+      stick.lastStep = now;
+      movePlayer(stick.dx, stick.dy);
+    }, 45);
+    return () => window.clearInterval(timer);
+  }, [stage]);
+
+  const updateJoystick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const rawX = event.clientX - (rect.left + rect.width / 2);
+    const rawY = event.clientY - (rect.top + rect.height / 2);
+    const distance = Math.hypot(rawX, rawY) || 1;
+    const max = rect.width * 0.30;
+    const scale = Math.min(1, max / distance);
+    const x = rawX * scale;
+    const y = rawY * scale;
+    const dx = Math.abs(rawX) > Math.abs(rawY) ? (rawX > 0 ? 1 : -1) : 0;
+    const dy = Math.abs(rawY) >= Math.abs(rawX) ? (rawY > 0 ? 1 : -1) : 0;
+    joystickRef.current.dx = distance > rect.width * 0.13 ? dx : 0;
+    joystickRef.current.dy = distance > rect.width * 0.13 ? dy : 0;
+    setJoystickPosition({ x, y });
+  };
+
+  const stopJoystick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    joystickRef.current.active = false;
+    joystickRef.current.pointerId = null;
+    joystickRef.current.dx = 0;
+    joystickRef.current.dy = 0;
+    setJoystickPosition({ x: 0, y: 0 });
+  };
+
   const isWalkable = (x, y) => {
     if (!MAP[y] || !MAP[y][x]) return false;
 
@@ -1187,6 +1232,39 @@ export default function ArcadeWorld({
              </motion.div>
         </>
         )}
+
+          {stage >= 1 && stage <= 10 && (
+            <div
+              role="presentation"
+              aria-label={isEnglish ? "Movement joystick" : "Joystick di movimento"}
+              className="absolute bottom-4 left-4 z-50 flex h-28 w-28 items-center justify-center rounded-full border-2 border-white/45 bg-slate-950/55 shadow-[0_0_24px_rgba(0,0,0,.45)] backdrop-blur-sm"
+              style={{ touchAction: "none", userSelect: "none" }}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                event.currentTarget.setPointerCapture(event.pointerId);
+                joystickRef.current.active = true;
+                joystickRef.current.pointerId = event.pointerId;
+                joystickRef.current.lastStep = 0;
+                updateJoystick(event);
+              }}
+              onPointerMove={(event) => {
+                if (!joystickRef.current.active || joystickRef.current.pointerId !== event.pointerId) return;
+                updateJoystick(event);
+              }}
+              onPointerUp={stopJoystick}
+              onPointerCancel={stopJoystick}
+              onLostPointerCapture={stopJoystick}
+            >
+              <div className="pointer-events-none absolute inset-2 rounded-full border border-white/20" />
+              <div className="pointer-events-none absolute h-1 w-7 rounded-full bg-white/35" />
+              <div className="pointer-events-none absolute h-7 w-1 rounded-full bg-white/35" />
+              <div
+                className="pointer-events-none relative h-11 w-11 rounded-full border-2 border-white/70 bg-gradient-to-br from-slate-200/90 to-slate-500/90 shadow-lg"
+                style={{ transform: `translate(${joystickPosition.x}px, ${joystickPosition.y}px)` }}
+              />
+            </div>
+          )}
 
         </div>
 
