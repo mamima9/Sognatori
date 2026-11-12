@@ -185,7 +185,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       ))}
 
-      <div className="absolute bottom-[88px] right-5 z-[56] flex flex-col items-end gap-2">
+      <div className="fixed top-[calc(100svh+12px)] right-[190px] z-[56] flex flex-col items-end gap-2">
         {menuOpen && (
           <div className="mb-1 w-52 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/95 p-2 text-white shadow-2xl backdrop-blur-md">
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
