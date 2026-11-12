@@ -722,12 +722,12 @@ const [message, setMessage] = useState("");
     let frame;
 
     const draw = () => {
-      const frame = worldFrameRef.current;
-      if (!frame) {
+      const worldFrame = worldFrameRef.current;
+      if (!worldFrame) {
         frame = requestAnimationFrame(draw);
         return;
       }
-      const rect = frame.getBoundingClientRect();
+      const rect = worldFrame.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
 
