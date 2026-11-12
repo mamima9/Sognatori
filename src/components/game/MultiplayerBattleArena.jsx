@@ -119,6 +119,7 @@ export default function MultiplayerBattleArena({ matchId, onEnd }) {
   const [missionCompletionNotice, setMissionCompletionNotice] = useState(null);
   const processedMissionMatchRef = useRef(null);
   const [animStep, setAnimStep] = useState(0);
+  const [animTurn, setAnimTurn] = useState(null);
   const [turnKey, setTurnKey] = useState(0);
 
   const groupedLog = (entries) => {
@@ -260,6 +261,16 @@ const player2Team = resolveTeam(
 
   if (!gs || gs.phase !== "animating") {
     setAnimStep(0);
+    setAnimTurn(gs?.turn ?? null);
+    return;
+  }
+
+  // Ogni nuovo turno deve ripartire dal primo fotogramma.
+  // Senza questo reset sincrono, un indice rimasto dal turno
+  // precedente può mostrare subito un frame finale con dei KO.
+  if (animTurn !== gs.turn) {
+    setAnimStep(0);
+    setAnimTurn(gs.turn);
     return;
   }
 
@@ -278,6 +289,7 @@ const player2Team = resolveTeam(
   return () => clearTimeout(timer);
 }, [
   animStep,
+  animTurn,
   match?.game_state?.phase,
   match?.game_state?.turn,
 ]);
@@ -2383,8 +2395,10 @@ const prematchTimeLeft =
   const turnFrames = Array.isArray(gs.turnFrames)
     ? gs.turnFrames
     : [];
+  const currentTurnAnimStep =
+    animTurn === gs.turn ? animStep : 0;
   const safeAnimStep = Math.min(
-    animStep,
+    currentTurnAnimStep,
     Math.max(0, turnFrames.length - 1)
   );
   const animFrame =
