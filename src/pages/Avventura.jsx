@@ -856,32 +856,27 @@ const [message, setMessage] = useState("");
 
       ctx.fill();
 
-      ctx.strokeStyle =
-        "#6ec6d9";
-
-      ctx.lineWidth = 7;
-
-      for (
-        let y = 850;
-        y < 1010;
-        y += 38
-      ) {
+      ctx.strokeStyle = "rgba(122,218,229,.75)";
+      ctx.lineWidth = 5;
+      for (let y = 850; y < 1010; y += 38) {
         ctx.beginPath();
-
-        ctx.moveTo(
-          1610,
-          y
-        );
-
-        ctx.quadraticCurveTo(
-          1730,
-          y - 18,
-          1840,
-          y
-        );
-
+        ctx.moveTo(1610, y);
+        ctx.quadraticCurveTo(1730, y - 18, 1840, y);
         ctx.stroke();
       }
+      // Riflessi spezzati, rive in pietra e piccoli ciuffi sulle sponde.
+      ctx.fillStyle = "#8bd6d8";
+      ctx.fillRect(1640, 842, 32, 4);
+      ctx.fillRect(1790, 900, 44, 4);
+      ctx.fillRect(1680, 982, 24, 3);
+      ctx.fillStyle = "#a9c77a";
+      ctx.fillRect(1558, 866, 12, 5);
+      ctx.fillRect(1548, 878, 8, 8);
+      ctx.fillRect(2028, 944, 13, 5);
+      ctx.fillRect(2034, 954, 8, 8);
+      ctx.fillStyle = "#d5c18b";
+      ctx.fillRect(1582, 824, 18, 5);
+      ctx.fillRect(2004, 1035, 24, 5);
 
       /*
         EDIFICI RIMOSSI
@@ -901,50 +896,46 @@ const [message, setMessage] = useState("");
         );
       }
 
+      // I landmark sono disegnati dietro ai personaggi: ogni città ha un simbolo architettonico proprio.
+      for (const city of ADVENTURE_CITIES) {
+        drawCityLandmark(ctx, city);
+      }
+
       /*
         ROCCE
       */
 
       for (const rock of WORLD_OBJECTS.rocks) {
-        ctx.fillStyle =
-          "#575757";
+        ctx.save();
+        ctx.translate(Math.round(rock.x / 3) * 3, Math.round(rock.y / 3) * 3);
+        ctx.fillStyle = "rgba(9,15,18,.28)";
+        ctx.beginPath(); ctx.ellipse(3, rock.r * .62, rock.r * 1.25, rock.r * .42, 0, 0, Math.PI * 2); ctx.fill();
 
+        ctx.fillStyle = "#3e4548";
         ctx.beginPath();
+        ctx.moveTo(-rock.r * 1.1, rock.r * .35);
+        ctx.lineTo(-rock.r * .8, -rock.r * .35);
+        ctx.lineTo(-rock.r * .18, -rock.r);
+        ctx.lineTo(rock.r * .52, -rock.r * .72);
+        ctx.lineTo(rock.r * 1.12, rock.r * .2);
+        ctx.lineTo(rock.r * .72, rock.r * .7);
+        ctx.closePath(); ctx.fill();
 
-        ctx.ellipse(
-          rock.x,
-          rock.y,
-          rock.r * 1.2,
-          rock.r * 0.85,
-          0,
-          0,
-          Math.PI * 2
-        );
-
-        ctx.fill();
-
-        ctx.fillStyle =
-          "#777";
-
+        ctx.fillStyle = "#727b7b";
         ctx.beginPath();
+        ctx.moveTo(-rock.r * .8, -rock.r * .35);
+        ctx.lineTo(-rock.r * .18, -rock.r);
+        ctx.lineTo(rock.r * .1, -rock.r * .16);
+        ctx.lineTo(-rock.r * .2, rock.r * .12);
+        ctx.closePath(); ctx.fill();
 
-        ctx.ellipse(
-          rock.x -
-            rock.r *
-              0.25,
-          rock.y -
-            rock.r *
-              0.2,
-          rock.r *
-            0.45,
-          rock.r *
-            0.25,
-          -0.4,
-          0,
-          Math.PI * 2
-        );
-
-        ctx.fill();
+        ctx.fillStyle = "#9da09a";
+        ctx.fillRect(-rock.r * .16, -rock.r * .82, Math.max(3, rock.r * .22), Math.max(3, rock.r * .16));
+        ctx.fillStyle = "#4e595b";
+        ctx.fillRect(rock.r * .48, -rock.r * .35, Math.max(3, rock.r * .18), Math.max(3, rock.r * .28));
+        ctx.fillStyle = "rgba(211,219,205,.35)";
+        ctx.fillRect(-rock.r * .58, rock.r * .08, Math.max(3, rock.r * .2), 3);
+        ctx.restore();
       }
 
       /*
