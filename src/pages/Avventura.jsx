@@ -1684,8 +1684,6 @@ const [message, setMessage] = useState("");
         </div>
       </div>
 
-      <div className="h-36 w-full overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg">
-
       <div className="h-36 w-full overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
         <div className="relative h-full w-full">
           {ZONES.map((z) => (
