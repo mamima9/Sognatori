@@ -185,9 +185,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       ))}
 
-      <div className="fixed top-4 right-4 z-[56] flex flex-col items-end gap-2">
+      <div className="pointer-events-none fixed inset-0 z-[210]">
         {menuOpen && (
-          <div className="fixed right-4 top-16 bottom-4 z-[55] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
+          <div className="pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
             {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
               Il tuo viaggio · {save.completedCities.length}/11 città
@@ -200,7 +200,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
           </div>
         )}
-        <button onClick={() => setMenuOpen((open) => !open)} className="rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
+        <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed right-4 top-4 z-[210] rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
           {menuOpen ? "CHIUDI MENU" : "☰ MENU"}
         </button>
       </div>
