@@ -38,15 +38,17 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, walking = false, encounter, onClose }) {
+export default function AdventureCampaign({ userKey, player, walking = false, encounter, wildEncounter, onClose, onWildClose }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
   const [phase, setPhase] = useState("idle");
   const [starterChoice, setStarterChoice] = useState("Natura");
   const [rewardIndex, setRewardIndex] = useState(0);
+  const [rewardQueue, setRewardQueue] = useState([]);
   const [persuasionError, setPersuasionError] = useState(false);
   const [battleKey, setBattleKey] = useState(0);
+  const [wildError, setWildError] = useState(false);
 
   useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(save)); } catch {}
@@ -57,13 +59,16 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
   }, [save.introDone]);
 
   useEffect(() => {
-    if (encounter) {
+    if (wildEncounter) {
+      setWildError(false);
+      setPhase("wildTalk");
+    } else if (encounter) {
       setPersuasionError(false);
       setPhase(save.completedCities.includes(encounter.id) ? "completed" : "traveler");
     } else if (phase !== "intro") {
       setPhase("idle");
     }
-  }, [encounter?.id]);
+  }, [encounter?.id, wildEncounter?.id]);
 
   const owned = useMemo(
     () => save.ownedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean),
@@ -74,6 +79,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
     [save.partyIds]
   );
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
+  const wildSognatore = wildEncounter ? ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
   const cityTeam = useMemo(
     () => encounter ? (encounter.team?.length === 4 ? encounter.team : buildCityTeam(encounter.faction, encounter.id)) : [],
     [encounter?.id]
@@ -105,7 +111,7 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
   };
 
   const startCityBattle = () => {
-    if (owned.length < 2 || cityTeam.length !== 4) return;
+    if (party.length < 2 || cityTeam.length !== 4) return;
     setBattleKey((n) => n + 1);
     setPhase("battle");
   };
@@ -113,8 +119,14 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
   const handleBattleFinish = (outcome) => {
     if (outcome === "win") {
       setRewardIndex(0);
+      setRewardQueue(rewards);
       setPersuasionError(false);
-      setPhase("reward");
+      if (!rewards.length) {
+        setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
+        setPhase("rewardDone");
+      } else {
+        setPhase("reward");
+      }
     } else if (outcome === "escape") {
       setPhase("idle");
       onClose?.();
@@ -137,14 +149,14 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
       return { ...old, ownedIds, partyIds };
     });
     setPersuasionError(false);
-    if (rewardIndex + 1 < rewards.length) setRewardIndex((n) => n + 1);
+    if (rewardIndex + 1 < rewardQueue.length) setRewardIndex((n) => n + 1);
     else {
       setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
       setPhase("rewardDone");
     }
   };
 
-  const currentReward = rewards[rewardIndex];
+  const currentReward = rewardQueue[rewardIndex];
   const followers = party.slice(0, 4);
 
   return (
@@ -215,6 +227,34 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
         </div>
       )}
 
+
+      {wildEncounter && phase === "wildTalk" && (
+        <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-3xl border border-cyan-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
+            <div className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-200">Incontro nel mondo</div>
+            {wildSognatore ? <>
+              <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={wildSognatore} size={92} walking /></div>
+              <h2 className="text-3xl font-black">{wildSognatore.nome}</h2>
+              <p className="mt-2 text-sm text-white/60">Non puoi catturarlo. Puoi solo provare a conquistare la sua fiducia con le parole.</p>
+              <div className="mt-5 grid gap-2">
+                {[ANSWERS[wildSognatore.tipo] || ANSWERS.Natura, ...WRONG].map((answer) => <button key={answer} onClick={() => {
+                  if (answer !== (ANSWERS[wildSognatore.tipo] || ANSWERS.Natura)) { setWildError(true); return; }
+                  setSave((old) => {
+                    const ownedIds = old.ownedIds.includes(wildSognatore.id) ? old.ownedIds : [...old.ownedIds, wildSognatore.id];
+                    const partyIds = old.partyIds.length < 4 && !old.partyIds.includes(wildSognatore.id) ? [...old.partyIds, wildSognatore.id] : old.partyIds;
+                    return { ...old, ownedIds, partyIds };
+                  });
+                  setWildError(false);
+                  setPhase("idle");
+                  onWildClose?.();
+                }} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
+              </div>
+              {wildError && <p className="mt-3 text-sm font-bold text-amber-300">Non si fida ancora. Prova ad ascoltarlo meglio.</p>}
+            </> : <p className="mt-4">Questo Sognatore non è presente nel roster attuale.</p>}
+            <button onClick={() => { setPhase("idle"); onWildClose?.(); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Lascialo andare</button>
+          </div>
+        </div>
+      )}
       {encounter && phase === "traveler" && (
         <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-xl rounded-3xl border border-amber-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
@@ -225,14 +265,14 @@ export default function AdventureCampaign({ userKey, player, walking = false, en
               {cityTeam.map((s) => <div key={s.id} className="flex flex-col items-center"><AdventureSognatoreSprite s={s} size={54}/><span className="mt-1 max-w-16 truncate text-[9px] font-bold">{s.nome}</span></div>)}
             </div>
             <p className="text-xs text-white/45">La sua squadra è composta da 4 Sognatori della fazione {encounter.faction}.</p>
-            <button disabled={owned.length < 2} onClick={startCityBattle} className="mt-5 w-full rounded-xl bg-amber-300 py-3 font-black text-black disabled:opacity-30">{owned.length < 2 ? "CONVINCI ALTRI SOGNATORI PER SFIDARLO" : "ACCETTA LA SFIDA"}</button>
+            <button disabled={owned.length < 2} onClick={startCityBattle} className="mt-5 w-full rounded-xl bg-amber-300 py-3 font-black text-black disabled:opacity-30">{party.length < 2 ? "CONVINCI ALTRI SOGNATORI PER SFIDARLO" : "ACCETTA LA SFIDA"}</button>
             <button onClick={() => { onClose?.(); setPhase("idle"); }} className="mt-2 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Torna a esplorare</button>
           </div>
         </div>
       )}
 
       {encounter && phase === "battle" && (
-        <AdventureBattle key={battleKey} opponentName={(encounter.traveler || encounter.name) + " · " + encounter.city} enemyTeam={cityTeam} playerRoster={owned} onFinish={handleBattleFinish} />
+        <AdventureBattle key={battleKey} opponentName={(encounter.traveler || encounter.name) + " · " + encounter.city} enemyTeam={cityTeam} playerRoster={party} onFinish={handleBattleFinish} />
       )}
 
       {encounter && phase === "lost" && (
