@@ -375,11 +375,7 @@ export default function Avventura() {
     playerRef.current
   );
 
-  const [crystals, setCrystals] = useState(
-    WORLD_OBJECTS.crystals
-  );
-
-  const [message, setMessage] = useState("");
+const [message, setMessage] = useState("");
 
   const [dialogue, setDialogue] = useState(null);
 
