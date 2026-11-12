@@ -57,9 +57,8 @@ export default function AdventureSognatoreSprite({
 
   if (!s) return null;
 
-  const animation = walking
-    ? "officialSognatoreWalk .38s steps(2,end) infinite"
-    : "officialSognatoreIdle 1.25s ease-in-out infinite";
+  // Sprite statico: nessuna animazione idle o walking.
+  const animation = "none";
 
   return (
     <div
@@ -76,18 +75,6 @@ export default function AdventureSognatoreSprite({
         justifyContent: "center",
       }}
     >
-      <style>{`
-        @keyframes officialSognatoreIdle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
-        }
-        @keyframes officialSognatoreWalk {
-          0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-          25% { transform: translateY(-3px) rotate(-2deg) scale(.98); }
-          75% { transform: translateY(-1px) rotate(2deg) scale(1.02); }
-        }
-      `}</style>
-
       <span
         aria-hidden="true"
         style={{
