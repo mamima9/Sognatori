@@ -1161,6 +1161,23 @@ const [message, setMessage] = useState("");
       <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-190px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
+      <div className="pointer-events-none absolute inset-0">
+        {wildSognatori.map((s) => {
+          const frame = worldFrameRef.current;
+          const w = frame?.clientWidth || 0;
+          const h = frame?.clientHeight || 0;
+          const scale = Math.min(w / 1100, h / 825);
+          const sx = w / 2 + (s.x - player.x) * scale;
+          const sy = h / 2 + (s.y - player.y) * scale;
+          if (sx < -100 || sx > w + 100 || sy < -120 || sy > h + 120) return null;
+          return (
+            <div key={s.id} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: sx, top: sy }}>
+              <div className="mb-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">{s.name}</div>
+              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} />
+              <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40"><div className="h-full w-full rounded-full bg-emerald-400" /></div>
+            </div>
+          );
+        })}
       {/* =====================================
             SFIDANTI
             ===================================== */}
@@ -1248,6 +1265,7 @@ const [message, setMessage] = useState("");
           }
         )}
       </div>
+      </div>
 
       </div>
 
@@ -1263,6 +1281,11 @@ const [message, setMessage] = useState("");
         <button type="button" onClick={interact} className="rounded-xl border border-emerald-200/30 bg-emerald-300 px-5 py-4 text-xs font-black tracking-wide text-[#142116] shadow-lg active:scale-95">E · INTERAGISCI</button>
       </div>
 
+      {message && (
+        <div className="fixed bottom-24 left-1/2 z-[65] -translate-x-1/2 rounded-full border border-white/15 bg-black/85 px-5 py-3 text-center text-xs font-bold shadow-2xl">
+          {message}
+        </div>
+      )}
       {/* =====================================
           DIALOGO NPC
           ===================================== */}
