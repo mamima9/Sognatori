@@ -12,7 +12,7 @@ const ABILITY_EN = {
   aragostino_fullhp: { name: "Cold Storage", desc: "Gets +3 ATT only when at 20 HP." },
   sparkly_debuff: { name: "FUD", desc: "On entry, opponents lose 3 ATT." },
   nina_regen: { name: "Apotheosis", desc: "Recovers 2 HP every turn." },
-  taomarco_def_buff: {
+  taomarco_defeat_buff: {
   name: "Errare Swap",
   desc: "When it deals damage, it gains +1 DEF."
 },
