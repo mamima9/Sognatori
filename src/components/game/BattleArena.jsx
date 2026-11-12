@@ -891,12 +891,7 @@ while (remainingActions.length > 0) {
       <div className="relative flex-1 px-4 pt-5 pb-3 max-w-4xl mx-auto w-full">
 
         <div className="flex items-center gap-3 mb-2">
-          {adventureMode && opponentTraveler && (
-            <div className="flex h-[72px] w-[64px] shrink-0 items-end justify-center">
-              <AdventureTravelerSprite traveler={opponentTraveler} faction={opponentFaction} size={62} />
-            </div>
-          )}
-          <span className="text-xs uppercase tracking-widest text-amber-400 font-bold">
+          <span className="min-w-0 flex-1 text-xs uppercase tracking-widest text-amber-400 font-bold">
             {opponentName || t("battle.vgc")}
           </span>
 
@@ -925,6 +920,34 @@ while (remainingActions.length > 0) {
             onAbandon={() => onEnd("abandon", logRef.current)}
           />
         </div>
+
+        {adventureMode && opponentTraveler && (
+          <section className="relative mb-3 min-h-[126px] overflow-hidden rounded-2xl border border-amber-200/20 bg-gradient-to-r from-[#171b32] via-[#352746] to-[#172b3b] shadow-[0_12px_36px_rgba(0,0,0,.32)]">
+            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 76% 35%, rgba(244,190,111,.45), transparent 28%), linear-gradient(135deg, transparent 45%, rgba(255,255,255,.06) 46%, transparent 47%)" }} />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
+            <div className="relative flex min-h-[126px] items-center gap-3 px-3 sm:gap-5 sm:px-6">
+              <div className="flex h-[126px] w-[94px] shrink-0 items-end justify-center sm:w-[116px]">
+                <AdventureTravelerSprite traveler={opponentTraveler} faction={opponentFaction} size={88} />
+              </div>
+              <div className="min-w-0 flex-1 py-4">
+                <div className="mb-1 text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">
+                  {lang === "en" ? "CHALLENGER" : "SFIDANTE"}
+                </div>
+                <div className="truncate text-xl font-black tracking-tight text-white sm:text-2xl">
+                  {opponentTraveler}
+                </div>
+                <div className="mt-1 text-[10px] font-bold uppercase tracking-[.2em] text-amber-100/55">
+                  {opponentFaction ? (lang === "en" ? opponentFaction + " faction" : "Fazione " + opponentFaction) : (lang === "en" ? "Adventure rival" : "Rivale dell'avventura")}
+                </div>
+                <div className="mt-2 h-1 w-20 rounded-full bg-gradient-to-r from-amber-300/90 to-transparent" />
+              </div>
+              <div className="hidden pr-3 text-right sm:block">
+                <div className="text-[9px] font-black uppercase tracking-[.25em] text-white/35">{lang === "en" ? "DUEL" : "DUELLO"}</div>
+                <div className="mt-1 text-2xl font-black text-amber-100/80">VS</div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {visibleLogs.length > 0 && (
           <div className="flex justify-center mb-2">
