@@ -18,7 +18,6 @@ import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
   - acqua, alberi, rocce, case
   - 4 zone esplorabili
   - NPC interattivi
-  - raccolta cristalli
   - Sognatori selvatici
   - sfidanti
   - cooldown incontri
@@ -148,7 +147,6 @@ function buildWorld() {
 
   const trees = [];
   const rocks = [];
-  const crystals = [];
 
   for (let i = 0; i < 150; i++) {
     const x = 80 + rand() * (WORLD.width - 160);
@@ -178,18 +176,9 @@ function buildWorld() {
     rocks.push({ id: `rock-${i}`, x, y, r: 13 + rand() * 13 });
   }
 
-  for (let i = 0; i < 28; i++) {
-    crystals.push({
-      id: `crystal-${i}`,
-      x: 180 + rand() * (WORLD.width - 360),
-      y: 180 + rand() * (WORLD.height - 360),
-    });
-  }
-
   return {
     trees,
     rocks,
-    crystals,
   };
 }
 
@@ -203,7 +192,7 @@ const NPCS = [
     y: 1110,
     color: "#f4d35e",
     dialogue:
-      "Benvenuto nel Cuore Verde. I cristalli che trovi appartengono all'antico Sentiero dei Sognatori.",
+      "Benvenuto nel Cuore Verde. Qui inizia il Sentiero dei Sognatori.",
   },
   {
     id: "explorer",
@@ -221,7 +210,7 @@ const NPCS = [
     y: 1520,
     color: "#e76f51",
     dialogue:
-      "Le montagne custodiscono cristalli molto più potenti. Ma non andarci senza prepararti.",
+      "Le montagne custodiscono segreti antichi. Ma non andarci senza prepararti.",
   },
 ];
 
@@ -404,11 +393,6 @@ export default function Avventura() {
     useState(WILD_STARTS);
 
   const [time, setTime] = useState(9);
-
-  const [questDone, setQuestDone] =
-    useState(false);
-
-  const collected = 28 - crystals.length;
 
   const zone = useMemo(() => {
     return (
@@ -631,33 +615,6 @@ export default function Avventura() {
             ...next,
           });
 
-          /*
-            CRISTALLI
-          */
-
-          setCrystals((old) =>
-            old.filter((crystal) => {
-              if (
-                distance(
-                  next,
-                  crystal
-                ) < 34
-              ) {
-                setMessage(
-                  "✦ Cristallo del Sogno raccolto!"
-                );
-
-                setTimeout(
-                  () => setMessage(""),
-                  1800
-                );
-
-                return false;
-              }
-
-              return true;
-            })
-          );
         }
       }
 
@@ -1166,42 +1123,6 @@ export default function Avventura() {
       }
 
       /*
-        CRISTALLI
-      */
-
-      for (const crystal of crystals) {
-        ctx.save();
-
-        ctx.translate(
-          crystal.x,
-          crystal.y
-        );
-
-        ctx.rotate(
-          Math.PI / 4
-        );
-
-        ctx.fillStyle =
-          "#b9f2ff";
-
-        ctx.shadowColor =
-          "#8be9fd";
-
-        ctx.shadowBlur = 18;
-
-        ctx.fillRect(
-          -9,
-          -9,
-          18,
-          18
-        );
-
-        ctx.restore();
-
-        ctx.shadowBlur = 0;
-      }
-
-      /*
         NPC
       */
 
@@ -1306,7 +1227,6 @@ export default function Avventura() {
       );
     };
   }, [
-    crystals,
     player,
     zone,
     time,
@@ -1376,35 +1296,6 @@ export default function Avventura() {
 
   /*
     ============================
-    QUEST
-    ============================
-  */
-
-  const questText = questDone
-    ? "✓ I cristalli sono stati raccolti."
-    : `Raccogli 10 Cristalli del Sogno (${Math.min(
-        collected,
-        10
-      )}/10)`;
-
-  useEffect(() => {
-    if (
-      collected >= 10 &&
-      !questDone
-    ) {
-      setQuestDone(true);
-
-      setMessage(
-        "★ Missione completata: Sentiero dei Sognatori!"
-      );
-    }
-  }, [
-    collected,
-    questDone,
-  ]);
-
-  /*
-    ============================
     ACCESSO
     ============================
   */
@@ -1457,7 +1348,7 @@ export default function Avventura() {
           PAD MOBILE
           ===================================== */}
 
-      <div className="absolute bottom-5 left-5 z-50 md:hidden">
+      <div className="absolute bottom-1 left-5 z-50 md:hidden">
         <div className="relative h-36 w-36">
           <button
             type="button"
@@ -1717,14 +1608,6 @@ export default function Avventura() {
         </div>
 
         <div className="rounded-2xl border border-white/15 bg-black/60 px-5 py-4 text-right shadow-2xl backdrop-blur-md">
-          <div className="text-xs text-white/50">
-            CRISTALLI
-          </div>
-
-          <div className="text-xl font-black">
-            ✦ {collected} / 28
-          </div>
-
           <div className="mt-1 text-xs text-white/50">
             Ore{" "}
             {String(
@@ -1737,33 +1620,6 @@ export default function Avventura() {
               )
             ).padStart(2, "0")}
           </div>
-        </div>
-      </div>
-
-      {/* =====================================
-          QUEST
-          ===================================== */}
-
-      <div className="absolute left-4 top-32 w-72 rounded-2xl border border-yellow-200/15 bg-black/55 p-4 backdrop-blur-md">
-        <div className="text-[11px] font-black uppercase tracking-widest text-yellow-200/70">
-          Missione
-        </div>
-
-        <div className="mt-2 text-sm font-semibold">
-          {questText}
-        </div>
-
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-yellow-300 transition-all"
-            style={{
-              width: `${Math.min(
-                100,
-                (collected / 10) *
-                  100
-              )}%`,
-            }}
-          />
         </div>
       </div>
 
@@ -1836,7 +1692,7 @@ export default function Avventura() {
           CONTROLLI DESKTOP
           ===================================== */}
 
-      <div className="absolute bottom-5 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
+      <div className="absolute bottom-1 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
         <span className="font-bold text-white">
           WASD / FRECCE
         </span>{" "}
