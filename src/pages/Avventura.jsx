@@ -1325,7 +1325,7 @@ export default function Avventura() {
   */
 
   const interact = () => {
-    if (dialogue || encounter || challengerEncounter) return;
+    if (dialogue || encounter || challengerEncounter || activeBattle) return;
 
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
