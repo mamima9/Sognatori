@@ -1954,7 +1954,7 @@ export default function Avventura() {
                   return;
                 }
                 battleOpenRef.current = true;
-                setActiveBattle({ opponentName: challengerEncounter.name, enemyTeam, isWild: false });
+                setActiveBattle({ opponentName: challengerEncounter.name, enemyTeam, isWild: false, encounterId: challengerEncounter.id });
                 setChallengerEncounter(null);
               }}
               className="mt-6 w-full rounded-xl bg-red-400 py-3 font-black text-black"
@@ -2023,7 +2023,7 @@ export default function Avventura() {
                   return;
                 }
                 battleOpenRef.current = true;
-                setActiveBattle({ opponentName: encounter.name, enemyTeam: [wildSognatore], isWild: true });
+                setActiveBattle({ opponentName: encounter.name, enemyTeam: [wildSognatore], isWild: true, encounterId: encounter.id });
                 setEncounter(null);
               }}
               className="mt-7 w-full rounded-xl bg-yellow-300 py-3 font-black text-black"
@@ -2059,7 +2059,7 @@ export default function Avventura() {
           enemyTeam={activeBattle.enemyTeam}
           isWild={activeBattle.isWild}
           onFinish={(outcome) => {
-            const id = activeBattle.isWild ? encounter?.id : challengerEncounter?.id;
+            const id = activeBattle.encounterId;
             if (activeBattle.isWild && id) {
               wildCooldownRef.current[id] = Date.now() + 20000;
             }
