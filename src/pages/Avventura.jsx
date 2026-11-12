@@ -306,6 +306,7 @@ function circleRectCollision(
 
 export default function Avventura() {
   const canvasRef = useRef(null);
+  const worldFrameRef = useRef(null);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -693,17 +694,13 @@ const [message, setMessage] = useState("");
       1;
 
     const resize = () => {
-      canvas.width =
-        window.innerWidth * dpr;
-
-      canvas.height =
-        window.innerHeight * dpr;
-
-      canvas.style.width =
-        `${window.innerWidth}px`;
-
-      canvas.style.height =
-        `${window.innerHeight}px`;
+      const frame = worldFrameRef.current;
+      if (!frame) return;
+      const rect = frame.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
 
       ctx.setTransform(
         dpr,
@@ -725,11 +722,14 @@ const [message, setMessage] = useState("");
     let frame;
 
     const draw = () => {
-      const w =
-        window.innerWidth;
-
-      const h =
-        window.innerHeight;
+      const frame = worldFrameRef.current;
+      if (!frame) {
+        frame = requestAnimationFrame(draw);
+        return;
+      }
+      const rect = frame.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
 
       ctx.clearRect(
         0,
@@ -741,10 +741,7 @@ const [message, setMessage] = useState("");
       const cam =
         cameraRef.current;
 
-      const scale = Math.min(
-        w / 1100,
-        h / 700
-      );
+      const scale = Math.min(w / 1100, h / 825);
 
       const offsetX =
         w / 2 -
@@ -1156,162 +1153,15 @@ const [message, setMessage] = useState("");
   */
 
   return (
-    <div className="fixed inset-0 h-[100dvh] w-screen overflow-hidden bg-black text-white select-none touch-auto">
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none"
-      />
-
-      {/* =====================================
-          PAD MOBILE
-          ===================================== */}
-
-      <div className="fixed bottom-1 left-5 z-50 md:hidden">
-        <div className="relative h-36 w-36">
-          <button
-            type="button"
-            aria-label="Muovi in alto"
-            className="absolute left-12 top-0 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
-            onTouchStart={(e) => {
-              e.preventDefault();
-              keysRef.current.w = true;
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              keysRef.current.w = false;
-            }}
-            onTouchCancel={(e) => {
-              e.preventDefault();
-              keysRef.current.w = false;
-            }}
-          >
-            ▲
-          </button>
-
-          <button
-            type="button"
-            aria-label="Muovi in basso"
-            className="absolute bottom-0 left-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
-            onTouchStart={(e) => {
-              e.preventDefault();
-              keysRef.current.s = true;
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              keysRef.current.s = false;
-            }}
-            onTouchCancel={(e) => {
-              e.preventDefault();
-              keysRef.current.s = false;
-            }}
-          >
-            ▼
-          </button>
-
-          <button
-            type="button"
-            aria-label="Muovi a sinistra"
-            className="absolute left-0 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
-            onTouchStart={(e) => {
-              e.preventDefault();
-              keysRef.current.a = true;
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              keysRef.current.a = false;
-            }}
-            onTouchCancel={(e) => {
-              e.preventDefault();
-              keysRef.current.a = false;
-            }}
-          >
-            ◀
-          </button>
-
-          <button
-            type="button"
-            aria-label="Muovi a destra"
-            className="absolute right-0 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/35 text-xl font-black text-white backdrop-blur-md active:bg-white/40"
-            onTouchStart={(e) => {
-              e.preventDefault();
-              keysRef.current.d = true;
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              keysRef.current.d = false;
-            }}
-            onTouchCancel={(e) => {
-              e.preventDefault();
-              keysRef.current.d = false;
-            }}
-          >
-            ▶
-          </button>
-
-          <div className="absolute left-12 top-12 h-12 w-12 rounded-xl border border-white/10 bg-black/25" />
-        </div>
+    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col items-center justify-between overflow-hidden bg-[#090d0a] px-2 py-2 text-white select-none touch-none">
+      <div className="flex w-full max-w-[1100px] items-center justify-between px-2">
+        <div className="text-xs font-black tracking-[.25em] text-emerald-100/70">SOGNATORI · AVVENTURA</div>
+        <div className="text-xs font-bold text-white/60">{zone.name}</div>
       </div>
+      <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-190px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
+        <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
       {/* =====================================
-          SOGNATORI SELVATICI
-          ===================================== */}
-
-      <div className="pointer-events-none absolute inset-0">
-        {wildSognatori.map((s) => {
-          const w =
-            window.innerWidth;
-
-          const h =
-            window.innerHeight;
-
-          const scale =
-            Math.min(
-              w / 1100,
-              h / 700
-            );
-
-          const sx =
-            w / 2 +
-            (s.x - player.x) *
-              scale;
-
-          const sy =
-            h / 2 +
-            (s.y - player.y) *
-              scale;
-
-          if (
-            sx < -100 ||
-            sx > w + 100 ||
-            sy < -120 ||
-            sy > h + 120
-          ) {
-            return null;
-          }
-
-          return (
-            <div
-              key={s.id}
-              className="absolute -translate-x-1/2 -translate-y-full"
-              style={{
-                left: sx,
-                top: sy,
-              }}
-            >
-              <div className="mb-1 whitespace-nowrap text-center text-[9px] font-black text-white drop-shadow-[0_2px_2px_black]">
-                {s.name}
-              </div>
-
-              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} />
-
-              <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40">
-                <div className="h-full w-full rounded-full bg-emerald-400" />
-              </div>
-            </div>
-          );
-        })}
-
-        {/* =====================================
             SFIDANTI
             ===================================== */}
 
@@ -1406,50 +1256,26 @@ const [message, setMessage] = useState("");
         )}
       </div>
 
-      {/* =====================================
-          CONTROLLI DESKTOP
-          ===================================== */}
-
-      <div className="absolute bottom-1 left-5 hidden rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-xs text-white/60 backdrop-blur-md md:block">
-        <span className="font-bold text-white">
-          WASD / FRECCE
-        </span>{" "}
-        · muovi
-        <br />
-        <span className="font-bold text-white">
-          E
-        </span>{" "}
-        · interagisci
       </div>
 
-      {/* =====================================
-          INTERAGISCI
-          ===================================== */}
-
-      <button
-        type="button"
-        onClick={interact}
-        className="fixed bottom-5 right-5 z-[56] rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-black backdrop-blur-md transition hover:bg-white/20 active:scale-95"
-      >
-        E · INTERAGISCI
-      </button>
-
-      {/* =====================================
-          MESSAGGIO
-          ===================================== */}
-
-      {message && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/75 px-6 py-3 text-sm font-bold shadow-2xl backdrop-blur-md">
-          {message}
+      {/* CONTROLLI ESTERNI AL MONDO */}
+      <div className="flex w-full max-w-[1100px] items-center justify-between gap-3 px-2 pb-1">
+        <div className="grid grid-cols-3 gap-1 touch-none">
+          <span />
+          <button aria-label="Su" onPointerDown={(e) => { e.preventDefault(); keysRef.current.arrowup = true; }} onPointerUp={() => { keysRef.current.arrowup = false; }} onPointerLeave={() => { keysRef.current.arrowup = false; }} className="h-11 w-11 rounded-lg border border-white/15 bg-[#263629] text-xl font-black active:bg-emerald-700">▲</button>
+          <span />
+          {["arrowleft","arrowdown","arrowright"].map((key) => <button key={key} aria-label={key} onPointerDown={(e) => { e.preventDefault(); keysRef.current[key] = true; }} onPointerUp={() => { keysRef.current[key] = false; }} onPointerLeave={() => { keysRef.current[key] = false; }} className="h-11 w-11 rounded-lg border border-white/15 bg-[#263629] text-xl font-black active:bg-emerald-700">{key === "arrowleft" ? "◀" : key === "arrowdown" ? "▼" : "▶"}</button>)}
         </div>
-      )}
+        <div className="hidden text-center text-[10px] font-bold leading-5 text-white/45 sm:block">WASD / FRECCE<br/>PER MUOVERTI</div>
+        <button type="button" onClick={interact} className="rounded-xl border border-emerald-200/30 bg-emerald-300 px-5 py-4 text-xs font-black tracking-wide text-[#142116] shadow-lg active:scale-95">E · INTERAGISCI</button>
+      </div>
 
       {/* =====================================
           DIALOGO NPC
           ===================================== */}
 
       {dialogue && (
-        <div className="absolute inset-x-4 bottom-5 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
           <div className="mb-2 text-sm font-black uppercase tracking-widest text-yellow-200">
             {dialogue.name}
           </div>
