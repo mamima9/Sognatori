@@ -219,6 +219,11 @@ const MAPS = {
 
 };
 
+const tileDecorationRandom = (x, y, stage, salt = 0) => {
+  const value = Math.sin((x + 1) * 127.1 + (y + 1) * 311.7 + stage * 74.7 + salt * 19.3) * 43758.5453;
+  return value - Math.floor(value);
+};
+
 const PLAYER_START = {
   x: 2,
   y: 2,
@@ -1143,10 +1148,10 @@ export default function ArcadeWorld({
                   }
                 >
 
-                  {Math.random() > (stage === 11 ? 0.58 : 0.82) && (
+                  {tileDecorationRandom(x, y, stage) > (stage === 11 ? 0.58 : 0.82) && (
                     <div className="w-full h-full flex items-center justify-center text-xs opacity-75 pointer-events-none">
                       {stage === 11
-                        ? cell === "#" ? "🌳" : (Math.random() > 0.5 ? "🌿" : "🍂")
+                        ? cell === "#" ? "🌳" : (tileDecorationRandom(x, y, stage, 1) > 0.5 ? "🌿" : "🍂")
                         : cell !== "#" && cell !== "~"
                         ? stage === 1 ? "🌿" : stage === 2 ? "🪨" : ""
                         : ""}
