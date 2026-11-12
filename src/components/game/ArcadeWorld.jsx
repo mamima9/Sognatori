@@ -967,7 +967,7 @@ export default function ArcadeWorld({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [nearNpc]);
+  }, [nearNpc, nearHiddenNpc]);
 
   const tileWidth = 100 / MAP[0].length;
   const tileHeight = 100 / MAP.length;
