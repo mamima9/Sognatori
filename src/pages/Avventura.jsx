@@ -398,7 +398,6 @@ export default function Avventura() {
 
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
-  const [activeBattle, setActiveBattle] = useState(null);
 
   const [wildSognatori, setWildSognatori] =
     useState(WILD_STARTS);
@@ -1319,7 +1318,7 @@ export default function Avventura() {
   */
 
   const interact = () => {
-    if (dialogue || encounter || challengerEncounter || activeBattle || battleOpenRef.current) return;
+    if (dialogue || encounter || challengerEncounter || battleOpenRef.current) return;
 
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
