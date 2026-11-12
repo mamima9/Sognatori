@@ -198,7 +198,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
           </div>
         )}
-        <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed right-4 top-4 z-[210] rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
+        <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed bottom-3 left-1/2 z-[210] -translate-x-1/2 rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
           {menuOpen ? "CHIUDI MENU" : "☰ MENU"}
         </button>
       </div>
