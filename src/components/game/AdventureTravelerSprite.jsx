@@ -4,7 +4,7 @@ import { createTravelerSpriteSheet } from "@/lib/adventurePixelSprites";
 export default function AdventureTravelerSprite({ traveler, faction, size = 58, direction = "down", walking = true }) {
   const [sheetUrl,setSheetUrl]=useState("");
   useEffect(()=>{
-    const sheet=createTravelerSpriteSheet(faction);
+    const sheet=createTravelerSpriteSheet(faction, traveler);
     setSheetUrl(sheet.toDataURL());
   },[faction]);
   const row=({down:0,left:1,right:2,up:3})[direction] ?? 0;
