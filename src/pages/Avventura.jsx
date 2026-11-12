@@ -354,6 +354,7 @@ export default function Avventura() {
   */
 
   const keysRef = useRef({});
+  const interactRef = useRef(null);
 
   const playerRef = useRef({
     ...PLAYER_START,
@@ -453,6 +454,11 @@ export default function Avventura() {
 
       keysRef.current[key] = true;
       keysRef.current[code] = true;
+
+      if (key === "e" && !e.repeat) {
+        e.preventDefault();
+        interactRef.current?.();
+      }
 
       if (
         [
@@ -823,89 +829,8 @@ export default function Avventura() {
         );
       }
 
-      /*
-        ============================
-        INCONTRI
-        ============================
-      */
-
-      if (
-        !encounterOpenRef.current &&
-        !challengerEncounterOpenRef.current
-      ) {
-        /*
-          SOGNATORE SELVATICO
-        */
-
-        const nearbyWild =
-          wildRef.current.find(
-            (s) => {
-              const cooldownUntil =
-                wildCooldownRef.current[
-                  s.id
-                ] || 0;
-
-              return (
-                Date.now() >=
-                  cooldownUntil &&
-                Math.hypot(
-                  playerRef.current.x -
-                    s.x,
-                  playerRef.current.y -
-                    s.y
-                ) < 48
-              );
-            }
-          );
-
-        if (nearbyWild) {
-          encounterOpenRef.current =
-            true;
-
-          setEncounter(
-            nearbyWild
-          );
-        }
-
-        /*
-          SFIDANTE
-        */
-
-        if (!nearbyWild) {
-          const nearbyChallenger =
-            challengerRef.current.find(
-              (c) => {
-                const cooldownUntil =
-                  challengerCooldownRef
-                    .current[c.id] || 0;
-
-                const d =
-                  Math.hypot(
-                    playerRef.current.x -
-                      c.x,
-                    playerRef.current.y -
-                      c.y
-                  );
-
-                return (
-                  Date.now() >=
-                    cooldownUntil &&
-                  d < c.vision
-                );
-              }
-            );
-
-          if (nearbyChallenger) {
-            challengerEncounterOpenRef.current =
-              true;
-
-            setChallengerEncounter(
-              nearbyChallenger
-            );
-          }
-        }
-      }
-
+      // Gli incontri non partono più automaticamente:
+      // il giocatore sceglie quando interagire premendo E.
       /*
         ============================
         CAMERA
@@ -1392,29 +1317,60 @@ export default function Avventura() {
   */
 
   const interact = () => {
-    const nearest =
-      NPCS.find(
-        (npc) =>
-          distance(
-            playerRef.current,
-            npc
-          ) < 90
-      );
+    if (dialogue || encounter || challengerEncounter) return;
 
-    if (nearest) {
-      setDialogue(nearest);
+    const currentPosition = playerRef.current;
+    const interactionRadius = 105;
+
+    const nearestNpc = NPCS
+      .map((npc) => ({ ...npc, interactionDistance: distance(currentPosition, npc) }))
+      .filter((npc) => npc.interactionDistance < interactionRadius)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestNpc) {
+      setDialogue(nearestNpc);
       return;
     }
 
-    setMessage(
-      "Non c'è nessuno qui con cui interagire."
-    );
+    const nearestChallenger = challengerRef.current
+      .map((challenger) => ({
+        ...challenger,
+        interactionDistance: distance(currentPosition, challenger),
+      }))
+      .filter((challenger) =>
+        challenger.interactionDistance < interactionRadius &&
+        Date.now() >= (challengerCooldownRef.current[challenger.id] || 0)
+      )
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
-    setTimeout(
-      () => setMessage(""),
-      1600
-    );
+    if (nearestChallenger) {
+      challengerEncounterOpenRef.current = true;
+      setChallengerEncounter(nearestChallenger);
+      return;
+    }
+
+    const nearestWild = wildRef.current
+      .map((sognatore) => ({
+        ...sognatore,
+        interactionDistance: distance(currentPosition, sognatore),
+      }))
+      .filter((sognatore) =>
+        sognatore.interactionDistance < interactionRadius &&
+        Date.now() >= (wildCooldownRef.current[sognatore.id] || 0)
+      )
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestWild) {
+      encounterOpenRef.current = true;
+      setEncounter(nearestWild);
+      return;
+    }
+
+    setMessage("Avvicinati a un personaggio o a un Sognatore e premi E.");
+    setTimeout(() => setMessage(""), 1800);
   };
+
+  interactRef.current = interact;
 
   /*
     ============================
