@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
+import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
 
@@ -1224,16 +1225,8 @@ const [message, setMessage] = useState("");
                   </div>
                 )}
 
-                <div
-                  className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/60 shadow-lg"
-                  style={{
-                    background:
-                      c.color,
-                  }}
-                >
-                  <span className="text-lg">
-                    🧍
-                  </span>
+                <div className="mx-auto flex h-[76px] w-[68px] items-end justify-center">
+                  <AdventureTravelerSprite traveler={c.name} faction={c.faction} size={66} />
                 </div>
 
               </div>
