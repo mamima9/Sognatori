@@ -415,9 +415,6 @@ const [message, setMessage] = useState("");
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
 
-  const [wildSognatori, setWildSognatori] =
-    useState(WILD_STARTS);
-
   const [time, setTime] = useState(9);
 
   const zone = useMemo(() => {
@@ -1450,7 +1447,6 @@ const [message, setMessage] = useState("");
             wildCooldownRef.current[encounter.id] = Date.now() + 20000;
             if (recruited) {
               wildRef.current = wildRef.current.filter((s) => s.id !== encounter.id);
-              setWildSognatori(wildRef.current.map((s) => ({ ...s })));
               setMessage("✦ " + encounter.name + " ha scelto di viaggiare con te!");
               setTimeout(() => setMessage(""), 2200);
             }
