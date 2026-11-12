@@ -25,14 +25,14 @@ export function buildCityTeam(faction, cityId) {
 
 export function getCityRewards(city) {
   const pool = ROSTER.filter((s) => (s.tipo || s.fazione) === city.faction);
-  return pool.slice(0, Math.min(2, pool.length));
+  return pool.slice(-Math.min(2, pool.length));
 }
 
 export function getStarterPair(choice) {
   const pairs = {
-    Natura: ["cillymbu", "pequeno"],
-    Dolce: ["cancucc", "dragociocco"],
-    Mago: ["adlimago", "scroccospell"],
+    Natura: ["cillymbu", "cancucc"],
+    Dolce: ["cancucc", "adlimago"],
+    Mago: ["adlimago", "pepe"],
   };
   const ids = pairs[choice] || pairs.Natura;
   return ids.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean);
