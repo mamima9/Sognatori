@@ -338,6 +338,7 @@ export default function Avventura() {
   const playerRef = useRef({
     ...PLAYER_START,
   });
+  const playerFacingRef = useRef({ x: 0, y: -1 });
 
   const cameraRef = useRef({
     ...PLAYER_START,
@@ -540,6 +541,7 @@ export default function Avventura() {
 
         dx /= length;
         dy /= length;
+        playerFacingRef.current = { x: dx, y: dy };
 
         const movement =
           PLAYER.speed * dt;
@@ -1897,6 +1899,7 @@ export default function Avventura() {
       <AdventureCampaign
         userKey={user?.id || user?.email}
         player={player}
+        facing={playerFacingRef.current}
         walking={!!(keysRef.current.w || keysRef.current.a || keysRef.current.s || keysRef.current.d || keysRef.current.arrowup || keysRef.current.arrowdown || keysRef.current.arrowleft || keysRef.current.arrowright)}
         encounter={challengerEncounter}
         wildEncounter={encounter}
