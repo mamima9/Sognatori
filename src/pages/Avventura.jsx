@@ -4,6 +4,9 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureBattle from "@/components/game/AdventureBattle";
+import AdventureCampaign from "@/components/game/AdventureCampaign";
+import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
+import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
 
 /*
   SOGNATORI — AVVENTURA
@@ -113,38 +116,15 @@ const WILD_STARTS = [
   },
 ];
 
-const CHALLENGERS = [
-  {
-    id: "challenger-1",
-    name: "Marta",
-    x: 2040,
-    y: 1040,
-    team: ["Adli", "Nuvobetta"],
-    vision: 190,
-    speed: 58,
-    color: "#e8a34a",
-  },
-  {
-    id: "challenger-2",
-    name: "Rik",
-    x: 920,
-    y: 1740,
-    team: ["Pepe", "Cenere"],
-    vision: 175,
-    speed: 54,
-    color: "#d65a62",
-  },
-  {
-    id: "challenger-3",
-    name: "Luce",
-    x: 3000,
-    y: 920,
-    team: ["Nina", "Riwupido"],
-    vision: 210,
-    speed: 50,
-    color: "#d9c15b",
-  },
-];
+const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
+  ...city,
+  id: city.id,
+  name: city.traveler,
+  team: buildCityTeam(city.faction, city.id),
+  vision: 190,
+  speed: 38,
+  color: city.color,
+}));
 
 const spriteFor = (name) =>
   ROSTER.find(
@@ -1599,11 +1579,7 @@ export default function Avventura() {
                 {s.name}
               </div>
 
-              <img
-                src={spriteFor(s.name)}
-                alt={s.name}
-                className="h-16 w-16 object-contain drop-shadow-[0_5px_8px_rgba(0,0,0,.7)]"
-              />
+              <AdventureSognatoreSprite s={ROSTER.find((entry) => entry.nome?.toLowerCase() === s.name.toLowerCase())} size={64} walking />
 
               <div className="mx-auto mt-[-4px] h-1.5 w-12 rounded-full bg-black/40">
                 <div className="h-full w-full rounded-full bg-emerald-400" />
@@ -1900,180 +1876,21 @@ export default function Avventura() {
         </div>
       )}
 
-      {/* =====================================
-          SFIDANTE
-          ===================================== */}
+      <AdventureCampaign
+        userKey={user?.id || user?.email}
+        player={player}
+        walking={!!(keysRef.current.w || keysRef.current.a || keysRef.current.s || keysRef.current.d || keysRef.current.arrowup || keysRef.current.arrowdown || keysRef.current.arrowleft || keysRef.current.arrowright)}
+        encounter={challengerEncounter}
+        wildEncounter={encounter}
+        onClose={() => setChallengerEncounter(null)}
+        onWildClose={() => {
+          if (encounter?.id) wildCooldownRef.current[encounter.id] = Date.now() + 20000;
+          encounterOpenRef.current = false;
+          setEncounter(null);
+        }}
+      />
 
-      {challengerEncounter && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-[min(460px,92vw)] rounded-3xl border border-red-300/20 bg-zinc-950 p-7 text-center shadow-2xl">
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-red-200/60">
-              Sfidante
-            </div>
-
-            <div className="mt-3 text-4xl font-black">
-              {challengerEncounter.name}
-            </div>
-
-            <div className="mt-2 text-sm text-white/50">
-              Ti ha visto e vuole
-              sfidarti!
-            </div>
-
-            <div className="mt-5 flex justify-center gap-2">
-              {challengerEncounter.team.map(
-                (name) => (
-                  <img
-                    key={name}
-                    src={spriteFor(
-                      name
-                    )}
-                    alt={name}
-                    className="h-20 w-20 object-contain"
-                  />
-                )
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                challengerCooldownRef.current[
-                  challengerEncounter.id
-                ] =
-                  Date.now() +
-                  30000;
-
-                challengerEncounterOpenRef.current = false;
-                const enemyTeam = challengerEncounter.team
-                  .map((name) => ROSTER.find((s) => s.nome?.toLowerCase() === name.toLowerCase()))
-                  .filter(Boolean);
-                if (!enemyTeam.length) {
-                  setMessage("Squadra dello sfidante non disponibile.");
-                  setTimeout(() => setMessage(""), 1800);
-                  return;
-                }
-                battleOpenRef.current = true;
-                setActiveBattle({ opponentName: challengerEncounter.name, enemyTeam, isWild: false, encounterId: challengerEncounter.id });
-                setChallengerEncounter(null);
-              }}
-              className="mt-6 w-full rounded-xl bg-red-400 py-3 font-black text-black"
-            >
-              ACCETTA LA SFIDA
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                challengerCooldownRef.current[
-                  challengerEncounter.id
-                ] =
-                  Date.now() +
-                  30000;
-
-                challengerEncounterOpenRef.current =
-                  false;
-
-                setChallengerEncounter(
-                  null
-                );
-              }}
-              className="mt-2 w-full rounded-xl bg-white/10 py-3 font-bold"
-            >
-              Continua a esplorare
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* =====================================
-          INCONTRO SELVATICO
-          ===================================== */}
-
-      {encounter && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-[min(420px,90vw)] rounded-3xl border border-white/15 bg-zinc-950 p-7 text-center shadow-2xl">
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-white/40">
-              Incontro selvatico
-            </div>
-
-            <div className="mt-4 text-4xl font-black">
-              {encounter.name}
-            </div>
-
-            <div className="mt-3 text-sm text-white/50">
-              Un Sognatore è apparso
-              nell'erba alta.
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                wildCooldownRef.current[
-                  encounter.id
-                ] =
-                  Date.now() +
-                  5000;
-
-                encounterOpenRef.current = false;
-                const wildSognatore = ROSTER.find((s) => s.nome?.toLowerCase() === encounter.name.toLowerCase());
-                if (!wildSognatore) {
-                  setMessage("Sognatore selvatico non disponibile nel roster.");
-                  setTimeout(() => setMessage(""), 1800);
-                  return;
-                }
-                battleOpenRef.current = true;
-                setActiveBattle({ opponentName: encounter.name, enemyTeam: [wildSognatore], isWild: true, encounterId: encounter.id });
-                setEncounter(null);
-              }}
-              className="mt-7 w-full rounded-xl bg-yellow-300 py-3 font-black text-black"
-            >
-              Affronta
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                wildCooldownRef.current[
-                  encounter.id
-                ] =
-                  Date.now() +
-                  5000;
-
-                encounterOpenRef.current =
-                  false;
-
-                setEncounter(null);
-              }}
-              className="mt-2 w-full rounded-xl bg-white/10 py-3 font-bold"
-            >
-              Fuggi
-            </button>
-          </div>
-        </div>
-      )}
-
-      {activeBattle && (
-        <AdventureBattle
-          opponentName={activeBattle.opponentName}
-          enemyTeam={activeBattle.enemyTeam}
-          isWild={activeBattle.isWild}
-          onFinish={(outcome) => {
-            const id = activeBattle.encounterId;
-            if (activeBattle.isWild && id) {
-              wildCooldownRef.current[id] = Date.now() + 20000;
-            }
-            if (!activeBattle.isWild && id) {
-              challengerCooldownRef.current[id] = Date.now() + 60000;
-            }
-            battleOpenRef.current = false;
-            keysRef.current = {};
-            setActiveBattle(null);
-            setMessage(outcome === "win" ? "★ Vittoria! Sei pronto a continuare l'esplorazione." : outcome === "loss" ? "La squadra è stata sconfitta. Riprenditi e riprova." : "");
-            if (outcome) setTimeout(() => setMessage(""), 2400);
-          }}
-        />
-      )}
+}
     </div>
   );
 }
