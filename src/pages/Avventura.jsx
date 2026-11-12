@@ -1771,9 +1771,6 @@ export default function Avventura() {
 
       <div className="absolute right-3 top-24 z-40 h-24 w-32 overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
         <div className="relative h-full w-full">
-          {ADVENTURE_CITIES.map((city) => (
-            <div key={city.id} title={city.city + " · " + city.faction} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/60" style={{ left: (city.x / WORLD.width * 100) + "%", top: (city.y / WORLD.height * 100) + "%", background: city.color }} />
-          ))}
           {ZONES.map((z) => (
             <div
               key={z.name}
@@ -1809,6 +1806,9 @@ export default function Avventura() {
                 opacity: 0.8,
               }}
             />
+          ))}
+          {ADVENTURE_CITIES.map((city) => (
+            <div key={city.id} title={city.city + " · " + city.faction} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/60" style={{ left: (city.x / WORLD.width * 100) + "%", top: (city.y / WORLD.height * 100) + "%", background: city.color }} />
           ))}
 
           <div
