@@ -154,6 +154,12 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     }
   }, [encounter?.id, wildEncounter?.id]);
 
+  useEffect(() => {
+    if (phase === "reward" && currentReward) {
+      setTrialRound(0); setTrialStep(0); setTrialLives(3); setTrialMode("preview"); setTrialError("");
+    }
+  }, [phase, currentReward?.id]);
+
   const owned = useMemo(
     () => save.ownedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean),
     [save.ownedIds]
@@ -238,11 +244,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   };
 
   const convince = (candidate) => {
-    const answer = persuasionChallengeFor(candidate).correct;
-    if (candidate._answer !== answer) {
-      setPersuasionError(true);
-      return;
-    }
     setSave((old) => {
       const ownedIds = old.ownedIds.includes(candidate.id) ? old.ownedIds : [...old.ownedIds, candidate.id];
       const partyIds = old.partyIds.length < 4 && !old.partyIds.includes(candidate.id)
@@ -258,6 +259,62 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     }
   };
+
+  const chooseTrialRune = (runeIndex) => {
+    if (trialMode !== "active") return;
+    if (runeIndex !== activeTrialSequence[trialStep]) {
+      const remaining = trialLives - 1;
+      setTrialLives(remaining);
+      setTrialStep(0);
+      setTrialError("Sequenza interrotta. Memorizza di nuovo il tracciato.");
+      setTrialMode(remaining > 0 ? "preview" : "failed");
+      return;
+    }
+    setTrialError("");
+    if (trialStep + 1 < activeTrialSequence.length) {
+      setTrialStep((step) => step + 1);
+      return;
+    }
+    if (trialRound < 2) {
+      setTrialRound((round) => round + 1);
+      setTrialStep(0);
+      setTrialMode("preview");
+      return;
+    }
+    if (phase === "wildTalk" && wildSognatore && !wildAlreadyOwned) {
+      setSave((old) => {
+        if (old.ownedIds.includes(wildSognatore.id)) return old;
+        const ownedIds = [...old.ownedIds, wildSognatore.id];
+        const partyIds = old.partyIds.length < 4 ? [...old.partyIds, wildSognatore.id] : old.partyIds;
+        return { ...old, ownedIds, partyIds };
+      });
+      setPhase("idle");
+      onWildClose?.(true);
+    } else if (phase === "reward" && currentReward) {
+      convince(currentReward);
+    }
+  };
+
+  const renderResonanceTrial = (accent = "cyan") => (
+    <div className={"mt-4 rounded-2xl border p-4 text-left " + (accent === "emerald" ? "border-emerald-200/20 bg-emerald-950/30" : "border-cyan-200/20 bg-cyan-950/30")}>
+      <div className="flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-[.18em] text-white/60">
+        <span>Prova di sintonia · Fase {trialRound + 1}/3</span>
+        <span className="text-amber-200">Errori rimasti: {trialLives}</span>
+      </div>
+      <div className="mt-3 flex gap-1.5">{[0,1,2].map((n) => <div key={n} className={"h-1.5 flex-1 rounded-full " + (n <= trialRound ? "bg-emerald-300" : "bg-white/10")}/>)}</div>
+      <p className="mt-3 text-xs leading-5 text-white/70">{trialMode === "preview" ? "Memorizza la sequenza di rune. Quando sei pronto, nascondila e riproducila nell'ordine esatto." : trialMode === "active" ? "Ripeti la sequenza selezionando le rune nell'ordine corretto." : "La risonanza si è spezzata. Puoi riprovare la prova dall'inizio."}</p>
+      {trialMode === "preview" && <>
+        <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-xl bg-black/25 p-3">{activeTrialSequence.map((rune, i) => <span key={i} className="grid h-10 w-10 place-items-center rounded-lg border border-white/15 bg-white/10 text-xl">{TRIAL_RUNES[rune]}</span>)}</div>
+        <button onClick={() => { setTrialMode("active"); setTrialStep(0); setTrialError(""); }} className="mt-3 w-full rounded-xl bg-cyan-200 py-3 text-xs font-black text-slate-950">NASCONDI E INIZIA</button>
+      </>}
+      {trialMode === "active" && <>
+        <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-white/60"><span>Sequenza: {trialStep}/{activeTrialSequence.length}</span><span>{activeTrialSequence.length - trialStep} rune da ricordare</span></div>
+        <div className="mt-3 grid grid-cols-3 gap-2">{TRIAL_RUNES.map((rune, i) => <button key={rune} onClick={() => chooseTrialRune(i)} className="rounded-xl border border-white/15 bg-white/5 py-4 text-2xl transition active:scale-95 hover:bg-white/15">{rune}</button>)}</div>
+      </>}
+      {trialMode === "failed" && <button onClick={() => { setTrialRound(0); setTrialStep(0); setTrialLives(3); setTrialMode("preview"); setTrialError(""); }} className="mt-3 w-full rounded-xl bg-amber-200 py-3 text-xs font-black text-slate-950">RIPROVA LA PROVA</button>}
+      {trialError && <p className="mt-3 text-xs font-bold text-amber-300">{trialError}</p>}
+    </div>
+  );
 
   return (
     <>
@@ -370,30 +427,21 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       )}
 
       {wildEncounter && phase === "wildTalk" && (
-        <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="w-full max-w-lg rounded-3xl border border-cyan-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
-            <div className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-200">Incontro nel mondo</div>
+        <div className="absolute inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-md">
+          <div className="my-auto w-full max-w-lg rounded-3xl border border-cyan-200/20 bg-slate-950 p-5 text-center text-white shadow-2xl">
+            <div className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-200">Incontro selvatico · Legame unico</div>
             {wildSognatore ? <>
-              <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={wildSognatore} size={92} walking /></div>
+              <div className="my-3 flex justify-center"><AdventureSognatoreSprite s={wildSognatore} size={88} walking /></div>
               <h2 className="text-3xl font-black">{wildSognatore.nome}</h2>
-              <p className="mt-2 text-sm text-white/60">Per conquistare la sua fiducia devi superare una prova di logica. Ogni Sognatore custodisce un enigma diverso.</p>
-              <div className="mt-4 rounded-xl border border-cyan-200/20 bg-cyan-950/30 p-4 text-left text-sm font-semibold leading-6">{persuasionChallengeFor(wildSognatore).question}</div>
-              <div className="mt-4 grid gap-2">
-                {persuasionChallengeFor(wildSognatore).options.map((answer) => <button key={answer} onClick={() => {
-                  if (answer !== persuasionChallengeFor(wildSognatore).correct) { setWildError(true); return; }
-                  setSave((old) => {
-                    const ownedIds = old.ownedIds.includes(wildSognatore.id) ? old.ownedIds : [...old.ownedIds, wildSognatore.id];
-                    const partyIds = old.partyIds.length < 4 && !old.partyIds.includes(wildSognatore.id) ? [...old.partyIds, wildSognatore.id] : old.partyIds;
-                    return { ...old, ownedIds, partyIds };
-                  });
-                  setWildError(false);
-                  setPhase("idle");
-                  onWildClose?.(true);
-                }} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
-              </div>
-              {wildError && <p className="mt-3 text-sm font-bold text-amber-300">Risposta errata. Ragiona con attenzione: il legame non si conquista a caso.</p>}
+              <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-cyan-100/60">{wildSognatore.tipo || wildSognatore.fazione}</div>
+              {wildAlreadyOwned ? (
+                <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">Hai già stretto un legame con {wildSognatore.nome}. Gli altri esemplari della stessa specie restano liberi nel loro habitat, ma non possono essere arruolati una seconda volta.</div>
+              ) : <>
+                <p className="mt-2 text-sm text-white/60">Completa tre fasi di memoria: 4, 6 e 8 rune. Hai soltanto tre errori per l'intera prova.</p>
+                {renderResonanceTrial("cyan")}
+              </>}
             </> : <p className="mt-4">Questo Sognatore non è presente nel roster attuale.</p>}
-            <button onClick={() => { setPhase("idle"); onWildClose?.(false); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">Lascialo andare</button>
+            <button onClick={() => { setPhase("idle"); onWildClose?.(false); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">LASCIALO LIBERO</button>
           </div>
         </div>
       )}
@@ -479,12 +527,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <h2 className="mt-2 text-3xl font-black">Un nuovo legame</h2>
             <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={currentReward} size={90}/></div>
             <div className="text-xl font-black">{currentReward.nome}</div>
-            <p className="mt-2 text-sm text-white/65">Non vuole essere catturato: prima devi dimostrare lucidità e ingegno superando il suo enigma.</p>
-            <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-950/30 p-4 text-left text-sm font-semibold leading-6">{persuasionChallengeFor(currentReward).question}</div>
-            <div className="mt-4 grid gap-2">
-              {persuasionChallengeFor(currentReward).options.map((answer) => <button key={answer} onClick={() => convince({ ...currentReward, _answer: answer })} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm hover:bg-white/10">{answer}</button>)}
-            </div>
-            {persuasionError && <p className="mt-3 text-sm font-bold text-amber-300">Risposta errata. Il Sognatore aspetta una soluzione ragionata.</p>}
+            <p className="mt-2 text-sm text-white/65">Per unirsi a te deve superare una prova di risonanza in tre fasi: 4, 6 e 8 rune, con tre errori disponibili.</p>
+            {renderResonanceTrial("emerald")}}
           </div>
         </div>
       )}
