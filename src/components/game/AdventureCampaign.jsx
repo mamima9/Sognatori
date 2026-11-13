@@ -86,7 +86,12 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const wildCanRecruit = wildEncounter?.recruitable !== false && !wildAlreadyOwned;
   const activeTrialKey = phase === "wildTalk" ? (wildEncounter?.rosterId || wildEncounter?.id) : phase === "reward" ? currentReward?.id : "idle";
   const trialSequences = useMemo(() => buildResonanceTrial(activeTrialKey), [activeTrialKey]);
-  const activeTrialSequence = trialSequences[trialRound] || [];
+  const baseTrialSequence = trialSequences[trialRound] || [];
+  const activeTrialSequence = trialRound === 1
+    ? [...baseTrialSequence].reverse()
+    : trialRound === 2
+      ? baseTrialSequence.flatMap((_, index) => index < Math.ceil(baseTrialSequence.length / 2) ? [baseTrialSequence[index], baseTrialSequence[baseTrialSequence.length - 1 - index]] : [])
+      : baseTrialSequence;
 
   useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(save)); } catch {}
@@ -264,9 +269,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <span className="text-amber-200">Errori rimasti: {trialLives}</span>
       </div>
       <div className="mt-3 flex gap-1.5">{[0,1,2].map((n) => <div key={n} className={"h-1.5 flex-1 rounded-full " + (n <= trialRound ? "bg-emerald-300" : "bg-white/10")}/>)}</div>
-      <p className="mt-3 text-xs leading-5 text-white/70">{trialMode === "preview" ? "Memorizza la sequenza di rune. Quando sei pronto, nascondila e riproducila nell'ordine esatto." : trialMode === "active" ? "Ripeti la sequenza selezionando le rune nell'ordine corretto." : "La risonanza si è spezzata. Puoi riprovare la prova dall'inizio."}</p>
+      <p className="mt-3 text-xs leading-5 text-white/70">{trialMode === "preview" ? (trialRound === 0 ? "Fase 1: memorizza e ripeti la sequenza nello stesso ordine." : trialRound === 1 ? "Fase 2: memorizza il segnale, ma ripetilo al contrario." : "Fase 3: ripeti alternando prima e ultima runa, poi seconda e penultima.") : trialMode === "active" ? "Riproduci la sequenza applicando la regola di questa fase." : "La risonanza si è spezzata. Puoi riprovare la prova dall'inizio."}</p>
       {trialMode === "preview" && <>
-        <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-xl bg-black/25 p-3">{activeTrialSequence.map((rune, i) => <span key={i} className="grid h-10 w-10 place-items-center rounded-lg border border-white/15 bg-white/10 text-xl">{TRIAL_RUNES[rune]}</span>)}</div>
+        <div className="mt-3 flex flex-wrap justify-center gap-2 rounded-xl bg-black/25 p-3">{baseTrialSequence.map((rune, i) => <span key={i} className="grid h-10 w-10 place-items-center rounded-lg border border-white/15 bg-white/10 text-xl">{TRIAL_RUNES[rune]}</span>)}</div>
         <button onClick={() => { setTrialMode("active"); setTrialStep(0); setTrialError(""); }} className="mt-3 w-full rounded-xl bg-cyan-200 py-3 text-xs font-black text-slate-950">NASCONDI E INIZIA</button>
       </>}
       {trialMode === "active" && <>
