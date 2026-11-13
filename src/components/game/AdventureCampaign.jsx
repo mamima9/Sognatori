@@ -72,7 +72,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [confirmRestart, setConfirmRestart] = useState(false);
   const currentReward = rewardQueue[rewardIndex];
   const wildSognatore = wildEncounter ? ROSTER.find((s) => s.id === wildEncounter.rosterId) || ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
-  const wildAlreadyOwned = !!wildSognatore && save.ownedIds.includes(wildSognatore.id);
+  const wildAlreadyOwned = !!wildSognatore && save.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome);
+  const wildCanRecruit = wildEncounter?.recruitable !== false && !wildAlreadyOwned;
   const activeTrialKey = phase === "wildTalk" ? (wildEncounter?.rosterId || wildEncounter?.id) : phase === "reward" ? currentReward?.id : "idle";
   const trialSequences = useMemo(() => buildResonanceTrial(activeTrialKey), [activeTrialKey]);
   const activeTrialSequence = trialSequences[trialRound] || [];
@@ -233,9 +234,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setTrialMode("preview");
       return;
     }
-    if (phase === "wildTalk" && wildSognatore && !wildAlreadyOwned) {
+    if (phase === "wildTalk" && wildSognatore && wildCanRecruit) {
       setSave((old) => {
-        if (old.ownedIds.includes(wildSognatore.id)) return old;
+        if (old.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome)) return old;
         const ownedIds = [...old.ownedIds, wildSognatore.id];
         const partyIds = old.partyIds.length < 4 ? [...old.partyIds, wildSognatore.id] : old.partyIds;
         return { ...old, ownedIds, partyIds };
@@ -388,6 +389,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-cyan-100/60">{wildSognatore.tipo || wildSognatore.fazione}</div>
               {wildAlreadyOwned ? (
                 <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">Hai già stretto un legame con {wildSognatore.nome}. Gli altri esemplari della stessa specie restano liberi nel loro habitat, ma non possono essere arruolati una seconda volta.</div>
+              ) : !wildCanRecruit ? (
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">Questo esemplare vive in branco e non è arruolabile. Cerca il suo simile contrassegnato dalla stella dorata ✦: uno solo per specie può stringere il legame con te.</div>
               ) : <>
                 <p className="mt-2 text-sm text-white/60">Completa tre fasi di memoria: 4, 6 e 8 rune. Hai soltanto tre errori per l'intera prova.</p>
                 {renderResonanceTrial("cyan")}
