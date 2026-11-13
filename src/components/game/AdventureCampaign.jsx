@@ -3,7 +3,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 import AdventureBattleArena from "@/components/game/AdventureBattleArena";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
-import { getStarterPair, getCityRewards, buildCityTeam } from "@/lib/adventureCampaignData";
+import { getCityRewards, buildCityTeam } from "@/lib/adventureCampaignData";
 
 const ANSWERS = {
   Demone: "Non temo il tuo fuoco: voglio capire cosa protegge.",
@@ -18,6 +18,18 @@ const ANSWERS = {
   Mago: "La conoscenza ha valore solo quando viene condivisa.",
   Salato: "Gli opposti possono completarsi senza annullarsi.",
 };
+const FIRST_BOND_QUESTIONS = [
+  { q: "Quando incontri una difficoltà, cosa fai per prima cosa?", a: [["Analizzo il problema con calma","Robot"],["Mi butto e affronto la sfida","Demone"],["Cerco una soluzione che non ferisca nessuno","Natura"],["Osservo tutte le possibilità","Mago"]] },
+  { q: "Quale luogo ti fa sentire davvero a casa?", a: [["Una foresta tranquilla","Natura"],["Una città piena di tecnologia","Robot"],["Una spiaggia sul mare","Marino"],["Una montagna sopra le nuvole","Nuvola"]] },
+  { q: "Quale qualità apprezzi di più?", a: [["Il coraggio","Demone"],["La lealtà","Orso"],["La curiosità","Mago"],["La gentilezza","Dolce"]] },
+  { q: "Quale dono sceglieresti?", a: [["Illuminare la strada agli altri","Luce"],["Adattarmi a ogni cambiamento","Marino"],["Costruire qualsiasi cosa","Robot"],["Comprendere la natura","Natura"]] },
+  { q: "Davanti a un'ingiustizia, come reagisci?", a: [["Mi oppongo senza tirarmi indietro","Demone"],["Cerco di unire le persone","Umano"],["Proteggo chi è in difficoltà","Orso"],["Cerco di capire ogni dettaglio","Mago"]] },
+  { q: "Quale avventura ti attirerebbe di più?", a: [["Esplorare un mondo sconosciuto","Nuvola"],["Scoprire antiche magie","Mago"],["Attraversare oceani misteriosi","Marino"],["Visitare una città futuristica","Robot"]] },
+  { q: "Cosa ti dà più energia?", a: [["Creare qualcosa insieme","Umano"],["Seguire il mio istinto","Demone"],["Prendermi cura di ciò che amo","Natura"],["Portare buonumore","Dolce"]] },
+  { q: "Quale frase senti più vicina?", a: [["La conoscenza apre ogni porta","Mago"],["La forza serve a difendere","Orso"],["Cambiare è un'occasione","Marino"],["Anche una piccola luce conta","Luce"]] },
+  { q: "In un gruppo, quale ruolo assumi?", a: [["Organizzo e pianifico","Robot"],["Incoraggio tutti","Umano"],["Trovo idee insolite","Nuvola"],["Tengo unito il gruppo","Dolce"]] },
+  { q: "Quale valore non vorresti mai perdere?", a: [["La libertà","Nuvola"],["La sincerità","Salato"],["La speranza","Luce"],["La determinazione","Demone"]] },
+];
 const WRONG = [
   "Voglio solo diventare il più forte.",
   "Non mi interessa ascoltare, seguimi e basta.",
@@ -52,7 +64,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [panel, setPanel] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [phase, setPhase] = useState("idle");
-  const [starterChoice, setStarterChoice] = useState("Natura");
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [starterSognatore, setStarterSognatore] = useState(null);
   const [rewardIndex, setRewardIndex] = useState(0);
   const [rewardQueue, setRewardQueue] = useState([]);
   const [persuasionError, setPersuasionError] = useState(false);
@@ -110,14 +124,32 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     [encounter?.id, save.ownedIds]
   );
 
+  const answerStarterQuestion = (faction) => {
+    const nextAnswers = [...quizAnswers, faction];
+    setQuizAnswers(nextAnswers);
+    if (quizIndex < FIRST_BOND_QUESTIONS.length - 1) {
+      setQuizIndex((n) => n + 1);
+      return;
+    }
+    const scores = nextAnswers.reduce((acc, value) => {
+      acc[value] = (acc[value] || 0) + 1;
+      return acc;
+    }, {});
+    const rankedFactions = Object.entries(scores).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+    const candidate = rankedFactions.flatMap((factionName) =>
+      ROSTER.filter((s) => (s.tipo || s.fazione) === factionName)
+    )[0] || ROSTER[0];
+    setStarterSognatore(candidate || null);
+    setPhase("starterResult");
+  };
+
   const recruitStarter = () => {
-    const pair = getStarterPair(starterChoice);
-    const ids = pair.map((s) => s.id);
+    if (!starterSognatore) return;
     setSave((old) => ({
       ...old,
       introDone: true,
-      ownedIds: Array.from(new Set([...old.ownedIds, ...ids])),
-      partyIds: [...old.partyIds, ...ids].slice(0, 4),
+      ownedIds: old.ownedIds.includes(starterSognatore.id) ? old.ownedIds : [...old.ownedIds, starterSognatore.id],
+      partyIds: old.partyIds.includes(starterSognatore.id) ? old.partyIds : [...old.partyIds, starterSognatore.id].slice(0, 4),
     }));
     setPhase("idle");
   };
@@ -220,7 +252,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 setConfirmRestart(false);
                 setMenuOpen(false);
                 setPanel("");
-                setStarterChoice("Natura");
+                setQuizIndex(0); setQuizAnswers([]); setStarterSognatore(null);
                 setPhase("intro");
                 onRestart?.();
               }} className="rounded-xl bg-red-400 py-3 text-sm font-black text-black">SÌ, RICOMINCIA</button>
@@ -260,23 +292,34 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       )}
 
       {phase === "intro" && (
-        <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="w-full max-w-xl rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-white shadow-2xl">
-            <div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">Il primo legame</div>
-            <h2 className="mt-2 text-3xl font-black">Il Sentiero dei Sognatori</h2>
-            <p className="mt-3 leading-7 text-white/70">Non possiedi ancora nessun Sognatore. Nel mondo dei sogni non si cattura nessuno: si costruisce un legame. Una guida ti offre la possibilità di conoscere due compagni disposti a viaggiare con te.</p>
-            <p className="mt-4 text-sm font-bold">Quale sentiero vuoi ascoltare?</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {["Natura","Dolce","Mago"].map((f) => <button key={f} onClick={() => setStarterChoice(f)} className={"rounded-xl border p-3 text-xs font-black " + (starterChoice === f ? "border-emerald-300 bg-emerald-300/15 text-emerald-100" : "border-white/10 bg-white/5")}>{f}</button>)}
+        <div className="absolute inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/85 p-4 backdrop-blur-md">
+          <div className="my-auto w-full max-w-xl rounded-3xl border border-emerald-200/20 bg-slate-950 p-5 text-white shadow-2xl sm:p-6">
+            <div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">Il primo legame · {quizIndex + 1}/10</div>
+            <h2 className="mt-2 text-2xl font-black sm:text-3xl">Conosciamoci</h2>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-emerald-300 transition-all" style={{ width: ((quizIndex + 1) / 10 * 100) + "%" }} /></div>
+            <p className="mt-6 text-lg font-bold leading-7">{FIRST_BOND_QUESTIONS[quizIndex].q}</p>
+            <div className="mt-4 grid gap-2">
+              {FIRST_BOND_QUESTIONS[quizIndex].a.map(([label, faction]) => (
+                <button key={faction} onClick={() => answerStarterQuestion(faction)} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm font-semibold transition hover:border-emerald-200/50 hover:bg-emerald-300/10">{label}</button>
+              ))}
             </div>
-            <div className="mt-4 flex items-center gap-3 rounded-xl bg-white/5 p-3">
-              {getStarterPair(starterChoice).map((s) => <div key={s.id} className="flex flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={58}/><span className="mt-1 text-xs font-bold">{s.nome}</span></div>)}
-            </div>
-            <button onClick={recruitStarter} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">STRINGI IL PRIMO LEGAME</button>
+            <p className="mt-4 text-center text-[11px] text-white/40">Le tue risposte determineranno quale Sognatore ti verrà affidato.</p>
           </div>
         </div>
       )}
 
+      {phase === "starterResult" && starterSognatore && (
+        <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
+            <div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">Il vostro primo legame</div>
+            <h2 className="mt-2 text-3xl font-black">Ti affidiamo {starterSognatore.nome}</h2>
+            <div className="my-5 flex justify-center"><AdventureSognatoreSprite s={starterSognatore} size={128}/></div>
+            <div className="text-sm font-bold text-emerald-200">{starterSognatore.tipo || starterSognatore.fazione}</div>
+            <p className="mt-3 text-sm leading-6 text-white/65">Le tue risposte hanno rivelato un'affinità speciale. Non è una cattura: da oggi questo Sognatore sceglie di iniziare il viaggio insieme a te.</p>
+            <button onClick={recruitStarter} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">ACCETTA IL PRIMO LEGAME</button>
+          </div>
+        </div>
+      )}
 
       {wildEncounter && phase === "wildTalk" && (
         <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
