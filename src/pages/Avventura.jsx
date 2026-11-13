@@ -267,6 +267,28 @@ function circleRectCollision(
   );
 }
 
+function collidesWithCityBuildings(x, y, radius) {
+  const offsets = [
+    [-132, -88], [0, -158], [132, -88],
+    [-132, 88], [132, 88], [0, 158],
+  ];
+  return ADVENTURE_CITIES.some((city) =>
+    offsets.some(([bx, by], index) => {
+      const w = index % 3 === 0 ? 62 : 54;
+      const h = index % 2 === 0 ? 48 : 56;
+      return circleRectCollision(
+        x,
+        y,
+        radius,
+        city.x + bx - w / 2 - 5,
+        city.y + by - h / 2 - 12,
+        w + 10,
+        h + 31
+      );
+    })
+  );
+}
+
 export default function Avventura() {
   const canvasRef = useRef(null);
   const worldFrameRef = useRef(null);
@@ -557,6 +579,14 @@ const [message, setMessage] = useState("");
               break;
             }
           }
+        }
+
+        /*
+          EDIFICI DELLE UNDICI CITTÀ
+        */
+
+        if (!blocked && collidesWithCityBuildings(next.x, next.y, PLAYER.size * 0.45)) {
+          blocked = true;
         }
 
         /*
@@ -1868,6 +1898,19 @@ function drawCityLandmark(ctx, city) {
   ctx.fillStyle = "rgba(255,255,255,.48)";
   ctx.fillRect(-30, 20, 12, 2);
   ctx.fillRect(18, 20, 12, 2);
+
+  // Insegna della città: nome e fazione sono visibili anche senza aprire il menu.
+  ctx.fillStyle = "rgba(7,13,18,.9)";
+  ctx.fillRect(-58, 43, 116, 25);
+  ctx.fillStyle = accent;
+  ctx.fillRect(-58, 43, 4, 25);
+  ctx.fillStyle = "#fff4df";
+  ctx.font = "bold 11px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(city.city, 2, 54, 106);
+  ctx.fillStyle = accent;
+  ctx.font = "bold 8px monospace";
+  ctx.fillText(city.faction.toUpperCase(), 2, 64, 106);
   ctx.restore();
 }
 
