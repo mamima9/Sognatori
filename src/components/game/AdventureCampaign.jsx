@@ -30,11 +30,6 @@ const FIRST_BOND_QUESTIONS = [
   { q: "In un gruppo, quale ruolo assumi?", a: [["Organizzo e pianifico","Robot"],["Incoraggio tutti","Umano"],["Trovo idee insolite","Nuvola"],["Tengo unito il gruppo","Dolce"]] },
   { q: "Quale valore non vorresti mai perdere?", a: [["La libertà","Nuvola"],["La sincerità","Salato"],["La speranza","Luce"],["La determinazione","Demone"]] },
 ];
-const WRONG = [
-  "Voglio solo diventare il più forte.",
-  "Non mi interessa ascoltare, seguimi e basta.",
-];
-
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
