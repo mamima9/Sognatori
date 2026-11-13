@@ -48,25 +48,144 @@ const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
 
-// Quattro esemplari visibili per ogni specie della fazione.
- // Ogni esemplare ha un ID di incontro distinto, ma condivide il rosterId:
- // il salvataggio consente quindi di arruolare quella specie una sola volta.
+// Ogni specie occupa un habitat distinto in uno dei quattro angoli della mappa.
+// I quattro esemplari restano vicini al proprio elemento di lore; solo il primo è arruolabile.
+const WILD_CORNER_ANCHORS = [
+  { x: 430, y: 390, corner: "NO" },
+  { x: 3170, y: 390, corner: "NE" },
+  { x: 430, y: 2010, corner: "SO" },
+  { x: 3170, y: 2010, corner: "SE" },
+];
+
+const FACTION_LORE_SITES = {
+  Demone: ["PRIMA SCINTILLA", "FORGIA DEI NOMI", "CENERE FERTILE", "CAMPANE DI FERRO"],
+  Robot: ["NUCLEO PRIMO", "MUSEO DEGLI ERRORI", "BINARI SOSPESI", "ARCHIVIO DEI RICORDI"],
+  Natura: ["GRANDE SEME", "RADICI ANTICHE", "LINFA CHIARA", "CASE-ALBERO"],
+  Nuvola: ["GRANDE CORRENTE", "CAMPANA DEL VENTO", "VELE CELESTI", "ATLANTE VUOTO"],
+  Umano: ["PIAZZA DEGLI UNDICI", "MERCATO DEI FAVORI", "TEATRO DELLE POSSIBILITÀ", "BACHECA DEI VIANDANTI"],
+  Luce: ["SPECCHIO DELL'ALBA", "LANTERNE SOLARI", "OBELISCO DELLE SCELTE", "GIARDINO D'OMBRA"],
+  Dolce: ["PATTO DELLE MILLE MANI", "GIARDINO SOSPESO", "FONTANA DI NETTARE", "FIORI CANDITI"],
+  Marino: ["MAREE PROFONDE", "CORALLI LUMINOSI", "CONCHIGLIA ANTICA", "VASCA DELLE CORRENTI"],
+  Orso: ["SETTE TANE", "PIETRA DEL BRANCO", "PINI ANTICHI", "FALÒ DELLA VIGILIA"],
+  Mago: ["ARCHIVIO IMPOSSIBILE", "ARCHI RUNICI", "SPECCHIO D'ETERE", "TOMO VIVENTE"],
+  Salato: ["SALE BIANCO", "VASCA DI CRISTALLO", "GEYSER MINERALE", "CANYON SALINO"],
+};
+
 function buildMapWildStarts(city) {
   const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
-  const copies = 4;
+  const offsets = [[-38, -26], [38, -26], [-38, 26], [38, 26]];
   return residents.flatMap((sognatore, index) => {
-    const centerX = 1580 + (index % 3) * 110;
-    const centerY = 680 + Math.floor(index / 3) * 115;
-    const offsets = [[-34, -28], [34, -28], [-34, 28], [34, 28]];
-    return offsets.slice(0, copies).map(([ox, oy], copy) => ({
+    const anchor = WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
+    const layer = Math.floor(index / WILD_CORNER_ANCHORS.length);
+    const directionX = anchor.x < WORLD.width / 2 ? 1 : -1;
+    const directionY = anchor.y < WORLD.height / 2 ? 1 : -1;
+    const centerX = anchor.x + directionX * layer * 190;
+    const centerY = anchor.y + directionY * layer * 140;
+    const loreSites = FACTION_LORE_SITES[city.faction] || [];
+    const loreSite = loreSites[index % loreSites.length] || city.faction;
+    return offsets.map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
       x: centerX + ox,
       y: centerY + oy,
       name: sognatore.nome,
       recruitable: copy === 0,
+      speciesIndex: index,
+      cornerIndex: index % WILD_CORNER_ANCHORS.length,
+      siteX: centerX,
+      siteY: centerY,
+      loreSite,
     }));
   });
+}
+
+function drawFactionLoreSite(ctx, faction, x, y, label, cornerIndex = 0) {
+  const palettes = {
+    Demone: ["#512d35", "#e86b4e", "#ffc06c"],
+    Robot: ["#254957", "#69d8cf", "#d2fff0"],
+    Natura: ["#4b392b", "#579b59", "#c4e78d"],
+    Nuvola: ["#829fc2", "#d9edff", "#fff5c8"],
+    Umano: ["#745139", "#c9955e", "#f1d6a3"],
+    Luce: ["#8b6c32", "#f0d36d", "#fff5bd"],
+    Dolce: ["#8d527f", "#eaa6cb", "#fff0dc"],
+    Marino: ["#20566c", "#57c1c8", "#c4f4e9"],
+    Orso: ["#57412f", "#a9804e", "#e8c990"],
+    Mago: ["#463b68", "#9e87d7", "#f2d68a"],
+    Salato: ["#646d69", "#bfc6b9", "#fff7e4"],
+  };
+  const [dark, main, light] = palettes[faction] || palettes.Natura;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "rgba(5,12,15,.24)";
+  ctx.beginPath(); ctx.ellipse(0, 16, 76, 27, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = dark; ctx.fillRect(-62, 5, 124, 13);
+  ctx.fillStyle = main; ctx.fillRect(-55, 0, 110, 8);
+  ctx.fillStyle = light; ctx.fillRect(-43, 1, 86, 3);
+
+  switch (faction) {
+    case "Demone":
+      ctx.fillStyle = dark; ctx.fillRect(-22, -40, 44, 42);
+      ctx.fillStyle = main; ctx.beginPath(); ctx.moveTo(-20, -22); ctx.lineTo(-9, -56); ctx.lineTo(0, -25); ctx.lineTo(12, -62); ctx.lineTo(22, -22); ctx.fill();
+      ctx.fillStyle = light; ctx.fillRect(-4, -22, 8, 23); break;
+    case "Robot":
+      ctx.fillStyle = dark; ctx.fillRect(-28, -42, 56, 43);
+      ctx.strokeStyle = main; ctx.lineWidth = 5; ctx.strokeRect(-20, -34, 40, 28);
+      ctx.fillStyle = light; ctx.fillRect(-6, -25, 12, 12);
+      ctx.strokeStyle = main; ctx.lineWidth = 3;
+      for (const [sx, sy] of [[-38,-30],[38,-30],[-38,0],[38,0]]) { ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx/2,sy/2); ctx.stroke(); } break;
+    case "Natura":
+      ctx.fillStyle = dark; ctx.fillRect(-5, -30, 10, 33);
+      ctx.fillStyle = main;
+      for (const [sx, sy, radius] of [[0,-42,20],[-17,-27,14],[17,-27,14]]) { ctx.beginPath(); ctx.arc(sx,sy,radius,0,Math.PI*2); ctx.fill(); }
+      ctx.fillStyle = light; ctx.fillRect(-5, -49, 10, 9); break;
+    case "Nuvola":
+      ctx.fillStyle = main;
+      for (const [sx, sy, radius] of [[-16,-25,15],[0,-38,21],[18,-25,14]]) { ctx.beginPath(); ctx.arc(sx,sy,radius,0,Math.PI*2); ctx.fill(); }
+      ctx.strokeStyle = light; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(0,3); ctx.stroke();
+      ctx.fillStyle = light; ctx.beginPath(); ctx.arc(0,-43,5,0,Math.PI*2); ctx.fill(); break;
+    case "Umano":
+      ctx.fillStyle = dark; ctx.fillRect(-24,-45,48,48);
+      ctx.fillStyle = main; ctx.fillRect(-19,-39,38,35);
+      ctx.fillStyle = light; ctx.fillRect(-4,-33,8,26);
+      ctx.fillStyle = light; ctx.fillRect(-30,-51,60,5); break;
+    case "Luce":
+      ctx.fillStyle = main; ctx.beginPath(); ctx.moveTo(0,-58); ctx.lineTo(27,-27); ctx.lineTo(0,0); ctx.lineTo(-27,-27); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = light; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = light; ctx.fillRect(-3,-34,6,15); break;
+    case "Dolce":
+      ctx.fillStyle = main;
+      for (let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.arc(Math.cos(a)*18,-29+Math.sin(a)*18,11,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle = light; ctx.beginPath(); ctx.arc(0,-29,8,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = dark; ctx.fillRect(-4,-10,8,11); break;
+    case "Marino":
+      ctx.fillStyle = main; ctx.beginPath(); ctx.moveTo(-30,-12); ctx.quadraticCurveTo(-42,-54,0,-48); ctx.quadraticCurveTo(42,-54,30,-12); ctx.quadraticCurveTo(0,2,-30,-12); ctx.fill();
+      ctx.strokeStyle = light; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0,-43); ctx.lineTo(0,-10); ctx.stroke();
+      ctx.fillStyle = light; ctx.beginPath(); ctx.arc(0,-30,5,0,Math.PI*2); ctx.fill(); break;
+    case "Orso":
+      ctx.fillStyle = main; ctx.fillRect(-25,-36,50,36);
+      ctx.beginPath(); ctx.arc(-17,-38,10,0,Math.PI*2); ctx.arc(17,-38,10,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = light; ctx.fillRect(-13,-24,26,12);
+      ctx.fillStyle = dark; ctx.fillRect(-4,-21,8,7); break;
+    case "Mago":
+      ctx.strokeStyle = main; ctx.lineWidth = 6; ctx.strokeRect(-28,-48,56,50);
+      ctx.strokeStyle = light; ctx.lineWidth = 3; ctx.strokeRect(-17,-36,34,28);
+      ctx.fillStyle = light; ctx.beginPath(); ctx.arc(0,-22,7,0,Math.PI*2); ctx.fill(); break;
+    case "Salato":
+      ctx.fillStyle = main; ctx.beginPath(); ctx.moveTo(0,-62); ctx.lineTo(24,-18); ctx.lineTo(12,-5); ctx.lineTo(-12,-5); ctx.lineTo(-24,-18); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = light; ctx.fillRect(-3,-48,6,32);
+      ctx.fillStyle = dark; ctx.fillRect(-32,-4,64,5); break;
+  }
+
+  ctx.fillStyle = "rgba(7,13,18,.88)";
+  ctx.fillRect(-86, 28, 172, 20);
+  ctx.fillStyle = light;
+  ctx.fillRect(-86, 28, 4, 20);
+  ctx.fillStyle = "#fff6e7";
+  ctx.font = "bold 8px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(label, 0, 41, 164);
+  ctx.restore();
 }
 
 const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
@@ -142,7 +261,8 @@ function buildWorld() {
     if (
       Math.hypot(x - 1800, y - 1200) < 390 ||
       Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
-      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165
+      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
+      WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 330)
     ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 250)) continue;
 
@@ -167,7 +287,8 @@ function buildWorld() {
     if (
       Math.hypot(x - 1800, y - 1200) < 390 ||
       Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
-      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165
+      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
+      WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 330)
     ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 220)) continue;
     rocks.push({ id: `rock-${i}`, x, y, r: 13 + rand() * 13 });
@@ -1022,7 +1143,13 @@ const [message, setMessage] = useState("");
       */
       const spriteFrame = Math.floor(performance.now() / 360) % 2;
       const labeledWildNames = new Set();
+      const drawnLoreSites = new Set();
       for (const wild of wildRef.current) {
+        const siteKey = wild.rosterId;
+        if (!drawnLoreSites.has(siteKey)) {
+          drawnLoreSites.add(siteKey);
+          drawFactionLoreSite(ctx, activeCity.faction, wild.siteX, wild.siteY, wild.loreSite, wild.cornerIndex);
+        }
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
