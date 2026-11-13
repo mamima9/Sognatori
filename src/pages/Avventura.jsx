@@ -359,7 +359,8 @@ export default function Avventura() {
 
   const testerAllowed =
     (!!user?.email && TESTER_EMAILS.includes(user.email.toLowerCase())) ||
-    user?.user_metadata?.sognatori_arcade_completed === true;
+    user?.user_metadata?.sognatori_arcade_completed === true ||
+    user?.user_metadata?.taomarco_human_arcade_completed === true;
 
   /*
     ============================
