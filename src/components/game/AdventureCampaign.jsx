@@ -196,8 +196,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setRewardQueue(rewards);
       setPersuasionError(false);
       if (!rewards.length) {
+        const completedCount = new Set([...save.completedCities, encounter.id]).size;
         setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
-        setPhase("rewardDone");
+        setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
       } else {
         setPhase("reward");
       }
@@ -225,8 +226,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     setPersuasionError(false);
     if (rewardIndex + 1 < rewardQueue.length) setRewardIndex((n) => n + 1);
     else {
+      const completedCount = new Set([...save.completedCities, encounter.id]).size;
       setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
-      setPhase("rewardDone");
+      setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     }
   };
 
@@ -242,7 +244,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
             {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
-              Il tuo viaggio · {save.completedCities.length}/11 città
+              CAPI FAZIONE CONQUISTATI · {save.completedCities.length}/11
             </div>
             <button onClick={() => { setPanel("party"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-emerald-100 hover:bg-white/10">
               <span>SQUADRA</span><span className="text-emerald-200">{party.length}/4</span>
@@ -324,7 +326,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <button key={faction} onClick={() => answerStarterQuestion(faction)} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm font-semibold transition hover:border-emerald-200/50 hover:bg-emerald-300/10">{label}</button>
               ))}
             </div>
-            <p className="mt-4 text-center text-[11px] text-white/40">Le tue risposte determineranno quale Sognatore ti verrà affidato.</p>
+            <p className="mt-4 text-center text-[11px] text-white/40">Il tuo primo legame darà inizio al viaggio tra le undici civiltà. Dovrai conquistare la fiducia dei Sognatori e affrontare tutti gli undici Capi fazione.</p>
           </div>
         </div>
       )}
@@ -383,9 +385,11 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <div className="absolute bottom-0 left-1/2 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
               </div>
               <div className="min-w-0 self-center py-3">
-                <div className="text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">{encounter.city} · {encounter.faction}</div>
+                <div className="text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">{encounter.city} · {encounter.faction} · CAPO FAZIONE</div>
                 <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">{encounter.traveler || encounter.name}</h2>
-                <p className="mt-3 max-w-md text-xs leading-6 text-white/75 sm:text-sm">{encounter.line || "Il viaggiatore ti osserva in silenzio."}</p>
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-100/60">{encounter.title || "Custode della fazione"}</div>
+                <p className="mt-3 max-w-md text-xs leading-6 text-white/75 sm:text-sm">{encounter.lore || encounter.line || "Il capo fazione ti osserva in silenzio."}</p>
+                <p className="mt-2 max-w-md text-[10px] leading-5 text-white/45">{encounter.district}</p>
                 <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-white/35">
                   <span className="h-px w-7 bg-amber-200/50" /> LA SFIDA
                 </div>
@@ -426,7 +430,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
           <div className="w-full max-w-md rounded-3xl border border-red-300/20 bg-slate-950 p-6 text-center text-white">
             <div className="text-4xl">✦</div><h2 className="mt-2 text-2xl font-black">Il legame vacilla</h2>
-            <p className="mt-2 text-sm text-white/60">Il Viaggiatore ti ha sconfitto. Riposa, prepara la squadra e torna quando sarai pronto.</p>
+            <p className="mt-2 text-sm text-white/60">Il Capo fazione ti ha sconfitto. Riposa, prepara la squadra e torna quando sarai pronto.</p>
             <button onClick={() => setPhase("traveler")} className="mt-5 w-full rounded-xl bg-white/10 py-3 font-bold">Riprova la sfida</button>
             <button onClick={() => { setPhase("idle"); onClose?.(); }} className="mt-2 w-full rounded-xl bg-white/5 py-3 text-sm font-bold text-white/70">Torna a esplorare</button>
           </div>
@@ -437,7 +441,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/75 p-4">
           <div className="w-full max-w-md rounded-3xl border border-emerald-300/20 bg-slate-950 p-6 text-center text-white">
             <div className="text-4xl">✦</div><h2 className="mt-2 text-2xl font-black">{encounter.city}</h2>
-            <p className="mt-2 text-sm text-white/60">Hai già conquistato la fiducia di questa città. I suoi Sognatori ti riconoscono come amico.</p>
+            <p className="mt-2 text-sm text-white/60">Hai già sconfitto il Capo fazione di questa città. I suoi Sognatori ti riconoscono come alleato.</p>
             <button onClick={() => { setPhase("idle"); onClose?.(); }} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">CONTINUA IL VIAGGIO</button>
           </div>
         </div>
@@ -460,11 +464,27 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         </div>
       )}
 
+
+      {phase === "campaignWon" && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/90 p-4 backdrop-blur-md">
+          <div className="my-auto w-full max-w-xl rounded-[2rem] border border-amber-200/30 bg-gradient-to-b from-[#30294a] to-slate-950 p-7 text-center text-white shadow-2xl">
+            <div className="text-5xl">✦</div>
+            <div className="mt-3 text-[10px] font-black uppercase tracking-[.35em] text-amber-200">Le undici alleanze sono compiute</div>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Hai unito le fazioni!</h2>
+            <p className="mt-4 text-sm leading-7 text-white/75">Hai sconfitto tutti gli undici Capi fazione e conquistato il rispetto delle civiltà. Le antiche rivalità si placano: per la prima volta nella storia, Demoni, Robot, Natura, Nuvola, Umani, Luce, Dolce, Marino, Orso, Mago e Salato condividono lo stesso sogno.</p>
+            <div className="my-5 grid grid-cols-4 gap-2 text-[10px] font-black text-amber-100/75 sm:grid-cols-6">
+              {["DEMONE","ROBOT","NATURA","NUVOLA","UMANO","LUCE","DOLCE","MARINO","ORSO","MAGO","SALATO"].map((f) => <div key={f} className="rounded-lg border border-white/10 bg-white/5 px-1 py-3">{f}</div>)}
+            </div>
+            <button onClick={() => { setPhase("idle"); onClose?.(); }} className="w-full rounded-xl bg-amber-200 py-3 font-black text-[#211b2a]">TORNA NEL MONDO</button>
+          </div>
+        </div>
+      )}
+
       {encounter && phase === "rewardDone" && (
         <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
           <div className="w-full max-w-md rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-center text-white">
             <div className="text-4xl">✧</div><h2 className="mt-2 text-2xl font-black">La città ti accoglie</h2>
-            <p className="mt-2 text-sm text-white/65">Hai convinto i Sognatori esclusivi di {encounter.city}. Se la squadra è piena, i nuovi compagni sono stati trasferiti nel deposito.</p>
+            <p className="mt-2 text-sm text-white/65">Hai conquistato il Capo fazione di {encounter.city}. I Sognatori che hanno scelto di unirsi a te sono stati aggiunti alla squadra o al deposito.</p>
             <button onClick={() => { setPhase("idle"); onClose?.(); }} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">TORNA ALL'AVVENTURA</button>
           </div>
         </div>
