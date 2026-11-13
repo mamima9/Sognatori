@@ -302,35 +302,39 @@ function buildWorld() {
 
 const WORLD_OBJECTS = buildWorld();
 
-const NPCS = [
-  {
-    id: "elder",
-    name: "Lumen",
-    x: 1800,
-    y: 1110,
-    color: "#f4d35e",
-    dialogue:
-      "Benvenuto nel Cuore Verde. Qui inizia il Sentiero dei Sognatori.",
-  },
-  {
-    id: "explorer",
-    name: "Neri",
-    x: 1300,
-    y: 710,
-    color: "#73c2fb",
-    dialogue:
-      "A nord c'è il Bosco delle Ombre. Di notte i sentieri cambiano completamente atmosfera.",
-  },
-  {
-    id: "smith",
-    name: "Brak",
-    x: 2460,
-    y: 1520,
-    color: "#e76f51",
-    dialogue:
-      "Le montagne custodiscono segreti antichi. Ma non andarci senza prepararti.",
-  },
+const OUTDOOR_NPC_POSITIONS = [
+  [[920, 470], [2680, 730], [920, 1840]],
+  [[1120, 360], [2860, 1120], [2520, 1940]],
+  [[720, 920], [2900, 520], [2700, 1780]],
+  [[1180, 520], [2640, 1680], [760, 1940]],
+  [[900, 1760], [2780, 500], [2780, 1850]],
+  [[720, 520], [2860, 920], [1120, 1940]],
+  [[1080, 390], [2920, 1640], [720, 1760]],
+  [[760, 1080], [2860, 420], [2600, 1940]],
+  [[1120, 1840], [2860, 1080], [760, 430]],
+  [[720, 430], [2700, 1840], [2920, 900]],
+  [[1120, 520], [2600, 420], [760, 1840]],
 ];
+
+const NPC_FACTION_COLORS = {
+  Demone: "#e87958", Robot: "#70d8cf", Natura: "#91c86b",
+  Nuvola: "#c8e5ff", Umano: "#d6a36d", Luce: "#f5dc7b",
+  Dolce: "#efa8d0", Marino: "#72d4dc", Orso: "#bd9562",
+  Mago: "#b9a1ed", Salato: "#d4d2bd",
+};
+
+function buildOutdoorNPCs(city, lore) {
+  const mapIndex = Math.max(0, ADVENTURE_CITIES.findIndex((item) => item.id === city.id));
+  const positions = OUTDOOR_NPC_POSITIONS[mapIndex % OUTDOOR_NPC_POSITIONS.length];
+  const residents = lore?.npcs || [];
+  return positions.map(([x, y], index) => ({
+    id: "outdoor-" + city.id + "-" + index,
+    name: residents[index]?.[0] || ["Viandante", "Esploratore", "Artigiano"][index],
+    dialogue: residents[index]?.[1] || "Ogni angolo di questa terra custodisce una storia.",
+    x, y,
+    color: NPC_FACTION_COLORS[city.faction] || "#d6b47a",
+  }));
+}
 
 const ZONES = [
   {
@@ -569,7 +573,7 @@ const [message, setMessage] = useState("");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
   const activeCity = { ...activeCityBase, ...activeLore, x: 1800, y: 1200 };
-  const cityNpcCharacters = NPCS.map((npc, index) => ({ ...npc, name: activeLore.npcs?.[index]?.[0] || npc.name, dialogue: activeLore.npcs?.[index]?.[1] || npc.dialogue }));
+  const cityNpcCharacters = buildOutdoorNPCs(activeCityBase, activeLore);
   const activeWildAreaBase = ADVENTURE_WILD_AREAS.find((area) => area.faction === activeCity.faction) || ADVENTURE_WILD_AREAS[0];
   const activeWildArea = { ...activeWildAreaBase, x: 1800, y: 760 };
 
@@ -1036,46 +1040,7 @@ const [message, setMessage] = useState("");
         }
       }
 
-      /*
-        LAGO
-      */
-
-      ctx.fillStyle =
-        "#276b82";
-
-      ctx.beginPath();
-
-      ctx.roundRect(
-        1570,
-        820,
-        460,
-        220,
-        90
-      );
-
-      ctx.fill();
-
-      ctx.strokeStyle = "rgba(122,218,229,.75)";
-      ctx.lineWidth = 5;
-      for (let y = 850; y < 1010; y += 38) {
-        ctx.beginPath();
-        ctx.moveTo(1610, y);
-        ctx.quadraticCurveTo(1730, y - 18, 1840, y);
-        ctx.stroke();
-      }
-      // Riflessi spezzati, rive in pietra e piccoli ciuffi sulle sponde.
-      ctx.fillStyle = "#8bd6d8";
-      ctx.fillRect(1640, 842, 32, 4);
-      ctx.fillRect(1790, 900, 44, 4);
-      ctx.fillRect(1680, 982, 24, 3);
-      ctx.fillStyle = "#a9c77a";
-      ctx.fillRect(1558, 866, 12, 5);
-      ctx.fillRect(1548, 878, 8, 8);
-      ctx.fillRect(2028, 944, 13, 5);
-      ctx.fillRect(2034, 954, 8, 8);
-      ctx.fillStyle = "#d5c18b";
-      ctx.fillRect(1582, 824, 18, 5);
-      ctx.fillRect(2004, 1035, 24, 5);
+      /* Nessun lago decorativo: le aree d'acqua non bloccano più l'esplorazione. */
 
       /*
         EDIFICI RIMOSSI
@@ -1202,8 +1167,8 @@ const [message, setMessage] = useState("");
         NPC
       */
 
-      for (const npc of NPCS) {
-        drawNpc(ctx, { ...npc, x: 1800 + (npc.x - 1800) * 0.35, y: 1200 + (npc.y - 1200) * 0.35 });
+      for (const npc of cityNpcCharacters) {
+        drawNpc(ctx, npc);
       }
 
       /*
@@ -1318,7 +1283,7 @@ const [message, setMessage] = useState("");
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
 
-    const nearestNpc = NPCS
+    const nearestNpc = cityNpcCharacters
       .map((npc) => ({ ...npc, interactionDistance: distance(currentPosition, npc) }))
       .filter((npc) => npc.interactionDistance < interactionRadius)
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
