@@ -359,11 +359,8 @@ export default function Avventura() {
     ...PLAYER_START,
   });
 
-  const wildRef = useRef(
-    WILD_STARTS.map((s) => ({
-      ...s,
-    }))
-  );
+  const initialMap = ADVENTURE_CITIES.find((city) => city.id === "natura") || ADVENTURE_CITIES[0];
+  const wildRef = useRef(buildMapWildStarts(initialMap));
 
   const challengerRef = useRef(
     CHALLENGERS.map((s) => ({
@@ -420,7 +417,9 @@ const [message, setMessage] = useState("");
 
   useEffect(() => {
     wildRef.current = buildMapWildStarts(activeCityBase);
-    challengerRef.current = CHALLENGERS.filter((challenger) => challenger.id === activeMapId);
+    challengerRef.current = CHALLENGERS
+      .filter((challenger) => challenger.id === activeMapId)
+      .map((challenger) => ({ ...challenger, x: 1800, y: 1200 }));
     wildCooldownRef.current = {};
     challengerCooldownRef.current = {};
   }, [activeMapId]);
@@ -443,7 +442,7 @@ const [message, setMessage] = useState("");
           player.y < z.y + z.h
       ) || ZONES[0]
     );
-  }, [player]);
+  }, [player, activeMapId]);
 
   /*
     ============================
@@ -1002,7 +1001,8 @@ const [message, setMessage] = useState("");
         }
       }
 
-      for (const traveler of CHALLENGERS.filter((item) => item.id === activeMapId)) {
+      for (const travelerData of CHALLENGERS.filter((item) => item.id === activeMapId)) {
+        const traveler = { ...travelerData, x: 1800, y: 1200 };
         const travelerFrame = Math.floor(performance.now() / 380) % 2;
         const faceX = playerRef.current.x - traveler.x;
         const faceY = playerRef.current.y - traveler.y;
