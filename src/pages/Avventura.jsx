@@ -68,6 +68,31 @@ const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   color: city.color,
 }));
 
+/* Sei case visitabili per città, ognuna con un abitante. */
+const HOUSE_OFFSETS = [
+  [-132, -88], [0, -158], [132, -88],
+  [-132, 88], [132, 88], [0, 158],
+];
+const HOUSE_RESIDENTS = [
+  ["Elda", "La strada fuori è piena di storie. Fermati un momento: ogni sogno ha bisogno di riposo."],
+  ["Timo", "Colleziono mappe e racconti. Ogni angolo di questo mondo nasconde qualcosa."],
+  ["Nora", "Le città cambiano grazie a chi le attraversa. Lascia qui un ricordo del tuo viaggio."],
+  ["Berto", "Hai visto il paesaggio fuori? Ogni fazione ha costruito la propria casa a modo suo."],
+  ["Lumi", "Non avere fretta. I dettagli più belli si notano solo quando ci si ferma."],
+  ["Riko", "Un giorno queste strade saranno piene di altri sognatori. Continua a esplorare!"],
+];
+const ADVENTURE_HOUSES = ADVENTURE_CITIES.flatMap((city) =>
+  HOUSE_OFFSETS.map(([ox, oy], index) => ({
+    id: city.id + "-house-" + index,
+    city,
+    x: city.x + ox * 1.55,
+    y: city.y + oy * 1.55,
+    resident: HOUSE_RESIDENTS[index][0],
+    dialogue: HOUSE_RESIDENTS[index][1],
+    number: index + 1,
+  }))
+);
+
 const clamp = (v, min, max) =>
   Math.max(min, Math.min(max, v));
 
@@ -371,6 +396,7 @@ export default function Avventura() {
 const [message, setMessage] = useState("");
 
   const [dialogue, setDialogue] = useState(null);
+  const [interior, setInterior] = useState(null);
 
   const [encounter, setEncounter] =
     useState(null);
@@ -470,7 +496,7 @@ const [message, setMessage] = useState("");
 
       last = now;
 
-      if (battleOpenRef.current || encounterOpenRef.current || challengerEncounterOpenRef.current) {
+      if (battleOpenRef.current || encounterOpenRef.current || challengerEncounterOpenRef.current || interior) {
         animation = requestAnimationFrame(loop);
         return;
       }
@@ -670,7 +696,7 @@ const [message, setMessage] = useState("");
       cancelAnimationFrame(
         animation
       );
-  }, []);
+  }, [interior]);
 
   /*
     ============================
@@ -1093,7 +1119,7 @@ const [message, setMessage] = useState("");
   */
 
   const interact = () => {
-    if (dialogue || encounter || challengerEncounter || battleOpenRef.current) return;
+    if (dialogue || encounter || challengerEncounter || interior || battleOpenRef.current) return;
 
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
@@ -1105,6 +1131,16 @@ const [message, setMessage] = useState("");
 
     if (nearestNpc) {
       setDialogue(nearestNpc);
+      return;
+    }
+
+    const nearestHouse = ADVENTURE_HOUSES
+      .map((item) => ({ ...item, interactionDistance: distance(currentPosition, item) }))
+      .filter((item) => item.interactionDistance < 92)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestHouse) {
+      setInterior(nearestHouse);
       return;
     }
 
@@ -1142,7 +1178,7 @@ const [message, setMessage] = useState("");
       return;
     }
 
-    setMessage("Avvicinati a un personaggio o a un Sognatore e premi E.");
+    setMessage("Avvicinati a una casa, a un personaggio o a un Sognatore e premi E.");
     setTimeout(() => setMessage(""), 1800);
   };
 
@@ -1222,6 +1258,36 @@ const [message, setMessage] = useState("");
       {/* =====================================
           DIALOGO NPC
           ===================================== */}
+
+
+      {interior && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl overflow-hidden rounded-[2rem] border-4 border-amber-200/70 bg-[#34251f] shadow-2xl">
+            <div className="border-b-4 border-[#9b704b] bg-[#6c4935] px-6 py-4">
+              <div className="text-[10px] font-black uppercase tracking-[.35em] text-amber-200">Interno esplorabile · {interior.city.city}</div>
+              <div className="mt-1 text-2xl font-black text-white">{["Casa del viandante", "Bottega delle mappe", "Casa degli abitanti", "Locanda", "Casa del custode", "Laboratorio"][interior.number - 1]}</div>
+            </div>
+            <div className="relative min-h-[270px] overflow-hidden bg-[#b98758] p-6">
+              <div className="absolute inset-4 border-4 border-[#70472f]/60 bg-[#d6ad78] shadow-inner">
+                <div className="absolute inset-x-8 top-8 h-5 border-4 border-[#70472f] bg-[#8b5c3c]" />
+                <div className="absolute bottom-0 left-1/2 h-16 w-24 -translate-x-1/2 border-x-4 border-t-4 border-[#70472f] bg-[#75452e]" />
+                <div className="absolute left-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
+                <div className="absolute right-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
+                <div className="absolute bottom-8 left-1/2 h-12 w-40 -translate-x-1/2 border-4 border-[#70472f] bg-[#8a5738]" />
+              </div>
+              <div className="relative z-10 flex min-h-[220px] flex-col items-center justify-center text-center">
+                <div className="mb-3 grid h-20 w-20 place-items-center rounded-2xl border-4 border-amber-100 bg-[#4c7950] text-4xl shadow-xl">🧑‍🌾</div>
+                <div className="rounded-xl border-2 border-amber-100/70 bg-black/75 px-5 py-2 text-lg font-black text-white">{interior.resident}</div>
+                <p className="mt-3 max-w-md rounded-xl bg-black/75 px-4 py-3 text-sm leading-6 text-white">{interior.dialogue}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-3 bg-[#2a1d19] px-5 py-4">
+              <span className="text-xs font-bold text-amber-100/70">Puoi visitare tutte le case della città.</span>
+              <button type="button" onClick={() => setInterior(null)} className="rounded-xl bg-amber-200 px-5 py-3 text-sm font-black text-[#38251b]">Esci dalla casa</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {dialogue && (
         <div className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
