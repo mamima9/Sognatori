@@ -30,6 +30,21 @@ const FIRST_BOND_QUESTIONS = [
   { q: "In un gruppo, quale ruolo assumi?", a: [["Organizzo e pianifico","Robot"],["Incoraggio tutti","Umano"],["Trovo idee insolite","Nuvola"],["Tengo unito il gruppo","Dolce"]] },
   { q: "Quale valore non vorresti mai perdere?", a: [["La libertà","Nuvola"],["La sincerità","Salato"],["La speranza","Luce"],["La determinazione","Demone"]] },
 ];
+const TRIAL_RUNES = ["◆", "✦", "●", "▲", "☾", "✚"];
+function buildResonanceTrial(seedValue) {
+  const raw = String(seedValue || "sognatore");
+  let seed = Array.from(raw).reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 17);
+  return [4, 6, 8].map((length) => {
+    const sequence = [];
+    for (let i = 0; i < length; i++) {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      let next = (seed >>> 16) % TRIAL_RUNES.length;
+      if (sequence.length && sequence[sequence.length - 1] === next) next = (next + 1 + (seed % 3)) % TRIAL_RUNES.length;
+      sequence.push(next);
+    }
+    return sequence;
+  });
+}
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
