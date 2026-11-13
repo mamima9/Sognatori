@@ -1891,6 +1891,57 @@ function drawCityIdentity(ctx, city) {
   ctx.restore();
 }
 
+function drawFactionDistrictDetails(ctx, city) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  const plaque = (text, color) => {
+    ctx.fillStyle = "rgba(8,13,18,.86)";
+    ctx.fillRect(-76, 188, 152, 22);
+    ctx.fillStyle = color;
+    ctx.fillRect(-76, 188, 4, 22);
+    ctx.fillStyle = "#fff4df";
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(text, 0, 202, 142);
+  };
+  switch (city.faction) {
+    case "Demone":
+      for (const x of [-190, 190]) { ctx.fillStyle="#39242d";ctx.fillRect(x-9,-20,18,82);ctx.fillStyle="#c85b55";ctx.beginPath();ctx.moveTo(x-20,-20);ctx.lineTo(x,-68);ctx.lineTo(x+20,-20);ctx.fill();ctx.fillStyle="#ffb36a";ctx.fillRect(x-3,-12,6,38); }
+      plaque("FORNACI DELLA BRACE", "#e98261"); break;
+    case "Robot":
+      for (const x of [-190, 190]) { ctx.fillStyle="#284956";ctx.fillRect(x-18,-48,36,108);ctx.strokeStyle="#70d9cf";ctx.lineWidth=4;ctx.strokeRect(x-12,-38,24,84);ctx.fillStyle="#c3f6df";ctx.fillRect(x-4,-20,8,8); }
+      ctx.strokeStyle="#83e4d6";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-190,-58);ctx.lineTo(190,-58);ctx.stroke();plaque("BINARI DEL NUCLEO", "#83e4d6");break;
+    case "Natura":
+      for (const x of [-190,190]) { ctx.fillStyle="#5a422d";ctx.fillRect(x-7,-5,14,88);ctx.fillStyle="#39784b";for(let j=0;j<3;j++){ctx.beginPath();ctx.arc(x,-26-j*22,30-j*4,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#b9df85";ctx.fillRect(x-4,-52,8,8); }
+      plaque("GIARDINI DEL SEME", "#a9d67c");break;
+    case "Nuvola":
+      for (const x of [-190,190]) { ctx.fillStyle="#d9e9f7";ctx.beginPath();ctx.ellipse(x,0,42,17,0,0,Math.PI*2);ctx.fill();ctx.fillRect(x-4,-72,8,72);ctx.fillStyle="#91b9e5";ctx.fillRect(x-2,-88,4,18); }
+      plaque("PORTO DELLE CORRENTI", "#c5def5");break;
+    case "Umano":
+      for (const x of [-190,190]) { ctx.fillStyle="#79543a";ctx.fillRect(x-32,-26,64,82);ctx.fillStyle="#d4a36d";ctx.fillRect(x-25,-18,50,64);ctx.fillStyle="#f1d6a3";ctx.fillRect(x-5,-4,10,22); }
+      plaque("MERCATO DEI VIANDANTI", "#e1b57e");break;
+    case "Luce":
+      for (const x of [-190,190]) { ctx.fillStyle="#b18b42";ctx.fillRect(x-5,-10,10,76);ctx.fillStyle="#fff0ae";ctx.beginPath();ctx.arc(x,-27,20,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#f7dc83";ctx.lineWidth=4;for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*27,-27+Math.sin(a)*27);ctx.lineTo(x+Math.cos(a)*39,-27+Math.sin(a)*39);ctx.stroke();} }
+      plaque("OBELISCHI DELL'ALBA", "#f3df9a");break;
+    case "Dolce":
+      for (const x of [-190,190]) { ctx.fillStyle="#a75e91";ctx.fillRect(x-24,-8,48,64);ctx.fillStyle="#f0b8d6";ctx.beginPath();ctx.arc(x,-12,30,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#fff0df";ctx.fillRect(x-5,8,10,48); }
+      plaque("GIARDINI CANDITI", "#f0b8d6");break;
+    case "Marino":
+      for (const x of [-190,190]) { ctx.fillStyle="#276c82";ctx.fillRect(x-8,-45,16,102);ctx.fillStyle="#8ce0e1";ctx.fillRect(x-32,-48,64,5);ctx.fillRect(x-32,4,64,5);ctx.fillStyle="#d9c99f";ctx.fillRect(x-25,-60,50,12); }
+      plaque("PONTILI DELLE MAREE", "#8ce0e1");break;
+    case "Orso":
+      for (const x of [-190,190]) { ctx.fillStyle="#604631";ctx.fillRect(x-27,-18,54,78);ctx.fillStyle="#b58b59";ctx.beginPath();ctx.moveTo(x-34,-18);ctx.lineTo(x,-62);ctx.lineTo(x+34,-18);ctx.fill();ctx.fillStyle="#e6c58e";ctx.fillRect(x-7,5,14,14); }
+      plaque("BASTIONI DEL BRANCO", "#d0ad76");break;
+    case "Mago":
+      for (const x of [-190,190]) { ctx.strokeStyle="#c4b2f0";ctx.lineWidth=7;ctx.strokeRect(x-25,-44,50,100);ctx.strokeStyle="#f2d68a";ctx.lineWidth=3;ctx.strokeRect(x-14,-30,28,70);ctx.fillStyle="#f2d68a";ctx.fillRect(x-4,-62,8,12); }
+      plaque("ARCHIVIO DELL'ETERE", "#c4b2f0");break;
+    case "Salato":
+      for (const x of [-190,190]) { ctx.fillStyle="#8a918d";ctx.fillRect(x-32,42,64,14);ctx.fillStyle="#e8e4d5";ctx.beginPath();ctx.moveTo(x,-78);ctx.lineTo(x-28,42);ctx.lineTo(x+28,42);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-3,-48,6,72); }
+      plaque("VASche DEL SALE", "#e8e4d5");break;
+  }
+  ctx.restore();
+}
+
 function drawCityDistrict(ctx, city) {
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round(city.y / 4) * 4;
@@ -1916,6 +1967,7 @@ function drawCityDistrict(ctx, city) {
 
   // Monumenti, skyline e piazze differenti per ciascuna fazione.
   drawCityIdentity(ctx, city);
+  drawFactionDistrictDetails(ctx, city);
 
   buildings.forEach(([bx, by], index) => {
     const w = index % 3 === 0 ? 62 : 54;
