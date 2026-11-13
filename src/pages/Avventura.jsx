@@ -48,13 +48,22 @@ const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
 
-const WILD_STARTS = ADVENTURE_WILD_AREAS.map((area) => ({
-  id: area.id,
-  areaId: area.id,
-  x: area.x,
-  y: area.y + 58,
-  name: area.sognatore,
-}));
+// Due esemplari di OGNI Sognatore del roster, non soltanto quelli delle 11 aree.
+const WILD_STARTS = ROSTER.flatMap((sognatore, index) =>
+  [0, 1].map((copy) => {
+    const slot = index * 2 + copy;
+    const columns = 8;
+    const column = slot % columns;
+    const row = Math.floor(slot / columns);
+    return {
+      id: "wild-" + sognatore.id + "-" + (copy + 1),
+      rosterId: sognatore.id,
+      x: 230 + column * 445 + (copy === 0 ? -54 : 54),
+      y: 190 + row * 285 + (copy === 0 ? -34 : 34),
+      name: sognatore.nome,
+    };
+  })
+);
 
 const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   ...city,
@@ -972,7 +981,7 @@ const [message, setMessage] = useState("");
       for (const wild of wildRef.current) {
         const creature = ROSTER.find((entry) => entry.nome.toLowerCase() === wild.name.toLowerCase());
         if (!creature) continue;
-        drawAdventureWildSognatore(ctx, creature, wild.x, wild.y, spriteFrame, 1.65);
+        drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
         if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           ctx.save();
           ctx.font = "bold 10px monospace";
@@ -1446,6 +1455,45 @@ const [message, setMessage] = useState("");
   PLAYER
   ============================================
 */
+
+// Cache degli artwork ufficiali: gli sprite dell'overworld usano il design
+// individuale del roster, con pixel scaling e animazione idle leggera.
+const OVERWORLD_ARTWORK = new Map();
+
+function drawOverworldSognatore(ctx, s, x, y, frame = 0) {
+  const bob = frame ? 2 : 0;
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,.34)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 2, 27, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (s?.img) {
+    let image = OVERWORLD_ARTWORK.get(s.img);
+    if (!image) {
+      image = new Image();
+      image.onload = () => { image.ready = true; };
+      image.onerror = () => { image.failed = true; };
+      image.src = s.img;
+      OVERWORLD_ARTWORK.set(s.img, image);
+    }
+    if (image.complete && image.naturalWidth > 0) {
+      const maxWidth = 68;
+      const maxHeight = 68;
+      const ratio = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+      const width = Math.max(1, image.naturalWidth * ratio);
+      const height = Math.max(1, image.naturalHeight * ratio);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(image, Math.round(x - width / 2), Math.round(y - height + 7 - bob), Math.round(width), Math.round(height));
+      ctx.restore();
+      return;
+    }
+  }
+
+  // Fallback pixel-art se l'immagine ufficiale non è disponibile.
+  drawAdventureWildSognatore(ctx, s, x, y - bob, frame, 1.9);
+  ctx.restore();
+}
 
 function drawPlayer(ctx, p) {
   // Protagonista pixel-art con silhouette, zaino e accessori leggibili.
