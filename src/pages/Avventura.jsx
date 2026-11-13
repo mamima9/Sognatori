@@ -1803,11 +1803,11 @@ function drawWildArea(ctx, area) {
 
   // Nome dell'area, leggibile anche a distanza di esplorazione.
   ctx.fillStyle = "rgba(7,13,18,.82)";
-  ctx.fillRect(-112, r * .76 - 30, 224, 24);
+  ctx.fillRect(-112, 145 * .76 - 30, 224, 24);
   ctx.fillStyle = "#fff4df";
   ctx.font = "bold 13px monospace";
   ctx.textAlign = "center";
-  ctx.fillText(area.name, 0, r * .76 - 13, 216);
+  ctx.fillText(area.name, 0, 145 * .76 - 13, 216);
   ctx.restore();
 }
 
