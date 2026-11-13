@@ -66,16 +66,17 @@ function persuasionChallengeFor(s) {
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return { ownedIds: [], partyIds: [], completedCities: [], introDone: false };
+    if (!raw) return { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
     const parsed = JSON.parse(raw);
     return {
       ownedIds: Array.isArray(parsed.ownedIds) ? parsed.ownedIds : [],
       partyIds: Array.isArray(parsed.partyIds) ? parsed.partyIds.slice(0, 4) : [],
       completedCities: Array.isArray(parsed.completedCities) ? parsed.completedCities : [],
+      conqueredLeaders: Array.isArray(parsed.conqueredLeaders) ? parsed.conqueredLeaders : [],
       introDone: !!parsed.introDone,
     };
   } catch {
-    return { ownedIds: [], partyIds: [], completedCities: [], introDone: false };
+    return { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
   }
 }
 
@@ -118,7 +119,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setPhase("wildTalk");
     } else if (encounter) {
       setPersuasionError(false);
-      setPhase(save.completedCities.includes(encounter.id) ? "completed" : "traveler");
+      setPhase(save.conqueredLeaders.includes(encounter.id) ? "completed" : "traveler");
     } else if (!save.introDone) {
       setPhase("intro");
     } else if (phase !== "intro") {
@@ -196,8 +197,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setRewardQueue(rewards);
       setPersuasionError(false);
       if (!rewards.length) {
-        const completedCount = new Set([...save.completedCities, encounter.id]).size;
-        setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
+        const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
+        setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
         setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
       } else {
         setPhase("reward");
@@ -226,8 +227,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     setPersuasionError(false);
     if (rewardIndex + 1 < rewardQueue.length) setRewardIndex((n) => n + 1);
     else {
-      const completedCount = new Set([...save.completedCities, encounter.id]).size;
-      setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])) }));
+      const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
+      setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
       setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     }
   };
@@ -244,7 +245,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
             {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
-              CAPI FAZIONE CONQUISTATI · {save.completedCities.length}/11
+              CAPI FAZIONE CONQUISTATI · {(save.conqueredLeaders || []).length}/11
             </div>
             <button onClick={() => { setPanel("party"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-emerald-100 hover:bg-white/10">
               <span>SQUADRA</span><span className="text-emerald-200">{party.length}/4</span>
@@ -269,7 +270,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mt-5 grid grid-cols-2 gap-2">
               <button onClick={() => setConfirmRestart(false)} className="rounded-xl bg-white/10 py-3 text-sm font-bold">ANNULLA</button>
               <button onClick={() => {
-                const freshSave = { ownedIds: [], partyIds: [], completedCities: [], introDone: false };
+                const freshSave = { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
                 setSave(freshSave);
                 try { localStorage.removeItem(storageKey); } catch {}
                 setConfirmRestart(false);
