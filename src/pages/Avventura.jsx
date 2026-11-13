@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
-import { ADVENTURE_CITIES, buildCityTeam } from "@/lib/adventureCampaignData";
+import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
 
 /*
@@ -48,56 +48,13 @@ const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
 
-const WILD_STARTS = [
-  {
-    id: "wild-1",
-    x: 1460,
-    y: 470,
-    name: "Cancucc",
-  },
-  {
-    id: "wild-2",
-    x: 1050,
-    y: 1320,
-    name: "Cillymbu",
-  },
-  {
-    id: "wild-3",
-    x: 2250,
-    y: 720,
-    name: "Nina",
-  },
-  {
-    id: "wild-4",
-    x: 2900,
-    y: 1320,
-    name: "Dragociocco",
-  },
-  {
-    id: "wild-5",
-    x: 680,
-    y: 1880,
-    name: "Pepe",
-  },
-  {
-    id: "wild-6",
-    x: 3150,
-    y: 520,
-    name: "Icepadel",
-  },
-  {
-    id: "wild-7",
-    x: 2350,
-    y: 1960,
-    name: "Eroe",
-  },
-  {
-    id: "wild-8",
-    x: 1380,
-    y: 2050,
-    name: "Uesditti",
-  },
-];
+const WILD_STARTS = ADVENTURE_WILD_AREAS.map((area) => ({
+  id: area.id,
+  areaId: area.id,
+  x: area.x,
+  y: area.y + 58,
+  name: area.sognatore,
+}));
 
 const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   ...city,
@@ -401,6 +358,16 @@ const [message, setMessage] = useState("");
   const [time, setTime] = useState(9);
 
   const zone = useMemo(() => {
+    const wildArea = ADVENTURE_WILD_AREAS.find((area) =>
+      Math.hypot(player.x - area.x, player.y - area.y) <= area.radius
+    );
+    if (wildArea) return { ...wildArea, name: wildArea.name, kind: "wild" };
+
+    const city = ADVENTURE_CITIES.find((item) =>
+      Math.hypot(player.x - item.x, player.y - item.y) <= 205
+    );
+    if (city) return { ...city, name: "Città di " + city.city, kind: "city" };
+
     return (
       ZONES.find(
         (z) =>
@@ -891,9 +858,15 @@ const [message, setMessage] = useState("");
         );
       }
 
-      // I landmark sono disegnati dietro ai personaggi: ogni città ha un simbolo architettonico proprio.
+      // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
       for (const city of ADVENTURE_CITIES) {
+        drawCityDistrict(ctx, city);
         drawCityLandmark(ctx, city);
+      }
+
+      // Undici biomi selvatici separati, ciascuno con terreno e landmark tematici.
+      for (const area of ADVENTURE_WILD_AREAS) {
+        drawWildArea(ctx, area);
       }
 
       /*
@@ -1317,6 +1290,9 @@ const [message, setMessage] = useState("");
           {ADVENTURE_CITIES.map((city) => (
             <div key={city.id} title={city.city + " · " + city.faction} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/60" style={{ left: (city.x / WORLD.width * 100) + "%", top: (city.y / WORLD.height * 100) + "%", background: city.color }} />
           ))}
+          {ADVENTURE_WILD_AREAS.map((area) => (
+            <div key={area.id} title={area.name + " · " + area.faction} className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80" style={{ left: (area.x / WORLD.width * 100) + "%", top: (area.y / WORLD.height * 100) + "%", background: area.color }} />
+          ))}
 
           <div
             className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]"
@@ -1615,6 +1591,185 @@ function drawNpc(ctx, npc) {
   ctx.font = "bold 11px monospace";
   ctx.textAlign = "center";
   ctx.fillText(npc.name, 0, 41);
+  ctx.restore();
+}
+
+function drawCityDistrict(ctx, city) {
+  const x = Math.round(city.x / 4) * 4;
+  const y = Math.round(city.y / 4) * 4;
+  const color = city.color || "#d6b47a";
+  const buildings = [
+    [-132, -88], [0, -158], [132, -88],
+    [-132, 88], [132, 88], [0, 158],
+  ];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.imageSmoothingEnabled = false;
+
+  // Piazza e anello stradale che rendono riconoscibile il perimetro urbano.
+  ctx.fillStyle = "rgba(20,25,28,.24)";
+  ctx.beginPath(); ctx.ellipse(0, 8, 190, 156, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(220,202,158,.72)";
+  ctx.lineWidth = 17;
+  ctx.beginPath(); ctx.ellipse(0, 0, 168, 135, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "rgba(111,91,64,.55)";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(0, 0, 168, 135, 0, 0, Math.PI * 2); ctx.stroke();
+
+  buildings.forEach(([bx, by], index) => {
+    const w = index % 3 === 0 ? 62 : 54;
+    const h = index % 2 === 0 ? 48 : 56;
+    const left = bx - w / 2;
+    const top = by - h / 2;
+    ctx.fillStyle = "rgba(5,12,18,.35)";
+    ctx.fillRect(left + 5, top + h - 2, w + 3, 12);
+    ctx.fillStyle = "#463b39";
+    ctx.fillRect(left - 4, top + 8, w + 8, h - 4);
+    ctx.fillStyle = city.faction === "Robot" ? "#456b77" :
+      city.faction === "Marino" ? "#34758a" :
+      city.faction === "Natura" ? "#806b43" :
+      city.faction === "Dolce" ? "#a86b91" :
+      city.faction === "Demone" ? "#603544" :
+      city.faction === "Luce" ? "#b18b43" :
+      city.faction === "Mago" ? "#594b79" :
+      city.faction === "Nuvola" ? "#8298b8" :
+      city.faction === "Orso" ? "#74553c" :
+      city.faction === "Salato" ? "#85877e" : "#89664b";
+    ctx.fillRect(left, top + 12, w, h - 12);
+    ctx.fillStyle = color;
+    ctx.fillRect(left + 4, top + 14, w - 8, 5);
+    // Tetti distinti per fazione: cupola, punta, pannello o falde.
+    ctx.fillStyle = city.faction === "Dolce" ? "#e9a9cc" :
+      city.faction === "Robot" ? "#9bd9d2" :
+      city.faction === "Luce" ? "#f4df9a" :
+      city.faction === "Mago" ? "#b6a0e7" :
+      city.faction === "Demone" ? "#bd5962" : "#b58a61";
+    if (city.faction === "Nuvola" || city.faction === "Luce") {
+      ctx.beginPath(); ctx.ellipse(bx, top + 13, w * .56, 13, 0, Math.PI, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.moveTo(left - 5, top + 14); ctx.lineTo(bx, top - 12); ctx.lineTo(left + w + 5, top + 14); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = "rgba(237,239,215,.9)";
+    ctx.fillRect(left + 10, top + 25, 9, 10);
+    ctx.fillRect(left + w - 19, top + 25, 9, 10);
+    ctx.fillStyle = "#382d2b";
+    ctx.fillRect(bx - 6, top + h - 19, 12, 19);
+    if (city.faction === "Robot") {
+      ctx.fillStyle = "#b8eee2"; ctx.fillRect(bx - 2, top - 7, 4, 13);
+    }
+  });
+
+  // Portale d'ingresso aperto verso il basso: il viaggiatore resta al centro.
+  ctx.fillStyle = "#d5bd8a";
+  ctx.fillRect(-34, 116, 68, 12);
+  ctx.fillStyle = "#72553c";
+  ctx.fillRect(-22, 112, 44, 7);
+  ctx.restore();
+}
+
+function drawWildArea(ctx, area) {
+  const x = area.x;
+  const y = area.y;
+  const r = area.radius;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.imageSmoothingEnabled = false;
+
+  // Terreno organico, bordo e aura colorata per distinguere i biomi.
+  ctx.fillStyle = area.color + "24";
+  ctx.beginPath(); ctx.ellipse(0, 0, r, r * .76, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = area.color;
+  ctx.globalAlpha = .72;
+  ctx.lineWidth = 7;
+  ctx.setLineDash([18, 13]);
+  ctx.beginPath(); ctx.ellipse(0, 0, r - 8, r * .76 - 8, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+
+  // Un landmark centrale diverso per ciascun bioma.
+  if (area.biome === "lava") {
+    ctx.fillStyle = "#542b35"; ctx.fillRect(-42, -24, 84, 58);
+    ctx.fillStyle = "#d45b42"; ctx.beginPath(); ctx.moveTo(-34, 20); ctx.lineTo(-18, -48); ctx.lineTo(-2, 20); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(4, 20); ctx.lineTo(23, -58); ctx.lineTo(38, 20); ctx.fill();
+    ctx.fillStyle = "#ffbd69"; ctx.fillRect(-7, -5, 14, 35);
+  } else if (area.biome === "circuit") {
+    ctx.fillStyle = "#244b5b"; ctx.fillRect(-48, -34, 96, 68);
+    ctx.strokeStyle = "#7be0d3"; ctx.lineWidth = 5;
+    ctx.strokeRect(-34, -20, 68, 40); ctx.beginPath(); ctx.moveTo(-70, 0); ctx.lineTo(-34, 0); ctx.moveTo(34, 0); ctx.lineTo(70, 0); ctx.stroke();
+    ctx.fillStyle = "#b6f2d9"; ctx.fillRect(-8, -8, 16, 16);
+  } else if (area.biome === "forest") {
+    for (const [tx, ty, size] of [[-38, 12, 42], [0, -28, 52], [40, 16, 38]]) {
+      ctx.fillStyle = "#513b2b"; ctx.fillRect(tx - 5, ty, 10, 48);
+      ctx.fillStyle = "#24583a"; ctx.beginPath(); ctx.moveTo(tx, ty - size); ctx.lineTo(tx - size * .7, ty + 10); ctx.lineTo(tx + size * .7, ty + 10); ctx.fill();
+      ctx.fillStyle = "#8fbd62"; ctx.fillRect(tx - 4, ty - size * .35, 8, 8);
+    }
+  } else if (area.biome === "cloud") {
+    ctx.fillStyle = "#d9e9f7";
+    for (const [cx, cy, cr] of [[-28, 0, 27], [0, -18, 38], [32, 4, 25]]) { ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = "#8db8e4"; ctx.fillRect(-8, 12, 16, 38);
+  } else if (area.biome === "prairie") {
+    ctx.fillStyle = "#9b7548"; ctx.fillRect(-52, 18, 104, 18);
+    ctx.fillStyle = "#d8b47a"; ctx.fillRect(-42, 22, 84, 5);
+    ctx.fillStyle = "#76583d"; ctx.fillRect(-25, -30, 50, 42);
+    ctx.fillStyle = "#d6a16e"; ctx.fillRect(-18, -24, 36, 30);
+  } else if (area.biome === "sun") {
+    ctx.fillStyle = "#c69b47"; ctx.beginPath(); ctx.arc(0, -5, 42, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff0a8"; ctx.lineWidth = 6;
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 52, -5 + Math.sin(a) * 52); ctx.lineTo(Math.cos(a) * 72, -5 + Math.sin(a) * 72); ctx.stroke(); }
+    ctx.fillStyle = "#fff3bd"; ctx.beginPath(); ctx.arc(0, -5, 19, 0, Math.PI * 2); ctx.fill();
+  } else if (area.biome === "candy") {
+    ctx.fillStyle = "#a95f91"; ctx.fillRect(-42, 5, 84, 34);
+    ctx.fillStyle = "#f3bad7";
+    for (const [fx, fy] of [[-30, -24], [0, -44], [30, -20]]) { ctx.beginPath(); ctx.arc(fx, fy, 16, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = "#fff1df"; ctx.fillRect(-5, -12, 10, 46);
+  } else if (area.biome === "ocean") {
+    ctx.fillStyle = "#1c5b75"; ctx.beginPath(); ctx.ellipse(0, 8, 68, 34, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#8ce0e1"; ctx.lineWidth = 5;
+    for (let yy = -8; yy <= 18; yy += 13) { ctx.beginPath(); ctx.moveTo(-50, yy); ctx.quadraticCurveTo(0, yy - 12, 50, yy); ctx.stroke(); }
+    ctx.fillStyle = "#5fc2c7"; ctx.fillRect(-8, -44, 16, 35);
+  } else if (area.biome === "mountain") {
+    ctx.fillStyle = "#554536";
+    ctx.beginPath(); ctx.moveTo(-65, 35); ctx.lineTo(-30, -48); ctx.lineTo(0, 8); ctx.lineTo(32, -62); ctx.lineTo(70, 35); ctx.fill();
+    ctx.fillStyle = "#e3c18a"; ctx.beginPath(); ctx.moveTo(-30, -48); ctx.lineTo(-14, -9); ctx.lineTo(-43, -14); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(32, -62); ctx.lineTo(50, -20); ctx.lineTo(17, -22); ctx.fill();
+  } else if (area.biome === "arcane") {
+    ctx.strokeStyle = "#c8b7f4"; ctx.lineWidth = 8;
+    ctx.strokeRect(-44, -48, 88, 90);
+    ctx.strokeRect(-24, -28, 48, 50);
+    ctx.fillStyle = "#f2d68a"; ctx.beginPath(); ctx.arc(0, -4, 12, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.fillStyle = "#777e79"; ctx.fillRect(-48, 16, 96, 24);
+    ctx.fillStyle = "#e8e2cb";
+    for (const [sx, sy, sh] of [[-28, 8, 48], [0, -12, 70], [29, 10, 43]]) {
+      ctx.beginPath(); ctx.moveTo(sx, sy - sh); ctx.lineTo(sx - 15, sy + 8); ctx.lineTo(sx + 15, sy + 8); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  // Piante, pietre e piccoli segni distribuiti in modo deterministico.
+  for (let i = 0; i < 18; i++) {
+    const angle = i * 2.399;
+    const distance = 92 + (i % 4) * 18;
+    const px = Math.cos(angle) * distance;
+    const py = Math.sin(angle) * distance * .72;
+    ctx.fillStyle = i % 2 ? area.color : "rgba(238,235,207,.72)";
+    if (area.biome === "ocean") {
+      ctx.fillRect(px, py, 12, 3);
+      ctx.fillRect(px + 4, py - 4, 3, 8);
+    } else if (area.biome === "forest" || area.biome === "prairie" || area.biome === "candy") {
+      ctx.fillRect(px, py, 4, 12);
+      ctx.fillRect(px - 4, py + 2, 12, 3);
+    } else {
+      ctx.fillRect(px, py, 8, 8);
+    }
+  }
+
+  // Nome dell'area, leggibile anche a distanza di esplorazione.
+  ctx.fillStyle = "rgba(7,13,18,.82)";
+  ctx.fillRect(-112, r * .76 - 30, 224, 24);
+  ctx.fillStyle = "#fff4df";
+  ctx.font = "bold 13px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(area.name, 0, r * .76 - 13, 216);
   ctx.restore();
 }
 
