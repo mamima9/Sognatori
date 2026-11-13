@@ -184,6 +184,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       {phase !== "battle" && <div className="pointer-events-none fixed inset-0 z-[210]">
         {menuOpen && (
           <div className="pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
+            <button onClick={() => setConfirmRestart(true)} className="mb-3 w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
+              ↻ RICOMINCIA DA ZERO
+            </button>
             {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
               Il tuo viaggio · {save.completedCities.length}/11 città
@@ -194,10 +197,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <button onClick={() => { setPanel("box"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-violet-100 hover:bg-white/10">
               <span>DEPOSITO</span><span className="text-violet-200">{deposit.length}</span>
             </button>
-            <div className="my-2 border-t border-white/10" />
-            <button onClick={() => setConfirmRestart(true)} className="w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
-              ↻ RICOMINCIA DA ZERO
-            </button>
+
           </div>
         )}
         <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed bottom-20 left-1/2 z-[210] -translate-x-1/2 rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
