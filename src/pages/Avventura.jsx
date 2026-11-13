@@ -94,9 +94,173 @@ function buildMapWildStarts(city) {
       cornerIndex: index % WILD_CORNER_ANCHORS.length,
       siteX: centerX + directionX * 145,
       siteY: centerY,
+      habitatX: centerX + directionX * 145,
+      habitatY: centerY,
+      habitatKey: sognatore.id,
       loreSite,
     }));
   });
+}
+
+const SOGNATORE_HABITATS = {
+  adlimago:"arcane-study", cancucc:"bakery-garden", eroe:"storm-cliff", nuvobetta:"cloud-meadow",
+  scroccospell:"cursed-library", deb:"delivery-workshop", aragostino:"tidal-rockpool", sparkly:"market-square",
+  nina:"sun-orchard", taomarco:"swap-crossroads", riwupido:"purification-shrine", fourmori:"ant-hill",
+  ginza:"guardian-courtyard", dragociocco:"cocoa-grove", tinia:"pink-cloud-garden", uesditti:"rune-library",
+  fierononno:"old-watchtower", long:"railway-yard", pepe:"ember-swamp", cillymbu:"bamboo-grove",
+  pequeno:"seedling-hollow", cenere:"volcanic-crater", icepadel:"frozen-arena", pirimar:"coral-current",
+  spinoff:"expansion-grove", toasty:"salt-kiln", shoboshi:"shadow-altar", elmas:"crystal-plateau",
+  "ring-ape":"ancient-ring"
+};
+
+function drawSognatoreHabitat(ctx, rosterId, faction, x, y, label, cornerIndex = 0) {
+  const scenes = {
+    "arcane-study":["#302744","#71569b","#d7c4f2"],
+    "bakery-garden":["#70462f","#c88a51","#f5d8a6"],
+    "storm-cliff":["#334e72","#7ea8d5","#e6f4ff"],
+    "cloud-meadow":["#647ca5","#b9d3ed","#fff8f0"],
+    "cursed-library":["#28233e","#70539b","#d5b5ef"],
+    "delivery-workshop":["#244653","#4f9da8","#c1f1e5"],
+    "tidal-rockpool":["#17485c","#3b9aaa","#b8e9df"],
+    "market-square":["#674632","#bd8656","#f0d0a0"],
+    "sun-orchard":["#78602b","#d6b34e","#fff0a8"],
+    "swap-crossroads":["#5c4039","#c17d4c","#f3d19b"],
+    "purification-shrine":["#6c5a2d","#d8bb59","#fff6c9"],
+    "ant-hill":["#62452f","#b77d50","#e8c18a"],
+    "guardian-courtyard":["#574331","#a87949","#e5c38b"],
+    "cocoa-grove":["#58352f","#a65d50","#e9b58a"],
+    "pink-cloud-garden":["#65527f","#bd9bdc","#f8dff0"],
+    "rune-library":["#342b55","#8068b0","#e4d5ff"],
+    "old-watchtower":["#42556e","#8ca9c8","#e4e9ee"],
+    "railway-yard":["#263e4b","#568b94","#c1d8d1"],
+    "ember-swamp":["#482936","#a64b4e","#f29a58"],
+    "bamboo-grove":["#294a35","#5c9b51","#c4df83"],
+    "seedling-hollow":["#34513a","#78a95b","#d4e9a0"],
+    "volcanic-crater":["#44252d","#b94d42","#ffb05c"],
+    "frozen-arena":["#244c62","#77b8ca","#efffff"],
+    "coral-current":["#164c61","#3c9eaa","#c0f0e7"],
+    "expansion-grove":["#31513c","#6a9e58","#d6e89a"],
+    "salt-kiln":["#555d5b","#a7ada2","#f1e4c4"],
+    "shadow-altar":["#302d4a","#685b8d","#d0c5ed"],
+    "crystal-plateau":["#4b5c62","#9cb7b9","#f0ffff"],
+    "ancient-ring":["#49372b","#9b7044","#e8c58a"]
+  };
+  const scene = SOGNATORE_HABITATS[rosterId] || "seedling-hollow";
+  const [soil,main,glow] = scenes[scene];
+  const r = (x,y,w,h,color) => { ctx.fillStyle=color; ctx.fillRect(x,y,w,h); };
+  const dot = (x,y,rx,ry,color) => { ctx.fillStyle=color; ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fill(); };
+  const line = (x1,y1,x2,y2,color,width=4) => { ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); };
+  const rock = (x,y,color=main) => { dot(x,y,12,7,soil); dot(x-2,y-3,10,7,color); r(x-5,y-6,5,2,glow); };
+  const sprout = (x,y) => { r(x-2,y-1,4,17,soil); dot(x-7,y-8,7,4,main); dot(x+7,y-12,7,4,glow); };
+  const star = (x,y) => { dot(x,y,3,3,glow); line(x-7,y,x+7,y,glow,2); line(x,y-7,x,y+7,glow,2); };
+  ctx.save(); ctx.translate(x,y); ctx.imageSmoothingEnabled=false;
+  // Suolo e perimetro: ogni specie riceve un micro-bioma con palette propria.
+  dot(0,13,91,34,"rgba(0,0,0,.24)"); dot(0,7,86,29,soil); dot(0,3,76,23,main);
+  dot(-45,7,23,9,soil); dot(45,7,23,9,soil);
+  switch(scene) {
+    case "arcane-study":
+      r(-29,-31,58,37,soil); r(-25,-27,50,29,main); r(-20,-23,40,3,glow);
+      for(let k=0;k<3;k++){r(-18+k*15,-18,9,17,soil);r(-16+k*15,-16,5,13,glow);}
+      star(0,-38); line(-42,0,-30,-18,glow,3); line(42,0,30,-18,glow,3); break;
+    case "bakery-garden":
+      dot(0,-13,25,20,soil); dot(0,-17,21,16,main); dot(-5,-21,5,4,glow); dot(8,-12,5,4,glow);
+      r(-36,0,72,7,soil); r(-30,-5,60,5,glow); dot(-43,-10,9,7,main); dot(43,-10,9,7,main); break;
+    case "storm-cliff":
+      for(let k=0;k<4;k++){line(-48+k*30,12,-34+k*30,-23-(k%2)*10,soil,10);line(-48+k*30,10,-34+k*30,-21-(k%2)*10,main,5);}
+      line(-18,-29,0,-43,glow,3); line(0,-43,16,-29,glow,3); star(0,-46); break;
+    case "cloud-meadow":
+      for(let k=0;k<4;k++){dot(-45+k*30,-9-(k%2)*8,18,10,main);dot(-40+k*30,-13-(k%2)*8,12,7,glow);}
+      line(0,-5,0,-30,soil,4); dot(0,-34,6,6,glow); break;
+    case "cursed-library":
+      r(-38,-28,76,34,soil); r(-32,-24,64,27,main); r(-5,-23,10,24,glow);
+      for(let k=0;k<4;k++)r(-27+k*17,-19,10,18,k%2?glow:soil);
+      star(-45,-33); star(43,-32); break;
+    case "delivery-workshop":
+      r(-39,-25,78,31,soil); r(-34,-21,68,25,main); r(-27,-15,18,12,glow); r(8,-15,18,12,glow);
+      line(-44,-29,44,-29,glow,3); dot(0,-32,5,5,glow); break;
+    case "tidal-rockpool":
+      dot(0,1,57,20,"#153c54"); dot(0,-2,48,15,main); dot(-30,-7,13,8,glow); dot(28,4,12,7,glow);
+      for(let k=0;k<5;k++)line(-40+k*20,8,-33+k*20,1,glow,2); rock(-54,-13); rock(52,-13); break;
+    case "market-square":
+      r(-38,-25,76,30,soil); line(-38,-24,38,-24,glow,4); line(-25,-24,-25,-4,glow,3); line(0,-24,0,-4,glow,3); line(25,-24,25,-4,glow,3);
+      for(let k=0;k<3;k++)dot(-24+k*24,-17,7,6,main); break;
+    case "sun-orchard":
+      for(let k=0;k<5;k++){r(-43+k*21,-4,4,20,soil);dot(-41+k*21,-18,12,12,main);dot(-44+k*21,-22,6,6,glow);}
+      star(0,-42); break;
+    case "swap-crossroads":
+      line(-48,-2,48,-2,soil,9); line(0,-35,0,25,soil,9); line(-45,-2,45,-2,glow,2); line(0,-33,0,23,glow,2);
+      dot(0,-3,12,12,main); star(0,-3); break;
+    case "purification-shrine":
+      line(-32,4,0,-38,soil,8); line(32,4,0,-38,soil,8); line(-32,4,32,4,soil,8);
+      line(-24,0,0,-29,glow,3); line(24,0,0,-29,glow,3); star(0,-15); break;
+    case "ant-hill":
+      dot(0,-5,32,24,soil); dot(0,-12,23,17,main); dot(0,-11,7,10,soil);
+      for(let k=0;k<6;k++){dot(-48+k*19,13,3,3,glow);line(-48+k*19,13,-43+k*19,3,soil,2);} break;
+    case "guardian-courtyard":
+      r(-36,-25,72,30,soil); r(-30,-20,60,22,main); line(-39,-25,39,-25,glow,4);
+      for(let k=0;k<4;k++)r(-29+k*19,-16,7,14,k%2?glow:soil);
+      dot(0,-30,10,8,glow); break;
+    case "cocoa-grove":
+      for(let k=0;k<4;k++){r(-38+k*24,-7,5,18,soil);dot(-35+k*24,-20,13,13,main);dot(-39+k*24,-24,6,5,glow);}
+      dot(0,-8,13,9,soil); break;
+    case "pink-cloud-garden":
+      for(let k=0;k<5;k++){dot(-48+k*24,-12-(k%2)*9,14,10,main);dot(-48+k*24,-17-(k%2)*9,7,6,glow);}
+      line(0,-4,0,-29,soil,3); dot(0,-32,8,8,glow); break;
+    case "rune-library":
+      r(-34,-27,68,31,soil); r(-29,-22,58,24,main);
+      for(let k=0;k<3;k++){line(-18+k*18,-17,-18+k*18,-3,glow,2);dot(-18+k*18,-20,4,4,glow);}
+      star(0,-35); break;
+    case "old-watchtower":
+      r(-13,-42,26,48,soil); r(-9,-38,18,40,main); r(-23,-42,46,6,glow);
+      for(let k=0;k<3;k++)r(-6+k*6,-30,3,7,glow); line(-35,0,35,0,soil,5); break;
+    case "railway-yard":
+      line(-49,-2,49,-2,soil,8); line(-49,7,49,7,glow,3);
+      for(let k=0;k<6;k++)r(-42+k*16,-7,5,19,soil);
+      r(-12,-28,24,18,main); r(-8,-24,16,10,glow); break;
+    case "ember-swamp":
+      dot(-30,4,20,12,soil); dot(28,6,20,12,soil); dot(0,-4,18,12,main);
+      for(let k=0;k<5;k++){line(-34+k*17,0,-29+k*17,-22-(k%2)*7,glow,3);dot(-29+k*17,-24-(k%2)*7,4,5,main);}
+      star(0,-40); break;
+    case "bamboo-grove":
+      for(let k=0;k<6;k++){r(-44+k*17,-40+(k%2)*5,5,48,soil);r(-42+k*17,-38+(k%2)*5,2,42,glow);line(-45+k*17,-20, -34+k*17,-24,main,3);}
+      dot(-25,-5,15,7,main); dot(25,-5,15,7,main); break;
+    case "seedling-hollow":
+      dot(0,-5,27,23,soil); line(0,8,0,-28,glow,5); dot(-13,-20,15,7,main); dot(14,-27,16,8,glow);
+      for(let k=0;k<4;k++)dot(-48+k*31,8,5,4,soil); break;
+    case "volcanic-crater":
+      dot(0,-2,54,23,soil); dot(0,-7,35,15,main); dot(0,-11,18,9,glow);
+      for(let k=0;k<5;k++)line(-32+k*16,-7,-28+k*16,-28-(k%2)*8,glow,4);
+      star(0,-42); break;
+    case "frozen-arena":
+      dot(0,-3,54,22,soil); dot(0,-7,45,16,main); line(-34,-7,0,-31,glow,4); line(0,-31,34,-7,glow,4);
+      line(-34,-7,0,16,glow,4); line(0,16,34,-7,glow,4); star(0,-32); break;
+    case "coral-current":
+      dot(0,8,52,14,"#153d52");
+      for(let k=0;k<6;k++){line(-42+k*17,8,-40+k*17,-12-(k%3)*7,soil,5);dot(-40+k*17,-17-(k%3)*7,6,6,glow);}
+      line(-45,-2,-22,-8,glow,2);line(22,-8,45,-2,glow,2);break;
+    case "expansion-grove":
+      for(let k=0;k<4;k++){line(-36+k*24,8,-36+k*24,-24,soil,5);dot(-36+k*24,-28,13,12,main);dot(-42+k*24,-31,6,5,glow);}
+      line(-50,-2,50,-2,glow,2); star(0,-42);break;
+    case "salt-kiln":
+      r(-29,-29,58,34,soil); r(-24,-24,48,28,main); r(-17,-16,34,17,glow);
+      dot(0,-12,9,8,soil); for(let k=0;k<4;k++)line(-24+k*16,8,-18+k*16,-5,glow,2);break;
+    case "shadow-altar":
+      r(-33,-14,66,18,soil); line(-28,-14,0,-43,main,8); line(28,-14,0,-43,main,8);
+      dot(0,-23,12,12,glow); dot(0,-23,5,5,soil); star(-39,-34);star(39,-34);break;
+    case "crystal-plateau":
+      for(let k=0;k<5;k++){ctx.beginPath();ctx.moveTo(-42+k*20,8);ctx.lineTo(-35+k*20,-25-(k%2)*12);ctx.lineTo(-27+k*20,8);ctx.closePath();ctx.fillStyle=k%2?main:glow;ctx.fill();}
+      line(-49,10,49,10,soil,4);break;
+    case "ancient-ring":
+      ctx.strokeStyle=soil;ctx.lineWidth=9;ctx.beginPath();ctx.arc(0,-13,29,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=glow;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-13,29,0,Math.PI*2);ctx.stroke();
+      for(let k=0;k<4;k++)dot(-42+k*28,10,6,5,main);star(0,-49);break;
+  }
+  // Piccoli dettagli coerenti con l'identità, non un unico fondale copiato.
+  if(cornerIndex%2===0){dot(-64,-4,3,3,glow);dot(64,3,3,3,glow);}
+  ctx.fillStyle="rgba(7,13,18,.9)";ctx.fillRect(-116,25,232,27);
+  ctx.fillStyle=glow;ctx.fillRect(-116,25,5,27);
+  ctx.fillStyle="#fff6e7";ctx.font="bold 12px monospace";ctx.textAlign="center";ctx.fillText(label,0,44,220);
+  ctx.restore();
 }
 
 function drawFactionLoreSite(ctx, faction, x, y, label, cornerIndex = 0) {
@@ -1119,7 +1283,7 @@ const [message, setMessage] = useState("");
         const siteKey = wild.rosterId;
         if (!drawnLoreSites.has(siteKey)) {
           drawnLoreSites.add(siteKey);
-          drawFactionLoreSite(ctx, activeCity.faction, wild.siteX, wild.siteY, wild.loreSite, wild.cornerIndex);
+          drawSognatoreHabitat(ctx, wild.rosterId, activeCity.faction, wild.habitatX, wild.habitatY, wild.loreSite, wild.cornerIndex);
         }
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
