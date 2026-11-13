@@ -55,8 +55,8 @@ function buildMapWildStarts(city) {
   const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
   const copies = 4;
   return residents.flatMap((sognatore, index) => {
-    const centerX = 1480 + (index % 3) * 155;
-    const centerY = 700 + Math.floor(index / 3) * 150;
+    const centerX = 1580 + (index % 3) * 110;
+    const centerY = 680 + Math.floor(index / 3) * 115;
     const offsets = [[-34, -28], [34, -28], [-34, 28], [34, 28]];
     return offsets.slice(0, copies).map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
