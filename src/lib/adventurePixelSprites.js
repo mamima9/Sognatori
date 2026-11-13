@@ -225,70 +225,214 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
 
 
 
+const WILD_SPECIES_DESIGNS = {
+  adlimago: { shape:"mage", colors:["#44315f","#9b79c9","#d9c4f3","#f3d88b"] },
+  cancucc: { shape:"bread", colors:["#8a4c31","#d7a16f","#f5d8a6","#fff0d2"] },
+  eroe: { shape:"stormbird", colors:["#425c85","#8db8e4","#d9e8f7","#fff6ef"] },
+  nuvobetta: { shape:"cloud-dancer", colors:["#655d9b","#b7a8e8","#f0dcff","#fff7fa"] },
+  scroccospell: { shape:"spell-scroll", colors:["#392b5d","#765ca6","#c7b1eb","#f6df9a"] },
+  deb: { shape:"robot-box", colors:["#284d5d","#4f9da8","#a9e1d7","#d8eee1"] },
+  aragostino: { shape:"lobster", colors:["#713c35","#c45e4e","#f0a078","#ffe0a8"] },
+  sparkly: { shape:"star-human", colors:["#654638","#c17d4c","#e7b67c","#fff0a8"] },
+  nina: { shape:"angel", colors:["#8c6b2e","#e0bd58","#fff0a8","#fff9dc"] },
+  taomarco: { shape:"scarf-human", colors:["#654638","#c17d4c","#e7b67c","#e85a50"] },
+  riwupido: { shape:"light-seal", colors:["#8c6b2e","#e0bd58","#fff0a8","#fff9dc"] },
+  fourmori: { shape:"ant", colors:["#604535","#b97850","#e8bd8e","#f5e4bd"] },
+  ginza: { shape:"guardian", colors:["#654638","#a86e4d","#e7bd8e","#f5e0b9"] },
+  dragociocco: { shape:"chocodragon", colors:["#713e67","#a85a50","#d78a68","#ffe0bd"] },
+  tinia: { shape:"pink-cloud", colors:["#655d9b","#bd9bdc","#f3d7ef","#fff5fa"] },
+  uesditti: { shape:"arcane-book", colors:["#392b5d","#765ca6","#c7b1eb","#f6df9a"] },
+  fierononno: { shape:"old-cloud", colors:["#425c85","#8db8e4","#d9e8f7","#fff6ef"] },
+  long: { shape:"long-robot", colors:["#284d5d","#4f9da8","#a9e1d7","#d8eee1"] },
+  pepe: { shape:"frog", colors:["#294f38","#4f8a4e","#91bb62","#d7d89a"] },
+  cillymbu: { shape:"bamboo", colors:["#294f38","#4f8a4e","#91bb62","#d7d89a"] },
+  pequeno: { shape:"seedling", colors:["#294f38","#6d9b51","#b8d77b","#f2e7a8"] },
+  cenere: { shape:"ember", colors:["#4c263b","#a44455","#e16c62","#f2bd7a"] },
+  icepadel: { shape:"ice-pan", colors:["#20536a","#3e9bb0","#c4e8ed","#ffffff"] },
+  pirimar: { shape:"shrimp", colors:["#20536a","#3e9bb0","#9ad9dc","#e2f4e9"] },
+  spinoff: { shape:"spin-leaf", colors:["#294f38","#4f8a4e","#91bb62","#d7d89a"] },
+  toasty: { shape:"toast", colors:["#6c4531","#b8794d","#e5b77e","#fff0c8"] },
+  shoboshi: { shape:"ghost", colors:["#425c85","#8db8e4","#d9e8f7","#fff6ef"] },
+  elmas: { shape:"crystal", colors:["#4c5558","#929b95","#c9c9b7","#ffffff"] },
+  "ring-ape": { shape:"ring-ape", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
+};
+
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
-  const id=s?.id||"";
-  const type=s?.tipo||"Natura";
-  const palettes={
-    Dolce:["#a96a91","#f0b9d4","#653e68","#fff0df"],Nuvola:["#7c9ec8","#d9e9f7","#425b82","#fff8ed"],
-    Robot:["#4d9ba5","#b9e7dc","#254c5e","#e4f2e8"],Marino:["#3187a1","#a7dfe0","#194d68","#eff8e7"],
-    Umano:["#a86e4d","#e7bd8e","#53382f","#f5e0b9"],Luce:["#d1aa43","#fff0a7","#80602a","#fffbe0"],
-    Demone:["#a74755","#e27a68","#4b273d","#ffd08a"],Natura:["#568c4b","#a8c96c","#294f38","#e2dda1"],
-    Orso:["#91623d","#d0a36a","#493326","#f0d6a1"],Mago:["#765ca6","#c7b1eb","#392c5d","#f6df9a"],
+  const id = s?.id || "";
+  const type = s?.tipo || "Natura";
+  const factionPalettes = {
+    Dolce:["#a96a91","#f0b9d4","#653e68","#fff0df"],
+    Nuvola:["#7c9ec8","#d9e9f7","#425b82","#fff8ed"],
+    Robot:["#4d9ba5","#b9e7dc","#254c5e","#e4f2e8"],
+    Marino:["#3187a1","#a7dfe0","#194d68","#eff8e7"],
+    Umano:["#a86e4d","#e7bd8e","#53382f","#f5e0b9"],
+    Luce:["#d1aa43","#fff0a7","#80602a","#fffbe0"],
+    Demone:["#a74755","#e27a68","#4b273d","#ffd08a"],
+    Natura:["#568c4b","#a8c96c","#294f38","#e2dda1"],
+    Orso:["#91623d","#d0a36a","#493326","#f0d6a1"],
+    Mago:["#765ca6","#c7b1eb","#392c5d","#f6df9a"],
     Salato:["#828c84","#d1d0bd","#414a4d","#f3e4bf"]
   };
-  const p=palettes[type]||palettes.Natura;const [main,light,dark,shine]=p;
-  const seed=Array.from(id).reduce((a,ch)=>a+ch.charCodeAt(0),0);
-  const bob=frame?1:0;
-  ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
-  ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(0,1,12,3,0,0,Math.PI*2);ctx.fill();
-  // unique silhouette families, deliberately not cropped artwork
-  if(type==="Marino"){
-    px(ctx,-12,-12+bob,24,10,dark);px(ctx,-10,-16+bob,20,12,main);px(ctx,-7,-18+bob,14,9,light);
-    px(ctx,-15,-12+bob,6,10,main);px(ctx,9,-12+bob,6,10,main);px(ctx,-4,-22+bob,8,5,shine);
-  }else if(type==="Robot"){
-    px(ctx,-10,-20+bob,20,20,dark);px(ctx,-8,-18+bob,16,16,main);px(ctx,-7,-24+bob,14,7,light);
-    px(ctx,-3,-27+bob,6,4,shine);px(ctx,-15,-15+bob,5,10,main);px(ctx,10,-15+bob,5,10,main);
-  }else if(type==="Nuvola"){
-    px(ctx,-10,-15+bob,20,14,main);px(ctx,-14,-12+bob,9,9,light);px(ctx,5,-13+bob,9,10,light);
-    px(ctx,-7,-20+bob,14,10,light);px(ctx,-3,-24+bob,7,5,shine);
-  }else if(type==="Demone"){
-    px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-20+bob,16,10,light);
-    px(ctx,-11,-27+bob,5,11,dark);px(ctx,6,-27+bob,5,11,dark);
-    px(ctx,-10,-28+bob,3,7,shine);px(ctx,7,-28+bob,3,7,shine);
-  }else if(type==="Natura"){
-    px(ctx,-9,-14+bob,18,14,main);px(ctx,-7,-20+bob,14,10,light);
-    px(ctx,-15,-23+bob,10,8,main);px(ctx,5,-25+bob,10,10,light);
-    px(ctx,-3,-28+bob,7,9,shine);
-  }else if(type==="Orso"){
-    px(ctx,-11,-15+bob,22,15,main);px(ctx,-9,-20+bob,18,10,light);
-    px(ctx,-13,-26+bob,8,9,dark);px(ctx,5,-26+bob,8,9,dark);
-    px(ctx,-11,-25+bob,4,4,shine);px(ctx,7,-25+bob,4,4,shine);
-  }else if(type==="Luce"){
-    px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
-    px(ctx,-3,-28+bob,6,6,shine);px(ctx,-14,-20+bob,6,7,shine);px(ctx,8,-20+bob,6,7,shine);
-  }else if(type==="Mago"){
-    px(ctx,-9,-14+bob,18,14,main);px(ctx,-7,-20+bob,14,10,light);
-    px(ctx,-13,-24+bob,26,4,dark);px(ctx,-8,-30+bob,16,8,dark);px(ctx,-2,-28+bob,5,4,shine);
-  }else if(type==="Dolce"){
-    px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-21+bob,16,10,light);
-    px(ctx,-11,-25+bob,7,7,shine);px(ctx,4,-25+bob,7,7,shine);px(ctx,-3,-28+bob,7,5,light);
-  }else{
-    px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
-    px(ctx,-3,-28+bob,6,10,shine);px(ctx,-13,-14+bob,5,8,dark);px(ctx,8,-14+bob,5,8,dark);
+  const design = WILD_SPECIES_DESIGNS[id];
+  const [main,light,dark,shine] = design?.colors || factionPalettes[type] || factionPalettes.Natura;
+  const bob = frame ? 1 : 0;
+  const shape = design?.shape || "seedling";
+  ctx.save();
+  ctx.translate(Math.round(x),Math.round(y));
+  ctx.scale(scale,scale);
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "rgba(0,0,0,.34)";
+  ctx.beginPath();
+  ctx.ellipse(0,1,14,4,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Sagoma dedicata per ogni Sognatore del roster: nessun modello generico di fazione.
+  switch(shape){
+    case "mage":
+      px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
+      px(ctx,-14,-25+bob,28,4,dark);px(ctx,-9,-34+bob,18,10,dark);
+      px(ctx,-3,-31+bob,6,5,shine);px(ctx,10,-16+bob,4,13,dark);px(ctx,11,-20+bob,3,5,shine);break;
+    case "bread":
+      px(ctx,-13,-16+bob,26,15,dark);px(ctx,-11,-21+bob,22,17,main);
+      px(ctx,-8,-25+bob,16,8,light);px(ctx,-7,-19+bob,4,3,shine);
+      px(ctx,4,-20+bob,4,3,shine);px(ctx,-5,-7+bob,10,3,"#fff0d2");
+      px(ctx,-15,-12+bob,4,7,main);px(ctx,11,-12+bob,4,7,main);break;
+    case "stormbird":
+      px(ctx,-8,-14+bob,16,14,main);px(ctx,-17,-17+bob,10,8,light);px(ctx,7,-17+bob,10,8,light);
+      px(ctx,-7,-24+bob,14,12,light);px(ctx,-3,-31+bob,6,8,shine);
+      px(ctx,-5,-2+bob,4,5,dark);px(ctx,3,-2+bob,4,5,dark);break;
+    case "cloud-dancer":
+      px(ctx,-12,-15+bob,24,14,main);px(ctx,-17,-12+bob,10,9,light);px(ctx,7,-12+bob,10,9,light);
+      px(ctx,-8,-23+bob,16,11,light);px(ctx,-3,-29+bob,6,7,shine);
+      px(ctx,-14,-5+bob,8,4,shine);px(ctx,6,-5+bob,8,4,shine);break;
+    case "spell-scroll":
+      px(ctx,-12,-20+bob,24,18,dark);px(ctx,-9,-18+bob,18,14,light);
+      px(ctx,-13,-22+bob,26,4,main);px(ctx,-13,-5+bob,26,4,main);
+      px(ctx,-4,-15+bob,8,8,shine);px(ctx,-2,-28+bob,4,8,shine);
+      px(ctx,-15,-18+bob,4,15,light);px(ctx,11,-18+bob,4,15,light);break;
+    case "robot-box":
+      px(ctx,-12,-21+bob,24,22,dark);px(ctx,-9,-19+bob,18,18,main);
+      px(ctx,-8,-26+bob,16,7,light);px(ctx,-5,-14+bob,3,3,shine);px(ctx,3,-14+bob,3,3,shine);
+      px(ctx,-4,-7+bob,8,3,dark);px(ctx,-17,-17+bob,5,12,main);px(ctx,12,-17+bob,5,12,main);
+      px(ctx,-3,-31+bob,6,6,shine);break;
+    case "lobster":
+      px(ctx,-11,-15+bob,22,15,dark);px(ctx,-9,-20+bob,18,14,main);
+      px(ctx,-7,-25+bob,14,8,light);px(ctx,-18,-19+bob,8,9,main);px(ctx,10,-19+bob,8,9,main);
+      px(ctx,-17,-27+bob,4,10,shine);px(ctx,13,-27+bob,4,10,shine);
+      px(ctx,-5,-4+bob,4,7,dark);px(ctx,2,-4+bob,4,7,dark);break;
+    case "star-human":
+      px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
+      px(ctx,-3,-31+bob,6,8,shine);px(ctx,-14,-22+bob,7,7,shine);px(ctx,7,-22+bob,7,7,shine);
+      px(ctx,-5,-3+bob,10,4,dark);break;
+    case "angel":
+      px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
+      px(ctx,-18,-19+bob,10,12,shine);px(ctx,8,-19+bob,10,12,shine);
+      px(ctx,-10,-31+bob,20,3,shine);px(ctx,-7,-34+bob,14,2,shine);
+      px(ctx,-3,-27+bob,6,4,shine);break;
+    case "scarf-human":
+      px(ctx,-10,-15+bob,20,16,dark);px(ctx,-8,-20+bob,16,12,main);
+      px(ctx,-7,-28+bob,14,9,light);px(ctx,-11,-17+bob,5,9,main);px(ctx,6,-17+bob,5,9,main);
+      px(ctx,-9,-12+bob,18,4,shine);px(ctx,7,-10+bob,5,14,shine);break;
+    case "light-seal":
+      px(ctx,-10,-14+bob,20,14,main);px(ctx,-7,-21+bob,14,10,light);
+      px(ctx,-4,-32+bob,8,18,shine);px(ctx,-15,-19+bob,7,8,shine);px(ctx,8,-19+bob,7,8,shine);
+      px(ctx,-4,-7+bob,8,3,dark);break;
+    case "ant":
+      px(ctx,-10,-14+bob,20,13,dark);px(ctx,-8,-20+bob,16,12,main);
+      px(ctx,-6,-27+bob,12,8,light);px(ctx,-3,-31+bob,3,7,dark);px(ctx,1,-31+bob,3,7,dark);
+      px(ctx,-16,-12+bob,7,4,main);px(ctx,9,-12+bob,7,4,main);
+      px(ctx,-17,-2+bob,8,3,dark);px(ctx,9,-2+bob,8,3,dark);break;
+    case "guardian":
+      px(ctx,-13,-16+bob,26,16,dark);px(ctx,-10,-22+bob,20,15,main);
+      px(ctx,-8,-29+bob,16,10,light);px(ctx,-14,-27+bob,7,9,dark);px(ctx,7,-27+bob,7,9,dark);
+      px(ctx,-5,-9+bob,10,4,shine);px(ctx,-18,-14+bob,5,9,main);px(ctx,13,-14+bob,5,9,main);break;
+    case "chocodragon":
+      px(ctx,-11,-14+bob,22,15,main);px(ctx,-8,-21+bob,16,11,light);
+      px(ctx,-15,-28+bob,8,12,dark);px(ctx,7,-28+bob,8,12,dark);
+      px(ctx,-19,-16+bob,8,8,light);px(ctx,11,-16+bob,8,8,light);
+      px(ctx,-4,-31+bob,8,5,shine);px(ctx,-5,-3+bob,4,6,dark);px(ctx,2,-3+bob,4,6,dark);break;
+    case "pink-cloud":
+      px(ctx,-13,-14+bob,26,13,main);px(ctx,-17,-13+bob,9,9,light);px(ctx,8,-13+bob,9,9,light);
+      px(ctx,-9,-22+bob,18,12,light);px(ctx,-4,-29+bob,8,8,shine);
+      px(ctx,-4,-3+bob,8,5,main);px(ctx,-16,-5+bob,7,3,shine);px(ctx,9,-5+bob,7,3,shine);break;
+    case "arcane-book":
+      px(ctx,-13,-20+bob,26,20,dark);px(ctx,-10,-18+bob,10,16,light);px(ctx,1,-18+bob,10,16,main);
+      px(ctx,-2,-18+bob,4,16,shine);px(ctx,-6,-13+bob,4,4,shine);px(ctx,3,-13+bob,4,4,shine);
+      px(ctx,-4,-29+bob,8,8,shine);break;
+    case "old-cloud":
+      px(ctx,-12,-15+bob,24,14,main);px(ctx,-16,-14+bob,9,8,light);px(ctx,7,-14+bob,9,8,light);
+      px(ctx,-8,-23+bob,16,11,light);px(ctx,-8,-28+bob,16,4,shine);
+      px(ctx,-8,-5+bob,5,3,shine);px(ctx,3,-5+bob,5,3,shine);px(ctx,-4,-2+bob,8,2,dark);break;
+    case "long-robot":
+      px(ctx,-8,-29+bob,16,28,dark);px(ctx,-6,-27+bob,12,24,main);
+      px(ctx,-7,-33+bob,14,7,light);px(ctx,-4,-19+bob,8,4,shine);
+      px(ctx,-13,-24+bob,5,13,main);px(ctx,8,-24+bob,5,13,main);
+      px(ctx,-5,-3+bob,3,4,dark);px(ctx,2,-3+bob,3,4,dark);break;
+    case "frog":
+      px(ctx,-13,-15+bob,26,15,dark);px(ctx,-11,-20+bob,22,13,main);
+      px(ctx,-12,-27+bob,8,9,light);px(ctx,4,-27+bob,8,9,light);
+      px(ctx,-9,-29+bob,4,5,shine);px(ctx,5,-29+bob,4,5,shine);
+      px(ctx,-7,-9+bob,4,3,dark);px(ctx,3,-9+bob,4,3,dark);
+      px(ctx,-16,-4+bob,8,4,main);px(ctx,8,-4+bob,8,4,main);break;
+    case "bamboo":
+      px(ctx,-9,-14+bob,18,14,dark);px(ctx,-7,-19+bob,14,11,main);
+      px(ctx,-4,-29+bob,4,13,light);px(ctx,2,-26+bob,4,10,main);
+      px(ctx,-12,-24+bob,9,5,shine);px(ctx,4,-21+bob,10,5,shine);
+      px(ctx,-3,-3+bob,6,4,dark);break;
+    case "seedling":
+      px(ctx,-11,-14+bob,22,14,dark);px(ctx,-8,-19+bob,16,11,main);
+      px(ctx,-4,-26+bob,8,9,light);px(ctx,-15,-27+bob,12,6,shine);px(ctx,3,-29+bob,13,7,light);
+      px(ctx,-4,-4+bob,8,4,dark);break;
+    case "ember":
+      px(ctx,-11,-15+bob,22,15,dark);px(ctx,-8,-20+bob,16,12,main);
+      px(ctx,-6,-28+bob,12,10,light);px(ctx,-3,-35+bob,6,9,shine);
+      px(ctx,-16,-14+bob,7,8,main);px(ctx,9,-14+bob,7,8,main);
+      px(ctx,-4,-5+bob,8,3,shine);break;
+    case "ice-pan":
+      px(ctx,-13,-13+bob,26,13,dark);px(ctx,-10,-19+bob,20,11,main);
+      px(ctx,-8,-25+bob,16,8,light);px(ctx,-5,-30+bob,10,5,shine);
+      px(ctx,-18,-17+bob,6,12,light);px(ctx,12,-17+bob,6,12,light);
+      px(ctx,-5,-3+bob,10,3,dark);break;
+    case "shrimp":
+      px(ctx,-13,-14+bob,24,13,main);px(ctx,-8,-21+bob,18,12,light);
+      px(ctx,7,-18+bob,12,7,dark);px(ctx,12,-25+bob,5,11,main);
+      px(ctx,-15,-12+bob,6,7,dark);px(ctx,-4,-29+bob,4,10,shine);
+      px(ctx,-7,-3+bob,5,5,dark);px(ctx,1,-3+bob,5,5,dark);break;
+    case "spin-leaf":
+      px(ctx,-10,-14+bob,20,14,dark);px(ctx,-8,-19+bob,16,11,main);
+      px(ctx,-3,-33+bob,6,18,light);px(ctx,-18,-27+bob,17,8,shine);
+      px(ctx,2,-25+bob,17,8,light);px(ctx,-4,-4+bob,8,4,dark);break;
+    case "toast":
+      px(ctx,-12,-20+bob,24,20,dark);px(ctx,-9,-18+bob,18,15,main);
+      px(ctx,-7,-23+bob,14,6,light);px(ctx,-5,-14+bob,4,3,shine);px(ctx,3,-14+bob,4,3,shine);
+      px(ctx,-4,-7+bob,8,3,dark);px(ctx,-8,-1+bob,5,4,dark);px(ctx,4,-1+bob,5,4,dark);break;
+    case "ghost":
+      px(ctx,-12,-18+bob,24,18,main);px(ctx,-9,-26+bob,18,13,light);
+      px(ctx,-6,-31+bob,12,7,shine);px(ctx,-12,-5+bob,6,8,main);px(ctx,-3,-4+bob,6,7,main);px(ctx,6,-5+bob,6,8,main);
+      px(ctx,-6,-15+bob,3,4,dark);px(ctx,4,-15+bob,3,4,dark);break;
+    case "crystal":
+      px(ctx,-12,-12+bob,24,12,dark);px(ctx,-10,-20+bob,20,13,main);
+      px(ctx,-7,-30+bob,14,12,light);px(ctx,-3,-35+bob,6,9,shine);
+      px(ctx,-17,-13+bob,7,8,main);px(ctx,10,-13+bob,7,8,main);
+      px(ctx,-3,-18+bob,3,9,shine);break;
+    case "ring-ape":
+      px(ctx,-12,-15+bob,24,15,dark);px(ctx,-9,-22+bob,18,15,main);
+      px(ctx,-8,-29+bob,16,10,light);px(ctx,-15,-27+bob,8,9,dark);px(ctx,7,-27+bob,8,9,dark);
+      px(ctx,-4,-6+bob,8,5,shine);px(ctx,-19,-14+bob,8,12,main);px(ctx,11,-14+bob,8,12,main);
+      ctx.strokeStyle=shine;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-33+bob,8,Math.PI,Math.PI*2);ctx.stroke();break;
+    default:
+      px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-22+bob,16,10,light);
+      px(ctx,-4,-30+bob,8,8,shine);break;
   }
-  // individual markings and face; deterministic variation per official id
-  px(ctx,-6,-13+bob,3,3,"#24232b");px(ctx,3,-13+bob,3,3,"#24232b");
-  px(ctx,-2,-7+bob,5,2,dark);px(ctx,-8,-4+bob,5,3,main);px(ctx,4,-4+bob,5,3,main);
-  if(seed%2===0)px(ctx,-1,-23+bob,4,3,shine);else px(ctx,6,-18+bob,3,4,shine);
-  // Iconic details for the eight first wild encounters.
-  if(id==="cancucc"){px(ctx,-5,-29+bob,10,5,"#d7a16f");px(ctx,-3,-31+bob,6,3,"#f5d8a6");px(ctx,-1,-26+bob,3,2,"#fff0d2");}
-  if(id==="cillymbu"){px(ctx,-3,-32+bob,3,12,"#4d9a4e");px(ctx,3,-29+bob,3,10,"#80bd58");px(ctx,-2,-20+bob,8,2,"#d6e59b");}
-  if(id==="nina"){px(ctx,-15,-18+bob,7,9,shine);px(ctx,8,-18+bob,7,9,shine);px(ctx,-7,-32+bob,14,2,"#fff2b4");px(ctx,-4,-34+bob,8,2,"#fff2b4");}
-  if(id==="dragociocco"){px(ctx,-11,-29+bob,5,9,"#8c3d3d");px(ctx,6,-29+bob,5,9,"#8c3d3d");px(ctx,-15,-16+bob,6,8,"#d78a68");px(ctx,9,-16+bob,6,8,"#d78a68");}
-  if(id==="pepe"){px(ctx,-10,-26+bob,7,7,"#78a95b");px(ctx,4,-26+bob,7,7,"#78a95b");px(ctx,-8,-27+bob,3,3,"#f1e7b0");px(ctx,5,-27+bob,3,3,"#f1e7b0");}
-  if(id==="icepadel"){px(ctx,-13,-18+bob,6,10,"#d9e6e9");px(ctx,7,-18+bob,6,10,"#d9e6e9");px(ctx,-4,-29+bob,8,3,"#e8f5f5");}
-  if(id==="eroe"){px(ctx,-13,-21+bob,8,7,"#e5f0fa");px(ctx,5,-21+bob,8,7,"#e5f0fa");px(ctx,-4,-30+bob,8,5,"#f5f8ff");}
-  if(id==="uesditti"){px(ctx,-13,-28+bob,26,4,"#392b5d");px(ctx,-8,-34+bob,16,7,"#49346f");px(ctx,-1,-31+bob,3,3,"#f4d88b");}
-  if(frame){px(ctx,-8,-1,5,2,light);px(ctx,4,-1,5,2,light);}
+
+  // Volto, riflessi e piccoli dettagli restano leggibili anche alla scala overworld.
+  if(!["bread","stormbird","cloud-dancer","spell-scroll","arcane-book","ghost","crystal"].includes(shape)){
+    px(ctx,-6,-14+bob,3,3,"#24232b");
+    px(ctx,4,-14+bob,3,3,"#24232b");
+    px(ctx,-2,-7+bob,5,2,dark);
+  }
+  px(ctx,-9,-3+bob,4,2,shine);
+  px(ctx,5,-3+bob,4,2,shine);
+  if(frame){px(ctx,-8,0,5,2,light);px(ctx,4,0,5,2,light);}
   ctx.restore();
 }
