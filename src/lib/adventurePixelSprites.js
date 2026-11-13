@@ -91,9 +91,21 @@ export function createTravelerSpriteSheet(faction, traveler){
   directions.forEach((direction,row)=>[0,1].forEach((frame,col)=>{
     ctx.save();
     ctx.translate(col*24,row*32);
-    if(direction==="left"){ctx.translate(24,0);ctx.scale(-1,1);}
-    if(direction==="up"){ctx.globalAlpha=.82;}
-    drawAdventureTraveler(ctx,traveler||faction,faction,12,31,frame,.45);
+    // Il disegno supporta il profilo sinistro: per il destro lo specchiamo.
+    if(direction==="right"){
+      ctx.translate(24,0);
+      ctx.scale(-1,1);
+    }
+    drawAdventureTraveler(
+      ctx,
+      traveler||faction,
+      faction,
+      12,
+      31,
+      frame,
+      .45,
+      direction==="right" ? "left" : direction
+    );
     ctx.restore();
   }));
   return sheet;
