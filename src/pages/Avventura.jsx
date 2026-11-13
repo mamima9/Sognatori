@@ -49,21 +49,21 @@ const TESTER_EMAILS = [
 ];
 
 // Due esemplari di OGNI Sognatore del roster, non soltanto quelli delle 11 aree.
-const WILD_STARTS = ROSTER.flatMap((sognatore, index) =>
-  [0, 1].map((copy) => {
-    const slot = index * 2 + copy;
-    const columns = 8;
-    const column = slot % columns;
-    const row = Math.floor(slot / columns);
-    return {
-      id: "wild-" + sognatore.id + "-" + (copy + 1),
+function buildMapWildStarts(city) {
+  const residents = ROSTER.filter((sognatore) => sognatore.tipo === city.faction);
+  return residents.flatMap((sognatore, index) =>
+    [0, 1].map((copy) => ({
+      id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
-      x: 230 + column * 445 + (copy === 0 ? -54 : 54),
-      y: 190 + row * 285 + (copy === 0 ? -34 : 34),
+      x: 1800 + ((index % 4) - 1.5) * 150 + (copy ? 42 : -42),
+      y: 820 + Math.floor(index / 4) * 180 + (copy ? 34 : -34),
       name: sognatore.nome,
-    };
-  })
-);
+    }))
+  );
+}
+
+const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
+const MAP_SPAWN = { x: 1800, y: 210 };
 
 const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
   ...city,
@@ -301,14 +301,13 @@ function circleRectCollision(
   );
 }
 
-function collidesWithCityBuildings(x, y, radius) {
+function collidesWithCityBuildings(x, y, radius, city) {
   const cityScale = 1.55;
   const offsets = [
     [-132, -88], [0, -158], [132, -88],
     [-132, 88], [132, 88], [0, 158],
   ].map(([x, y]) => [x * cityScale, y * cityScale]);
-  return ADVENTURE_CITIES.some((city) =>
-    offsets.some(([bx, by], index) => {
+  return offsets.some(([bx, by], index) => {
       const w = (index % 3 === 0 ? 62 : 54) * cityScale;
       const h = (index % 2 === 0 ? 48 : 56) * cityScale;
       return circleRectCollision(
@@ -320,8 +319,7 @@ function collidesWithCityBuildings(x, y, radius) {
         w + 10,
         h + 31
       );
-    })
-  );
+    });
 }
 
 export default function Avventura() {
@@ -414,17 +412,27 @@ const [message, setMessage] = useState("");
     useState(null);
 
   const [time, setTime] = useState(9);
+  const [activeMapId, setActiveMapId] = useState("natura");
+  const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
+  const activeCity = { ...activeCityBase, x: 1800, y: 1200 };
+  const activeWildAreaBase = ADVENTURE_WILD_AREAS.find((area) => area.faction === activeCity.faction) || ADVENTURE_WILD_AREAS[0];
+  const activeWildArea = { ...activeWildAreaBase, x: 1800, y: 760 };
+
+  useEffect(() => {
+    wildRef.current = buildMapWildStarts(activeCityBase);
+    challengerRef.current = CHALLENGERS.filter((challenger) => challenger.id === activeMapId);
+    wildCooldownRef.current = {};
+    challengerCooldownRef.current = {};
+  }, [activeMapId]);
 
   const zone = useMemo(() => {
-    const wildArea = ADVENTURE_WILD_AREAS.find((area) =>
-      Math.hypot(player.x - area.x, player.y - area.y) <= area.radius
-    );
-    if (wildArea) return { ...wildArea, name: wildArea.name, kind: "wild" };
-
-    const city = ADVENTURE_CITIES.find((item) =>
-      Math.hypot(player.x - item.x, player.y - item.y) <= 315
-    );
-    if (city) return { ...city, name: "Città di " + city.city, kind: "city" };
+    const wildArea = activeWildArea;
+    if (Math.hypot(player.x - wildArea.x, player.y - wildArea.y) <= wildArea.radius) {
+      return { ...wildArea, name: wildArea.name, kind: "wild" };
+    }
+    if (Math.hypot(player.x - 1800, player.y - 1200) <= 620) {
+      return { ...activeCity, name: "Città di " + activeCity.city, kind: "city" };
+    }
 
     return (
       ZONES.find(
@@ -621,7 +629,7 @@ const [message, setMessage] = useState("");
           EDIFICI DELLE UNDICI CITTÀ
         */
 
-        if (!blocked && collidesWithCityBuildings(next.x, next.y, PLAYER.size * 0.45)) {
+        if (!blocked && collidesWithCityBuildings(next.x, next.y, PLAYER.size * 0.45, activeCity)) {
           blocked = true;
         }
 
@@ -925,15 +933,14 @@ const [message, setMessage] = useState("");
       }
 
       // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
-      for (const city of ADVENTURE_CITIES) {
-        drawCityDistrict(ctx, city);
-        drawCityLandmark(ctx, city);
-      }
+      drawCityDistrict(ctx, activeCity);
+      drawCityLandmark(ctx, activeCity);
 
-      // Undici biomi selvatici separati, ciascuno con terreno e landmark tematici.
-      for (const area of ADVENTURE_WILD_AREAS) {
-        drawWildArea(ctx, area);
-      }
+      // Soltanto il bioma della fazione attualmente caricata.
+      drawWildArea(ctx, activeWildArea);
+
+      // Portale di collegamento: ogni mappa conduce alla successiva.
+      drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color, "PORTA · " + nextCityName(activeMapId));
 
       /*
         ROCCE
@@ -995,7 +1002,7 @@ const [message, setMessage] = useState("");
         }
       }
 
-      for (const traveler of CHALLENGERS) {
+      for (const traveler of CHALLENGERS.filter((item) => item.id === activeMapId)) {
         const travelerFrame = Math.floor(performance.now() / 380) % 2;
         const faceX = playerRef.current.x - traveler.x;
         const faceY = playerRef.current.y - traveler.y;
@@ -1019,7 +1026,7 @@ const [message, setMessage] = useState("");
       */
 
       for (const npc of NPCS) {
-        drawNpc(ctx, npc);
+        drawNpc(ctx, { ...npc, x: 1800 + (npc.x - 1800) * 0.35, y: 1200 + (npc.y - 1200) * 0.35 });
       }
 
       /*
@@ -1119,6 +1126,7 @@ const [message, setMessage] = useState("");
     player,
     zone,
     time,
+    activeMapId,
   ]);
 
   /*
@@ -1143,8 +1151,21 @@ const [message, setMessage] = useState("");
       return;
     }
 
+    if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius) {
+      const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
+      const nextCity = ADVENTURE_CITIES[(currentIndex + 1) % ADVENTURE_CITIES.length];
+      setActiveMapId(nextCity.id);
+      playerRef.current = { ...MAP_SPAWN };
+      cameraRef.current = { ...MAP_SPAWN };
+      setPlayer({ ...MAP_SPAWN });
+      setMessage("Ingresso a " + nextCity.city + " · " + nextCity.faction);
+      setTimeout(() => setMessage(""), 2200);
+      return;
+    }
+
     const nearestHouse = ADVENTURE_HOUSES
-      .map((item) => ({ ...item, interactionDistance: distance(currentPosition, item) }))
+      .filter((item) => item.city.id === activeMapId)
+      .map((item) => ({ ...item, x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y), interactionDistance: distance(currentPosition, { x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y) }) }))
       .filter((item) => item.interactionDistance < 92)
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
@@ -1187,7 +1208,7 @@ const [message, setMessage] = useState("");
       return;
     }
 
-    setMessage("Avvicinati a una casa, a un personaggio o a un Sognatore e premi E.");
+    setMessage("Avvicinati a una casa, a un personaggio, a un Sognatore o alla porta in fondo alla mappa e premi E.");
     setTimeout(() => setMessage(""), 1800);
   };
 
@@ -1240,7 +1261,7 @@ const [message, setMessage] = useState("");
     <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col items-center justify-between overflow-hidden bg-[#090d0a] px-2 py-2 text-white select-none touch-none">
       <div className="flex w-full max-w-[1100px] items-center justify-between px-2">
         <div className="text-xs font-black tracking-[.25em] text-emerald-100/70">SOGNATORI · AVVENTURA</div>
-        <div className="text-xs font-bold text-white/60">{zone.name}</div>
+        <div className="text-xs font-bold text-white/60">{activeCity.city} · {activeCity.faction} · {zone.name}</div>
       </div>
       <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-190px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
@@ -1393,12 +1414,8 @@ const [message, setMessage] = useState("");
               }}
             />
           ))}
-          {ADVENTURE_CITIES.map((city) => (
-            <div key={city.id} title={city.city + " · " + city.faction} className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/60" style={{ left: (city.x / WORLD.width * 100) + "%", top: (city.y / WORLD.height * 100) + "%", background: city.color }} />
-          ))}
-          {ADVENTURE_WILD_AREAS.map((area) => (
-            <div key={area.id} title={area.name + " · " + area.faction} className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80" style={{ left: (area.x / WORLD.width * 100) + "%", top: (area.y / WORLD.height * 100) + "%", background: area.color }} />
-          ))}
+          <div title={activeCity.city + " · " + activeCity.faction} className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white" style={{ left: "50%", top: "50%", background: activeCity.color }} />
+          <div title={"Porta per " + nextCityName(activeMapId)} className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white" style={{ left: "50%", top: (MAP_DOOR.y / WORLD.height * 100) + "%", background: "#f8df91" }} />
 
           <div
             className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]"
@@ -1492,6 +1509,33 @@ function drawOverworldSognatore(ctx, s, x, y, frame = 0) {
 
   // Fallback pixel-art se l'immagine ufficiale non è disponibile.
   drawAdventureWildSognatore(ctx, s, x, y - bob, frame, 1.9);
+  ctx.restore();
+}
+
+function nextCityName(cityId) {
+  const index = ADVENTURE_CITIES.findIndex((city) => city.id === cityId);
+  return ADVENTURE_CITIES[(index + 1) % ADVENTURE_CITIES.length].city;
+}
+
+function drawAdventureDoor(ctx, x, y, color, label) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "rgba(0,0,0,.32)";
+  ctx.beginPath(); ctx.ellipse(0, 8, 76, 20, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#34333f";
+  ctx.fillRect(-52, -112, 18, 122); ctx.fillRect(34, -112, 18, 122);
+  ctx.fillRect(-62, -126, 124, 20);
+  ctx.fillStyle = color;
+  ctx.fillRect(-42, -100, 84, 94);
+  ctx.fillStyle = "#171b2a";
+  ctx.fillRect(-28, -84, 56, 82);
+  ctx.fillStyle = "rgba(220,244,255,.75)";
+  ctx.fillRect(-22, -78, 44, 70);
+  ctx.fillStyle = "rgba(255,255,255,.32)";
+  ctx.fillRect(-15, -72, 8, 52);
+  ctx.fillStyle = "#f6e4a7";
+  ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+  ctx.fillText(label, 0, -144);
   ctx.restore();
 }
 
