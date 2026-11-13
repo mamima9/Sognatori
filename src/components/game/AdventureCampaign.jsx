@@ -392,7 +392,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <p className="mt-3 max-w-md text-xs leading-6 text-white/75 sm:text-sm">{encounter.lore || encounter.line || "Il capo fazione ti osserva in silenzio."}</p>
                 <p className="mt-2 max-w-md text-[10px] leading-5 text-white/45">{encounter.district}</p>
                 <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-white/35">
-                  <span className="h-px w-7 bg-amber-200/50" /> LA SFIDA
+                  <span className="h-px w-7 bg-amber-200/50" /> PROVA DEL CAPO FAZIONE
                 </div>
               </div>
             </div>
@@ -407,7 +407,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </div>
             <div className="grid grid-cols-2 gap-2 p-4 sm:px-7 sm:pb-7">
               <button onClick={() => { onClose?.(); setPhase("idle"); }} className="rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold text-white/70 transition hover:bg-white/10">TORNA A ESPLORARE</button>
-              <button disabled={party.length < 2 || cityTeam.length !== 4} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : "ACCETTA LA SFIDA"}</button>
+              <button disabled={party.length < 2 || cityTeam.length !== 4} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : "SFIDA IL CAPO FAZIONE"}</button>
             </div>
           </div>
         </div>
