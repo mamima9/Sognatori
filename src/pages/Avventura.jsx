@@ -1691,6 +1691,66 @@ function drawNpc(ctx, npc) {
   ctx.restore();
 }
 
+function drawCityIdentity(ctx, city) {
+  const accent = city.color || "#d6b47a";
+  ctx.save();
+  const tower = (x,y,w,h,body,roof) => {
+    ctx.fillStyle="rgba(8,13,18,.32)"; ctx.fillRect(x-4,y+h-2,w+8,9);
+    ctx.fillStyle=body; ctx.fillRect(x,y,w,h);
+    ctx.fillStyle=roof; ctx.fillRect(x-5,y-8,w+10,10);
+    ctx.fillStyle="rgba(255,244,210,.75)"; ctx.fillRect(x+5,y+12,5,13); ctx.fillRect(x+w-10,y+12,5,13);
+  };
+  switch(city.faction) {
+    case "Demone":
+      ctx.fillStyle="#542b35";ctx.fillRect(-42,-24,84,58);ctx.fillStyle="#bd5360";
+      ctx.beginPath();ctx.moveTo(-42,-18);ctx.lineTo(-22,-76);ctx.lineTo(-5,-18);ctx.fill();
+      ctx.beginPath();ctx.moveTo(42,-18);ctx.lineTo(22,-76);ctx.lineTo(5,-18);ctx.fill();
+      ctx.fillStyle="#ff9a56";ctx.fillRect(-7,-10,14,39);ctx.fillStyle="#ffd17b";ctx.fillRect(-3,-20,6,18);break;
+    case "Robot":
+      tower(-48,-48,30,90,"#36586a","#8edbd0");tower(18,-60,30,102,"#36586a","#8edbd0");
+      ctx.fillStyle="#8be6d8";ctx.fillRect(-3,-83,6,23);ctx.fillRect(-54,5,108,7);
+      ctx.fillStyle="#e3f5ce";ctx.fillRect(-7,-36,14,14);break;
+    case "Natura":
+      ctx.fillStyle="#62472f";ctx.fillRect(-13,-8,26,52);
+      for(const [x,y,r] of [[0,-47,43],[-31,-20,29],[31,-19,29],[0,-4,34]]){ctx.fillStyle="#286c46";ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#a6d879";ctx.fillRect(-6,-56,12,15);ctx.fillRect(-28,-24,9,8);ctx.fillRect(20,-17,9,8);break;
+    case "Nuvola":
+      ctx.fillStyle="#d8e9fa";ctx.beginPath();ctx.ellipse(0,8,70,20,0,0,Math.PI*2);ctx.fill();
+      tower(-12,-80,24,92,"#829ac4","#e4efff");ctx.fillStyle="#c6dcf4";
+      ctx.beginPath();ctx.arc(-35,-43,19,0,Math.PI*2);ctx.arc(34,-34,23,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#8bbbe3";ctx.fillRect(-3,-96,6,18);break;
+    case "Umano":
+      tower(-22,-76,44,120,"#8c6044","#e2b77e");ctx.fillStyle="#f8e4b6";
+      ctx.beginPath();ctx.arc(0,-48,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#67432f";ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(0,-48);ctx.lineTo(0,-57);ctx.moveTo(0,-48);ctx.lineTo(8,-44);ctx.stroke();
+      ctx.fillStyle="#b88955";ctx.fillRect(-58,42,116,8);break;
+    case "Luce":
+      ctx.fillStyle="#d9ae4d";ctx.beginPath();ctx.moveTo(0,-90);ctx.lineTo(-26,35);ctx.lineTo(26,35);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fff1b6";ctx.beginPath();ctx.arc(0,-43,20,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ffe58b";ctx.lineWidth=6;
+      for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*54,-43+Math.sin(a)*54);ctx.lineTo(Math.cos(a)*70,-43+Math.sin(a)*70);ctx.stroke();}break;
+    case "Dolce":
+      ctx.fillStyle="#b96e9e";ctx.fillRect(-36,-5,72,45);ctx.fillStyle="#f4c0dc";
+      ctx.beginPath();ctx.arc(0,-27,35,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#fff0dd";ctx.fillRect(-8,-47,16,76);
+      ctx.fillStyle="#e88fbd";ctx.fillRect(-48,44,24,9);ctx.fillRect(24,44,24,9);break;
+    case "Marino":
+      ctx.fillStyle="#236b85";ctx.fillRect(-76,-5,152,48);ctx.fillStyle="#8ce0e1";ctx.fillRect(-76,3,152,4);ctx.fillRect(-76,31,152,4);
+      ctx.fillStyle="#d5c39b";ctx.fillRect(-58,-12,116,13);ctx.fillStyle="#876e52";ctx.fillRect(-58,-18,8,20);ctx.fillRect(50,-18,8,20);
+      ctx.fillStyle=accent;ctx.fillRect(-8,-58,16,42);break;
+    case "Orso":
+      tower(-54,-42,28,84,"#74553c","#c49a61");tower(26,-42,28,84,"#74553c","#c49a61");
+      ctx.fillStyle="#b88b55";ctx.fillRect(-35,-53,70,16);ctx.fillStyle="#4b3a30";ctx.fillRect(-20,-8,40,50);
+      ctx.fillStyle="#e4c18a";ctx.fillRect(-5,2,10,10);break;
+    case "Mago":
+      ctx.strokeStyle="#c6b3f4";ctx.lineWidth=8;ctx.strokeRect(-39,-58,78,94);ctx.strokeStyle="#f1d58b";ctx.lineWidth=4;ctx.strokeRect(-22,-40,44,58);
+      ctx.fillStyle="#bca8f0";ctx.beginPath();ctx.moveTo(0,-80);ctx.lineTo(-12,-58);ctx.lineTo(12,-58);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fff0bd";ctx.fillRect(-4,-15,8,8);break;
+    case "Salato":
+      ctx.fillStyle="#8a918d";ctx.fillRect(-58,30,116,12);
+      for(const [x,y,h] of [[-34,10,65],[0,-12,90],[35,14,58]]){ctx.fillStyle="#e9e5d6";ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x-15,y+8);ctx.lineTo(x+15,y+8);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-3,y-h+18,5,Math.max(8,h-22));}break;
+  }
+  ctx.restore();
+}
+
 function drawCityDistrict(ctx, city) {
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round(city.y / 4) * 4;
@@ -1713,6 +1773,9 @@ function drawCityDistrict(ctx, city) {
   ctx.strokeStyle = "rgba(111,91,64,.55)";
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.ellipse(0, 0, 168, 135, 0, 0, Math.PI * 2); ctx.stroke();
+
+  // Monumenti, skyline e piazze differenti per ciascuna fazione.
+  drawCityIdentity(ctx, city);
 
   buildings.forEach(([bx, by], index) => {
     const w = index % 3 === 0 ? 62 : 54;
