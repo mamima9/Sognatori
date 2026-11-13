@@ -127,6 +127,11 @@ function buildWorld() {
     const x = 80 + rand() * (WORLD.width - 160);
     const y = 80 + rand() * (WORLD.height - 160);
 
+    if (
+      Math.hypot(x - 1800, y - 1200) < 390 ||
+      Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165
+    ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 250)) continue;
 
     if (
@@ -147,6 +152,11 @@ function buildWorld() {
   for (let i = 0; i < 65; i++) {
     const x = 80 + rand() * (WORLD.width - 160);
     const y = 80 + rand() * (WORLD.height - 160);
+    if (
+      Math.hypot(x - 1800, y - 1200) < 390 ||
+      Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165
+    ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 220)) continue;
     rocks.push({ id: `rock-${i}`, x, y, r: 13 + rand() * 13 });
   }
