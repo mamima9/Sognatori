@@ -1473,6 +1473,24 @@ const [message, setMessage] = useState("");
           setChallengerEncounter(null);
         }}
         onPauseChange={setCampaignPause}
+        onRestart={() => {
+          playerRef.current = { ...PLAYER_START };
+          cameraRef.current = { ...PLAYER_START };
+          setPlayer({ ...PLAYER_START });
+          setActiveMapId("natura");
+          setTime(9);
+          setDialogue(null);
+          setInterior(null);
+          setEncounter(null);
+          setChallengerEncounter(null);
+          setMessage("Nuovo viaggio iniziato!");
+          setTimeout(() => setMessage(""), 2200);
+          keysRef.current = {};
+          wildCooldownRef.current = {};
+          challengerCooldownRef.current = {};
+          encounterOpenRef.current = false;
+          challengerEncounterOpenRef.current = false;
+        }}
         onWildClose={(recruited) => {
           if (encounter?.id) {
             wildCooldownRef.current[encounter.id] = Date.now() + 20000;
