@@ -1029,7 +1029,7 @@ const [message, setMessage] = useState("");
         if (wild.recruitable) {
           ctx.save(); ctx.font = "bold 18px monospace"; ctx.textAlign = "center";
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
-          ctx.fillText("✦", wild.x, wild.y - 66); ctx.restore();
+          ctx.fillText("✦", wild.x, wild.y - 82); ctx.restore();
         }
         if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           labeledWildNames.add(wild.rosterId);
