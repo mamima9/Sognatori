@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { createWildSognatoreSpriteSheet } from "@/lib/adventurePixelSprites";
 
 /**
- * Artwork individuale del roster usato come sprite nella sola modalità
- * Avventura. Mantiene un fallback procedurale per i Sognatori senza artwork.
+ * Sprite overworld Avventura: usa l'artwork individuale del roster,
+ * ridotto a una risoluzione controllata per ottenere un look da RPG 2D.
  */
 export default function AdventureSognatoreSprite({ s, size = 88, className = "", walking = true }) {
   const [sheetUrl, setSheetUrl] = useState("");
+  const [pixelArtwork, setPixelArtwork] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
   const artwork = s?.img && !imageFailed ? s.img : "";
 
   useEffect(() => {
     setImageFailed(false);
+    setPixelArtwork("");
   }, [s?.id, s?.img]);
 
   useEffect(() => {
@@ -22,6 +24,22 @@ export default function AdventureSognatoreSprite({ s, size = 88, className = "",
     const sheet = createWildSognatoreSpriteSheet(s);
     setSheetUrl(sheet.toDataURL());
   }, [s?.id, s?.nome, s?.tipo, artwork]);
+
+  const buildPixelArtwork = (event) => {
+    const image = event.currentTarget;
+    if (!image.complete || !image.naturalWidth || !image.naturalHeight) return;
+    const targetHeight = 64;
+    const targetWidth = Math.max(1, Math.round(image.naturalWidth * targetHeight / image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.imageSmoothingEnabled = false;
+    context.clearRect(0, 0, targetWidth, targetHeight);
+    context.drawImage(image, 0, 0, targetWidth, targetHeight);
+    setPixelArtwork(canvas.toDataURL("image/png"));
+  };
 
   if (!s) return null;
 
@@ -44,19 +62,35 @@ export default function AdventureSognatoreSprite({ s, size = 88, className = "",
       }}
     >
       {artwork ? (
-        <img
-          src={artwork}
-          alt={s.nome || "Sognatore"}
-          draggable={false}
-          onError={() => setImageFailed(true)}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            objectPosition: "center bottom",
-            imageRendering: "auto"
-          }}
-        />
+        <>
+          {!pixelArtwork && (
+            <img
+              src={artwork}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              onLoad={buildPixelArtwork}
+              onError={() => {
+                setImageFailed(true);
+                setPixelArtwork("");
+              }}
+              style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+            />
+          )}
+          <img
+            src={pixelArtwork || artwork}
+            alt={s.nome || "Sognatore"}
+            draggable={false}
+            onError={() => setImageFailed(true)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center bottom",
+              imageRendering: pixelArtwork ? "pixelated" : "auto"
+            }}
+          />
+        </>
       ) : (
         <div
           aria-hidden="true"
