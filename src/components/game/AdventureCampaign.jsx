@@ -46,7 +46,7 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, menuContent }) {
+export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, menuContent }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
@@ -58,6 +58,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [persuasionError, setPersuasionError] = useState(false);
   const [battleKey, setBattleKey] = useState(0);
   const [wildError, setWildError] = useState(false);
+  const [confirmRestart, setConfirmRestart] = useState(false);
 
   useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(save)); } catch {}
@@ -193,12 +194,40 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <button onClick={() => { setPanel("box"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-violet-100 hover:bg-white/10">
               <span>DEPOSITO</span><span className="text-violet-200">{deposit.length}</span>
             </button>
+            <div className="my-2 border-t border-white/10" />
+            <button onClick={() => setConfirmRestart(true)} className="w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
+              ↻ RICOMINCIA DA ZERO
+            </button>
           </div>
         )}
         <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed bottom-20 left-1/2 z-[210] -translate-x-1/2 rounded-2xl border border-amber-200/30 bg-slate-950/95 px-6 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
           {menuOpen ? "CHIUDI MENU" : "☰ MENU"}
         </button>
       </div>}
+
+      {confirmRestart && phase !== "battle" && (
+        <div className="absolute inset-0 z-[120] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-red-300/25 bg-slate-950 p-6 text-center text-white shadow-2xl">
+            <div className="text-3xl">↻</div>
+            <h2 className="mt-2 text-2xl font-black">Ricominciare da zero?</h2>
+            <p className="mt-3 text-sm leading-6 text-white/65">Perderai squadra, Sognatori ottenuti e città completate. Il viaggio ripartirà dall'inizio e potrai scegliere di nuovo i tuoi primi compagni.</p>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button onClick={() => setConfirmRestart(false)} className="rounded-xl bg-white/10 py-3 text-sm font-bold">ANNULLA</button>
+              <button onClick={() => {
+                const freshSave = { ownedIds: [], partyIds: [], completedCities: [], introDone: false };
+                setSave(freshSave);
+                try { localStorage.removeItem(storageKey); } catch {}
+                setConfirmRestart(false);
+                setMenuOpen(false);
+                setPanel("");
+                setStarterChoice("Natura");
+                setPhase("intro");
+                onRestart?.();
+              }} className="rounded-xl bg-red-400 py-3 text-sm font-black text-black">SÌ, RICOMINCIA</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {panel && phase !== "battle" && (
         <div className="absolute inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
