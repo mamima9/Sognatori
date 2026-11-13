@@ -51,15 +51,15 @@ export function getStarterPair(choice) {
  * Ogni territorio ospita un incontro selvatico coerente con il proprio bioma.
  */
 export const ADVENTURE_WILD_AREAS = [
-  { id:"wild-demone", name:"Caldera delle Braci", faction:"Demone", biome:"lava", x:900, y:350, radius:190, color:"#c65b4b", sognatore:"Pepe", detail:"Campi vulcanici, fumarole e rocce incandescenti." },
-  { id:"wild-robot", name:"Selva dei Circuiti", faction:"Robot", biome:"circuit", x:3370, y:690, radius:185, color:"#55b8bd", sognatore:"Deb", detail:"Alberi metallici, relitti e sentieri luminosi." },
-  { id:"wild-natura", name:"Giungla delle Radici", faction:"Natura", biome:"forest", x:420, y:1250, radius:190, color:"#79ad58", sognatore:"Cillymbu", detail:"Radici giganti, felci e sorgenti nascoste." },
-  { id:"wild-nuvola", name:"Arcipelago delle Nuvole", faction:"Nuvola", biome:"cloud", x:1780, y:300, radius:185, color:"#a9c9ec", sognatore:"Eroe", detail:"Isole sospese, correnti d'aria e fiori celesti." },
-  { id:"wild-umano", name:"Praterie del Viandante", faction:"Umano", biome:"prairie", x:1260, y:2020, radius:185, color:"#d6a16e", sognatore:"Sparkly", detail:"Prati aperti, vecchi accampamenti e sentieri di mercanti." },
-  { id:"wild-luce", name:"Deserto dell'Alba", faction:"Luce", biome:"sun", x:3380, y:1510, radius:190, color:"#f0d36d", sognatore:"Nina", detail:"Dune dorate, obelischi e specchi di luce." },
-  { id:"wild-dolce", name:"Giardini di Zucchero", faction:"Dolce", biome:"candy", x:760, y:700, radius:180, color:"#e58fc4", sognatore:"Dragociocco", detail:"Fiori canditi, colline soffici e ruscelli colorati." },
-  { id:"wild-marino", name:"Abisso delle Maree", faction:"Marino", biome:"ocean", x:2740, y:2180, radius:185, color:"#53c2d2", sognatore:"Aragostino", detail:"Scogliere marine, pozze profonde e coralli luminosi." },
-  { id:"wild-orso", name:"Altopiano degli Artigli", faction:"Orso", biome:"mountain", x:250, y:1740, radius:185, color:"#b88b55", sognatore:"Ring-Ape", detail:"Pini antichi, massi e tane tra le montagne." },
-  { id:"wild-mago", name:"Rovine dell'Etere", faction:"Mago", biome:"arcane", x:2300, y:900, radius:185, color:"#a58be1", sognatore:"Uesditti", detail:"Pietre runiche, archi spezzati e anomalie magiche." },
-  { id:"wild-salato", name:"Distese di Sale", faction:"Salato", biome:"crystal", x:2180, y:1730, radius:185, color:"#c7c0a9", sognatore:"Toasty", detail:"Cristalli salini, canyon chiari e geyser minerali." },
+  { id:"wild-demone", name:"Caldera delle Braci", faction:"Demone", biome:"lava", x:900, y:350, radius:320, color:"#c65b4b", sognatore:"Pepe", detail:"Campi vulcanici, fumarole e rocce incandescenti." },
+  { id:"wild-robot", name:"Selva dei Circuiti", faction:"Robot", biome:"circuit", x:3370, y:690, radius:310, color:"#55b8bd", sognatore:"Deb", detail:"Alberi metallici, relitti e sentieri luminosi." },
+  { id:"wild-natura", name:"Giungla delle Radici", faction:"Natura", biome:"forest", x:420, y:1250, radius:320, color:"#79ad58", sognatore:"Cillymbu", detail:"Radici giganti, felci e sorgenti nascoste." },
+  { id:"wild-nuvola", name:"Arcipelago delle Nuvole", faction:"Nuvola", biome:"cloud", x:1780, y:300, radius:310, color:"#a9c9ec", sognatore:"Eroe", detail:"Isole sospese, correnti d'aria e fiori celesti." },
+  { id:"wild-umano", name:"Praterie del Viandante", faction:"Umano", biome:"prairie", x:1260, y:2020, radius:310, color:"#d6a16e", sognatore:"Sparkly", detail:"Prati aperti, vecchi accampamenti e sentieri di mercanti." },
+  { id:"wild-luce", name:"Deserto dell'Alba", faction:"Luce", biome:"sun", x:3380, y:1510, radius:320, color:"#f0d36d", sognatore:"Nina", detail:"Dune dorate, obelischi e specchi di luce." },
+  { id:"wild-dolce", name:"Giardini di Zucchero", faction:"Dolce", biome:"candy", x:760, y:700, radius:300, color:"#e58fc4", sognatore:"Dragociocco", detail:"Fiori canditi, colline soffici e ruscelli colorati." },
+  { id:"wild-marino", name:"Abisso delle Maree", faction:"Marino", biome:"ocean", x:2740, y:2180, radius:310, color:"#53c2d2", sognatore:"Aragostino", detail:"Scogliere marine, pozze profonde e coralli luminosi." },
+  { id:"wild-orso", name:"Altopiano degli Artigli", faction:"Orso", biome:"mountain", x:250, y:1740, radius:310, color:"#b88b55", sognatore:"Ring-Ape", detail:"Pini antichi, massi e tane tra le montagne." },
+  { id:"wild-mago", name:"Rovine dell'Etere", faction:"Mago", biome:"arcane", x:2300, y:900, radius:310, color:"#a58be1", sognatore:"Uesditti", detail:"Pietre runiche, archi spezzati e anomalie magiche." },
+  { id:"wild-salato", name:"Distese di Sale", faction:"Salato", biome:"crystal", x:2180, y:1730, radius:310, color:"#c7c0a9", sognatore:"Toasty", detail:"Cristalli salini, canyon chiari e geyser minerali." },
 ];
