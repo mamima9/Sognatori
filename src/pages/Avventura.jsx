@@ -358,10 +358,8 @@ export default function Avventura() {
   const { user, isLoadingAuth, authChecked } = useAuth();
 
   const testerAllowed =
-    !!user?.email &&
-    TESTER_EMAILS.includes(
-      user.email.toLowerCase()
-    );
+    (!!user?.email && TESTER_EMAILS.includes(user.email.toLowerCase())) ||
+    user?.user_metadata?.sognatori_arcade_completed === true;
 
   /*
     ============================
