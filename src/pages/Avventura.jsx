@@ -92,7 +92,7 @@ function buildMapWildStarts(city) {
       recruitable: copy === 0,
       speciesIndex: index,
       cornerIndex: index % WILD_CORNER_ANCHORS.length,
-      siteX: centerX,
+      siteX: centerX + directionX * 145,
       siteY: centerY,
       loreSite,
     }));
@@ -583,6 +583,12 @@ const [message, setMessage] = useState("");
   }, [activeMapId]);
 
   const zone = useMemo(() => {
+    const nearbyLoreSite = wildRef.current.find((wild) =>
+      wild.recruitable && Math.hypot(player.x - wild.siteX, player.y - wild.siteY) <= 170
+    );
+    if (nearbyLoreSite) {
+      return { ...activeWildArea, name: nearbyLoreSite.loreSite, kind: "wild" };
+    }
     const wildArea = activeWildArea;
     if (Math.hypot(player.x - wildArea.x, player.y - wildArea.y) <= wildArea.radius) {
       return { ...wildArea, name: wildArea.name, kind: "wild" };
