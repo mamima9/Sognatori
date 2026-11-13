@@ -216,7 +216,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       {phase !== "battle" && <div className="pointer-events-none fixed inset-0 z-[210]">
         {menuOpen && (
           <div className="pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
-            <button onClick={() => setConfirmRestart(true)} className="mb-3 w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
+            <button onClick={() => { setMenuOpen(false); setConfirmRestart(true); }} className="mb-3 w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
               ↻ RICOMINCIA DA ZERO
             </button>
             {menuContent}
