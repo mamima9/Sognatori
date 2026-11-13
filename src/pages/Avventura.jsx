@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
-import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, buildCityTeam } from "@/lib/adventureCampaignData";
+import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
 
 /*
@@ -65,17 +65,22 @@ function buildMapWildStarts(city) {
 const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
 const MAP_SPAWN = { x: 1800, y: 210 };
 
-const CHALLENGERS = ADVENTURE_CITIES.map((city) => ({
+const CHALLENGERS = ADVENTURE_CITIES.map((city) => {
+  const lore = ADVENTURE_FACTION_LORE[city.id];
+  return {
   ...city,
+  ...lore,
   id: city.id,
-  name: city.traveler,
+  name: lore?.leader || city.traveler,
+  traveler: lore?.leader || city.traveler,
   team: buildCityTeam(city.faction, city.id),
   vision: 190,
   homeX: city.x,
   homeY: city.y,
   radius: 76,
   color: city.color,
-}));
+  };
+});
 
 /* Sei case visitabili per città, ognuna con un abitante. */
 const HOUSE_OFFSETS = [
@@ -83,12 +88,12 @@ const HOUSE_OFFSETS = [
   [-132, 88], [132, 88], [0, 158],
 ];
 const HOUSE_RESIDENTS = [
-  ["Elda", "La strada fuori è piena di storie. Fermati un momento: ogni sogno ha bisogno di riposo."],
-  ["Timo", "Colleziono mappe e racconti. Ogni angolo di questo mondo nasconde qualcosa."],
-  ["Nora", "Le città cambiano grazie a chi le attraversa. Lascia qui un ricordo del tuo viaggio."],
-  ["Berto", "Hai visto il paesaggio fuori? Ogni fazione ha costruito la propria casa a modo suo."],
-  ["Lumi", "Non avere fretta. I dettagli più belli si notano solo quando ci si ferma."],
-  ["Riko", "Un giorno queste strade saranno piene di altri sognatori. Continua a esplorare!"],
+  ["Elda", "La strada fuori è piena di storie."],
+  ["Timo", "Colleziono mappe e racconti."],
+  ["Nora", "Ogni angolo nasconde qualcosa."],
+  ["Berto", "Ogni fazione costruisce a modo suo."],
+  ["Lumi", "I dettagli più belli si notano fermandosi."],
+  ["Riko", "Continua a esplorare!"],
 ];
 const ADVENTURE_HOUSES = ADVENTURE_CITIES.flatMap((city) =>
   HOUSE_OFFSETS.map(([ox, oy], index) => ({
@@ -96,8 +101,8 @@ const ADVENTURE_HOUSES = ADVENTURE_CITIES.flatMap((city) =>
     city,
     x: city.x + ox * 1.55,
     y: city.y + oy * 1.55,
-    resident: HOUSE_RESIDENTS[index][0],
-    dialogue: HOUSE_RESIDENTS[index][1],
+    resident: (ADVENTURE_FACTION_LORE[city.id]?.npcs?.[index] || HOUSE_RESIDENTS[index])[0],
+    dialogue: (ADVENTURE_FACTION_LORE[city.id]?.npcs?.[index] || HOUSE_RESIDENTS[index])[1],
     number: index + 1,
   }))
 );
@@ -434,7 +439,9 @@ const [message, setMessage] = useState("");
   const [time, setTime] = useState(9);
   const [activeMapId, setActiveMapId] = useState("natura");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
-  const activeCity = { ...activeCityBase, x: 1800, y: 1200 };
+  const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
+  const activeCity = { ...activeCityBase, ...activeLore, x: 1800, y: 1200 };
+  const cityNpcCharacters = NPCS.map((npc, index) => ({ ...npc, name: activeLore.npcs?.[index]?.[0] || npc.name, dialogue: activeLore.npcs?.[index]?.[1] || npc.dialogue }));
   const activeWildAreaBase = ADVENTURE_WILD_AREAS.find((area) => area.faction === activeCity.faction) || ADVENTURE_WILD_AREAS[0];
   const activeWildArea = { ...activeWildAreaBase, x: 1800, y: 760 };
 
@@ -1231,7 +1238,7 @@ const [message, setMessage] = useState("");
       return;
     }
 
-    setMessage("Avvicinati a una casa, a un personaggio, a un Sognatore o alla porta in fondo alla mappa e premi E.");
+    setMessage("Avvicinati a un abitante, a un Sognatore, al Capo fazione o alla porta e premi E.");
     setTimeout(() => setMessage(""), 1800);
   };
 
