@@ -35,49 +35,6 @@ const WRONG = [
   "Non mi interessa ascoltare, seguimi e basta.",
 ];
 
-const PERSUASION_RIDDLES = [
-  { q: "Tre interruttori sono fuori da una stanza chiusa. Dentro c'è una sola lampadina a incandescenza. Puoi azionare gli interruttori quanto vuoi, ma entrare nella stanza una sola volta. Come individui quello giusto?", a: ["Accendo il primo, aspetto, lo spengo e accendo il secondo: entrando, luce accesa = secondo; spenta ma calda = primo; spenta e fredda = terzo.", "Accendo tutti e tre e controllo la luminosità.", "Entro al buio e provo gli interruttori uno per volta."], correct: 0 },
-  { q: "Hai 9 monete identiche all'aspetto; una è più pesante. Con una bilancia a due piatti, qual è il minimo numero di pesate per trovarla con certezza?", a: ["Due pesate: dividi in tre gruppi da tre, poi confronta due monete del gruppo sospetto.", "Tre pesate, una per ogni moneta.", "Una sola pesata mettendone quattro contro quattro."], correct: 0 },
-  { q: "Un orologio impiega 5 secondi per battere 6 rintocchi. Quanto impiega per batterne 12, mantenendo lo stesso intervallo?", a: ["11 secondi.", "10 secondi.", "12 secondi."], correct: 0 },
-  { q: "Un uomo guarda un ritratto e dice: «Non ho fratelli né sorelle, ma il padre di quell'uomo è figlio di mio padre». Chi è nel ritratto?", a: ["Suo figlio.", "Suo padre.", "Lui stesso."], correct: 0 },
-  { q: "Hai due corde. Ognuna brucia in esattamente 60 minuti, ma in modo irregolare. Come misuri 45 minuti?", a: ["Accendi la prima da entrambe le estremità e la seconda da una; quando la prima finisce (30 min), accendi anche l'altra estremità della seconda.", "Accendi entrambe da un'estremità e aspetti che una metà sia consumata.", "Tagli entrambe a metà e le accendi."], correct: 0 },
-  { q: "Completa la sequenza: 1, 11, 21, 1211, 111221, ... Qual è il termine successivo?", a: ["312211.", "211221.", "13112221."], correct: 0 },
-  { q: "In una gara superi il concorrente che si trova al secondo posto. In quale posizione ti trovi?", a: ["Secondo.", "Primo.", "Terzo."], correct: 0 },
-  { q: "Un contadino deve attraversare un fiume con volpe, oca e sacco di fagioli. La barca porta lui e un solo elemento. Qual è la prima traversata corretta?", a: ["Porta l'oca sull'altra riva.", "Porta prima la volpe.", "Porta prima i fagioli."], correct: 0 },
-  { q: "Tre scatole sono etichettate «Mele», «Pere» e «Miste», ma tutte le etichette sono sbagliate. Puoi estrarre un solo frutto da una scatola. Da quale inizi?", a: ["Da quella etichettata «Miste».", "Da quella etichettata «Mele».", "Da quella etichettata «Pere»."], correct: 0 },
-  { q: "Un numero di due cifre ha somma delle cifre pari a 9. Scambiando le cifre, il numero aumenta di 27. Qual è il numero originale?", a: ["36.", "45.", "63."], correct: 0 },
-  { q: "In una stanza ci sono 100 armadietti chiusi. Al passaggio n apri o chiudi ogni armadietto il cui numero è multiplo di n. Dopo 100 passaggi, quali restano aperti?", a: ["Quelli con numero quadrato perfetto.", "Quelli con numero primo.", "Tutti quelli con numero pari."], correct: 0 },
-];
-
-function persuasionChallengeFor(s) {
-  const id = String(s?.id || s?.nome || "sognatore");
-  const seed = Array.from(id).reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
-  const riddle = PERSUASION_RIDDLES[seed % PERSUASION_RIDDLES.length];
-  const order = [0, 1, 2];
-  const shift = (seed >>> 3) % 3;
-  const shuffled = order.slice(shift).concat(order.slice(0, shift));
-  return {
-    question: riddle.q,
-    options: shuffled.map((index) => riddle.a[index]),
-    correct: riddle.a[0],
-  };
-}
-
-const TRIAL_RUNES = ["◆", "✦", "●", "▲", "☾", "✚"];
-function buildResonanceTrial(seedValue) {
-  const raw = String(seedValue || "sognatore");
-  let seed = Array.from(raw).reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 17);
-  return [4, 6, 8].map((length) => {
-    const sequence = [];
-    for (let i = 0; i < length; i++) {
-      seed = (seed * 1664525 + 1013904223) >>> 0;
-      let next = (seed >>> 16) % TRIAL_RUNES.length;
-      if (sequence.length && sequence[sequence.length - 1] === next) next = (next + 1 + (seed % 3)) % TRIAL_RUNES.length;
-      sequence.push(next);
-    }
-    return sequence;
-  });
-}
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -106,9 +63,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [starterSognatore, setStarterSognatore] = useState(null);
   const [rewardIndex, setRewardIndex] = useState(0);
   const [rewardQueue, setRewardQueue] = useState([]);
-  const [persuasionError, setPersuasionError] = useState(false);
   const [battleKey, setBattleKey] = useState(0);
-  const [wildError, setWildError] = useState(false);
   const [trialRound, setTrialRound] = useState(0);
   const [trialStep, setTrialStep] = useState(0);
   const [trialLives, setTrialLives] = useState(3);
@@ -141,12 +96,10 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
 
   useEffect(() => {
     if (wildEncounter) {
-      setWildError(false);
       setTrialRound(0); setTrialStep(0); setTrialLives(3); setTrialMode("preview"); setTrialError("");
       setPhase("wildTalk");
     } else if (encounter) {
-      setPersuasionError(false);
-      setPhase(save.conqueredLeaders.includes(encounter.id) ? "completed" : "traveler");
+        setPhase(save.conqueredLeaders.includes(encounter.id) ? "completed" : "traveler");
     } else if (!save.introDone) {
       setPhase("intro");
     } else if (phase !== "intro") {
@@ -227,7 +180,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     if (outcome === "win") {
       setRewardIndex(0);
       setRewardQueue(rewards);
-      setPersuasionError(false);
       if (!rewards.length) {
         const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
         setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
