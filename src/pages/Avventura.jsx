@@ -64,6 +64,7 @@ function buildMapWildStarts(city) {
       x: centerX + ox,
       y: centerY + oy,
       name: sognatore.nome,
+      recruitable: copy === 0,
     }));
   });
 }
@@ -1025,6 +1026,11 @@ const [message, setMessage] = useState("");
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
+        if (wild.recruitable) {
+          ctx.save(); ctx.font = "bold 18px monospace"; ctx.textAlign = "center";
+          ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
+          ctx.fillText("✦", wild.x, wild.y - 66); ctx.restore();
+        }
         if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           labeledWildNames.add(wild.rosterId);
           ctx.save();
