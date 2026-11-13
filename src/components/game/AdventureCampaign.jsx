@@ -63,6 +63,21 @@ function persuasionChallengeFor(s) {
   };
 }
 
+const TRIAL_RUNES = ["◆", "✦", "●", "▲", "☾", "✚"];
+function buildResonanceTrial(seedValue) {
+  const raw = String(seedValue || "sognatore");
+  let seed = Array.from(raw).reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 17);
+  return [4, 6, 8].map((length) => {
+    const sequence = [];
+    for (let i = 0; i < length; i++) {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      let next = (seed >>> 16) % TRIAL_RUNES.length;
+      if (sequence.length && sequence[sequence.length - 1] === next) next = (next + 1 + (seed % 3)) % TRIAL_RUNES.length;
+      sequence.push(next);
+    }
+    return sequence;
+  });
+}
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -94,7 +109,18 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [persuasionError, setPersuasionError] = useState(false);
   const [battleKey, setBattleKey] = useState(0);
   const [wildError, setWildError] = useState(false);
+  const [trialRound, setTrialRound] = useState(0);
+  const [trialStep, setTrialStep] = useState(0);
+  const [trialLives, setTrialLives] = useState(3);
+  const [trialMode, setTrialMode] = useState("preview");
+  const [trialError, setTrialError] = useState("");
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const currentReward = rewardQueue[rewardIndex];
+  const wildSognatore = wildEncounter ? ROSTER.find((s) => s.id === wildEncounter.rosterId) || ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
+  const wildAlreadyOwned = !!wildSognatore && save.ownedIds.includes(wildSognatore.id);
+  const activeTrialKey = phase === "wildTalk" ? (wildEncounter?.rosterId || wildEncounter?.id) : phase === "reward" ? currentReward?.id : "idle";
+  const trialSequences = useMemo(() => buildResonanceTrial(activeTrialKey), [activeTrialKey]);
+  const activeTrialSequence = trialSequences[trialRound] || [];
 
   useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(save)); } catch {}
@@ -116,6 +142,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   useEffect(() => {
     if (wildEncounter) {
       setWildError(false);
+      setTrialRound(0); setTrialStep(0); setTrialLives(3); setTrialMode("preview"); setTrialError("");
       setPhase("wildTalk");
     } else if (encounter) {
       setPersuasionError(false);
@@ -136,7 +163,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     [save.partyIds]
   );
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
-  const wildSognatore = wildEncounter ? ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
   const cityTeam = useMemo(
     () => encounter ? (encounter.team?.length === 4 ? encounter.team : buildCityTeam(encounter.faction, encounter.id)) : [],
     [encounter?.id]
@@ -232,8 +258,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     }
   };
-
-  const currentReward = rewardQueue[rewardIndex];
 
   return (
     <>
