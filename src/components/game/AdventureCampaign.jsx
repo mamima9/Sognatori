@@ -199,7 +199,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         : old.partyIds;
       return { ...old, ownedIds, partyIds };
     });
-    setPersuasionError(false);
     if (rewardIndex + 1 < rewardQueue.length) setRewardIndex((n) => n + 1);
     else {
       const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
