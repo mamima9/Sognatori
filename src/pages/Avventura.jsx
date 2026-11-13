@@ -1286,7 +1286,7 @@ const [message, setMessage] = useState("");
         <div className="text-xs font-black tracking-[.25em] text-emerald-100/70">SOGNATORI · AVVENTURA</div>
         <div className="text-xs font-bold text-white/60">{activeCity.city} · {activeCity.faction} · {zone.name}</div>
       </div>
-      <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-145px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
+      <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-120px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
       </div>
