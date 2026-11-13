@@ -178,13 +178,13 @@ function drawFactionLoreSite(ctx, faction, x, y, label, cornerIndex = 0) {
   }
 
   ctx.fillStyle = "rgba(7,13,18,.88)";
-  ctx.fillRect(-86, 28, 172, 20);
+  ctx.fillRect(-116, 25, 232, 27);
   ctx.fillStyle = light;
-  ctx.fillRect(-86, 28, 4, 20);
+  ctx.fillRect(-116, 25, 5, 27);
   ctx.fillStyle = "#fff6e7";
-  ctx.font = "bold 8px monospace";
+  ctx.font = "bold 12px monospace";
   ctx.textAlign = "center";
-  ctx.fillText(label, 0, 41, 164);
+  ctx.fillText(label, 0, 44, 220);
   ctx.restore();
 }
 
@@ -1125,20 +1125,20 @@ const [message, setMessage] = useState("");
         if (!creature) continue;
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
         if (wild.recruitable) {
-          ctx.save(); ctx.font = "bold 18px monospace"; ctx.textAlign = "center";
+          ctx.save(); ctx.font = "bold 22px monospace"; ctx.textAlign = "center";
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
-          ctx.fillText("✦", wild.x, wild.y - 82); ctx.restore();
+          ctx.fillText("✦", wild.x, wild.y - 105); ctx.restore();
         }
         if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           labeledWildNames.add(wild.rosterId);
           ctx.save();
-          ctx.font = "bold 10px monospace";
+          ctx.font = "bold 15px monospace";
           ctx.textAlign = "center";
-          const labelWidth = ctx.measureText(wild.name).width + 18;
-          ctx.fillStyle = "rgba(8,16,13,.82)";
-          ctx.fillRect(wild.x - labelWidth / 2, wild.y - 66, labelWidth, 19);
-          ctx.fillStyle = "#f3f0df";
-          ctx.fillText(wild.name, wild.x, wild.y - 52);
+          const labelWidth = ctx.measureText(wild.name).width + 26;
+          ctx.fillStyle = "rgba(8,16,13,.9)";
+          ctx.fillRect(wild.x - labelWidth / 2, wild.y - 94, labelWidth, 27);
+          ctx.fillStyle = "#fff5dc";
+          ctx.fillText(wild.name, wild.x, wild.y - 75);
           ctx.restore();
         }
       }
@@ -1152,13 +1152,13 @@ const [message, setMessage] = useState("");
         drawAdventureTraveler(ctx, traveler.traveler || traveler.name, traveler.faction, traveler.x, traveler.y, travelerFrame, 1, facing);
         if (Math.hypot(playerRef.current.x - traveler.x, playerRef.current.y - traveler.y) < 220) {
           ctx.save();
-          ctx.font = "bold 10px monospace";
+          ctx.font = "bold 14px monospace";
           ctx.textAlign = "center";
-          const labelWidth = ctx.measureText(traveler.traveler || traveler.name).width + 18;
-          ctx.fillStyle = "rgba(8,16,13,.82)";
-          ctx.fillRect(traveler.x - labelWidth / 2, traveler.y - 91, labelWidth, 18);
-          ctx.fillStyle = "#f4dfb0";
-          ctx.fillText(traveler.traveler || traveler.name, traveler.x, traveler.y - 78);
+          const labelWidth = ctx.measureText(traveler.traveler || traveler.name).width + 24;
+          ctx.fillStyle = "rgba(8,16,13,.9)";
+          ctx.fillRect(traveler.x - labelWidth / 2, traveler.y - 108, labelWidth, 25);
+          ctx.fillStyle = "#fff0c8";
+          ctx.fillText(traveler.traveler || traveler.name, traveler.x, traveler.y - 90);
           ctx.restore();
         }
       }
@@ -1203,7 +1203,7 @@ const [message, setMessage] = useState("");
         "#fff";
 
       ctx.font =
-        "700 22px system-ui";
+        "700 27px system-ui";
 
       ctx.textAlign =
         "center";
@@ -1661,7 +1661,7 @@ function drawAdventureDoor(ctx, x, y, color, label) {
   ctx.fillStyle = "rgba(255,255,255,.32)";
   ctx.fillRect(-15, -72, 8, 52);
   ctx.fillStyle = "#f6e4a7";
-  ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+  ctx.font = "bold 16px monospace"; ctx.textAlign = "center";
   ctx.fillText(label, 0, -144);
   ctx.restore();
 }
@@ -1900,13 +1900,13 @@ function drawNpc(ctx, npc) {
 
   // Piccolo nome su targhetta scura, senza badge flottante.
   ctx.fillStyle = "rgba(12,18,27,.82)";
-  ctx.fillRect(-29, 29, 58, 16);
+  ctx.fillRect(-42, 27, 84, 20);
   ctx.fillStyle = npc.color;
-  ctx.fillRect(-29, 29, 3, 16);
+  ctx.fillRect(-42, 27, 4, 20);
   ctx.fillStyle = "#fff4df";
-  ctx.font = "bold 11px monospace";
+  ctx.font = "bold 13px monospace";
   ctx.textAlign = "center";
-  ctx.fillText(npc.name, 0, 41);
+  ctx.fillText(npc.name, 0, 42, 78);
   ctx.restore();
 }
 
@@ -2314,7 +2314,7 @@ function drawCityLandmark(ctx, city) {
   ctx.fillStyle = accent;
   ctx.fillRect(-58, 43, 4, 25);
   ctx.fillStyle = "#fff4df";
-  ctx.font = "bold 11px monospace";
+  ctx.font = "bold 13px monospace";
   ctx.textAlign = "center";
   ctx.fillText(city.city, 2, 54, 106);
   ctx.fillStyle = accent;
