@@ -268,14 +268,15 @@ function circleRectCollision(
 }
 
 function collidesWithCityBuildings(x, y, radius) {
+  const cityScale = 1.55;
   const offsets = [
     [-132, -88], [0, -158], [132, -88],
     [-132, 88], [132, 88], [0, 158],
-  ];
+  ].map(([x, y]) => [x * cityScale, y * cityScale]);
   return ADVENTURE_CITIES.some((city) =>
     offsets.some(([bx, by], index) => {
-      const w = index % 3 === 0 ? 62 : 54;
-      const h = index % 2 === 0 ? 48 : 56;
+      const w = (index % 3 === 0 ? 62 : 54) * cityScale;
+      const h = (index % 2 === 0 ? 48 : 56) * cityScale;
       return circleRectCollision(
         x,
         y,
@@ -386,7 +387,7 @@ const [message, setMessage] = useState("");
     if (wildArea) return { ...wildArea, name: wildArea.name, kind: "wild" };
 
     const city = ADVENTURE_CITIES.find((item) =>
-      Math.hypot(player.x - item.x, player.y - item.y) <= 205
+      Math.hypot(player.x - item.x, player.y - item.y) <= 315
     );
     if (city) return { ...city, name: "Città di " + city.city, kind: "city" };
 
@@ -1634,9 +1635,10 @@ function drawCityDistrict(ctx, city) {
   ];
   ctx.save();
   ctx.translate(x, y);
+  ctx.scale(1.55, 1.55);
   ctx.imageSmoothingEnabled = false;
 
-  // Piazza e anello stradale che rendono riconoscibile il perimetro urbano.
+  // Piazza e anello stradale: quartiere ampio in stile RPG 2010.
   ctx.fillStyle = "rgba(20,25,28,.24)";
   ctx.beginPath(); ctx.ellipse(0, 8, 190, 156, 0, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = "rgba(220,202,158,.72)";
@@ -1701,18 +1703,24 @@ function drawWildArea(ctx, area) {
   const x = area.x;
   const y = area.y;
   const r = area.radius;
+  const areaScale = r / 190;
   ctx.save();
   ctx.translate(x, y);
+  ctx.scale(areaScale, areaScale);
   ctx.imageSmoothingEnabled = false;
 
-  // Terreno organico, bordo e aura colorata per distinguere i biomi.
-  ctx.fillStyle = area.color + "24";
-  ctx.beginPath(); ctx.ellipse(0, 0, r, r * .76, 0, 0, Math.PI * 2); ctx.fill();
+  // Ampia radura esplorabile: terreno a livelli, contorno netto e palette vivace da RPG 2010.
+  ctx.fillStyle = area.color + "32";
+  ctx.beginPath(); ctx.ellipse(0, 0, 190, 145, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "rgba(18,31,27,.20)";
+  ctx.beginPath(); ctx.ellipse(0, 8, 180, 137, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = area.color + "20";
+  ctx.beginPath(); ctx.ellipse(0, -5, 172, 130, 0, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = area.color;
   ctx.globalAlpha = .72;
   ctx.lineWidth = 7;
   ctx.setLineDash([18, 13]);
-  ctx.beginPath(); ctx.ellipse(0, 0, r - 8, r * .76 - 8, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 0, 182, 137, 0, 0, Math.PI * 2); ctx.stroke();
   ctx.setLineDash([]);
   ctx.globalAlpha = 1;
 
@@ -1809,6 +1817,7 @@ function drawCityLandmark(ctx, city) {
   const accent = city.color || "#e5c17f";
   ctx.save();
   ctx.translate(x, y);
+  ctx.scale(1.3, 1.3);
   ctx.imageSmoothingEnabled = false;
 
   // Piattaforma in pietra, ombra e iscrizione della città.
