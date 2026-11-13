@@ -1937,7 +1937,7 @@ function drawFactionDistrictDetails(ctx, city) {
       plaque("ARCHIVIO DELL'ETERE", "#c4b2f0");break;
     case "Salato":
       for (const x of [-190,190]) { ctx.fillStyle="#8a918d";ctx.fillRect(x-32,42,64,14);ctx.fillStyle="#e8e4d5";ctx.beginPath();ctx.moveTo(x,-78);ctx.lineTo(x-28,42);ctx.lineTo(x+28,42);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-3,-48,6,72); }
-      plaque("VASche DEL SALE", "#e8e4d5");break;
+      plaque("VASCHE DEL SALE", "#e8e4d5");break;
   }
   ctx.restore();
 }
