@@ -226,7 +226,7 @@ const ZONES = [
 
 
 /* Terreno HD pixel-art: variazioni organiche e dettagli per bioma, senza griglia piatta. */
-function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale) {
+function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "Natura") {
   const tile = 48;
   const halfW = viewWidth / (2 * scale) + tile * 2;
   const halfH = viewHeight / (2 * scale) + tile * 2;
@@ -240,12 +240,26 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale) {
     "Monti di Cenere": ["#686258", "#746c60", "#7d7568", "#625d55", "#898071"],
     "Valle Dorata": ["#9a8242", "#a88d48", "#b29650", "#967c3d", "#baa15b"],
   };
+  const factionPalettes = {
+    Demone: ["#75434a", "#96504c", "#b65d4d", "#633b43", "#c87555"],
+    Robot: ["#345c62", "#3f7378", "#568d8c", "#294d5b", "#70a7a0"],
+    Natura: ["#426f45", "#52864a", "#659c52", "#365f40", "#79ad60"],
+    Nuvola: ["#8da8c4", "#a8bdd2", "#c1d1df", "#7897b8", "#d4deeb"],
+    Umano: ["#98734d", "#ad8557", "#c09a68", "#876344", "#d0ae7b"],
+    Luce: ["#b49a4b", "#c9ad57", "#ddc46d", "#a98b3e", "#ead58c"],
+    Dolce: ["#a96f9b", "#c083ae", "#d79ac0", "#95618d", "#e8b4d0"],
+    Marino: ["#367b88", "#438e9b", "#58a5ae", "#2e697e", "#80c1c5"],
+    Orso: ["#766044", "#92734d", "#aa875a", "#624e3c", "#c09b69"],
+    Mago: ["#62517f", "#79649a", "#907ab0", "#51436e", "#b09ad0"],
+    Salato: ["#8b8b7d", "#a3a394", "#b9b9a8", "#747b79", "#d0cbb6"],
+  };
+  const factionPalette = factionPalettes[faction] || palettes["Prato dei Sogni"];
   const flowerColors = ["#f4e8c4", "#e8a8c8", "#d7e9ef", "#f1cf72"];
   for (let y = top; y < bottom; y += tile) {
     for (let x = left; x < right; x += tile) {
       const zone = ZONES.find(z => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) || ZONES[0];
       const seed = Math.abs(((x / tile) * 73856093) ^ ((y / tile) * 19349663));
-      const palette = palettes[zone.name];
+      const palette = factionPalette;
       ctx.fillStyle = palette[seed % palette.length];
       ctx.fillRect(x, y, tile, tile);
 
@@ -841,7 +855,7 @@ const [message, setMessage] = useState("");
       ctx.globalAlpha = 1;
 
       // Dettaglio del terreno a tile GBA.
-      drawGroundTiles(ctx, cam, w, h, scale);
+      drawGroundTiles(ctx, cam, w, h, scale, activeCity.faction);
 
       /* SENTIERI: bordi d'erba, terra calda e tracce di ghiaia. */
       const paths = [
