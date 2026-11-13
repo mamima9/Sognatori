@@ -48,18 +48,24 @@ const TESTER_EMAILS = [
   "bibitoeuro@gmail.com",
 ];
 
-// Due esemplari di OGNI Sognatore del roster, non soltanto quelli delle 11 aree.
+// Quattro esemplari visibili per ogni specie della fazione.
+ // Ogni esemplare ha un ID di incontro distinto, ma condivide il rosterId:
+ // il salvataggio consente quindi di arruolare quella specie una sola volta.
 function buildMapWildStarts(city) {
-  const residents = ROSTER.filter((sognatore) => sognatore.tipo === city.faction);
-  return residents.flatMap((sognatore, index) =>
-    [0, 1].map((copy) => ({
+  const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
+  const copies = 4;
+  return residents.flatMap((sognatore, index) => {
+    const centerX = 1480 + (index % 3) * 155;
+    const centerY = 700 + Math.floor(index / 3) * 150;
+    const offsets = [[-34, -28], [34, -28], [-34, 28], [34, 28]];
+    return offsets.slice(0, copies).map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
-      x: 1800 + ((index % 4) - 1.5) * 150 + (copy ? 42 : -42),
-      y: 820 + Math.floor(index / 4) * 180 + (copy ? 34 : -34),
+      x: centerX + ox,
+      y: centerY + oy,
       name: sognatore.nome,
-    }))
-  );
+    }));
+  });
 }
 
 const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
@@ -1014,11 +1020,13 @@ const [message, setMessage] = useState("");
         separato: così condividono scala, camera e profondità con il giocatore.
       */
       const spriteFrame = Math.floor(performance.now() / 360) % 2;
+      const labeledWildNames = new Set();
       for (const wild of wildRef.current) {
-        const creature = ROSTER.find((entry) => entry.nome.toLowerCase() === wild.name.toLowerCase());
+        const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
-        if (Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
+        if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
+          labeledWildNames.add(wild.rosterId);
           ctx.save();
           ctx.font = "bold 10px monospace";
           ctx.textAlign = "center";
@@ -1521,43 +1529,10 @@ const [message, setMessage] = useState("");
   ============================================
 */
 
-// Cache degli artwork ufficiali: gli sprite dell'overworld usano il design
-// individuale del roster, con pixel scaling e animazione idle leggera.
-const OVERWORLD_ARTWORK = new Map();
-
+// Sprite nativo: il personaggio viene composto pixel per pixel sul canvas
+// dell'overworld. Nessun PNG viene caricato o disegnato come creatura in mappa.
 function drawOverworldSognatore(ctx, s, x, y, frame = 0) {
-  const bob = frame ? 2 : 0;
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,.34)";
-  ctx.beginPath();
-  ctx.ellipse(x, y + 2, 27, 7, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  if (s?.img) {
-    let image = OVERWORLD_ARTWORK.get(s.img);
-    if (!image) {
-      image = new Image();
-      image.onload = () => { image.ready = true; };
-      image.onerror = () => { image.failed = true; };
-      image.src = s.img;
-      OVERWORLD_ARTWORK.set(s.img, image);
-    }
-    if (image.complete && image.naturalWidth > 0) {
-      const maxWidth = 68;
-      const maxHeight = 68;
-      const ratio = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
-      const width = Math.max(1, image.naturalWidth * ratio);
-      const height = Math.max(1, image.naturalHeight * ratio);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(image, Math.round(x - width / 2), Math.round(y - height + 7 - bob), Math.round(width), Math.round(height));
-      ctx.restore();
-      return;
-    }
-  }
-
-  // Fallback pixel-art se l'immagine ufficiale non è disponibile.
-  drawAdventureWildSognatore(ctx, s, x, y - bob, frame, 1.9);
-  ctx.restore();
+  drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, 2.1);
 }
 
 function nextCityName(cityId) {
