@@ -91,11 +91,6 @@ export function createTravelerSpriteSheet(faction, traveler){
   directions.forEach((direction,row)=>[0,1].forEach((frame,col)=>{
     ctx.save();
     ctx.translate(col*24,row*32);
-    // Il disegno supporta il profilo sinistro: per il destro lo specchiamo.
-    if(direction==="right"){
-      ctx.translate(24,0);
-      ctx.scale(-1,1);
-    }
     drawAdventureTraveler(
       ctx,
       traveler||faction,
@@ -104,7 +99,7 @@ export function createTravelerSpriteSheet(faction, traveler){
       31,
       frame,
       .45,
-      direction==="right" ? "left" : direction
+      direction
     );
     ctx.restore();
   }));
@@ -176,7 +171,9 @@ function px(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Ma
 export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, scale=1, direction="down"){
   const d=TRAVELER_DESIGNS[traveler]||TRAVELER_DESIGNS.Mira;
   ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
+  // Il profilo sinistro viene specchiato; il destro usa il profilo naturale.
   if(direction==="left"){ctx.scale(-1,1);}
+  const sideFacing=direction==="left"||direction==="right";
   const bob=frame?1:0;
   // grounding shadow and separated feet
   ctx.fillStyle="rgba(4,10,13,.34)";ctx.beginPath();ctx.ellipse(0,1,15,4,0,0,Math.PI*2);ctx.fill();
@@ -196,8 +193,18 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
   px(ctx,-9,-53+bob,3,7,d.skin);px(ctx,6,-53+bob,3,7,d.skin);
   px(ctx,-9,-58+bob,18,7,d.hair);px(ctx,-7,-61+bob,14,4,d.hair);
   px(ctx,-9,-54+bob,4,5,d.hair);px(ctx,5,-54+bob,4,5,d.hair);
-  if(direction==="up"){px(ctx,-9,-57+bob,18,13,d.hair);px(ctx,-7,-60+bob,14,4,d.hair);}
-  else {px(ctx,-5,-49+bob,2,2,"#24232b");px(ctx,3,-49+bob,2,2,"#24232b");px(ctx,-1,-44+bob,3,1,"#9e5f58");}
+  if(direction==="up"){
+    px(ctx,-9,-57+bob,18,13,d.hair);
+    px(ctx,-7,-60+bob,14,4,d.hair);
+  } else if(sideFacing) {
+    // Un solo occhio e il naso laterale distinguono il profilo dai frame frontali.
+    px(ctx, direction==="left" ? -5 : 3, -49+bob, 2, 2, "#24232b");
+    px(ctx, direction==="left" ? 3 : -5, -46+bob, 3, 2, d.skin);
+  } else {
+    px(ctx,-5,-49+bob,2,2,"#24232b");
+    px(ctx,3,-49+bob,2,2,"#24232b");
+    px(ctx,-1,-44+bob,3,1,"#9e5f58");
+  }
   // recognizable faction headpiece
   if(d.hat==="horn"){px(ctx,-9,-65+bob,4,7,d.trim);px(ctx,5,-65+bob,4,7,d.trim);}
   if(d.hat==="antenna"){px(ctx,-1,-68+bob,3,8,d.trim);px(ctx,-3,-69+bob,7,3,d.accent);}
