@@ -1213,7 +1213,8 @@ const [message, setMessage] = useState("");
           ctx,
           tree.x,
           tree.y,
-          tree.r
+          tree.r,
+          activeCity.faction
         );
       }
 
@@ -1958,7 +1959,21 @@ function drawPlayer(ctx, p) {
   ============================================
 */
 
-function drawTree(ctx, x, y, r) {
+function drawTree(ctx, x, y, r, faction = "Natura") {
+  const palettes = {
+    Demone: ["#49303a", "#8f3545", "#c9514e", "#f18a59"],
+    Robot: ["#304c59", "#477c83", "#68c9bd", "#c5f4e5"],
+    Natura: ["#493426", "#173d2b", "#24583a", "#65a65b"],
+    Nuvola: ["#526b91", "#829fc4", "#c4d9ef", "#f1f7ff"],
+    Umano: ["#60452f", "#315d3b", "#57864b", "#9abf65"],
+    Luce: ["#73562c", "#a98639", "#e2c35e", "#fff0a8"],
+    Dolce: ["#714565", "#a65c91", "#e18fbd", "#ffd9eb"],
+    Marino: ["#31505a", "#27677a", "#3d9ba3", "#9ce0d9"],
+    Orso: ["#49372b", "#604631", "#8b633d", "#c39a61"],
+    Mago: ["#403553", "#554879", "#8571b5", "#c8b7f4"],
+    Salato: ["#555d5b", "#777f79", "#b5b9ae", "#f0eee3"],
+  };
+  const [bark, shade, foliage, highlight] = palettes[faction] || palettes.Natura;
   const size = Math.max(32, Math.round(r * 1.9 / 4) * 4);
   const left = Math.round(x - size / 2);
   const top = Math.round(y - size * 1.38);
@@ -1973,35 +1988,35 @@ function drawTree(ctx, x, y, r) {
   ctx.fillRect(x - 7, y - 8, 14, 34);
   ctx.fillStyle = "#795039";
   ctx.fillRect(x - 3, y - 5, 5, 27);
-  ctx.fillStyle = "#a4774c";
+  ctx.fillStyle = highlight;
   ctx.fillRect(x + 3, y + 1, 3, 13);
 
   // Chioma a livelli, con masse sovrapposte e luce dall'alto a sinistra.
-  ctx.fillStyle = "#173d2b";
+  ctx.fillStyle = shade;
   ctx.fillRect(left + size * .22, top + size * .28, size * .58, size * .66);
   ctx.fillRect(left + size * .08, top + size * .43, size * .84, size * .38);
   ctx.fillRect(left + size * .31, top + size * .08, size * .42, size * .72);
 
-  ctx.fillStyle = "#24583a";
+  ctx.fillStyle = foliage;
   ctx.fillRect(left + size * .2, top + size * .3, size * .6, size * .54);
   ctx.fillRect(left + size * .12, top + size * .47, size * .76, size * .27);
   ctx.fillRect(left + size * .34, top + size * .16, size * .34, size * .56);
 
-  ctx.fillStyle = "#397b48";
+  ctx.fillStyle = highlight;
   ctx.fillRect(left + size * .24, top + size * .24, size * .22, size * .17);
   ctx.fillRect(left + size * .49, top + size * .18, size * .2, size * .15);
   ctx.fillRect(left + size * .12, top + size * .48, size * .23, size * .14);
   ctx.fillRect(left + size * .58, top + size * .46, size * .23, size * .14);
 
-  ctx.fillStyle = "#65a65b";
+  ctx.fillStyle = highlight;
   ctx.fillRect(left + size * .29, top + size * .23, size * .13, size * .08);
   ctx.fillRect(left + size * .52, top + size * .2, size * .1, size * .07);
   ctx.fillRect(left + size * .17, top + size * .48, size * .1, size * .07);
-  ctx.fillStyle = "rgba(179,215,116,.65)";
+  ctx.fillStyle = "rgba(255,255,255,.28)";
   ctx.fillRect(left + size * .34, top + size * .14, size * .08, size * .05);
 
   // Piccoli ciuffi laterali: chioma meno geometrica e più naturale.
-  ctx.fillStyle = "#2d6841";
+  ctx.fillStyle = foliage;
   ctx.fillRect(left + size * .02, top + size * .55, size * .2, size * .17);
   ctx.fillRect(left + size * .76, top + size * .39, size * .2, size * .2);
   ctx.restore();
