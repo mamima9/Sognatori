@@ -4,6 +4,9 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ROSTER } from "@/lib/sognatoriData";
+
+// Eriiro è un personaggio esclusivo della modalità Avventura.
+const ARCADE_ROSTER = ROSTER.filter((s) => s.id !== "eriiro");
 import { FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
@@ -133,7 +136,7 @@ export default function Auction({
 
 
   const [pool, setPool] = useState(() => {
-    const shuffled = [...ROSTER];
+    const shuffled = [...ARCADE_ROSTER];
 
     for (let i = shuffled.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
