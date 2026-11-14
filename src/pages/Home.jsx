@@ -12,7 +12,7 @@ import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase/client";
 
 export default function Home() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, checkUserAuth } = useAuth();
   const { lang, setLang, t } = useLanguage();
 
   const isDev = user?.user_metadata?.username === "bibito";
@@ -979,10 +979,15 @@ export default function Home() {
                           Boolean(user.user_metadata?.taomarco_lore_unlocked) ||
                           Number(user.user_metadata?.taomarco_competitive_wins || 0) >= 15;
                       }
-                      supabase.auth.updateUser({ data: arcadeUnlockMetadata }).then(({ error }) => {
+                      supabase.auth.updateUser({ data: arcadeUnlockMetadata }).then(async ({ error }) => {
                         if (error) {
                           console.error("Errore salvataggio completamento Arcade:", error);
-                        } else if (completedHumanStage && arcadeHumanStagesCompleted === 9) {
+                          return;
+                        }
+                        // Aggiorna subito AuthContext: senza refresh la home continuava a leggere
+                        // i vecchi user_metadata e mostrava ancora il lucchetto.
+                        await checkUserAuth();
+                        if (completedHumanStage && arcadeHumanStagesCompleted === 9) {
                           setMissionNotification(lang === "en" ? "Mission 4: Human-only Arcade completed!" : "Missione 4: Arcade completato con soli Umani!");
                           window.setTimeout(() => setMissionNotification(null), 7000);
                         }
