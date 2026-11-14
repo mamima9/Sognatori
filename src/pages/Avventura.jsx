@@ -2235,6 +2235,77 @@ function drawCityDistrict(ctx, city) {
     ctx.fillRect(lx + 4, 51, 7, 7);
   }
 
+  // Arredi urbani: piccoli punti d'interesse ai margini, senza invadere
+  // il passaggio centrale del giocatore o modificare collisioni e gameplay.
+  const props = (side) => {
+    const px = side * 112;
+    const py = side < 0 ? -34 : 34;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.fillStyle = "rgba(5,12,18,.32)";
+    ctx.fillRect(-17, 25, 38, 7);
+    switch (city.faction) {
+      case "Demone":
+        ctx.fillStyle = "#492b35"; ctx.fillRect(-11, -2, 22, 27);
+        ctx.fillStyle = "#c95b4f"; ctx.fillRect(-8, -13, 16, 13);
+        ctx.fillStyle = "#ffb36a"; ctx.fillRect(-3, -10, 6, 12);
+        ctx.fillStyle = "#f6d18b"; ctx.fillRect(-1, -19, 3, 7); break;
+      case "Robot":
+        ctx.fillStyle = "#294b59"; ctx.fillRect(-14, -19, 28, 44);
+        ctx.fillStyle = "#75d9cf"; ctx.fillRect(-9, -13, 18, 22);
+        ctx.fillStyle = "#d8fff0"; ctx.fillRect(-4, -8, 8, 7);
+        ctx.fillStyle = "#5b8490"; ctx.fillRect(-18, 21, 36, 5); break;
+      case "Natura":
+        ctx.fillStyle = "#61452e"; ctx.fillRect(-5, 2, 10, 24);
+        ctx.fillStyle = "#3d7849";
+        ctx.beginPath(); ctx.arc(0, -7, 17, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#a9d875"; ctx.fillRect(-4, -12, 8, 8);
+        ctx.fillStyle = "#8d6840"; ctx.fillRect(-18, 23, 36, 5); break;
+      case "Nuvola":
+        ctx.fillStyle = "#6d8db5"; ctx.fillRect(-3, -4, 6, 29);
+        ctx.fillStyle = "#e3f2ff";
+        ctx.beginPath(); ctx.arc(-8, -12, 10, 0, Math.PI * 2); ctx.arc(5, -16, 13, 0, Math.PI * 2); ctx.arc(14, -8, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#a9c9ed"; ctx.fillRect(-14, 23, 28, 4); break;
+      case "Umano":
+        ctx.fillStyle = "#745039"; ctx.fillRect(-19, -8, 38, 31);
+        ctx.fillStyle = "#c58b54"; ctx.fillRect(-16, -5, 32, 5);
+        ctx.fillStyle = "#f1d6a3"; ctx.fillRect(-13, 1, 26, 3);
+        ctx.fillStyle = "#62432f"; ctx.fillRect(-15, 23, 4, 5); ctx.fillRect(11, 23, 4, 5); break;
+      case "Luce":
+        ctx.fillStyle = "#a47e36"; ctx.fillRect(-4, -1, 8, 27);
+        ctx.fillStyle = "#fff0ae"; ctx.beginPath(); ctx.arc(0, -10, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f3d77b"; ctx.fillRect(-2, -27, 4, 8);
+        ctx.fillRect(-19, -12, 8, 4); ctx.fillRect(11, -12, 8, 4); break;
+      case "Dolce":
+        ctx.fillStyle = "#9f5e8d"; ctx.fillRect(-16, 1, 32, 24);
+        ctx.fillStyle = "#f0b6d5"; ctx.beginPath(); ctx.arc(0, 0, 17, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#fff0df"; ctx.fillRect(-3, 4, 6, 17);
+        ctx.fillStyle = "#d985b6"; ctx.fillRect(-19, 22, 38, 4); break;
+      case "Marino":
+        ctx.fillStyle = "#286b82"; ctx.fillRect(-15, -8, 30, 33);
+        ctx.fillStyle = "#8ce0e1"; ctx.fillRect(-19, -12, 38, 5);
+        ctx.fillStyle = "#d5c59c"; ctx.fillRect(-11, -18, 22, 7);
+        ctx.fillStyle = "#174b65"; ctx.fillRect(-18, 23, 36, 5); break;
+      case "Orso":
+        ctx.fillStyle = "#604631"; ctx.fillRect(-17, -2, 34, 27);
+        ctx.fillStyle = "#b58b59"; ctx.beginPath(); ctx.moveTo(-20, -2); ctx.lineTo(0, -22); ctx.lineTo(20, -2); ctx.fill();
+        ctx.fillStyle = "#e6c58e"; ctx.fillRect(-5, 5, 10, 10);
+        ctx.fillStyle = "#49372b"; ctx.fillRect(-20, 23, 40, 5); break;
+      case "Mago":
+        ctx.strokeStyle = "#c8b8f2"; ctx.lineWidth = 5; ctx.strokeRect(-14, -16, 28, 42);
+        ctx.strokeStyle = "#f2d68a"; ctx.lineWidth = 2; ctx.strokeRect(-7, -8, 14, 25);
+        ctx.fillStyle = "#f2d68a"; ctx.fillRect(-2, -23, 4, 7); break;
+      case "Salato":
+        ctx.fillStyle = "#777e7a"; ctx.fillRect(-17, 15, 34, 10);
+        ctx.fillStyle = "#e7e4d7"; ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(-15, 15); ctx.lineTo(15, 15); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.fillRect(-2, -12, 4, 25);
+        ctx.fillStyle = "#b8b9ae"; ctx.fillRect(-20, 24, 40, 4); break;
+    }
+    ctx.restore();
+  };
+  props(-1);
+  props(1);
+
   // Monumenti, skyline e piazze differenti per ciascuna fazione.
   drawCityIdentity(ctx, city);
   drawFactionDistrictDetails(ctx, city);
