@@ -91,9 +91,11 @@ function buildMapWildStarts(city) {
     return offsets.map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
-      x: index === 0 && copy === 0 ? 1800 : centerX + ox,
-      y: index === 0 && copy === 0 ? 360 : centerY + oy,
-      isSleepingBlocker: index === 0 && copy === 0,
+      // Anche il primo Sognatore resta nel gruppo laterale:
+      // non deve occupare il corridoio centrale davanti alla porta nord.
+      x: centerX + ox,
+      y: centerY + oy,
+      isSleepingBlocker: false,
       name: sognatore.nome,
       img: sognatore.img,
       tipo: sognatore.tipo || sognatore.fazione,
