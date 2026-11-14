@@ -6,6 +6,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import AdventureHouseInterior from "@/components/game/AdventureHouseInterior";
+import AdventureWorldSystems from "@/components/game/AdventureWorldSystems";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
@@ -889,19 +890,24 @@ const [message, setMessage] = useState("");
     const saved = readAdventureSave();
     return new Set(Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : []);
   });
+  const [recruitedAdventureIds, setRecruitedAdventureIds] = useState(() => {
+    const saved = readAdventureSave();
+    return Array.isArray(saved?.adventureRecruitedIds) ? saved.adventureRecruitedIds : [];
+  });
 
   useEffect(() => {
     try {
       localStorage.setItem(adventureSaveKey, JSON.stringify({
         ...readAdventureSave(),
         conqueredLeaders: Array.from(defeatedLeaders),
+        adventureRecruitedIds: recruitedAdventureIds,
         discoveredWildClues,
         completedWildTasks,
       }));
     } catch (error) {
       console.warn("Impossibile salvare i progressi dell'Avventura:", error);
     }
-  }, [adventureSaveKey, defeatedLeaders, discoveredWildClues, completedWildTasks]);
+  }, [adventureSaveKey, defeatedLeaders, recruitedAdventureIds, discoveredWildClues, completedWildTasks]);
   const [activeMapId, setActiveMapId] = useState("natura");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
@@ -2028,6 +2034,7 @@ const [message, setMessage] = useState("");
 
 
       {interior && <AdventureHouseInterior house={interior} onExit={() => setInterior(null)} />}
+      {!interior && <AdventureWorldSystems saveKey={adventureSaveKey} activeCity={activeCity} time={time} defeatedLeaders={defeatedLeaders} discoveredWildClues={discoveredWildClues} completedWildTasks={completedWildTasks} recruitedIds={recruitedAdventureIds} />}
 
       {dialogue && (
         <div className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
@@ -2182,6 +2189,7 @@ const [message, setMessage] = useState("");
           if (encounter?.id) {
             if (recruited) {
               wildRef.current = wildRef.current.filter((s) => s.id !== encounter.id);
+              setRecruitedAdventureIds((old) => [...new Set([...old, encounter.rosterId || encounter.id])]);
               setMessage("✦ " + encounter.name + " ha scelto di viaggiare con te!");
               setTimeout(() => setMessage(""), 2200);
             }
