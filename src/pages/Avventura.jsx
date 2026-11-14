@@ -2196,9 +2196,15 @@ function drawAdventureDoor(ctx, x, y, color, label, rotation = 0, locked = false
     ctx.fillStyle = "#593b2e";
     ctx.fillRect(-2, -43, 4, 8);
   }
+  ctx.restore();
+
+  // L'etichetta resta sempre leggibile: la porta nord è capovolta, ma il testo no.
+  ctx.save();
+  ctx.translate(x, y);
   ctx.fillStyle = locked ? "#ffd08a" : "#f6e4a7";
-  ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
-  ctx.fillText(label, 0, -144);
+  ctx.font = "bold 13px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(label, 0, rotation === Math.PI ? 158 : -144);
   ctx.restore();
 }
 
