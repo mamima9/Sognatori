@@ -424,7 +424,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
           <div className="my-auto w-full max-w-lg rounded-3xl border border-cyan-200/20 bg-slate-950 p-5 text-center text-white shadow-2xl">
             <div className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-200">Incontro selvatico · Legame unico</div>
             {wildSognatore ? <>
-              <div className="my-3 flex justify-center"><AdventureSognatoreSprite s={wildSognatore} size={88} walking /></div>
+              <div className="my-3 flex justify-center"><AdventureSognatoreSprite s={wildSognatore} size={220} walking={false} crisp /></div>
               <h2 className="text-3xl font-black">{wildSognatore.nome}</h2>
               <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-cyan-100/60">{wildSognatore.tipo || wildSognatore.fazione}</div>
               {wildAlreadyOwned ? (
