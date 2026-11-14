@@ -1824,29 +1824,50 @@ const [message, setMessage] = useState("");
 
 
       {interior && (
-        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl overflow-hidden rounded-[2rem] border-4 border-amber-200/70 bg-[#34251f] shadow-2xl">
-            <div className="border-b-4 border-[#9b704b] bg-[#6c4935] px-6 py-4">
-              <div className="text-[10px] font-black uppercase tracking-[.35em] text-amber-200">Interno esplorabile · {interior.city.city}</div>
-              <div className="mt-1 text-2xl font-black text-white">{["Casa del viandante", "Bottega delle mappe", "Casa degli abitanti", "Locanda", "Casa del custode", "Laboratorio"][interior.number - 1]}</div>
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+          <div className={`w-full max-w-2xl overflow-hidden rounded-[2rem] border-4 shadow-2xl ${interior.city.id === "natura" ? "border-lime-200/70 bg-[#172d20]" : "border-amber-200/70 bg-[#34251f]"}`}>
+            <div className={`border-b-4 px-6 py-4 ${interior.city.id === "natura" ? "border-[#527c45] bg-[#315b39]" : "border-[#9b704b] bg-[#6c4935]"}`}>
+              <div className={`text-[10px] font-black uppercase tracking-[.35em] ${interior.city.id === "natura" ? "text-lime-200" : "text-amber-200"}`}>Interno esplorabile · {interior.city.city}</div>
+              <div className="mt-1 text-2xl font-black text-white">{interior.city.id === "natura" ? ["Rifugio tra le fronde", "Bottega dell'erborista", "Casa del raccoglitore", "Locanda del sottobosco", "Dimora del custode", "Officina del legno vivo"][interior.number - 1] : ["Casa del viandante", "Bottega delle mappe", "Casa degli abitanti", "Locanda", "Casa del custode", "Laboratorio"][interior.number - 1]}</div>
             </div>
-            <div className="relative min-h-[270px] overflow-hidden bg-[#b98758] p-6">
-              <div className="absolute inset-4 border-4 border-[#70472f]/60 bg-[#d6ad78] shadow-inner">
-                <div className="absolute inset-x-8 top-8 h-5 border-4 border-[#70472f] bg-[#8b5c3c]" />
-                <div className="absolute bottom-0 left-1/2 h-16 w-24 -translate-x-1/2 border-x-4 border-t-4 border-[#70472f] bg-[#75452e]" />
-                <div className="absolute left-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
-                <div className="absolute right-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
-                <div className="absolute bottom-8 left-1/2 h-12 w-40 -translate-x-1/2 border-4 border-[#70472f] bg-[#8a5738]" />
+            {interior.city.id === "natura" ? (
+              <div className="relative min-h-[300px] overflow-hidden bg-gradient-to-b from-[#47764a] via-[#315c3a] to-[#172d20] p-6">
+                <div className="absolute inset-4 rounded-[2rem] border-4 border-[#8dbb69]/70 bg-[#a5b875] shadow-inner">
+                  <div className="absolute inset-x-0 top-0 h-12 bg-[#527c45]" />
+                  <div className="absolute left-8 top-12 h-20 w-24 rounded-full border-4 border-[#765033] bg-[#8ed2bd] shadow-lg" />
+                  <div className="absolute right-8 top-12 h-20 w-24 rounded-full border-4 border-[#765033] bg-[#8ed2bd] shadow-lg" />
+                  <div className="absolute left-1/2 top-5 h-16 w-3 -translate-x-1/2 rounded-full bg-[#765033]" />
+                  <div className="absolute bottom-0 left-1/2 h-20 w-28 -translate-x-1/2 rounded-t-2xl border-x-8 border-t-8 border-[#765033] bg-[#35533a]" />
+                  <div className="absolute bottom-7 left-1/2 h-10 w-36 -translate-x-1/2 rounded-xl border-4 border-[#765033] bg-[#9a7046]" />
+                  <div className="absolute bottom-4 left-10 h-7 w-7 rounded-full bg-[#e4c77b] shadow-[0_0_22px_8px_rgba(228,199,123,.35)]" />
+                  <div className="absolute bottom-4 right-10 h-7 w-7 rounded-full bg-[#e4c77b] shadow-[0_0_22px_8px_rgba(228,199,123,.35)]" />
+                  <div className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-lime-100 bg-[#b5df72] shadow-[0_0_28px_10px_rgba(181,223,114,.35)]" />
+                </div>
+                <div className="relative z-10 flex min-h-[250px] flex-col items-center justify-end text-center">
+                  <div className="mb-3 grid h-20 w-20 place-items-center rounded-2xl border-4 border-lime-100 bg-[#416f45] text-4xl shadow-xl">🌿</div>
+                  <div className="rounded-xl border-2 border-lime-100/70 bg-black/75 px-5 py-2 text-lg font-black text-white">{interior.resident}</div>
+                  <p className="mt-3 max-w-md rounded-xl bg-black/75 px-4 py-3 text-sm leading-6 text-white">{interior.dialogue}</p>
+                </div>
               </div>
-              <div className="relative z-10 flex min-h-[220px] flex-col items-center justify-center text-center">
-                <div className="mb-3 grid h-20 w-20 place-items-center rounded-2xl border-4 border-amber-100 bg-[#4c7950] text-4xl shadow-xl">🧑‍🌾</div>
-                <div className="rounded-xl border-2 border-amber-100/70 bg-black/75 px-5 py-2 text-lg font-black text-white">{interior.resident}</div>
-                <p className="mt-3 max-w-md rounded-xl bg-black/75 px-4 py-3 text-sm leading-6 text-white">{interior.dialogue}</p>
+            ) : (
+              <div className="relative min-h-[270px] overflow-hidden bg-[#b98758] p-6">
+                <div className="absolute inset-4 border-4 border-[#70472f]/60 bg-[#d6ad78] shadow-inner">
+                  <div className="absolute inset-x-8 top-8 h-5 border-4 border-[#70472f] bg-[#8b5c3c]" />
+                  <div className="absolute bottom-0 left-1/2 h-16 w-24 -translate-x-1/2 border-x-4 border-t-4 border-[#70472f] bg-[#75452e]" />
+                  <div className="absolute left-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
+                  <div className="absolute right-8 top-20 h-16 w-20 border-4 border-[#70472f] bg-[#79b5c0] shadow-lg" />
+                  <div className="absolute bottom-8 left-1/2 h-12 w-40 -translate-x-1/2 border-4 border-[#70472f] bg-[#8a5738]" />
+                </div>
+                <div className="relative z-10 flex min-h-[220px] flex-col items-center justify-center text-center">
+                  <div className="mb-3 grid h-20 w-20 place-items-center rounded-2xl border-4 border-amber-100 bg-[#4c7950] text-4xl shadow-xl">🧑‍🌾</div>
+                  <div className="rounded-xl border-2 border-amber-100/70 bg-black/75 px-5 py-2 text-lg font-black text-white">{interior.resident}</div>
+                  <p className="mt-3 max-w-md rounded-xl bg-black/75 px-4 py-3 text-sm leading-6 text-white">{interior.dialogue}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between gap-3 bg-[#2a1d19] px-5 py-4">
-              <span className="text-xs font-bold text-amber-100/70">Puoi visitare tutte le case della città.</span>
-              <button type="button" onClick={() => setInterior(null)} className="rounded-xl bg-amber-200 px-5 py-3 text-sm font-black text-[#38251b]">Esci dalla casa</button>
+            )}
+            <div className={`flex items-center justify-between gap-3 px-5 py-4 ${interior.city.id === "natura" ? "bg-[#102318]" : "bg-[#2a1d19]"}`}>
+              <span className={`text-xs font-bold ${interior.city.id === "natura" ? "text-lime-100/70" : "text-amber-100/70"}`}>Puoi visitare tutte le case della città.</span>
+              <button type="button" onClick={() => setInterior(null)} className={`rounded-xl px-5 py-3 text-sm font-black ${interior.city.id === "natura" ? "bg-lime-200 text-[#1b351f]" : "bg-amber-200 text-[#38251b]"}`}>Esci dalla casa</button>
             </div>
           </div>
         </div>
