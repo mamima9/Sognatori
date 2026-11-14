@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
+import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
@@ -1904,7 +1905,9 @@ const [message, setMessage] = useState("");
                   <div className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-lime-100 bg-[#b5df72] shadow-[0_0_28px_10px_rgba(181,223,114,.35)]" />
                 </div>
                 <div className="relative z-10 flex min-h-[250px] flex-col items-center justify-end text-center">
-                  <div className="mb-3 grid h-20 w-20 place-items-center rounded-2xl border-4 border-lime-100 bg-[#416f45] text-4xl shadow-xl">🌿</div>
+                  <div className="mb-3 grid min-h-24 min-w-24 place-items-end rounded-2xl border-4 border-lime-100 bg-[#416f45] px-3 pt-2 shadow-xl">
+                    <AdventureTravelerSprite traveler={interior.resident} faction="Natura" size={64} direction="down" walking={false} />
+                  </div>
                   <div className="rounded-xl border-2 border-lime-100/70 bg-black/75 px-5 py-2 text-lg font-black text-white">{interior.resident}</div>
                   <p className="mt-3 max-w-md rounded-xl bg-black/75 px-4 py-3 text-sm leading-6 text-white">{interior.dialogue}</p>
                 </div>
