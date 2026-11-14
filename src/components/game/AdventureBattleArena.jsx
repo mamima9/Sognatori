@@ -927,7 +927,7 @@ while (remainingActions.length > 0) {
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
             <div className="relative flex min-h-[126px] items-center gap-3 px-3 sm:gap-5 sm:px-6">
               <div className="flex h-[126px] w-[94px] shrink-0 items-end justify-center sm:w-[116px]">
-                <AdventureTravelerSprite traveler={opponentTraveler} faction={opponentFaction} size={88} />
+                <AdventureTravelerSprite traveler={opponentTraveler} faction={opponentFaction} size={88} walking={false} />
               </div>
               <div className="min-w-0 flex-1 py-4">
                 <div className="mb-1 text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">
