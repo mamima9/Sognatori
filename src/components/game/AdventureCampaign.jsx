@@ -477,7 +477,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <div className="relative flex min-h-[190px] items-end justify-center sm:min-h-[230px]">
                 <div className="absolute bottom-2 h-7 w-28 rounded-full bg-black/35 blur-md" />
                 <div className="relative z-[1]">
-                  <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={150} />
+                  <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={150} walking={false} />
                 </div>
                 <div className="absolute bottom-0 left-1/2 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
               </div>
