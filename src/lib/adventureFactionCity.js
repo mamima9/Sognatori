@@ -19,12 +19,33 @@ export function drawAdventureFactionCity(ctx,city){
 const p=P[city.faction];if(!p)return;const t=performance.now()/1000;
 ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
 // Fascia esterna e bioma: ogni fazione ha una propria identita ambientale.
-ellipse(ctx,0,12,305,248,"rgba(5,12,18,.22)");ellipse(ctx,0,0,294,236,p[1]);ellipse(ctx,0,-4,281,224,p[0]);ellipse(ctx,0,-5,263,207,p[4]);ellipse(ctx,0,-4,245,190,p[0]);
+if(city.faction==="Nuvola"){
+// Altacielo: nessun suolo continuo, ma un arcipelago di piattaforme sospese.
+for(let i=0;i<9;i++){const a=i*Math.PI*2/9,xx=Math.cos(a)*205,yy=Math.sin(a)*142;ellipse(ctx,xx+8,yy+24,70,22,"rgba(26,48,76,.24)");ellipse(ctx,xx,yy+10,68,23,p[1]);ellipse(ctx,xx-3,yy+3,62,20,p[2]);ellipse(ctx,xx-5,yy-2,48,13,p[3]);}
+for(let i=0;i<13;i++){const xx=Math.sin(i*2.4)*265,yy=Math.cos(i*1.7)*190;ellipse(ctx,xx,yy,28+(i%3)*8,10,p[2]);ellipse(ctx,xx-5,yy-5,17,7,p[3]);}
+}else{ellipse(ctx,0,12,305,248,"rgba(5,12,18,.22)");ellipse(ctx,0,0,294,236,p[1]);ellipse(ctx,0,-4,281,224,p[0]);ellipse(ctx,0,-5,263,207,p[4]);ellipse(ctx,0,-4,245,190,p[0]);}
 for(let i=0;i<34;i++){const a=i*Math.PI*2/34,x=Math.cos(a)*(244+(i%3)*9),y=Math.sin(a)*(178+(i%4)*7);if(city.faction==="Robot"){ctx.fillStyle=p[1];ctx.fillRect(x-13,y-23,26,43);ctx.fillStyle=p[2];ctx.fillRect(x-9,y-19,18,34);ctx.fillStyle=p[3];ctx.fillRect(x-5,y-12,10,6);}else if(city.faction==="Marino"){ctx.fillStyle=p[1];ctx.fillRect(x-4,y-9,8,32);ctx.fillStyle=p[2];ctx.beginPath();ctx.arc(x,y-16,13,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-13,y-16,26,6);}else if(city.faction==="Salato"){ctx.fillStyle=p[2];ctx.beginPath();ctx.moveTo(x,y-37);ctx.lineTo(x-15,y+12);ctx.lineTo(x+14,y+12);ctx.closePath();ctx.fill();}else tree(ctx,x,y,.65+(i%4)*.09,p,city.faction==="Nuvola"?1:city.faction==="Orso"?2:0);}
 // Sentieri circolari e sei diramazioni agli ingressi: stessi accessi gia presenti.
+if(city.faction==="Nuvola"){
+ctx.strokeStyle="rgba(225,242,255,.42)";ctx.lineWidth=18;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(0,0);for(const [hx,hy] of houses){ctx.lineTo(hx*.78,hy*.78);}ctx.closePath();ctx.stroke();
+ctx.strokeStyle=p[3];ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(0,0);for(const [hx,hy] of houses){ctx.lineTo(hx*.78,hy*.78);}ctx.closePath();ctx.stroke();
+for(const [hx,hy] of houses){ellipse(ctx,hx*.78,hy*.78+8,48,13,"rgba(255,255,255,.24)");}
+}else{
 ctx.strokeStyle=p[1];ctx.lineWidth=29;ctx.beginPath();ctx.ellipse(0,0,190,151,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle=p[2];ctx.lineWidth=20;ctx.beginPath();ctx.ellipse(0,-2,188,149,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="rgba(255,255,255,.2)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-2,188,149,0,0,Math.PI*2);ctx.stroke();
-const houses=[[-132,-88],[0,-158],[132,-88],[-132,88],[132,88],[0,158]];
-for(const [x,y] of houses){ctx.strokeStyle=p[1];ctx.lineWidth=25;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();ctx.strokeStyle=p[2];ctx.lineWidth=16;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();ctx.strokeStyle="rgba(255,255,255,.2)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();}
+}const HOUSE_LAYOUTS={
+Demone:[[-226,-142],[-72,-248],[188,-190],[-252,58],[224,116],[42,252]],
+Robot:[[-242,-174],[-24,-258],[236,-112],[-208,144],[184,224],[36,42]],
+Nuvola:[[-238,-150],[-72,-268],[188,-226],[-270,76],[226,122],[42,264]],
+Umano:[[-248,-112],[-126,-254],[176,-224],[-236,174],[244,158],[54,32]],
+Luce:[[-214,-208],[-12,-266],[238,-144],[-260,104],[176,242],[18,54]],
+Dolce:[[-250,-166],[-88,-260],[206,-202],[-222,126],[244,86],[18,254]],
+Marino:[[-244,-128],[-44,-262],[226,-188],[-260,116],[206,224],[22,48]],
+Orso:[[-230,-178],[-42,-258],[236,-126],[-244,144],[184,238],[42,28]],
+Mago:[[-246,-146],[-104,-266],[208,-218],[-224,154],[248,102],[36,258]],
+Salato:[[-236,-196],[-24,-264],[244,-142],[-258,118],[198,236],[22,36]]
+};
+const houses=HOUSE_LAYOUTS[city.faction]||[[-132,-88],[0,-158],[132,-88],[-132,88],[132,88],[0,158]];
+for(const [x,y] of houses){ctx.strokeStyle=city.faction==="Nuvola"?"rgba(255,255,255,.38)":p[1];ctx.lineWidth=city.faction==="Nuvola"?15:25;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();ctx.strokeStyle=city.faction==="Nuvola"?p[3]:p[2];ctx.lineWidth=city.faction==="Nuvola"?7:16;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();ctx.strokeStyle="rgba(255,255,255,.2)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(x*.78,y*.78);ctx.stroke();}
 // Piazza centrale con lastre e riflessi.
 ellipse(ctx,0,0,91,70,p[1]);ellipse(ctx,0,-3,84,63,p[2]);ctx.strokeStyle="rgba(40,35,32,.24)";ctx.lineWidth=1.5;for(let r=-3;r<=3;r++){const y=r*17,half=78*Math.sqrt(Math.max(.1,1-y*y/4100));ctx.beginPath();ctx.moveTo(-half,y);ctx.lineTo(half,y);ctx.stroke();}for(let col=-4;col<=4;col++){const x=col*18;ctx.beginPath();ctx.moveTo(x,-60);ctx.lineTo(x*.84,60);ctx.stroke();}
 // Monumento centrale distintivo per fazione.
