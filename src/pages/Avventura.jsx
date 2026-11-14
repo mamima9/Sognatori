@@ -701,7 +701,6 @@ export default function Avventura() {
   */
 
   const challengerCooldownRef = useRef({});
-  const wildCooldownRef = useRef({});
 
   /*
     Evitano che il requestAnimationFrame
@@ -1498,8 +1497,7 @@ const [message, setMessage] = useState("");
         interactionDistance: distance(currentPosition, sognatore),
       }))
       .filter((sognatore) =>
-        sognatore.interactionDistance < interactionRadius &&
-        Date.now() >= (wildCooldownRef.current[sognatore.id] || 0)
+        sognatore.interactionDistance < interactionRadius
       )
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
@@ -1764,14 +1762,12 @@ const [message, setMessage] = useState("");
           setMessage("Nuovo viaggio iniziato!");
           setTimeout(() => setMessage(""), 2200);
           keysRef.current = {};
-          wildCooldownRef.current = {};
-          challengerCooldownRef.current = {};
+               challengerCooldownRef.current = {};
           encounterOpenRef.current = false;
           challengerEncounterOpenRef.current = false;
         }}
         onWildClose={(recruited) => {
           if (encounter?.id) {
-            wildCooldownRef.current[encounter.id] = Date.now() + 20000;
             if (recruited) {
               wildRef.current = wildRef.current.filter((s) => s.id !== encounter.id);
               setMessage("✦ " + encounter.name + " ha scelto di viaggiare con te!");
