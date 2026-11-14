@@ -75,7 +75,7 @@ const ADVENTURE_TRACKS = [
     northUrl: "/audio/Verdelume-Nord.mp3",
     southUrl: "/audio/Verdelume-Sud.mp3",
   },
-  { cityId: "demone", city: "Braciombra", name: "Eroica tensione", url: "/audio/Eroica tensione.mp3" },
+  { cityId: "demone", city: "Braciombra", name: "Braciombra", url: "/audio/Eroica tensione.mp3", northUrl: "/audio/Eroica tensione.mp3", southUrl: "/audio/Braciombra-Sud.mp3" },
   { cityId: "robot", city: "Ferrovia", name: "H1CQS", url: "/audio/H1CQS.mp3" },
   { cityId: "nuvola", city: "Altacielo", name: "Dream Creature Path", url: "/audio/Dream Creature Path.mp3" },
   { cityId: "umano", city: "Crocevia", name: "Motivo Mediterraneo", url: "/audio/Motivo Mediterraneo.mp3" },
@@ -143,7 +143,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
         : musicMode === "adventure"
           ? ADVENTURE_TRACKS.map((track) => ({
               ...track,
-              url: track.cityId === "natura"
+              url: track.southUrl
                 ? (entryDirection === "south" ? track.southUrl : track.northUrl)
                 : track.url,
             }))
