@@ -747,7 +747,6 @@ const [message, setMessage] = useState("");
     challengerRef.current = CHALLENGERS
       .filter((challenger) => challenger.id === activeMapId)
       .map((challenger) => ({ ...challenger, x: 1800, y: 1200 }));
-    wildCooldownRef.current = {};
     challengerCooldownRef.current = {};
   }, [activeMapId]);
 
