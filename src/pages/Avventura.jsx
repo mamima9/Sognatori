@@ -2034,7 +2034,7 @@ const [message, setMessage] = useState("");
 
 
       {interior && <AdventureHouseInterior house={interior} onExit={() => setInterior(null)} />}
-      {!interior && <AdventureWorldSystems saveKey={adventureSaveKey} activeCity={activeCity} time={time} defeatedLeaders={defeatedLeaders} discoveredWildClues={discoveredWildClues} completedWildTasks={completedWildTasks} recruitedIds={recruitedAdventureIds} />}
+
 
       {dialogue && (
         <div className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-3xl rounded-3xl border border-white/15 bg-black/85 p-6 shadow-2xl backdrop-blur-xl">
@@ -2153,6 +2153,7 @@ const [message, setMessage] = useState("");
         </div>
       </div>
           <GlobalMusicPlayer insideAdventureMenu />
+          <AdventureWorldSystems saveKey={adventureSaveKey} activeCity={activeCity} time={time} defeatedLeaders={defeatedLeaders} discoveredWildClues={discoveredWildClues} completedWildTasks={completedWildTasks} recruitedIds={recruitedAdventureIds} />
       </div>
         )}
         userKey={user?.id || user?.email}

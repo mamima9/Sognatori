@@ -332,8 +332,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   return (
     <>
       {!encounter && phase !== "battle" && <div className="pointer-events-none fixed inset-0 z-[210]">
-        {menuOpen && (
-          <div className="pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md">
+        <div className={`pointer-events-auto fixed right-4 top-16 bottom-4 z-[200] flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto overscroll-contain touch-pan-y rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-white shadow-2xl backdrop-blur-md ${menuOpen ? "" : "hidden"}`}>
             <button onClick={() => { setMenuOpen(false); setConfirmRestart(true); }} className="mb-3 w-full rounded-xl border border-red-300/25 bg-red-950/40 px-3 py-3 text-left text-sm font-black text-red-200 hover:bg-red-900/40">
               ↻ RICOMINCIA DA ZERO
             </button>
@@ -361,7 +360,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
 
           </div>
-        )}
         <button onClick={() => setMenuOpen((open) => !open)} className="pointer-events-auto fixed right-3 top-12 z-[210] rounded-2xl border border-amber-200/30 bg-slate-950/95 px-5 py-3 text-sm font-black tracking-wider text-amber-100 shadow-xl backdrop-blur-md active:scale-95">
           {menuOpen ? "CHIUDI MENU" : "☰ MENU"}
         </button>
