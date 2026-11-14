@@ -10,6 +10,7 @@ import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
+import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 
 /*
   SOGNATORI — AVVENTURA
@@ -1352,6 +1353,9 @@ const [message, setMessage] = useState("");
 
       // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
       drawCityDistrict(ctx, activeCity);
+      if (activeCity.faction !== "Natura") {
+        drawAdventureFactionCity(ctx, activeCity);
+      }
       drawCityLandmark(ctx, activeCity);
       drawAdventureFactionCityLife(ctx, activeCity);
 
