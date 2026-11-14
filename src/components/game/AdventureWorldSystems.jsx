@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ROSTER } from "@/lib/sognatoriData";
 
 const QUESTS = [
@@ -41,12 +41,14 @@ const readSave = (key) => {
   try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch { return {}; }
 };
 
-export default function AdventureWorldSystems({ saveKey, activeCity, time, defeatedLeaders = [], discoveredWildClues = {}, completedWildTasks = {} }) {
+export default function AdventureWorldSystems({ saveKey, activeCity, time, defeatedLeaders = [], discoveredWildClues = {}, completedWildTasks = {}, recruitedIds = [] }) {
   const storageKey = saveKey + "-world-systems";
   const [saved, setSaved] = useState(() => readSave(storageKey));
   const [panel, setPanel] = useState("");
   const [eventNotice, setEventNotice] = useState(null);
   const [lastEventHour, setLastEventHour] = useState(-1);
+  const previousHour = useRef(Math.floor(Number(time) || 0));
+  const [dayIndex, setDayIndex] = useState(() => Number(readSave(storageKey).dayIndex) || 0);
   const [secretNotice, setSecretNotice] = useState("");
   const [selectedQuest, setSelectedQuest] = useState(null);
 
@@ -58,7 +60,7 @@ export default function AdventureWorldSystems({ saveKey, activeCity, time, defea
   const isNight = hour >= 20 || hour < 6;
   const quest = QUESTS.find((item) => item[0] === activeCity?.id);
   const questDone = !!saved.quests?.[activeCity?.id];
-  const eventDay = Math.floor((Number(time) || 0) / 24);
+  const eventDay = dayIndex;
 
   useEffect(() => {
     if (!activeCity?.id || lastEventHour === hour) return;
