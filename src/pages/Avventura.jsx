@@ -380,10 +380,21 @@ const CHALLENGERS = ADVENTURE_CITIES.map((city) => {
 });
 
 /* Sei case visitabili per città, ognuna con un abitante. */
-const HOUSE_OFFSETS = [
-  [-132, -88], [0, -158], [132, -88],
-  [-132, 88], [132, 88], [0, 158],
-];
+// Disposizione urbana per fazione: sei abitazioni raggiungibili, distribuite in quartieri.
+const HOUSE_OFFSETS_BY_CITY = {
+  demone: [[-226,-142],[-72,-248],[188,-190],[-252,58],[224,116],[42,252]],
+  robot: [[-242,-174],[-24,-258],[236,-112],[-208,144],[184,224],[36,42]],
+  nuvola: [[-238,-150],[-72,-268],[188,-226],[-270,76],[226,122],[42,264]],
+  umano: [[-248,-112],[-126,-254],[176,-224],[-236,174],[244,158],[54,32]],
+  luce: [[-214,-208],[-12,-266],[238,-144],[-260,104],[176,242],[18,54]],
+  dolce: [[-250,-166],[-88,-260],[206,-202],[-222,126],[244,86],[18,254]],
+  marino: [[-244,-128],[-44,-262],[226,-188],[-260,116],[206,224],[22,48]],
+  orso: [[-230,-178],[-42,-258],[236,-126],[-244,144],[184,238],[42,28]],
+  mago: [[-246,-146],[-104,-266],[208,-218],[-224,154],[248,102],[36,258]],
+  salato: [[-236,-196],[-24,-264],[244,-142],[-258,118],[198,236],[22,36]],
+  natura: [[-132,-88],[0,-158],[132,-88],[-132,88],[132,88],[0,158]],
+};
+const HOUSE_OFFSETS = HOUSE_OFFSETS_BY_CITY;
 const HOUSE_RESIDENTS = [
   ["Elda", "La strada fuori è piena di storie."],
   ["Timo", "Colleziono mappe e racconti."],
@@ -393,7 +404,7 @@ const HOUSE_RESIDENTS = [
   ["Riko", "Continua a esplorare!"],
 ];
 const ADVENTURE_HOUSES = ADVENTURE_CITIES.flatMap((city) =>
-  HOUSE_OFFSETS.map(([ox, oy], index) => ({
+  (HOUSE_OFFSETS[city.id] || HOUSE_OFFSETS.natura).map(([ox, oy], index) => ({
     id: city.id + "-house-" + index,
     city,
     x: city.x + ox * 1.55,
