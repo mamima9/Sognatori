@@ -9,6 +9,9 @@ import {
   createMatchHistory,
 } from "@/lib/matchService";
 import { ROSTER } from "@/lib/sognatoriData";
+
+// Eriiro è un personaggio esclusivo della modalità Avventura.
+const MULTIPLAYER_ROSTER = ROSTER.filter((s) => s.id !== "eriiro");
 import { FactionBadge } from "./HealthBar";
 import { TimerBar } from "./Timer";
 import { useAuth } from "@/lib/AuthContext";
@@ -114,7 +117,7 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
 
     if (match.game_state) return;
 
-    const pool = [...ROSTER].sort(() => Math.random() - 0.5);
+    const pool = [...MULTIPLAYER_ROSTER].sort(() => Math.random() - 0.5);
 
     const baseGs = {
       pool: [],
@@ -172,7 +175,7 @@ export default function MultiplayerAuction({ matchId, onAbandon }) {
     }
 
     const gs = match.game_state;
-    const pool = [...ROSTER].sort(() => Math.random() - 0.5);
+    const pool = [...MULTIPLAYER_ROSTER].sort(() => Math.random() - 0.5);
 
     let newGs;
 
