@@ -1073,10 +1073,15 @@ const [message, setMessage] = useState("");
       const frame = worldFrameRef.current;
       if (!frame) return;
       const rect = frame.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
+      const pixelWidth = Math.max(1, Math.round(rect.width * dpr));
+      const pixelHeight = Math.max(1, Math.round(rect.height * dpr));
+
+      // Cambiare canvas.width/height cancella il buffer: farlo solo
+      // quando la misura reale è cambiata evita flash neri a ogni render.
+      if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+        canvas.width = pixelWidth;
+        canvas.height = pixelHeight;
+      }
 
       ctx.setTransform(
         dpr,
