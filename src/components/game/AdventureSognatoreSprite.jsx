@@ -87,7 +87,9 @@ export default function AdventureSognatoreSprite({ s, size = 88, className = "",
               height: "100%",
               objectFit: "contain",
               objectPosition: "center bottom",
-              imageRendering: pixelArtwork ? "pixelated" : "auto"
+              imageRendering: pixelArtwork ? "pixelated" : "auto",
+              // In modalità statica non mostrare GIF/WebP animate prima dello snapshot PNG.
+              visibility: !walking && !pixelArtwork ? "hidden" : "visible"
             }}
           />
         </>
