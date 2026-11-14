@@ -826,6 +826,13 @@ const [message, setMessage] = useState("");
   const [completedWildTasks, setCompletedWildTasks] = useState({});
 
   const [time, setTime] = useState(9);
+  const [defeatedLeaders, setDefeatedLeaders] = useState(() => {
+    try {
+      const raw = localStorage.getItem("sognatori-adventure-v1-" + (user?.id || user?.email || "guest"));
+      const saved = raw ? JSON.parse(raw) : null;
+      return new Set(Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : []);
+    } catch { return new Set(); }
+  });
   const [activeMapId, setActiveMapId] = useState("natura");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
@@ -836,9 +843,10 @@ const [message, setMessage] = useState("");
 
   useEffect(() => {
     wildRef.current = buildMapWildStarts(activeCityBase);
+    // Il capo presidia il sentiero meridionale, davanti alla porta della zona successiva.
     challengerRef.current = CHALLENGERS
       .filter((challenger) => challenger.id === activeMapId)
-      .map((challenger) => ({ ...challenger, x: 1800, y: 1200 }));
+      .map((challenger) => ({ ...challenger, x: 1800, y: 1900 }));
     challengerCooldownRef.current = {};
   }, [activeMapId]);
 
@@ -1318,8 +1326,11 @@ const [message, setMessage] = useState("");
       drawWildArea(ctx, activeWildArea);
 
       // Portale di collegamento: ogni mappa conduce alla successiva.
-      drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color, "PORTA · " + nextCityName(activeMapId));
-      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "PORTA · " + previousCityName(activeMapId), Math.PI);
+      const currentLeaderDefeated = defeatedLeaders.has(activeMapId);
+      drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
+        currentLeaderDefeated ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
+        0, !currentLeaderDefeated);
+      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "PORTA · " + previousCityName(activeMapId), Math.PI, false);
 
       /*
         ROCCE
@@ -1477,7 +1488,7 @@ const [message, setMessage] = useState("");
       }
 
       for (const travelerData of CHALLENGERS.filter((item) => item.id === activeMapId)) {
-        const traveler = { ...travelerData, x: 1800, y: 1200 };
+        const traveler = { ...travelerData, x: 1800, y: 1900 };
         const travelerFrame = Math.floor(performance.now() / 380) % 2;
         const faceX = playerRef.current.x - traveler.x;
         const faceY = playerRef.current.y - traveler.y;
@@ -1605,6 +1616,7 @@ const [message, setMessage] = useState("");
     activeMapId,
     discoveredWildClues,
     completedWildTasks,
+    defeatedLeaders,
   ]);
 
   /*
@@ -1630,6 +1642,12 @@ const [message, setMessage] = useState("");
     }
 
     if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius) {
+      if (!defeatedLeaders.has(activeMapId)) {
+        const leader = CHALLENGERS.find((challenger) => challenger.id === activeMapId);
+        setMessage("La strada è sbarrata da " + (leader?.name || "il Capo fazione") + ". Sconfiggilo per proseguire.");
+        setTimeout(() => setMessage(""), 2600);
+        return;
+      }
       const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
       const nextCity = ADVENTURE_CITIES[(currentIndex + 1) % ADVENTURE_CITIES.length];
       setActiveMapId(nextCity.id);
@@ -2036,6 +2054,7 @@ const [message, setMessage] = useState("");
       </div>
         )}
         userKey={user?.id || user?.email}
+        onLeaderDefeated={(leaderId) => setDefeatedLeaders((old) => new Set([...old, leaderId]))}
         player={player}
         facing={playerFacingRef.current}
         walking={!!(keysRef.current.w || keysRef.current.a || keysRef.current.s || keysRef.current.d || keysRef.current.arrowup || keysRef.current.arrowdown || keysRef.current.arrowleft || keysRef.current.arrowright)}
@@ -2102,7 +2121,7 @@ function previousCityName(cityId) {
   return ADVENTURE_CITIES[(index - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length].city;
 }
 
-function drawAdventureDoor(ctx, x, y, color, label, rotation = 0) {
+function drawAdventureDoor(ctx, x, y, color, label, rotation = 0, locked = false) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rotation);
@@ -2115,12 +2134,19 @@ function drawAdventureDoor(ctx, x, y, color, label, rotation = 0) {
   ctx.fillRect(-42, -100, 84, 94);
   ctx.fillStyle = "#171b2a";
   ctx.fillRect(-28, -84, 56, 82);
-  ctx.fillStyle = "rgba(220,244,255,.75)";
+  ctx.fillStyle = locked ? "rgba(92,53,44,.94)" : "rgba(220,244,255,.75)";
   ctx.fillRect(-22, -78, 44, 70);
-  ctx.fillStyle = "rgba(255,255,255,.32)";
+  ctx.fillStyle = locked ? "#d18b55" : "rgba(255,255,255,.32)";
   ctx.fillRect(-15, -72, 8, 52);
-  ctx.fillStyle = "#f6e4a7";
-  ctx.font = "bold 16px monospace"; ctx.textAlign = "center";
+  if (locked) {
+    ctx.fillStyle = "#f4d18a";
+    ctx.fillRect(-12, -49, 24, 20);
+    ctx.fillRect(-7, -59, 14, 13);
+    ctx.fillStyle = "#593b2e";
+    ctx.fillRect(-2, -43, 4, 8);
+  }
+  ctx.fillStyle = locked ? "#ffd08a" : "#f6e4a7";
+  ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
   ctx.fillText(label, 0, -144);
   ctx.restore();
 }
