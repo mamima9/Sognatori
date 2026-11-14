@@ -501,6 +501,8 @@ function buildOutdoorNPCs(city, lore) {
     name: residents[index]?.[0] || ["Viandante", "Esploratore", "Artigiano"][index],
     dialogue: residents[index]?.[1] || "Ogni angolo di questa terra custodisce una storia.",
     x, y,
+    faction: city.faction,
+    index,
     color: NPC_FACTION_COLORS[city.faction] || "#d6b47a",
   }));
 }
@@ -2289,6 +2291,64 @@ function drawNpc(ctx, npc) {
   ctx.save();
   ctx.translate(Math.round(npc.x / 3) * 3, Math.round(npc.y / 3) * 3);
   ctx.imageSmoothingEnabled = false;
+
+  // Abitanti Natura: silhouette dedicate e animazioni d'attesa puramente visive.
+  if (npc.faction === "Natura") {
+    const bob = Math.round(Math.sin(performance.now() / 620 + (npc.index || 0) * 1.8) * 1.5);
+    const sway = Math.sin(performance.now() / 470 + (npc.index || 0)) * 1.5;
+    const role = (npc.index || 0) % 3;
+    ctx.translate(0, bob);
+    ctx.fillStyle = "rgba(7,14,18,.34)";
+    ctx.beginPath(); ctx.ellipse(1, 22 - bob, 18, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#493526"; ctx.fillRect(-10, 12, 8, 9); ctx.fillRect(3, 12, 8, 9);
+    ctx.fillStyle = "#b68a5d"; ctx.fillRect(-10, 18, 8, 3); ctx.fillRect(3, 18, 8, 3);
+    ctx.fillStyle = role === 1 ? "#765638" : "#315b3d"; ctx.fillRect(-14, -5, 28, 21);
+    ctx.fillStyle = role === 2 ? "#9a7548" : "#78a94f"; ctx.fillRect(-11, -8, 22, 20);
+    ctx.fillStyle = "#c5df83"; ctx.fillRect(-8, -6, 4, 13);
+    ctx.fillStyle = "#e5c17f"; ctx.fillRect(-10, 8, 20, 3);
+    ctx.save(); ctx.translate(-14, -2); ctx.rotate(sway * .035);
+    ctx.fillStyle = "#d99e79"; ctx.fillRect(-3, 0, 6, 14); ctx.restore();
+    ctx.save(); ctx.translate(14, -2); ctx.rotate(-sway * .035);
+    ctx.fillStyle = "#d99e79"; ctx.fillRect(-3, 0, 6, 14); ctx.restore();
+    ctx.fillStyle = "#d99e79"; ctx.fillRect(-4, -15, 8, 8);
+    ctx.fillStyle = "#efc69f"; ctx.fillRect(-10, -31, 20, 19);
+    ctx.fillStyle = role === 0 ? "#493526" : role === 1 ? "#6b4936" : "#344b35";
+    ctx.fillRect(-11, -33, 22, 7); ctx.fillRect(-9, -37, 18, 6);
+    // Tre copricapi identificano raccoglitore, erborista e custode.
+    ctx.fillStyle = role === 0 ? "#a8cf63" : role === 1 ? "#d8b66b" : "#6eaa55";
+    if (role === 0) {
+      ctx.beginPath(); ctx.moveTo(-13, -34); ctx.quadraticCurveTo(-5, -53, 12, -42); ctx.quadraticCurveTo(2, -31, -13, -34); ctx.fill();
+      ctx.fillStyle = "#e5f2a4"; ctx.fillRect(-3, -43, 3, 8);
+    } else if (role === 1) {
+      ctx.fillRect(-13, -40, 26, 5); ctx.fillRect(-8, -45, 16, 5);
+      ctx.fillStyle = "#f4d98b"; ctx.fillRect(-3, -45, 6, 4);
+    } else {
+      ctx.beginPath(); ctx.arc(0, -39, 11, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#d9ef9a"; ctx.fillRect(-2, -48, 4, 5);
+    }
+    ctx.fillStyle = "#282532"; ctx.fillRect(-6, -23, 3, 3); ctx.fillRect(4, -23, 3, 3);
+    ctx.fillStyle = "#fff0d4"; ctx.fillRect(-4, -15, 8, 2);
+    // Oggetto di lavoro per ciascun abitante.
+    if (role === 0) {
+      ctx.fillStyle = "#8b603c"; ctx.fillRect(15, 2, 7, 12);
+      ctx.fillStyle = "#b9854d"; ctx.fillRect(13, 0, 11, 4);
+      ctx.fillStyle = "#78a94f"; ctx.fillRect(17, -4, 4, 5);
+    } else if (role === 1) {
+      ctx.fillStyle = "#8b603c"; ctx.fillRect(-22, 3, 8, 9);
+      ctx.fillStyle = "#d8b66b"; ctx.fillRect(-24, 1, 12, 3);
+      ctx.fillStyle = "#a8cf63"; ctx.fillRect(-20, -2, 4, 4);
+    } else {
+      ctx.fillStyle = "#765638"; ctx.fillRect(17, -15, 3, 31);
+      ctx.fillStyle = "#c5df83"; ctx.fillRect(13, -17, 11, 5);
+      ctx.fillStyle = "#e5c17f"; ctx.fillRect(15, 13, 7, 3);
+    }
+    ctx.fillStyle = "rgba(12,18,27,.86)"; ctx.fillRect(-48, 27, 96, 20);
+    ctx.fillStyle = "#a8cf63"; ctx.fillRect(-48, 27, 4, 20);
+    ctx.fillStyle = "#fff4df"; ctx.font = "bold 12px monospace"; ctx.textAlign = "center";
+    ctx.fillText(npc.name, 0, 42, 90);
+    ctx.restore();
+    return;
+  }
 
   // Ombra a terra e piedi ben separati.
   ctx.fillStyle = "rgba(7,14,18,.34)";
