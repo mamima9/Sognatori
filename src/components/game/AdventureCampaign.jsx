@@ -79,7 +79,7 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, menuContent }) {
+export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, onLeaderDefeated, menuContent }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
   const [panel, setPanel] = useState("");
@@ -220,6 +220,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       if (!rewards.length) {
         const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
         setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
+        onLeaderDefeated?.(encounter.id);
         setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
       } else {
         setPhase("reward");
@@ -244,6 +245,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     else {
       const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
       setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
+      onLeaderDefeated?.(encounter.id);
       setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     }
   };
