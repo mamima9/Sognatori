@@ -241,7 +241,17 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
     px(ctx,-14,-53+bob,7,3,d.skin);px(ctx,-19,-57+bob,7,5,d.accent);
     px(ctx,7,-53+bob,7,3,d.skin);px(ctx,12,-57+bob,7,5,d.accent);
     px(ctx,-17,-56+bob,4,2,d.trim);px(ctx,13,-56+bob,4,2,d.trim);
+    px(ctx,-5,-66+bob,5,5,"#72a94e");px(ctx,1,-68+bob,5,6,"#9cc86b");
   }
+  if(faction==="Robot"){px(ctx,-2,-69+bob,4,9,d.trim);px(ctx,-5,-70+bob,10,3,d.accent);px(ctx,-14,-27+bob,3,4,d.trim);}
+  if(faction==="Demone"){px(ctx,-11,-66+bob,5,9,d.accent);px(ctx,6,-66+bob,5,9,d.accent);}
+  if(faction==="Nuvola"){px(ctx,-12,-65+bob,7,4,d.trim);px(ctx,5,-65+bob,8,4,d.trim);px(ctx,-2,-68+bob,5,3,d.accent);}
+  if(faction==="Luce"){px(ctx,-10,-69+bob,20,2,d.trim);px(ctx,-8,-71+bob,16,2,d.accent);}
+  if(faction==="Dolce"){px(ctx,-15,-61+bob,7,6,d.accent);px(ctx,8,-61+bob,7,6,d.trim);}
+  if(faction==="Marino"){px(ctx,-15,-54+bob,6,12,d.accent);px(ctx,9,-54+bob,6,12,d.accent);}
+  if(faction==="Orso"){px(ctx,-12,-64+bob,7,8,d.trim);px(ctx,5,-64+bob,7,8,d.trim);}
+  if(faction==="Mago"){px(ctx,-12,-62+bob,24,4,d.hair);px(ctx,-7,-70+bob,14,9,d.accent);px(ctx,-10,-57+bob,20,2,d.trim);}
+  if(faction==="Salato"){px(ctx,-9,-69+bob,5,9,d.trim);px(ctx,-2,-73+bob,5,12,d.accent);px(ctx,5,-69+bob,5,9,d.trim);}
   // recognizable faction headpiece
   if(d.hat==="horn"){px(ctx,-9,-65+bob,4,7,d.trim);px(ctx,5,-65+bob,4,7,d.trim);}
   if(d.hat==="antenna"){px(ctx,-1,-68+bob,3,8,d.trim);px(ctx,-3,-69+bob,7,3,d.accent);}
