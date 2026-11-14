@@ -200,9 +200,14 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
     const audio = sharedMusicAudio;
     audioRef.current = audio;
     audio.volume = volume;
+    // In Avventura il brano della città resta in ripetizione finché
+    // il giocatore non raggiunge un'altra città.
+    audio.loop = musicMode === "adventure";
 
     audio.onended = () => {
-      setTrackIdx((i) => (i + 1) % tracks.length);
+      if (musicMode !== "adventure") {
+        setTrackIdx((i) => (i + 1) % tracks.length);
+      }
     };
 
     if (current && audio.src !== new URL(current.url, window.location.origin).href) {
