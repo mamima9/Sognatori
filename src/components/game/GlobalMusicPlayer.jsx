@@ -67,7 +67,14 @@ const BATTLE_TRACKS = [
 let sharedMusicAudio = null;
 
 const ADVENTURE_TRACKS = [
-  { cityId: "natura", city: "Verdelume", name: "Lantern Deer", url: "/audio/Lantern Deer.mp3" },
+  {
+    cityId: "natura",
+    city: "Verdelume",
+    name: "Verdelume",
+    url: "/audio/Verdelume-Nord.mp3",
+    northUrl: "/audio/Verdelume-Nord.mp3",
+    southUrl: "/audio/Verdelume-Sud.mp3",
+  },
   { cityId: "demone", city: "Braciombra", name: "Eroica tensione", url: "/audio/Eroica tensione.mp3" },
   { cityId: "robot", city: "Ferrovia", name: "H1CQS", url: "/audio/H1CQS.mp3" },
   { cityId: "nuvola", city: "Altacielo", name: "Dream Creature Path", url: "/audio/Dream Creature Path.mp3" },
@@ -111,6 +118,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
   const location = useLocation();
 
   const [musicMode, setMusicModeState] = useState("main");
+  const [entryDirection, setEntryDirection] = useState("north");
 
   const [trackIdx, setTrackIdx] = useState(
     () => Math.floor(Math.random() * MAIN_TRACKS.length)
@@ -133,7 +141,12 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
       : musicMode === "auction"
         ? AUCTION_TRACKS
         : musicMode === "adventure"
-          ? ADVENTURE_TRACKS
+          ? ADVENTURE_TRACKS.map((track) => ({
+              ...track,
+              url: track.cityId === "natura"
+                ? (entryDirection === "south" ? track.southUrl : track.northUrl)
+                : track.url,
+            }))
           : MAIN_TRACKS;
 
   const current = tracks[trackIdx] || tracks[0];
@@ -168,6 +181,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
         ? cityIndex
         : Math.floor(Math.random() * nextTracks.length);
 
+      setEntryDirection(event.detail?.entryDirection === "south" ? "south" : "north");
       setMusicModeState(mode);
       setTrackIdx(nextIndex);
     };
@@ -228,7 +242,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackIdx, musicMode]);
+  }, [trackIdx, musicMode, entryDirection]);
 
   /*
    * VOLUME
