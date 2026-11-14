@@ -7,6 +7,7 @@ import AdventureCampaign from "@/components/game/AdventureCampaign";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
+import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
 
 /*
   SOGNATORI — AVVENTURA
@@ -2431,6 +2432,10 @@ function drawFactionDistrictDetails(ctx, city) {
 }
 
 function drawCityDistrict(ctx, city) {
+  if (city.faction === "Natura") {
+    drawAdventureNaturaCity(ctx, city);
+    return;
+  }
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round(city.y / 4) * 4;
   const color = city.color || "#d6b47a";
@@ -2862,6 +2867,7 @@ function drawWildArea(ctx, area) {
 }
 
 function drawCityLandmark(ctx, city) {
+  if (city.faction === "Natura") return; // Il Grande Seme è già integrato nel renderer di Verdelume.
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round((city.y - 66) / 4) * 4;
   const accent = city.color || "#e5c17f";
