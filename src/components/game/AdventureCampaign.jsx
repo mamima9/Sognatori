@@ -315,6 +315,18 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <button onClick={() => { setPanel("box"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-violet-100 hover:bg-white/10">
               <span>DEPOSITO</span><span className="text-violet-200">{deposit.length}</span>
             </button>
+            <div className="mt-2 border-t border-white/10 px-3 pt-3">
+              <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[.12em] text-white/55">
+                <span>Sognatori con cui hai stretto legame</span>
+                <span className="shrink-0 text-emerald-200">{owned.length}/29</span>
+              </div>
+            </div>
+            <button
+              onClick={() => { setMenuOpen(false); window.location.assign("/"); }}
+              className="mt-3 w-full rounded-xl border border-red-300/25 bg-red-950/45 px-3 py-3 text-left text-sm font-black text-red-200 transition hover:bg-red-900/50"
+            >
+              ← ESCI DALL'AVVENTURA
+            </button>
 
           </div>
         )}
