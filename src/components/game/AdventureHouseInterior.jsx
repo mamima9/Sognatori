@@ -57,9 +57,9 @@ function drawRoom(ctx, room, player, tick) {
 
 export default function AdventureHouseInterior({ house, onExit }) {
   const canvasRef=useRef(null);
-  const position=useRef({x:400,y:385});
+  const position=useRef({x:400,y:350});
   const keys=useRef({});
-  const [player,setPlayer]=useState({x:400,y:385});
+  const [player,setPlayer]=useState({x:400,y:350});
   const [dialogue,setDialogue]=useState("");
   const [nearNpc,setNearNpc]=useState(false);
   const [nearExit,setNearExit]=useState(false);
@@ -84,7 +84,7 @@ export default function AdventureHouseInterior({ house, onExit }) {
       if(k.w||k.arrowup)dy--;if(k.s||k.arrowdown)dy++;if(k.a||k.arrowleft)dx--;if(k.d||k.arrowright)dx++;
       if(dx||dy){const len=Math.hypot(dx,dy);const next={x:Math.max(72,Math.min(728,position.current.x+dx/len*3.1*dt)),y:Math.max(190,Math.min(410,position.current.y+dy/len*3.1*dt))};position.current=next;setPlayer(next);}
       const npcNear=Math.hypot(position.current.x-400,position.current.y-205)<92;
-      const exitNear=position.current.y>370&&Math.abs(position.current.x-400)<72;
+      const exitNear=position.current.y>438&&Math.abs(position.current.x-400)<72;
       setNearNpc(npcNear);setNearExit(exitNear);
       if(frame%8===0)setTick(t=>t+1);
       drawRoom(ctx,house,position.current,frame);
