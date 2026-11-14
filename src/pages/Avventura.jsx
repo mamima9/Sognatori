@@ -44,10 +44,6 @@ const PLAYER_START = {
   y: 1100,
 };
 
-const TESTER_EMAILS = [
-  "bibitoeuro@gmail.com",
-];
-
 // Ogni specie occupa un habitat distinto in uno dei quattro angoli della mappa.
 // I quattro esemplari restano vicini al proprio elemento di lore; solo il primo è arruolabile.
 const WILD_CORNER_ANCHORS = [
@@ -719,10 +715,8 @@ export default function Avventura() {
 
   const { user, isLoadingAuth, authChecked } = useAuth();
 
-  const testerAllowed =
-    (!!user?.email && TESTER_EMAILS.includes(user.email.toLowerCase())) ||
-    user?.user_metadata?.sognatori_arcade_completed === true ||
-    user?.user_metadata?.taomarco_human_arcade_completed === true;
+  // L'accesso all'Avventura è riservato a chi ha vinto la campagna Arcade completa.
+  const testerAllowed = user?.user_metadata?.sognatori_arcade_completed === true;
 
   /*
     ============================
@@ -1645,7 +1639,7 @@ const [message, setMessage] = useState("");
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
         <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
-          Controllo accesso tester...
+          Verifica sblocco Avventura...
         </div>
       </div>
     );
