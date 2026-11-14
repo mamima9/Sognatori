@@ -606,6 +606,59 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
         ctx.fillRect(x + 31, y + 32, 8, 3);
         ctx.fillRect(x + 34, y + 28, 3, 7);
       }
+
+      // Trame ambientali riconoscibili: ogni fazione lascia una firma sul terreno.
+      if (seed % 5 === 0) {
+        ctx.save();
+        ctx.lineCap = "square";
+        switch (faction) {
+          case "Demone":
+            ctx.strokeStyle = "rgba(255,151,83,.58)"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x + 8, y + 35); ctx.lineTo(x + 17, y + 27); ctx.lineTo(x + 14, y + 18); ctx.lineTo(x + 25, y + 9); ctx.stroke();
+            ctx.fillStyle = "rgba(255,190,100,.42)"; ctx.fillRect(x + 22, y + 7, 4, 3); break;
+          case "Robot":
+            ctx.strokeStyle = "rgba(137,239,220,.48)"; ctx.lineWidth = 2;
+            ctx.strokeRect(x + 9, y + 9, 22, 22);
+            ctx.fillStyle = "rgba(188,255,239,.7)"; ctx.fillRect(x + 18, y + 18, 5, 5);
+            ctx.fillRect(x + 5, y + 19, 5, 2); ctx.fillRect(x + 30, y + 19, 5, 2); break;
+          case "Natura":
+            ctx.fillStyle = "rgba(179,220,112,.58)";
+            ctx.fillRect(x + 14, y + 13, 4, 10); ctx.fillRect(x + 10, y + 16, 4, 4); ctx.fillRect(x + 18, y + 16, 4, 4);
+            ctx.fillStyle = "rgba(242,224,151,.65)"; ctx.fillRect(x + 27, y + 30, 3, 3); break;
+          case "Nuvola":
+            ctx.fillStyle = "rgba(245,251,255,.38)";
+            ctx.beginPath(); ctx.arc(x + 17, y + 20, 7, 0, Math.PI * 2); ctx.arc(x + 25, y + 18, 9, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fillRect(x + 8, y + 31, 12, 2); break;
+          case "Umano":
+            ctx.fillStyle = "rgba(77,52,34,.22)";
+            ctx.fillRect(x + 7, y + 8, 13, 8); ctx.fillRect(x + 23, y + 20, 16, 9);
+            ctx.fillStyle = "rgba(241,214,163,.36)"; ctx.fillRect(x + 9, y + 10, 9, 2); break;
+          case "Luce":
+            ctx.strokeStyle = "rgba(255,240,168,.55)"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x + 24, y + 7); ctx.lineTo(x + 24, y + 17); ctx.moveTo(x + 19, y + 12); ctx.lineTo(x + 29, y + 12); ctx.stroke();
+            ctx.fillStyle = "rgba(255,246,196,.55)"; ctx.fillRect(x + 22, y + 21, 4, 4); break;
+          case "Dolce":
+            ctx.fillStyle = "rgba(255,224,241,.62)";
+            ctx.fillRect(x + 9, y + 12, 4, 9); ctx.fillRect(x + 7, y + 14, 8, 4);
+            ctx.fillStyle = "rgba(255,244,220,.72)"; ctx.fillRect(x + 27, y + 28, 4, 3); break;
+          case "Marino":
+            ctx.strokeStyle = "rgba(176,239,235,.55)"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x + 5, y + 14); ctx.quadraticCurveTo(x + 15, y + 7, x + 25, y + 14); ctx.moveTo(x + 16, y + 27); ctx.quadraticCurveTo(x + 26, y + 20, x + 38, y + 27); ctx.stroke(); break;
+          case "Orso":
+            ctx.strokeStyle = "rgba(235,202,151,.42)"; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(x + 12, y + 11); ctx.lineTo(x + 18, y + 27); ctx.moveTo(x + 19, y + 9); ctx.lineTo(x + 25, y + 25); ctx.moveTo(x + 26, y + 8); ctx.lineTo(x + 32, y + 23); ctx.stroke(); break;
+          case "Mago":
+            ctx.strokeStyle = "rgba(215,199,255,.55)"; ctx.lineWidth = 2;
+            ctx.strokeRect(x + 12, y + 12, 18, 18);
+            ctx.fillStyle = "rgba(255,225,139,.72)"; ctx.fillRect(x + 20, y + 19, 4, 4); break;
+          case "Salato":
+            ctx.fillStyle = "rgba(255,255,245,.65)";
+            ctx.fillRect(x + 13, y + 12, 4, 4); ctx.fillRect(x + 24, y + 24, 5, 5); ctx.fillRect(x + 31, y + 9, 3, 3);
+            ctx.strokeStyle = "rgba(255,255,255,.38)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x + 15, y + 29); ctx.lineTo(x + 21, y + 23); ctx.lineTo(x + 27, y + 29); ctx.stroke(); break;
+        }
+        ctx.restore();
+      }
     }
   }
 }
