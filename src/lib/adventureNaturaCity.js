@@ -193,6 +193,33 @@ export function drawAdventureNaturaCity(ctx, city) {
     ctx.fillStyle = "#f5edc5"; ctx.fillRect(px + 9, py - 6, 2, 2);
   }
 
+  // Animazioni ambientali: lucciole, riflessi dello stagno e foglie mosse dal vento.
+  const ambientTime = performance.now() / 1000;
+  for (let i = 0; i < 9; i++) {
+    const phase = ambientTime * (0.7 + (i % 3) * 0.18) + i * 1.7;
+    const px = Math.sin(phase) * (105 + (i % 3) * 18);
+    const py = -82 + Math.cos(phase * 0.8) * 48 + (i % 4) * 12;
+    const glow = 0.35 + (Math.sin(phase * 2) + 1) * 0.25;
+    ctx.fillStyle = "rgba(226,255,151," + glow.toFixed(2) + ")";
+    ctx.fillRect(px, py, 3, 3);
+    ctx.fillStyle = "rgba(255,246,190,.22)"; ctx.fillRect(px - 2, py - 2, 7, 7);
+  }
+  const ripple = Math.sin(ambientTime * 2.4) * 3;
+  ctx.strokeStyle = "rgba(206,248,224,.62)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(-83, 89, 16 + ripple, 3 + ripple * .2, -.18, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "rgba(206,248,224,.38)";
+  ctx.beginPath(); ctx.ellipse(-83, 89, 25 - ripple, 5, -.18, 0, Math.PI * 2); ctx.stroke();
+  // Foglie che oscillano sopra le chiome, senza spostare gli edifici o le collisioni.
+  for (let i = 0; i < 5; i++) {
+    const phase = ambientTime * 1.1 + i * 2.2;
+    const lx = Math.sin(phase) * 148;
+    const ly = -145 + (i % 3) * 22 + Math.cos(phase) * 5;
+    ctx.save(); ctx.translate(lx, ly); ctx.rotate(Math.sin(phase) * .35);
+    ctx.fillStyle = i % 2 ? "#9acb68" : "#c0df83";
+    ctx.fillRect(-4, -2, 8, 4); ctx.fillRect(-1, -4, 2, 8);
+    ctx.restore();
+  }
+
   // Targhetta del quartiere.
   ctx.fillStyle = "rgba(8,18,15,.88)"; ctx.fillRect(-92, 188, 184, 23);
   ctx.fillStyle = "#a9d67c"; ctx.fillRect(-92, 188, 5, 23);
