@@ -1217,12 +1217,9 @@ const [message, setMessage] = useState("");
         );
       }
 
-      // Distretto cittadino in bianco e nero; il resto della mappa mantiene i colori originali.
-      ctx.save();
-      ctx.filter = "grayscale(1)";
+      // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
       drawCityDistrict(ctx, activeCity);
       drawCityLandmark(ctx, activeCity);
-      ctx.restore();
 
       // Soltanto il bioma della fazione attualmente caricata.
       drawWildArea(ctx, activeWildArea);
