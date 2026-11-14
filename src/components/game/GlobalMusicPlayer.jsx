@@ -38,7 +38,7 @@ const BATTLE_TRACKS = [
 let sharedMusicAudio = null;
 
 const ADVENTURE_TRACKS = [
-  { cityId: "natura", city: "Verdelume", name: "Verdelume", url: "/audio/Verdelume.mp3", northUrl: "/audio/Verdelume.mp3", southUrl: "/audio/Verdelume (1).mp3" },
+  { cityId: "natura", city: "Verdelume", name: "Lantern Deer", url: "/audio/Lantern Deer.mp3", northUrl: "/audio/Lantern Deer.mp3", southUrl: "/audio/Lantern Deer (1).mp3" },
   { cityId: "demone", city: "Braciombra", name: "Dream Creature Path", url: "/audio/Dream Creature Path.mp3", northUrl: "/audio/Dream Creature Path.mp3", southUrl: "/audio/Dream Creature Path (1).mp3" },
   { cityId: "robot", city: "Ferrovia", name: "Franco", url: "/audio/Franco.mp3", northUrl: "/audio/Franco.mp3", southUrl: "/audio/Motivo Mediterraneo.mp3" },
   { cityId: "nuvola", city: "Altacielo", name: "Arrivederci Roma", url: "/audio/001 Sognatori - Arrivederci Roma.mp3", northUrl: "/audio/001 Sognatori - Arrivederci Roma.mp3", southUrl: "/audio/002Sognatori - Dream Arena.mp3" },
@@ -378,7 +378,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
 
         {/* PLAYLIST */}
         <AnimatePresence>
-          {showPlaylist && (
+          {showPlaylist && musicMode !== "adventure" && (
             <motion.div
               initial={{
                 opacity: 0,
@@ -530,6 +530,8 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
           "
         >
 
+          {/* In Avventura le tracce sono fisse per città e porta: niente selezione manuale. */}
+          {musicMode !== "adventure" && <>
           {/* PREVIOUS */}
           <button
             onClick={previousTrack}
@@ -599,7 +601,14 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
             ⏭
           </button>
 
-          {/* CURRENT TRACK */}
+          </>}
+
+          {/* CURRENT TRACK: non selezionabile in Avventura */}
+          {musicMode === "adventure" ? (
+            <div className="ml-1 px-2 h-7 min-w-0 max-w-[150px] flex items-center justify-center text-xs text-slate-300">
+              <span className="truncate">{current?.name || "Musica"}</span>
+            </div>
+          ) : (
           <button
             onClick={() =>
               setShowPlaylist(
@@ -632,6 +641,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
               ▾
             </span>
           </button>
+          )}
         </div>
       </div>
     </div>
