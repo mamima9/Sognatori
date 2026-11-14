@@ -1643,9 +1643,17 @@ const [message, setMessage] = useState("");
         PLAYER
       */
 
+      const playerIsWalking = !!(
+        keysRef.current.w || keysRef.current.a || keysRef.current.s || keysRef.current.d ||
+        keysRef.current.arrowup || keysRef.current.arrowdown ||
+        keysRef.current.arrowleft || keysRef.current.arrowright
+      );
       drawPlayer(
         ctx,
-        playerRef.current
+        playerRef.current,
+        playerFacingRef.current,
+        Math.floor(performance.now() / 170) % 2,
+        playerIsWalking
       );
 
       /*
@@ -2263,100 +2271,138 @@ function drawAdventureDoor(ctx, x, y, color, label, rotation = 0, locked = false
   ctx.restore();
 }
 
-function drawPlayer(ctx, p) {
-  // Protagonista pixel-art con silhouette, zaino e accessori leggibili.
+function drawPlayer(ctx, p, facing = { x: 0, y: -1 }, frame = 0, walking = false) {
+  // Protagonista overworld 2026: silhouette leggibile, 4 direzioni e passo a 2 frame.
+  // Il punto p resta ancorato ai piedi: collisioni, camera e coordinate non cambiano.
+  const side = Math.abs(facing.x || 0) > Math.abs(facing.y || 0);
+  const back = !side && (facing.y || 0) < 0;
+  const step = walking && frame === 1 ? 2 : 0;
   ctx.save();
-  ctx.translate(Math.round(p.x / 4) * 4, Math.round(p.y / 4) * 4);
+  ctx.translate(Math.round(p.x / 2) * 2, Math.round(p.y / 2) * 2);
+  if (side && facing.x < 0) ctx.scale(-1, 1);
+  ctx.imageSmoothingEnabled = false;
 
-  ctx.fillStyle = "rgba(0,0,0,.34)";
+  // Ombra morbida, separata dai piedi.
+  ctx.fillStyle = "rgba(0,0,0,.36)";
   ctx.beginPath();
-  ctx.ellipse(1, 19, 19, 6, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 19, 19, 5.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Zaino e spallacci.
-  ctx.fillStyle = "#49362d";
-  ctx.fillRect(-14, -12, 8, 22);
-  ctx.fillStyle = "#9a623d";
-  ctx.fillRect(-15, -10, 7, 14);
-  ctx.fillStyle = "#d49a55";
-  ctx.fillRect(-14, -8, 4, 5);
-  ctx.fillStyle = "#55382c";
-  ctx.fillRect(-8, -12, 4, 17);
-  ctx.fillRect(5, -12, 4, 17);
-
-  // Gambe, pantaloni e stivali.
+  // Gambe e stivali: alternanza netta durante il movimento.
   ctx.fillStyle = "#26344e";
-  ctx.fillRect(-9, 5, 8, 12);
-  ctx.fillRect(2, 5, 8, 12);
+  ctx.fillRect(-9, 4 + (step ? 1 : 0), 8, 12);
+  ctx.fillRect(2, 4 + (step ? -1 : 0), 8, 12);
   ctx.fillStyle = "#40577e";
-  ctx.fillRect(-8, 7, 5, 7);
-  ctx.fillRect(3, 7, 5, 7);
+  ctx.fillRect(-8, 7 + (step ? 1 : 0), 5, 6);
+  ctx.fillRect(3, 7 + (step ? -1 : 0), 5, 6);
   ctx.fillStyle = "#30272a";
-  ctx.fillRect(-11, 15, 10, 5);
-  ctx.fillRect(2, 15, 11, 5);
-  ctx.fillStyle = "#b88955";
-  ctx.fillRect(-10, 15, 7, 2);
-  ctx.fillRect(3, 15, 7, 2);
+  ctx.fillRect(-11, 15 + (step ? 1 : 0), 10, 5);
+  ctx.fillRect(2, 15 + (step ? -1 : 0), 11, 5);
+  ctx.fillStyle = "#d2a36a";
+  ctx.fillRect(-10, 15 + (step ? 1 : 0), 7, 2);
+  ctx.fillRect(3, 15 + (step ? -1 : 0), 7, 2);
 
-  // Giacca da viaggiatore a strati.
+  // Zaino visibile da dietro e di profilo.
+  if (back || side) {
+    ctx.fillStyle = "#49362d";
+    ctx.fillRect(-15, -15, 8, 23);
+    ctx.fillStyle = "#9a623d";
+    ctx.fillRect(-14, -12, 6, 14);
+    ctx.fillStyle = "#e0b66d";
+    ctx.fillRect(-13, -9, 4, 5);
+    ctx.fillStyle = "#55382c";
+    ctx.fillRect(-8, -12, 3, 17);
+  }
+
+  // Giacca a pannelli, con cuciture e bordi luminosi.
+  ctx.fillStyle = "#713c32";
+  ctx.fillRect(-13, -15, 26, 22);
+  ctx.fillStyle = "#c65e3d";
+  ctx.fillRect(-11, -15, 22, 19);
+  ctx.fillStyle = "#ed9a4c";
+  ctx.fillRect(-8, -13, 16, 16);
   ctx.fillStyle = "#8e452f";
-  ctx.fillRect(-13, -14, 26, 22);
-  ctx.fillStyle = "#d36b3f";
-  ctx.fillRect(-10, -13, 20, 18);
-  ctx.fillStyle = "#f0ad52";
-  ctx.fillRect(-7, -12, 14, 14);
-  ctx.fillStyle = "#8e452f";
-  ctx.fillRect(-2, -12, 4, 17);
+  ctx.fillRect(-2, -14, 4, 19);
   ctx.fillStyle = "#f6d18a";
-  ctx.fillRect(-1, -8, 2, 3);
-  ctx.fillRect(-1, -1, 2, 3);
-
-  // Braccia con guanti e polsini.
-  ctx.fillStyle = "#d99b70";
-  ctx.fillRect(-17, -11, 5, 14);
-  ctx.fillRect(12, -11, 5, 14);
-  ctx.fillStyle = "#c45c3d";
-  ctx.fillRect(-17, -13, 5, 5);
-  ctx.fillRect(12, -13, 5, 5);
-  ctx.fillStyle = "#302a32";
-  ctx.fillRect(-17, 1, 6, 5);
-  ctx.fillRect(11, 1, 6, 5);
-
-  // Collo, volto e capelli.
-  ctx.fillStyle = "#b87956";
-  ctx.fillRect(-5, -19, 10, 7);
-  ctx.fillStyle = "#efc49a";
-  ctx.fillRect(-10, -34, 20, 17);
-  ctx.fillStyle = "#d99f78";
-  ctx.fillRect(-10, -23, 4, 5);
-  ctx.fillRect(6, -23, 4, 5);
-  ctx.fillStyle = "#33272a";
-  ctx.fillRect(-11, -36, 22, 7);
-  ctx.fillRect(-9, -41, 18, 6);
-  ctx.fillRect(-12, -33, 5, 7);
-  ctx.fillRect(7, -34, 5, 6);
-  ctx.fillStyle = "#f2bd55";
-  ctx.fillRect(-12, -42, 24, 5);
-  ctx.fillRect(-7, -46, 14, 4);
-  ctx.fillStyle = "#f7d58b";
-  ctx.fillRect(-7, -41, 13, 2);
-  ctx.fillStyle = "#29242a";
-  ctx.fillRect(-6, -27, 3, 3);
-  ctx.fillRect(4, -27, 3, 3);
-
-  // Sciarpa rossa, elemento iconico del protagonista.
-  ctx.fillStyle = "#7e2638";
-  ctx.fillRect(-8, -17, 16, 5);
-  ctx.fillStyle = "#d84e4d";
-  ctx.fillRect(-7, -17, 14, 3);
-  ctx.fillRect(5, -14, 5, 15);
-  ctx.fillStyle = "#f08a65";
-  ctx.fillRect(6, -13, 2, 8);
-
-  // Riflessi pixel e dettagli del tessuto.
-  ctx.fillStyle = "rgba(255,226,163,.55)";
+  ctx.fillRect(-1, -9, 2, 3);
+  ctx.fillRect(-1, -2, 2, 3);
+  ctx.fillStyle = "rgba(255,226,163,.58)";
   ctx.fillRect(-8, -11, 3, 2);
-  ctx.fillRect(6, -9, 2, 4);
+  ctx.fillRect(5, -8, 2, 4);
+
+  // Braccia animate; in vista posteriore la giacca copre parte delle maniche.
+  const armSwing = walking && frame === 1 ? 2 : 0;
+  ctx.fillStyle = "#b96b4d";
+  ctx.fillRect(-17, -12 + armSwing, 5, 14);
+  ctx.fillRect(12, -12 - armSwing, 5, 14);
+  ctx.fillStyle = "#efc49a";
+  ctx.fillRect(-17, 0 + armSwing, 5, 4);
+  ctx.fillRect(12, 0 - armSwing, 5, 4);
+  ctx.fillStyle = "#302a32";
+  ctx.fillRect(-18, 2 + armSwing, 6, 4);
+  ctx.fillRect(12, 2 - armSwing, 6, 4);
+
+  // Collo e testa: il retro mostra i capelli, il profilo un solo occhio.
+  ctx.fillStyle = "#b87956";
+  ctx.fillRect(-5, -21, 10, 7);
+  ctx.fillStyle = "#efc49a";
+  ctx.fillRect(-10, -37, 20, 18);
+  ctx.fillStyle = "#d99f78";
+  ctx.fillRect(-11, -27, 3, 5);
+  ctx.fillRect(8, -27, 3, 5);
+  ctx.fillStyle = "#33272a";
+  ctx.fillRect(-11, -40, 22, 7);
+  ctx.fillRect(-9, -44, 18, 6);
+  ctx.fillRect(-12, -37, 5, 7);
+  ctx.fillRect(7, -37, 5, 7);
+
+  if (back) {
+    ctx.fillStyle = "#33272a";
+    ctx.fillRect(-10, -39, 20, 13);
+    ctx.fillRect(-8, -43, 16, 5);
+    ctx.fillStyle = "#f2bd55";
+    ctx.fillRect(-12, -44, 24, 4);
+  } else if (side) {
+    ctx.fillStyle = "#29242a";
+    ctx.fillRect(3, -31, 3, 3);
+    ctx.fillStyle = "#d99f78";
+    ctx.fillRect(8, -28, 3, 2);
+    ctx.fillStyle = "#f2bd55";
+    ctx.fillRect(-11, -44, 23, 4);
+    ctx.fillRect(-7, -47, 14, 3);
+  } else {
+    ctx.fillStyle = "#f2bd55";
+    ctx.fillRect(-12, -44, 24, 5);
+    ctx.fillRect(-7, -48, 14, 4);
+    ctx.fillStyle = "#f7d58b";
+    ctx.fillRect(-7, -43, 13, 2);
+    ctx.fillStyle = "#29242a";
+    ctx.fillRect(-6, -30, 3, 3);
+    ctx.fillRect(4, -30, 3, 3);
+    ctx.fillStyle = "#9d594a";
+    ctx.fillRect(-2, -24, 4, 1);
+  }
+
+  // Sciarpa rossa: segno iconico del protagonista, leggibile da davanti e di lato.
+  if (!back) {
+    ctx.fillStyle = "#7e2638";
+    ctx.fillRect(-9, -20, 18, 6);
+    ctx.fillStyle = "#d84e4d";
+    ctx.fillRect(-8, -19, 16, 3);
+    ctx.fillRect(side ? 5 : 6, -15, 5, 14 + (walking ? step : 0));
+    ctx.fillStyle = "#f08a65";
+    ctx.fillRect(side ? 6 : 7, -14, 2, 8);
+  } else {
+    ctx.fillStyle = "#7e2638";
+    ctx.fillRect(-9, -20, 18, 5);
+    ctx.fillStyle = "#d84e4d";
+    ctx.fillRect(-8, -19, 16, 2);
+  }
+
+  // Piccolo fermaglio e dettagli di equipaggiamento.
+  ctx.fillStyle = "#f6d18a";
+  ctx.fillRect(-13, -11, 3, 3);
+  ctx.fillRect(10, -10, 3, 3);
   ctx.fillStyle = "#e6bd79";
   ctx.fillRect(-9, 4, 3, 2);
   ctx.fillRect(6, 4, 3, 2);
@@ -2605,7 +2651,51 @@ function drawNpc(ctx, npc) {
     ctx.fillStyle = "#7fc5e8"; ctx.fillRect(-11, -39, 22, 3);
     ctx.fillRect(8, -37, 5, 9);
   }
+  // Copricapo e silhouette dedicate per tutte le fazioni: non sono semplici cambi di colore.
+  switch (npc.faction) {
+    case "Demone":
+      ctx.fillStyle = "#f08a62"; ctx.fillRect(-10, -43, 4, 9); ctx.fillRect(6, -43, 4, 9);
+      ctx.fillStyle = "#542b3a"; ctx.fillRect(-9, -44, 3, 5); ctx.fillRect(6, -44, 3, 5);
+      break;
+    case "Robot":
+      ctx.fillStyle = "#b9f4e8"; ctx.fillRect(-2, -47, 4, 9);
+      ctx.fillRect(-5, -47, 10, 2); ctx.fillStyle = "#4dd4d0";
+      ctx.fillRect(-8, -29, 16, 3); break;
+    case "Nuvola":
+      ctx.fillStyle = "#dcecff"; ctx.fillRect(-14, -40, 7, 5); ctx.fillRect(7, -40, 7, 5);
+      ctx.fillRect(-9, -44, 18, 4); break;
+    case "Umano":
+      ctx.fillStyle = "#d9a45f"; ctx.fillRect(-12, -41, 24, 4);
+      ctx.fillStyle = "#7d3f3a"; ctx.fillRect(-5, -42, 10, 3); break;
+    case "Luce":
+      ctx.fillStyle = "#ffe99b"; ctx.fillRect(-10, -46, 20, 2);
+      ctx.fillRect(-7, -48, 14, 2); ctx.fillStyle = "#fff8d8";
+      ctx.fillRect(-1, -51, 2, 3); break;
+    case "Dolce":
+      ctx.fillStyle = "#f3a8d0"; ctx.fillRect(-13, -42, 7, 6);
+      ctx.fillRect(6, -42, 7, 6); ctx.fillStyle = "#ffe4ee";
+      ctx.fillRect(-2, -44, 4, 4); break;
+    case "Marino":
+      ctx.fillStyle = "#65cbd4"; ctx.fillRect(-15, -31, 5, 11);
+      ctx.fillRect(10, -31, 5, 11); ctx.fillStyle = "#bcebed";
+      ctx.fillRect(-12, -34, 4, 4); ctx.fillRect(8, -34, 4, 4); break;
+    case "Orso":
+      ctx.fillStyle = "#a87843"; ctx.fillRect(-14, -43, 7, 8);
+      ctx.fillRect(7, -43, 7, 8); ctx.fillStyle = "#e2c18a";
+      ctx.fillRect(-12, -41, 3, 3); ctx.fillRect(9, -41, 3, 3); break;
+    case "Mago":
+      ctx.fillStyle = "#49386e"; ctx.fillRect(-13, -42, 26, 4);
+      ctx.fillRect(-8, -49, 16, 8); ctx.fillStyle = "#d4c3f4";
+      ctx.fillRect(-3, -49, 6, 2); break;
+    case "Salato":
+      ctx.fillStyle = "#c5c5b4"; ctx.fillRect(-9, -45, 5, 7);
+      ctx.fillRect(-2, -49, 5, 11); ctx.fillRect(5, -45, 5, 7); break;
+    default:
+      ctx.fillStyle = npc.color; ctx.fillRect(-10, -40, 20, 3);
+  }
+
   ctx.fillStyle = "#282532";
+  ctx.fillRect(-6, -23, 3, 3); ctx.fillRect(4, -23, 3, 3);  ctx.fillStyle = "#282532";
   ctx.fillRect(-6, -23, 3, 3); ctx.fillRect(4, -23, 3, 3);
   ctx.fillStyle = "#fff0d4";
   ctx.fillRect(-4, -15, 8, 2);
