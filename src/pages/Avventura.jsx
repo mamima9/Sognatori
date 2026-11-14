@@ -966,23 +966,7 @@ const [message, setMessage] = useState("");
           blocked = true;
         }
 
-        /*
-          LAGO
-        */
-
-        if (
-          circleRectCollision(
-            next.x,
-            next.y,
-            PLAYER.size * 0.45,
-            1570,
-            820,
-            460,
-            220
-          )
-        ) {
-          blocked = true;
-        }
+        // Nessuna collisione residua del vecchio lago: il centro città è attraversabile.
 
         /*
           MOVIMENTO REALE
@@ -1498,8 +1482,7 @@ const [message, setMessage] = useState("");
         interactionDistance: distance(currentPosition, challenger),
       }))
       .filter((challenger) =>
-        challenger.interactionDistance < interactionRadius &&
-        Date.now() >= (challengerCooldownRef.current[challenger.id] || 0)
+        challenger.interactionDistance < interactionRadius
       )
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
@@ -1763,7 +1746,7 @@ const [message, setMessage] = useState("");
         encounter={challengerEncounter}
         wildEncounter={encounter}
         onClose={() => {
-          if (challengerEncounter?.id) challengerCooldownRef.current[challengerEncounter.id] = Date.now() + 30000;
+          // Parlare con il capo non consuma né blocca la possibilità di sfidarlo.
           challengerEncounterOpenRef.current = false;
           setChallengerEncounter(null);
         }}
