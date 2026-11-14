@@ -2239,69 +2239,122 @@ function drawCityDistrict(ctx, city) {
   drawCityIdentity(ctx, city);
   drawFactionDistrictDetails(ctx, city);
 
+  // Sei edifici con silhouette, materiali e coperture specifiche per fazione.
+  const architecture = {
+    Demone: { wall: "#603544", roof: "#bd5962", trim: "#f08a65", shadow: "#38232e" },
+    Robot: { wall: "#456b77", roof: "#9bd9d2", trim: "#d5f5e8", shadow: "#233e4c" },
+    Natura: { wall: "#806b43", roof: "#54834d", trim: "#b9df85", shadow: "#493d2c" },
+    Nuvola: { wall: "#8298b8", roof: "#d8e9fa", trim: "#f7fbff", shadow: "#536b8b" },
+    Umano: { wall: "#89664b", roof: "#bd9566", trim: "#f1d6a3", shadow: "#59402f" },
+    Luce: { wall: "#b18b43", roof: "#f4df9a", trim: "#fff5c4", shadow: "#72552f" },
+    Dolce: { wall: "#a86b91", roof: "#e9a9cc", trim: "#fff0df", shadow: "#714566" },
+    Marino: { wall: "#34758a", roof: "#65c8d2", trim: "#d5f5ed", shadow: "#204d63" },
+    Orso: { wall: "#74553c", roof: "#c49a61", trim: "#e8c990", shadow: "#49382d" },
+    Mago: { wall: "#594b79", roof: "#b6a0e7", trim: "#f2d68a", shadow: "#39304f" },
+    Salato: { wall: "#85877e", roof: "#d2d0c2", trim: "#fff7e4", shadow: "#555b59" },
+  };
+  const style = architecture[city.faction] || architecture.Umano;
+
+  // Ramificazioni in pietra collegano la piazza agli ingressi delle case.
+  ctx.lineCap = "round";
+  for (const [bx, by] of buildings) {
+    ctx.strokeStyle = "rgba(76,63,49,.38)";
+    ctx.lineWidth = 17;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(bx * .78, by * .78); ctx.stroke();
+    ctx.strokeStyle = "rgba(235,216,176,.55)";
+    ctx.lineWidth = 11;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(bx * .78, by * .78); ctx.stroke();
+  }
+
   buildings.forEach(([bx, by], index) => {
     const w = index % 3 === 0 ? 62 : 54;
     const h = index % 2 === 0 ? 48 : 56;
     const left = bx - w / 2;
     const top = by - h / 2;
-    ctx.fillStyle = "rgba(5,12,18,.35)";
-    ctx.fillRect(left + 5, top + h - 2, w + 3, 12);
-    ctx.fillStyle = "#463b39";
-    ctx.fillRect(left - 4, top + 8, w + 8, h - 4);
-    ctx.fillStyle = city.faction === "Robot" ? "#456b77" :
-      city.faction === "Marino" ? "#34758a" :
-      city.faction === "Natura" ? "#806b43" :
-      city.faction === "Dolce" ? "#a86b91" :
-      city.faction === "Demone" ? "#603544" :
-      city.faction === "Luce" ? "#b18b43" :
-      city.faction === "Mago" ? "#594b79" :
-      city.faction === "Nuvola" ? "#8298b8" :
-      city.faction === "Orso" ? "#74553c" :
-      city.faction === "Salato" ? "#85877e" : "#89664b";
+    // Ombra lunga e fondamenta a due livelli.
+    ctx.fillStyle = "rgba(5,12,18,.38)";
+    ctx.fillRect(left + 7, top + h - 1, w + 5, 14);
+    ctx.fillStyle = style.shadow;
+    ctx.fillRect(left - 4, top + 8, w + 8, h - 2);
+    ctx.fillStyle = style.wall;
     ctx.fillRect(left, top + 12, w, h - 12);
-    ctx.fillStyle = color;
-    ctx.fillRect(left + 4, top + 14, w - 8, 5);
-    // Tetti distinti per fazione: cupola, punta, pannello o falde.
-    ctx.fillStyle = city.faction === "Dolce" ? "#e9a9cc" :
-      city.faction === "Robot" ? "#9bd9d2" :
-      city.faction === "Luce" ? "#f4df9a" :
-      city.faction === "Mago" ? "#b6a0e7" :
-      city.faction === "Demone" ? "#bd5962" : "#b58a61";
-    if (city.faction === "Nuvola" || city.faction === "Luce") {
-      ctx.beginPath(); ctx.ellipse(bx, top + 13, w * .56, 13, 0, Math.PI, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = style.trim;
+    ctx.fillRect(left + 3, top + 13, w - 6, 4);
+    ctx.fillStyle = "rgba(255,239,202,.22)";
+    ctx.fillRect(left + 3, top + 18, 3, h - 25);
+
+    // Tetti diversi: cupole, terrazze, tetti a spiovente o guglie.
+    ctx.fillStyle = style.roof;
+    if (city.faction === "Nuvola" || city.faction === "Luce" || city.faction === "Dolce") {
+      ctx.beginPath();
+      ctx.ellipse(bx, top + 14, w * .58, city.faction === "Dolce" ? 17 : 13, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      if (city.faction === "Dolce") {
+        ctx.fillRect(left + 4, top + 12, w - 8, 8);
+        ctx.fillStyle = style.trim;
+        ctx.fillRect(bx - 3, top - 3, 6, 15);
+      }
+    } else if (city.faction === "Robot" || city.faction === "Marino" || city.faction === "Salato") {
+      ctx.fillRect(left - 5, top + 5, w + 10, 10);
+      ctx.fillStyle = style.trim;
+      ctx.fillRect(left - 2, top + 2, w + 4, 3);
+      if (city.faction === "Robot") {
+        ctx.fillStyle = "#6acbc5";
+        ctx.fillRect(bx - 5, top - 10, 10, 14);
+        ctx.fillRect(bx - 2, top - 17, 4, 8);
+      }
     } else {
-      ctx.beginPath(); ctx.moveTo(left - 5, top + 14); ctx.lineTo(bx, top - 12); ctx.lineTo(left + w + 5, top + 14); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(left - 6, top + 15);
+      ctx.lineTo(bx, top - (city.faction === "Demone" || city.faction === "Mago" ? 22 : 13));
+      ctx.lineTo(left + w + 6, top + 15);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = style.trim;
+      ctx.fillRect(bx - 2, top - 7, 4, 12);
     }
-    ctx.fillStyle = "rgba(237,239,215,.9)";
-    ctx.fillRect(left + 10, top + 25, 9, 10);
-    ctx.fillRect(left + w - 19, top + 25, 9, 10);
-    // Serramenti profondi, davanzali e imposte: facciate più ricche in stile DS.
-    ctx.fillStyle = "rgba(20,34,42,.62)";
-    ctx.fillRect(left + 8, top + 24, 13, 13);
-    ctx.fillRect(left + w - 21, top + 24, 13, 13);
-    ctx.fillStyle = city.faction === "Luce" || city.faction === "Nuvola" ? "#fff0b8" : "#8ed1d5";
-    ctx.fillRect(left + 10, top + 26, 9, 9);
-    ctx.fillRect(left + w - 19, top + 26, 9, 9);
-    ctx.fillStyle = "rgba(255,255,255,.55)";
-    ctx.fillRect(left + 11, top + 26, 2, 7);
-    ctx.fillRect(left + w - 18, top + 26, 2, 7);
-    ctx.fillStyle = "#5a4031";
-    ctx.fillRect(left + 6, top + 38, 17, 3);
-    ctx.fillRect(left + w - 23, top + 38, 17, 3);
+
+    // Finestre incassate con vetro, riflesso e davanzale.
+    for (const wx of [left + 10, left + w - 20]) {
+      ctx.fillStyle = style.shadow;
+      ctx.fillRect(wx - 2, top + 25, 13, 14);
+      ctx.fillStyle = city.faction === "Luce" || city.faction === "Nuvola" ? "#fff0b8" : "#8ed1d5";
+      ctx.fillRect(wx, top + 27, 9, 10);
+      ctx.fillStyle = "rgba(255,255,255,.62)";
+      ctx.fillRect(wx + 1, top + 27, 2, 8);
+      ctx.fillStyle = style.trim;
+      ctx.fillRect(wx - 3, top + 39, 15, 3);
+      ctx.fillRect(wx - 3, top + 24, 2, 16);
+      ctx.fillRect(wx + 10, top + 24, 2, 16);
+    }
+
+    // Porta, maniglia e gradino.
+    ctx.fillStyle = style.shadow;
+    ctx.fillRect(bx - 7, top + h - 20, 14, 20);
     ctx.fillStyle = "#382d2b";
-    ctx.fillRect(bx - 6, top + h - 19, 12, 19);
-    ctx.fillStyle = "rgba(255,226,166,.7)";
-    ctx.fillRect(bx - 3, top + h - 15, 2, 10);
-    // Fascia decorativa e tegole a piccoli blocchi sul tetto.
-    ctx.fillStyle = "rgba(255,242,205,.38)";
-    ctx.fillRect(left - 2, top + 12, w + 4, 3);
-    ctx.fillStyle = "rgba(48,37,43,.35)";
+    ctx.fillRect(bx - 5, top + h - 18, 10, 18);
+    ctx.fillStyle = style.trim;
+    ctx.fillRect(bx + 2, top + h - 11, 2, 3);
+    ctx.fillStyle = "rgba(255,226,166,.5)";
+    ctx.fillRect(bx - 9, top + h, 18, 3);
+
+    // Insegna o stemma sopra la porta, diverso per ogni quartiere.
+    ctx.fillStyle = style.shadow;
+    ctx.fillRect(bx - 10, top + h - 29, 20, 7);
+    ctx.fillStyle = style.trim;
+    ctx.fillRect(bx - 7, top + h - 27, 14, 3);
+    if (index % 2 === 0) {
+      ctx.fillStyle = style.trim;
+      ctx.fillRect(bx - 2, top + h - 34, 4, 5);
+    }
+
+    // Tegole e dettagli sul bordo del tetto.
+    ctx.fillStyle = "rgba(38,31,36,.28)";
     for (let tile = 0; tile < 4; tile++) {
-      ctx.fillRect(left + 5 + tile * 13, top + 4, 8, 3);
+      ctx.fillRect(left + 5 + tile * 13, top + 7, 8, 3);
     }
-    if (city.faction === "Robot") {
-      ctx.fillStyle = "#b8eee2"; ctx.fillRect(bx - 2, top - 7, 4, 13);
-    }
+    ctx.fillStyle = "rgba(255,255,255,.22)";
+    ctx.fillRect(left + 4, top + 16, w - 8, 2);
   });
 
   // Portale d'ingresso aperto verso il basso: il viaggiatore resta al centro.
