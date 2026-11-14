@@ -1351,6 +1351,47 @@ const [message, setMessage] = useState("");
           drawnLoreSites.add(siteKey);
           drawSognatoreHabitat(ctx, wild.rosterId, activeCity.faction, wild.habitatX, wild.habitatY, wild.loreSite, wild.cornerIndex);
         }
+        const wildKey = activeMapId + ":" + wild.rosterId;
+        if (wild.recruitable && completedWildTasks[wildKey]) {
+          // La missione modifica davvero il micro-bioma: ogni fazione mostra il risultato della sua azione.
+          const ax = wild.habitatX + 42;
+          const ay = wild.habitatY + 58;
+          const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x, y, w, h); };
+          ctx.save();
+          ctx.shadowColor = "#a3e635"; ctx.shadowBlur = 12;
+          if (activeCity.faction === "Natura" || activeCity.faction === "Dolce") {
+            px(ax - 3, ay - 3, 6, 22, "#76502d");
+            px(ax - 15, ay - 9, 12, 8, "#65b94f"); px(ax + 3, ay - 14, 13, 9, "#8bdc62");
+            px(ax - 11, ay - 19, 7, 7, "#d8f7a0"); px(ax + 8, ay - 23, 7, 7, "#f9d77b");
+            px(ax - 5, ay + 19, 10, 3, "#55a84a");
+          } else if (activeCity.faction === "Robot") {
+            ctx.shadowColor = "#67e8f9";
+            px(ax - 17, ay - 13, 34, 27, "#294b58"); px(ax - 12, ay - 8, 24, 17, "#78cbd0");
+            px(ax - 5, ay - 3, 10, 7, "#eaffff"); px(ax - 2, ay - 18, 4, 5, "#67e8f9");
+          } else if (activeCity.faction === "Luce" || activeCity.faction === "Mago") {
+            ctx.shadowColor = "#fde68a";
+            px(ax - 3, ay - 18, 6, 36, "#f5d76e"); px(ax - 12, ay - 8, 24, 5, "#fff4b0");
+            px(ax - 8, ay - 18, 16, 5, "#fff4b0"); px(ax - 5, ay - 25, 10, 7, "#fffbe0");
+          } else if (activeCity.faction === "Demone" || activeCity.faction === "Orso") {
+            px(ax - 22, ay + 5, 17, 9, "#766b61"); px(ax - 7, ay - 1, 18, 11, "#938779");
+            px(ax + 10, ay + 6, 15, 8, "#65594f"); px(ax - 2, ay - 8, 5, 8, "#a7f36c");
+          } else if (activeCity.faction === "Marino") {
+            ctx.shadowColor = "#67e8f9";
+            px(ax - 22, ay + 5, 44, 7, "#287eaa"); px(ax - 16, ay - 1, 32, 6, "#59d4df");
+            px(ax - 4, ay - 13, 8, 13, "#b9f5ef"); px(ax + 7, ay - 18, 5, 11, "#b9f5ef");
+          } else if (activeCity.faction === "Nuvola") {
+            ctx.shadowColor = "#e0f2fe";
+            px(ax - 20, ay + 3, 40, 4, "#a5c8e8"); px(ax - 11, ay - 5, 22, 5, "#e0f2fe");
+            px(ax - 4, ay - 17, 8, 12, "#ffffff"); px(ax - 12, ay - 23, 7, 7, "#dbeafe");
+          } else {
+            px(ax - 18, ay + 5, 36, 7, "#b9a17b"); px(ax - 13, ay - 5, 26, 10, "#e8d5a8");
+            px(ax - 3, ay - 16, 6, 11, "#f8e8c2"); px(ax - 7, ay - 21, 14, 5, "#fff4d6");
+          }
+          ctx.shadowBlur = 0;
+          ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
+          ctx.fillStyle = "#d9f99d"; ctx.fillText("RIPRISTINATO", ax, ay + 34);
+          ctx.restore();
+        }
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
