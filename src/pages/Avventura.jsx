@@ -787,6 +787,7 @@ const [message, setMessage] = useState("");
 
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
+  const [discoveredWildClues, setDiscoveredWildClues] = useState({});
 
   const [time, setTime] = useState(9);
   const [activeMapId, setActiveMapId] = useState("natura");
@@ -1357,6 +1358,22 @@ const [message, setMessage] = useState("");
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
           ctx.fillText("✦", wild.x, wild.y - 105); ctx.restore();
         }
+        if (wild.recruitable && !discoveredWildClues[activeMapId + ":" + wild.rosterId]) {
+          const clueX = wild.habitatX;
+          const clueY = wild.habitatY + 48;
+          ctx.save();
+          ctx.translate(clueX, clueY);
+          ctx.shadowColor = "#67e8f9";
+          ctx.shadowBlur = 16;
+          ctx.fillStyle = "rgba(8,35,48,.92)";
+          ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#67e8f9"; ctx.lineWidth = 2; ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.font = "bold 21px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillStyle = "#a5f3fc"; ctx.fillText("?", 0, 1);
+          ctx.font = "bold 10px monospace"; ctx.fillStyle = "#e0f2fe"; ctx.fillText("INDIZIO", 0, 33);
+          ctx.restore();
+        }
         if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           labeledWildNames.add(wild.rosterId);
           ctx.save();
@@ -1573,6 +1590,25 @@ const [message, setMessage] = useState("");
       return;
     }
 
+    // Prima di parlare con il Sognatore, trova l'indizio fisico nel suo habitat.
+    const nearestClue = wildRef.current
+      .filter((sognatore) => sognatore.recruitable && !discoveredWildClues[activeMapId + ":" + sognatore.rosterId])
+      .map((sognatore) => ({
+        ...sognatore,
+        clueX: sognatore.habitatX,
+        clueY: sognatore.habitatY + 48,
+        interactionDistance: distance(currentPosition, { x: sognatore.habitatX, y: sognatore.habitatY + 48 }),
+      }))
+      .filter((sognatore) => sognatore.interactionDistance < 78)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestClue) {
+      setDiscoveredWildClues((old) => ({ ...old, [activeMapId + ":" + nearestClue.rosterId]: true }));
+      setMessage("Hai trovato un indizio di " + nearestClue.name + "! Ora puoi avvicinarti e parlargli.");
+      setTimeout(() => setMessage(""), 2600);
+      return;
+    }
+
     const nearestWild = wildRef.current
       .map((sognatore) => ({
         ...sognatore,
@@ -1584,6 +1620,11 @@ const [message, setMessage] = useState("");
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
     if (nearestWild) {
+      if (nearestWild.recruitable && !discoveredWildClues[activeMapId + ":" + nearestWild.rosterId]) {
+        setMessage("Cerca prima l'indizio luminoso nel suo habitat.");
+        setTimeout(() => setMessage(""), 2200);
+        return;
+      }
       encounterOpenRef.current = true;
       setEncounter(nearestWild);
       return;
