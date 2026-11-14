@@ -875,6 +875,12 @@ const [message, setMessage] = useState("");
   const activeWildArea = { ...activeWildAreaBase, x: 1800, y: 760 };
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent("sognatori-music-mode", {
+      detail: { mode: "adventure", cityId: activeMapId },
+    }));
+  }, [activeMapId]);
+
+  useEffect(() => {
     wildRef.current = buildMapWildStarts(activeCityBase);
     // Il capo presidia il sentiero meridionale, davanti alla porta della zona successiva.
     challengerRef.current = CHALLENGERS
