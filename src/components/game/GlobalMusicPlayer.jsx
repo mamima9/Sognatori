@@ -153,9 +153,11 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
       const cityIndex = mode === "adventure"
         ? nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId))
         : -1;
-      const nextIndex = cityIndex >= 0
-        ? cityIndex
-        : Math.floor(Math.random() * nextTracks.length);
+      const nextIndex = mode === "battle"
+        ? 0
+        : cityIndex >= 0
+          ? cityIndex
+          : Math.floor(Math.random() * nextTracks.length);
       const nextDirection = requestedDirection === "south" || requestedDirection === "north"
         ? requestedDirection
         : activeAdventure.entryDirection;
