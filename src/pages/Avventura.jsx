@@ -1534,7 +1534,7 @@ const [message, setMessage] = useState("");
         Mago: isTree ? "Runichette luminose si accendono tra gli anelli del tronco." : "La pietra pulsa appena: percepisci una traccia di magia al suo interno.",
         Salato: isTree ? "La corteccia è pallida e coperta da cristalli di sale." : "Un blocco di salgemma compatto. Le sue facce brillano come vetro opaco.",
       };
-      setMessage(observations[activeCity.faction]?.[isTree ? "tree" : "rock"] || (isTree ? "Un albero antico, radicato profondamente nel terreno." : "Una roccia consumata dal tempo."));
+      setMessage(observations[activeCity.faction] || (isTree ? "Un albero antico, radicato profondamente nel terreno." : "Una roccia consumata dal tempo."));
       setTimeout(() => setMessage(""), 2600);
       return;
     }
