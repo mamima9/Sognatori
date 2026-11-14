@@ -2397,6 +2397,20 @@ function drawNpc(ctx, npc) {
       ctx.fillStyle = "#9bd66c"; ctx.fillRect(-2, 0, 4, 4);
       ctx.fillStyle = "#765638"; ctx.fillRect(15, -13, 4, 28);
     }
+    // Volti, capelli e accessori leggibili anche alla scala della mappa.
+    const blink = Math.sin(performance.now() / 1000 + (npc.index || 0) * 2.4) > 0.985;
+    ctx.fillStyle = role === 0 ? "#6a4935" : role === 1 ? "#8a5b3c" : "#d7d1b5";
+    if (role === 0) { ctx.fillRect(-11,-33,22,5); ctx.fillRect(-12,-29,4,8); ctx.fillRect(8,-29,4,8); }
+    else if (role === 1) { ctx.fillRect(-11,-34,22,5); ctx.fillRect(-12,-30,4,7); ctx.fillRect(8,-30,4,7); }
+    else { ctx.fillRect(-11,-33,22,5); ctx.fillRect(-13,-29,4,11); ctx.fillRect(9,-29,4,11); }
+    ctx.fillStyle = "#282532";
+    if (blink) { ctx.fillRect(-6,-23,3,1); ctx.fillRect(4,-23,3,1); }
+    else { ctx.fillRect(-6,-23,3,3); ctx.fillRect(4,-23,3,3); }
+    ctx.fillStyle = "rgba(255,244,210,.7)"; ctx.fillRect(-8,-27,4,2); ctx.fillRect(4,-27,4,2);
+    // Dettaglio identitario sul copricapo.
+    if (role === 0) { ctx.fillStyle="#f0d98e"; ctx.fillRect(5,-45,4,7); ctx.fillRect(8,-48,3,5); }
+    else if (role === 1) { ctx.fillStyle="#79c7b4"; ctx.fillRect(-3,-47,6,3); ctx.fillStyle="#e8f1c8"; ctx.fillRect(-1,-49,2,3); }
+    else { ctx.fillStyle="#f2d78d"; ctx.fillRect(-3,-49,6,3); ctx.fillStyle="#8ecb69"; ctx.fillRect(-1,-53,2,5); }
     // Piccolo equipaggiamento e dettagli da RPG portatile 2010.
     ctx.fillStyle = "#e5c17f"; ctx.fillRect(-8, -4, 3, 9);
     ctx.fillStyle = "rgba(255,244,210,.75)"; ctx.fillRect(-7, -3, 1, 5);
