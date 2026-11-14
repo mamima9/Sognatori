@@ -77,7 +77,7 @@ function buildMapWildStarts(city) {
   const offsets = [[-38, -26], [38, -26], [-38, 26], [38, 26]];
   return residents.flatMap((sognatore, index) => {
     const anchor = index === 0
-      ? { x: 1800, y: 850, corner: "CENTRO" }
+      ? { x: 1800, y: 360, corner: "NORD" }
       : WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
     const layer = Math.floor(index / WILD_CORNER_ANCHORS.length);
     const directionX = anchor.x < WORLD.width / 2 ? 1 : -1;
@@ -90,7 +90,7 @@ function buildMapWildStarts(city) {
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
       x: index === 0 && copy === 0 ? 1800 : centerX + ox,
-      y: index === 0 && copy === 0 ? 850 : centerY + oy,
+      y: index === 0 && copy === 0 ? 360 : centerY + oy,
       isSleepingBlocker: index === 0 && copy === 0,
       name: sognatore.nome,
       img: sognatore.img,
