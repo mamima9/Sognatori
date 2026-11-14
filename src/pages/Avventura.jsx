@@ -1331,7 +1331,7 @@ const [message, setMessage] = useState("");
       drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
         currentLeaderDefeated ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
         0, !currentLeaderDefeated);
-      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "PORTA · " + previousCityName(activeMapId), Math.PI, false);
+      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "BLOCCATA · " + previousCityName(activeMapId), Math.PI, true);
 
       /*
         ROCCE
@@ -1661,14 +1661,8 @@ const [message, setMessage] = useState("");
     }
 
     if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius) {
-      const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
-      const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
-      setActiveMapId(previousCity.id);
-      playerRef.current = { ...MAP_SOUTH_SPAWN };
-      cameraRef.current = { ...MAP_SOUTH_SPAWN };
-      setPlayer({ ...MAP_SOUTH_SPAWN });
-      setMessage("Ritorno a " + previousCity.city + " · " + previousCity.faction);
-      setTimeout(() => setMessage(""), 2200);
+      setMessage("Porta nord sigillata. La progressione avviene solo verso sud, dopo aver sconfitto il Capo fazione.");
+      setTimeout(() => setMessage(""), 2800);
       return;
     }
 
