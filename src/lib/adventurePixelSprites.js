@@ -335,7 +335,7 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
 
   // Creature native, non crop delle carte: ogni specie mantiene una silhouette
   // propria, con volume, ombra e animazione leggibili nell'overworld.
-  // Fallback dedicato: resta disponibile se un artwork non è presente o non si carica.
+  // Design procedurale dedicato alla specie: il rendering non dipende da file immagine.
   switch(shape){
     case "mage":
       px(ctx,-9,-15+bob,18,15,main);px(ctx,-7,-21+bob,14,10,light);
