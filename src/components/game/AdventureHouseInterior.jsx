@@ -104,7 +104,14 @@ export default function AdventureHouseInterior({house,onExit}){
       const dt=Math.min((now-last)/16.67,2);last=now;frame++;
       const k=keys.current;let dx=0,dy=0;
       if(k.w||k.arrowup)dy--;if(k.s||k.arrowdown)dy++;if(k.a||k.arrowleft)dx--;if(k.d||k.arrowright)dx++;
-      if(dx||dy){const len=Math.hypot(dx,dy);position.current={x:Math.max(65,Math.min(735,position.current.x+dx/len*3.1*dt)),y:Math.max(190,Math.min(474,position.current.y+dy/len*3.1*dt))};}
+      if(dx||dy){
+        const len=Math.hypot(dx,dy);
+        const next={x:Math.max(65,Math.min(735,position.current.x+dx/len*3.1*dt)),y:Math.max(190,Math.min(474,position.current.y+dy/len*3.1*dt))};
+        const layout=LAYOUTS[((house.number||1)-1)%LAYOUTS.length];
+        const hitsFurniture=layout.some(o=>next.x>o.x-17&&next.x<o.x+o.w+17&&next.y>o.y-24&&next.y<o.y+o.h+8);
+        const hitsCentral=next.x>292&&next.x<508&&next.y>216&&next.y<352;
+        if(!hitsFurniture&&!hitsCentral)position.current=next;
+      }
       const npc=Math.hypot(position.current.x-400,position.current.y-205)<88;
       const exit=position.current.y>445&&Math.abs(position.current.x-400)<62;
       setNearNpc(npc);setNearExit(exit);if(frame%8===0)setTick(t=>t+1);
