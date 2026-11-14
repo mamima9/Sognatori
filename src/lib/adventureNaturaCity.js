@@ -4,9 +4,11 @@ export function drawAdventureNaturaCity(ctx, city) {
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round(city.y / 4) * 4;
   const t = performance.now() / 1000;
+  // Sei abitazioni, nelle stesse coordinate usate dagli ingressi interattivi.
+  // Il renderer applica la scala 1.55: non esistono case decorative irraggiungibili.
   const houses = [
-    [-178, -112, 0], [-58, -202, 1], [104, -174, 2],
-    [190, -52, 3], [112, 126, 4], [-86, 166, 5], [-204, 40, 6]
+    [-132, -88, 0], [0, -158, 1], [132, -88, 2],
+    [-132, 88, 3], [132, 88, 4], [0, 158, 5]
   ];
   const ellipse = (px, py, rx, ry, color) => {
     ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
@@ -93,7 +95,7 @@ export function drawAdventureNaturaCity(ctx, city) {
   ellipse(0,-5,207,165,"#78a95a");
   ctx.strokeStyle="#b6a477";ctx.lineWidth=22;ctx.beginPath();ctx.ellipse(0,0,184,148,0,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle="#e1d0a0";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,184,148,0,0,Math.PI*2);ctx.stroke();
-  for(const [tx,ty] of [[-178,-112],[-58,-202],[104,-174],[190,-52],[112,126],[-86,166],[-204,40]]){
+  for(const [tx,ty] of houses){
     path([[0,0],[tx*.78,ty*.78]],"#725638",28);
     path([[0,0],[tx*.78,ty*.78]],"#c8aa78",19);
     path([[0,0],[tx*.78,ty*.78]],"rgba(255,239,194,.48)",2);
@@ -152,7 +154,7 @@ export function drawAdventureNaturaCity(ctx, city) {
   // Edifici e chiome in primo piano.
   houses.slice(3).forEach(([hx,hy,v])=>treehouse(hx,hy,v));
   // Abitazioni e botteghe al piede degli alberi: insegne e cassette.
-  for(const [sx,sy,label] of [[-178,-112,"ERBE"],[-58,-202,"RIFUGIO"],[104,-174,"LOCANDA"],[190,-52,"ORTO"],[112,126,"LEGNO"],[-86,166,"SEMI"],[-204,40,"TISANE"]]){
+  for(const [sx,sy,label] of [[-132,-88,"RIFUGIO"],[0,-158,"ERBORISTA"],[132,-88,"RACCOLTO"],[-132,88,"LOCANDA"],[132,88,"CUSTODE"],[0,158,"FALEGNAME"]]){
     ctx.fillStyle="#493526";ctx.fillRect(sx-19,sy-5,38,7);
     ctx.fillStyle="#e2c28b";ctx.fillRect(sx-17,sy-4,34,4);
     ctx.fillStyle="#493526";ctx.font="bold 5px monospace";ctx.textAlign="center";ctx.fillText(label,sx,sy,34);
