@@ -74,7 +74,9 @@ function buildMapWildStarts(city) {
   const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
   const offsets = [[-38, -26], [38, -26], [-38, 26], [38, 26]];
   return residents.flatMap((sognatore, index) => {
-    const anchor = WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
+    const anchor = index === 0
+      ? { x: 1800, y: 850, corner: "CENTRO" }
+      : WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
     const layer = Math.floor(index / WILD_CORNER_ANCHORS.length);
     const directionX = anchor.x < WORLD.width / 2 ? 1 : -1;
     const directionY = anchor.y < WORLD.height / 2 ? 1 : -1;
@@ -85,8 +87,9 @@ function buildMapWildStarts(city) {
     return offsets.map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
-      x: centerX + ox,
-      y: centerY + oy,
+      x: index === 0 && copy === 0 ? 1800 : centerX + ox,
+      y: index === 0 && copy === 0 ? 850 : centerY + oy,
+      isSleepingBlocker: index === 0 && copy === 0,
       name: sognatore.nome,
       img: sognatore.img,
       tipo: sognatore.tipo || sognatore.fazione,
@@ -1058,6 +1061,18 @@ const [message, setMessage] = useState("");
           }
         }
 
+        // I Sognatori sono creature fisiche: il primo dorme sul sentiero come un
+        // guardiano vivente. Non si attraversa il suo corpo: bisogna avvicinarsi e interagire.
+        if (!blocked) {
+          for (const wild of wildRef.current) {
+            const bodyRadius = wild.isSleepingBlocker ? 78 : 34;
+            if (Math.hypot(next.x - wild.x, next.y - wild.y) < bodyRadius + PLAYER.size * 0.45) {
+              blocked = true;
+              break;
+            }
+          }
+        }
+
         /*
           EDIFICI DELLE UNDICI CITTÀ
         */
@@ -1323,6 +1338,7 @@ const [message, setMessage] = useState("");
       // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
       drawCityDistrict(ctx, activeCity);
       drawCityLandmark(ctx, activeCity);
+      drawAdventureFactionCityLife(ctx, activeCity);
 
       // Soltanto il bioma della fazione attualmente caricata.
       drawWildArea(ctx, activeWildArea);
@@ -1442,7 +1458,21 @@ const [message, setMessage] = useState("");
         }
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
-        drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame);
+        drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame, wild.isSleepingBlocker);
+        if (wild.isSleepingBlocker) {
+          const sleepPhase = performance.now() / 620;
+          ctx.save();
+          ctx.globalAlpha = 0.72 + Math.sin(sleepPhase) * 0.18;
+          ctx.font = "bold 24px monospace";
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#e9f1ff";
+          ctx.shadowColor = "#9cc8ff";
+          ctx.shadowBlur = 10;
+          ctx.fillText("Z", wild.x + 42, wild.y - 118 - Math.sin(sleepPhase) * 4);
+          ctx.font = "bold 15px monospace";
+          ctx.fillText("Z", wild.x + 61, wild.y - 140 - Math.sin(sleepPhase + 1) * 4);
+          ctx.restore();
+        }
         if (wild.recruitable) {
           ctx.save(); ctx.font = "bold 22px monospace"; ctx.textAlign = "center";
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
@@ -2055,8 +2085,10 @@ const [message, setMessage] = useState("");
 
 // Sprite nativo: il personaggio viene composto pixel per pixel sul canvas
 // dell'overworld. Nessun PNG viene caricato o disegnato come creatura in mappa.
-function drawOverworldSognatore(ctx, s, x, y, frame = 0) {
-  drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, 2.1);
+function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false) {
+  // Creature overworld grandi e leggibili: il guardiano addormentato ha
+  // una presenza da ostacolo narrativo, non l'ingombro di un'icona o di una carta.
+  drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
 }
 
 function nextCityName(cityId) {
@@ -3001,6 +3033,91 @@ function drawWildArea(ctx, area) {
   ctx.font = "bold 13px monospace";
   ctx.textAlign = "center";
   ctx.fillText(area.name, 0, 145 * .76 - 13, 216);
+  ctx.restore();
+}
+
+// Dettagli ambientali animati e punti d'interesse per tutte le città.
+function drawAdventureFactionCityLife(ctx, city) {
+  if (city.faction === "Natura") return; // Verdelume possiede già un renderer completo e animato.
+  const palette = {
+    Demone:["#5b2938","#d85b4f","#ffb45f"], Robot:["#234b59","#66d7d0","#d8fff2"],
+    Nuvola:["#647fa5","#b9d8f3","#f7fbff"], Umano:["#6a4935","#c28a55","#f4d7a0"],
+    Luce:["#8a6b2f","#f0d36d","#fff4bd"], Dolce:["#75476d","#d78db8","#ffe0ef"],
+    Marino:["#174b63","#3aa9b8","#baf4e9"], Orso:["#49382b","#9a7046","#e7c48c"],
+    Mago:["#382d58","#9079c9","#e4d5ff"], Salato:["#4e5b5b","#aebbb2","#f3eedc"]
+  };
+  const [dark, main, glow] = palette[city.faction] || palette.Umano;
+  const t = performance.now() / 1000;
+  ctx.save();
+  ctx.translate(Math.round(city.x), Math.round(city.y));
+  ctx.scale(1.55, 1.55);
+  ctx.imageSmoothingEnabled = false;
+  const block = (x,y,w,h,color) => { ctx.fillStyle=color; ctx.fillRect(x,y,w,h); };
+  const spark = (x,y,phase=0) => {
+    const pulse = 0.55 + (Math.sin(t*2.2+phase)+1)*0.22;
+    ctx.globalAlpha = pulse;
+    block(x,y,4,4,glow); block(x+1,y-3,2,10,main); block(x-3,y+1,10,2,main);
+    ctx.globalAlpha = 1;
+  };
+  // Quattro presidi riconoscibili circondano la piazza, senza coprire porte o case.
+  const sites = [[-205,-118], [205,-118], [-205,118], [205,118]];
+  sites.forEach(([x,y],i) => {
+    ctx.fillStyle = "rgba(5,12,18,.28)";
+    ctx.beginPath(); ctx.ellipse(x,y+18,32,9,0,0,Math.PI*2); ctx.fill();
+    if (city.faction === "Demone") {
+      block(x-18,y-27,36,43,dark); block(x-13,y-22,26,33,main);
+      block(x-5,y-35,4,12,glow); block(x+5,y-39,4,16,glow);
+      spark(x+23,y-28,i);
+    } else if (city.faction === "Robot") {
+      block(x-22,y-30,44,45,dark); block(x-17,y-25,34,34,main);
+      block(x-12,y-19,24,3,glow); block(x-4,y-13,8,10,glow);
+      block(x-27,y-35,54,4,glow);
+    } else if (city.faction === "Nuvola") {
+      ctx.fillStyle = main;
+      [[-15,-8,15],[0,-23,20],[18,-9,14]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(x+dx,y+dy,r,0,Math.PI*2);ctx.fill();});
+      block(x-2,y-2,4,23,glow); spark(x+22,y-31,i);
+    } else if (city.faction === "Umano") {
+      block(x-27,y-24,54,7,dark); block(x-23,y-17,46,25,main);
+      for(let k=0;k<4;k++) block(x-20+k*13,y-12,7,17,k%2?glow:dark);
+      block(x-31,y+9,62,4,glow);
+    } else if (city.faction === "Luce") {
+      ctx.fillStyle = main; ctx.beginPath(); ctx.moveTo(x,y-43);ctx.lineTo(x+25,y-7);ctx.lineTo(x,y+16);ctx.lineTo(x-25,y-7);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=glow;ctx.lineWidth=3;ctx.stroke();
+      spark(x,y-8,i);
+    } else if (city.faction === "Dolce") {
+      for(let k=0;k<6;k++){const a=k*Math.PI/3;ctx.fillStyle=k%2?main:glow;ctx.beginPath();ctx.arc(x+Math.cos(a)*17,y-12+Math.sin(a)*17,10,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle=dark;ctx.beginPath();ctx.arc(x,y-12,7,0,Math.PI*2);ctx.fill();
+    } else if (city.faction === "Marino") {
+      ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(x,y-2,31,17,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=main;ctx.beginPath();ctx.ellipse(x,y-7,25,12,0,0,Math.PI*2);ctx.fill();
+      for(let k=0;k<4;k++) block(x-20+k*13,y-24-(k%2)*6,4,17,glow);
+      spark(x+27,y-26,i);
+    } else if (city.faction === "Orso") {
+      block(x-27,y-10,54,23,dark);block(x-22,y-19,44,18,main);
+      block(x-22,y-27,10,10,glow);block(x+12,y-27,10,10,glow);
+      block(x-5,y-3,10,6,dark);
+    } else if (city.faction === "Mago") {
+      block(x-24,y-29,48,39,dark);block(x-18,y-23,36,27,main);
+      block(x-3,y-19,6,21,glow);spark(x,y-38,i);
+    } else if (city.faction === "Salato") {
+      for(let k=0;k<5;k++){ctx.fillStyle=k%2?main:glow;ctx.beginPath();ctx.moveTo(x-25+k*12,y+10);ctx.lineTo(x-19+k*12,y-31-(k%2)*10);ctx.lineTo(x-13+k*12,y+10);ctx.closePath();ctx.fill();}
+      block(x-31,y+11,62,4,dark);
+    }
+  });
+  // Piccoli elementi di vita: scintille, rune, bolle o petali secondo la fazione.
+  for(let i=0;i<10;i++){
+    const phase=t*(0.65+(i%3)*0.16)+i*1.7;
+    const px=Math.sin(phase)*(190+(i%2)*24);
+    const py=Math.cos(phase*0.8)*116;
+    ctx.globalAlpha=0.35+(Math.sin(phase*2)+1)*0.22;
+    if(city.faction==="Marino"){ctx.strokeStyle=glow;ctx.lineWidth=2;ctx.beginPath();ctx.arc(px,py,3+(i%3),0,Math.PI*2);ctx.stroke();}
+    else if(city.faction==="Demone"){block(px,py,3,5,glow);}
+    else if(city.faction==="Robot"){block(px,py,5,2,glow);}
+    else if(city.faction==="Dolce"){block(px,py,4,4,i%2?main:glow);}
+    else if(city.faction==="Nuvola"){ctx.beginPath();ctx.arc(px,py,3+(i%2),0,Math.PI*2);ctx.fillStyle=glow;ctx.fill();}
+    else {block(px,py,3,3,glow);}
+    ctx.globalAlpha=1;
+  }
   ctx.restore();
 }
 
