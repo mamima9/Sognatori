@@ -76,8 +76,10 @@ function buildMapWildStarts(city) {
   const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
   const offsets = [[-38, -26], [38, -26], [-38, 26], [38, 26]];
   return residents.flatMap((sognatore, index) => {
+    // Il gruppo iniziale è spostato a lato del corridoio nord:
+    // lascia libero l'asse centrale tra portale e città.
     const anchor = index === 0
-      ? { x: 1800, y: 360, corner: "NORD" }
+      ? { x: 1500, y: 360, corner: "NORD-OVEST" }
       : WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
     const layer = Math.floor(index / WILD_CORNER_ANCHORS.length);
     const directionX = anchor.x < WORLD.width / 2 ? 1 : -1;
