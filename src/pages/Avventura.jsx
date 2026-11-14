@@ -697,8 +697,7 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
             ctx.fillRect(x + 9, y + 12, 4, 9); ctx.fillRect(x + 7, y + 14, 8, 4);
             ctx.fillStyle = "rgba(255,244,220,.72)"; ctx.fillRect(x + 27, y + 28, 4, 3); break;
           case "Marino":
-            ctx.strokeStyle = "rgba(176,239,235,.55)"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(x + 5, y + 14); ctx.quadraticCurveTo(x + 15, y + 7, x + 25, y + 14); ctx.moveTo(x + 16, y + 27); ctx.quadraticCurveTo(x + 26, y + 20, x + 38, y + 27); ctx.stroke(); break;
+            ctx.strokeStyle = "rgba(176,239,235,.55)"; ctx.lineWidth = 2;            ctx.beginPath(); ctx.moveTo(x + 5, y + 14); ctx.quadraticCurveTo(x + 15, y + 7, x + 25, y + 14); ctx.moveTo(x + 16, y + 27); ctx.quadraticCurveTo(x + 26, y + 20, x + 38, y + 27); ctx.stroke(); break;
           case "Orso":
             ctx.strokeStyle = "rgba(235,202,151,.42)"; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.moveTo(x + 12, y + 11); ctx.lineTo(x + 18, y + 27); ctx.moveTo(x + 19, y + 9); ctx.lineTo(x + 25, y + 25); ctx.moveTo(x + 26, y + 8); ctx.lineTo(x + 32, y + 23); ctx.stroke(); break;
@@ -844,6 +843,8 @@ export default function Avventura() {
   const [player, setPlayer] = useState(
     playerRef.current
   );
+  // Lato da cui il personaggio è appena entrato nella città corrente.
+  const [cityEntryDirection, setCityEntryDirection] = useState("north");
 
 const [message, setMessage] = useState("");
 
@@ -876,9 +877,13 @@ const [message, setMessage] = useState("");
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("sognatori-music-mode", {
-      detail: { mode: "adventure", cityId: activeMapId },
+      detail: {
+        mode: "adventure",
+        cityId: activeMapId,
+        entryDirection: cityEntryDirection,
+      },
     }));
-  }, [activeMapId]);
+  }, [activeMapId, cityEntryDirection]);
 
   useEffect(() => {
     wildRef.current = buildMapWildStarts(activeCityBase);
@@ -1397,8 +1402,7 @@ const [message, setMessage] = useState("");
         personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId) : "BLOCCATA · " + previousCityName(activeMapId),
         Math.PI, !personalAllDoorsUnlocked);
 
-      /*
-        ROCCE
+      /*        ROCCE
       */
 
       const rockPalettes = {
@@ -1721,6 +1725,7 @@ const [message, setMessage] = useState("");
       }
       const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
       const nextCity = ADVENTURE_CITIES[(currentIndex + 1) % ADVENTURE_CITIES.length];
+      setCityEntryDirection("north");
       setActiveMapId(nextCity.id);
       playerRef.current = { ...MAP_SPAWN };
       cameraRef.current = { ...MAP_SPAWN };
@@ -1734,10 +1739,11 @@ const [message, setMessage] = useState("");
       if (personalAllDoorsUnlocked) {
         const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
         const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
+        setCityEntryDirection("south");
         setActiveMapId(previousCity.id);
-        playerRef.current = { ...MAP_SPAWN };
-        cameraRef.current = { ...MAP_SPAWN };
-        setPlayer({ ...MAP_SPAWN });
+        playerRef.current = { ...MAP_SOUTH_SPAWN };
+        cameraRef.current = { ...MAP_SOUTH_SPAWN };
+        setPlayer({ ...MAP_SOUTH_SPAWN });
         setMessage("Ingresso a " + previousCity.city + " · " + previousCity.faction);
         setTimeout(() => setMessage(""), 2200);
         return;
@@ -2097,8 +2103,7 @@ const [message, setMessage] = useState("");
               }%`,
 
               top: `${
-                (player.y /
-                  WORLD.height) *
+                (player.y /                  WORLD.height) *
                 100
               }%`,
             }}
@@ -2797,8 +2802,7 @@ function drawCityDistrict(ctx, city) {
       case "Marino":
         ctx.fillStyle = "#286b82"; ctx.fillRect(-15, -8, 30, 33);
         ctx.fillStyle = "#8ce0e1"; ctx.fillRect(-19, -12, 38, 5);
-        ctx.fillStyle = "#d5c59c"; ctx.fillRect(-11, -18, 22, 7);
-        ctx.fillStyle = "#174b65"; ctx.fillRect(-18, 23, 36, 5); break;
+        ctx.fillStyle = "#d5c59c"; ctx.fillRect(-11, -18, 22, 7);        ctx.fillStyle = "#174b65"; ctx.fillRect(-18, 23, 36, 5); break;
       case "Orso":
         ctx.fillStyle = "#604631"; ctx.fillRect(-17, -2, 34, 27);
         ctx.fillStyle = "#b58b59"; ctx.beginPath(); ctx.moveTo(-20, -2); ctx.lineTo(0, -22); ctx.lineTo(20, -2); ctx.fill();
@@ -3316,4 +3320,3 @@ function drawCityLandmark(ctx, city) {
   ctx.fillText(city.faction.toUpperCase(), 2, 64, 106);
   ctx.restore();
 }
-
