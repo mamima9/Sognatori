@@ -17,12 +17,6 @@ export default function Home() {
 
   const isDev = user?.user_metadata?.username === "bibito";
 
-  // Recupera i metadata aggiornati dal server Supabase quando si entra nella home.
-  // Evita che una sessione locale vecchia mantenga il lucchetto dopo una vittoria già registrata.
-  useEffect(() => {
-    if (isAuthenticated) checkUserAuth();
-  }, [isAuthenticated]);
-
   const [screen, setScreen] = useState("menu");
   const [teams, setTeams] = useState(null);
   const [arcadeStage, setArcadeStage] = useState(1);
