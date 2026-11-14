@@ -580,6 +580,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
             {playing ? "⏸" : "▶"}
           </button>
 
+          {musicMode !== "adventure" && <>
           {/* NEXT */}
           <button
             onClick={nextTrack}
@@ -600,7 +601,6 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
           >
             ⏭
           </button>
-
           </>}
 
           {/* CURRENT TRACK: non selezionabile in Avventura */}
