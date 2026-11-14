@@ -259,10 +259,11 @@ export default function Home() {
                 return (
                   <div className="flex flex-col items-center gap-1">
                     {adventureUnlocked ? (
-                      <Link to="/avventura">
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }} className="px-8 py-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 font-black text-base shadow-lg shadow-emerald-500/30 hover:brightness-110 transition border border-emerald-200/30">
-                          🌿 Avventura
-                        </motion.button>
+                      <Link
+                        to="/avventura"
+                        className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 font-black text-base shadow-lg shadow-emerald-500/30 hover:brightness-110 transition border border-emerald-200/30 active:scale-95"
+                      >
+                        🌿 Avventura
                       </Link>
                     ) : (
                       <button type="button" disabled aria-disabled="true" title="Completa e vinci tutti e 10 gli stage dell'Arcade per sbloccare Avventura" className="px-8 py-3.5 rounded-full bg-slate-700/70 text-slate-400 font-bold text-base border border-white/10 cursor-not-allowed opacity-80">
