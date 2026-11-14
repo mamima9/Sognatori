@@ -716,7 +716,9 @@ export default function Avventura() {
   const { user, isLoadingAuth, authChecked } = useAuth();
 
   // L'accesso all'Avventura è riservato a chi ha vinto la campagna Arcade completa.
-  const testerAllowed = user?.user_metadata?.sognatori_arcade_completed === true;
+  const testerAllowed =
+    user?.user_metadata?.sognatori_arcade_completed === true ||
+    user?.email?.toLowerCase() === "bibitoeuro@gmail.com";
 
   /*
     ============================
