@@ -732,11 +732,17 @@ function collidesWithCityBuildings(x, y, radius, city) {
   return offsets.some(([bx, by], index) => {
       const w = (index % 3 === 0 ? 62 : 54) * cityScale;
       const h = (index % 2 === 0 ? 48 : 56) * cityScale;
+      const doorX = city.x + bx;
+      const buildingBottom = city.y + by + h / 2;
+      // Ingresso rivolto a sud: lascia sempre un corridoio libero davanti alla porta.
+      const inDoorApproach = Math.abs(x - doorX) < 23 * cityScale &&
+        y >= buildingBottom - 4 && y <= buildingBottom + 54 * cityScale;
+      if (inDoorApproach) return false;
       return circleRectCollision(
         x,
         y,
         radius,
-        city.x + bx - w / 2 - 5,
+        doorX - w / 2 - 5,
         city.y + by - h / 2 - 12,
         w + 10,
         h + 31
