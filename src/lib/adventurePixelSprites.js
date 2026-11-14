@@ -474,6 +474,69 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-4,-30+bob,8,8,shine);break;
   }
 
+  // Dettagli di finitura dedicati alla singola specie: leggibili anche in movimento.
+  // Sono pixel netti, non texture sfocate, per mantenere il look RPG portatile 2010.
+  switch(shape){
+    case "mage":
+      px(ctx,-2,-24+bob,4,4,shine);px(ctx,-8,-12+bob,3,7,light);px(ctx,5,-12+bob,3,7,light);break;
+    case "bread":
+      px(ctx,-5,-23+bob,2,2,shine);px(ctx,3,-22+bob,2,2,shine);px(ctx,-10,-16+bob,2,5,light);px(ctx,8,-16+bob,2,5,light);break;
+    case "stormbird":
+      px(ctx,-2,-19+bob,5,3,shine);px(ctx,2,-17+bob,5,2,dark);px(ctx,-14,-16+bob,4,3,shine);break;
+    case "cloud-dancer":
+      px(ctx,-10,-11+bob,3,2,"#f2a9bd");px(ctx,7,-11+bob,3,2,"#f2a9bd");px(ctx,-2,-25+bob,4,2,shine);break;
+    case "spell-scroll":
+      px(ctx,-2,-16+bob,4,2,dark);px(ctx,-1,-18+bob,2,6,shine);px(ctx,7,-10+bob,3,2,shine);break;
+    case "robot-box":
+      px(ctx,-11,-18+bob,2,2,shine);px(ctx,9,-18+bob,2,2,shine);px(ctx,-2,-24+bob,4,2,shine);break;
+    case "lobster":
+      px(ctx,-19,-17+bob,4,3,shine);px(ctx,15,-17+bob,4,3,shine);px(ctx,-3,-19+bob,2,2,shine);px(ctx,3,-19+bob,2,2,shine);break;
+    case "star-human":
+      px(ctx,-2,-29+bob,4,3,shine);px(ctx,-1,-25+bob,2,4,light);break;
+    case "angel":
+      px(ctx,-16,-16+bob,5,3,light);px(ctx,11,-16+bob,5,3,light);px(ctx,-2,-32+bob,4,2,shine);break;
+    case "scarf-human":
+      px(ctx,-7,-10+bob,14,2,light);px(ctx,8,-5+bob,2,5,shine);break;
+    case "light-seal":
+      px(ctx,-13,-16+bob,3,2,shine);px(ctx,10,-16+bob,3,2,shine);px(ctx,-2,-25+bob,4,3,"#fffbe0");break;
+    case "ant":
+      px(ctx,-12,-9+bob,4,2,shine);px(ctx,8,-9+bob,4,2,shine);px(ctx,-5,-29+bob,2,3,light);px(ctx,3,-29+bob,2,3,light);break;
+    case "guardian":
+      px(ctx,-7,-25+bob,14,3,shine);px(ctx,-4,-17+bob,8,3,light);break;
+    case "chocodragon":
+      px(ctx,-14,-25+bob,5,3,shine);px(ctx,9,-25+bob,5,3,shine);px(ctx,-2,-18+bob,4,2,"#fff0c8");break;
+    case "pink-cloud":
+      px(ctx,-11,-9+bob,3,2,"#f5a8ce");px(ctx,8,-9+bob,3,2,"#f5a8ce");px(ctx,-2,-25+bob,4,2,shine);break;
+    case "arcane-book":
+      px(ctx,-8,-16+bob,3,7,shine);px(ctx,5,-16+bob,3,7,light);px(ctx,-1,-25+bob,2,4,shine);break;
+    case "old-cloud":
+      px(ctx,-7,-20+bob,3,2,shine);px(ctx,4,-20+bob,3,2,shine);px(ctx,-2,-7+bob,4,2,dark);break;
+    case "long-robot":
+      px(ctx,-4,-25+bob,8,2,shine);px(ctx,-8,-17+bob,2,5,light);px(ctx,6,-17+bob,2,5,light);break;
+    case "frog":
+      px(ctx,-9,-23+bob,3,3,shine);px(ctx,7,-23+bob,3,3,shine);px(ctx,-3,-13+bob,6,2,light);break;
+    case "bamboo":
+      px(ctx,-4,-24+bob,4,2,shine);px(ctx,2,-18+bob,4,2,light);px(ctx,-2,-10+bob,4,2,shine);break;
+    case "seedling":
+      px(ctx,-3,-23+bob,2,7,shine);px(ctx,-13,-24+bob,7,2,light);px(ctx,5,-26+bob,7,2,shine);break;
+    case "ember":
+      px(ctx,-2,-31+bob,4,5,shine);px(ctx,-8,-17+bob,3,4,light);px(ctx,6,-17+bob,3,4,light);break;
+    case "ice-pan":
+      px(ctx,-8,-23+bob,5,2,shine);px(ctx,3,-27+bob,5,2,shine);px(ctx,-2,-15+bob,4,2,"#ffffff");break;
+    case "shrimp":
+      px(ctx,-8,-17+bob,16,2,shine);px(ctx,-4,-12+bob,2,7,light);px(ctx,3,-12+bob,2,7,light);break;
+    case "spin-leaf":
+      px(ctx,-1,-31+bob,2,13,shine);px(ctx,-14,-25+bob,8,2,light);px(ctx,7,-23+bob,8,2,shine);break;
+    case "toast":
+      px(ctx,-9,-18+bob,2,2,shine);px(ctx,7,-18+bob,2,2,shine);px(ctx,-2,-21+bob,4,2,light);break;
+    case "ghost":
+      px(ctx,-10,-25+bob,3,2,shine);px(ctx,7,-25+bob,3,2,shine);px(ctx,-2,-9+bob,4,2,shine);break;
+    case "crystal":
+      px(ctx,-5,-28+bob,2,8,shine);px(ctx,4,-25+bob,2,6,shine);px(ctx,-10,-14+bob,4,2,light);break;
+    case "ring-ape":
+      px(ctx,-7,-31+bob,14,2,shine);px(ctx,-4,-20+bob,8,3,light);px(ctx,-2,-9+bob,4,2,shine);break;
+  }
+
   // Volto, riflessi e piccoli dettagli restano leggibili anche alla scala overworld.
   if(!["bread","stormbird","cloud-dancer","spell-scroll","arcane-book","ghost","crystal"].includes(shape)){
     px(ctx,-6,-14+bob,3,3,"#24232b");
