@@ -11,6 +11,7 @@ import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCi
 import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
+import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
 
 /*
   SOGNATORI — AVVENTURA
@@ -1371,6 +1372,11 @@ const [message, setMessage] = useState("");
       }
       drawCityLandmark(ctx, activeCity);
       drawAdventureFactionCityLife(ctx, activeCity);
+      // Elementi ambientali distintivi: bambù, querce, cascate, caramelle e monumenti di fazione.
+      ctx.save();
+      ctx.translate(1800, 1200);
+      drawAdventureCitySpecials(ctx, activeCity.faction, time);
+      ctx.restore();
 
       // Soltanto il bioma della fazione attualmente caricata.
       drawWildArea(ctx, activeWildArea);
@@ -1742,6 +1748,23 @@ const [message, setMessage] = useState("");
 
     if (nearestNpc) {
       setDialogue(nearestNpc);
+      return;
+    }
+
+    // Elementi distintivi della città: interazione narrativa dedicata con il tasto E.
+    const citySpecials = ADVENTURE_CITY_SPECIALS[activeMapId] || [];
+    const nearestSpecial = citySpecials
+      .map((item) => ({
+        ...item,
+        worldX: 1800 + item.x,
+        worldY: 1200 + item.y,
+        interactionDistance: distance(currentPosition, { x: 1800 + item.x, y: 1200 + item.y }),
+      }))
+      .filter((item) => item.interactionDistance < 88)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestSpecial) {
+      setDialogue({ name: nearestSpecial.name, dialogue: nearestSpecial.dialogue });
       return;
     }
 
