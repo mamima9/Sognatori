@@ -1,73 +1,97 @@
 import React, { useEffect, useRef, useState } from "react";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 
-const ROOM_W = 800;
-const ROOM_H = 520;
-
-const ROOM_LAYOUTS = [
-  [{x:105,y:115,w:150,h:70,c:"#8b6848"},{x:555,y:110,w:130,h:85,c:"#557d45"},{x:120,y:330,w:115,h:65,c:"#9b7548"},{x:560,y:330,w:120,h:65,c:"#6d5139"}],
-  [{x:100,y:110,w:190,h:85,c:"#557d45"},{x:520,y:110,w:170,h:85,c:"#9b7548"},{x:115,y:330,w:145,h:70,c:"#557d45"},{x:540,y:330,w:145,h:70,c:"#9b7548"}],
-  [{x:95,y:115,w:145,h:85,c:"#9b7548"},{x:560,y:115,w:145,h:85,c:"#9b7548"},{x:300,y:105,w:200,h:65,c:"#557d45"},{x:300,y:350,w:200,h:55,c:"#9b7548"}],
-  [{x:100,y:120,w:160,h:95,c:"#9b7548"},{x:540,y:120,w:160,h:95,c:"#9b7548"},{x:285,y:315,w:230,h:85,c:"#6d5139"}],
-  [{x:90,y:110,w:160,h:75,c:"#557d45"},{x:550,y:110,w:160,h:75,c:"#557d45"},{x:105,y:330,w:130,h:75,c:"#9b7548"},{x:565,y:330,w:130,h:75,c:"#9b7548"}],
-  [{x:100,y:110,w:145,h:100,c:"#6d5139"},{x:555,y:110,w:145,h:100,c:"#6d5139"},{x:300,y:105,w:200,h:80,c:"#9b7548"},{x:300,y:345,w:200,h:55,c:"#557d45"}],
+const W=800,H=520;
+const THEMES={
+  Natura:{wall:"#244b32",floor:"#9cae70",trim:"#d4dc9a",dark:"#493b2b",accent:"#75a94d",window:"#a9d7b0",motif:"leaf"},
+  Robot:{wall:"#263e50",floor:"#718f91",trim:"#b6e5df",dark:"#1b2c3b",accent:"#42b8bd",window:"#8ce5e4",motif:"circuit"},
+  Demone:{wall:"#482936",floor:"#946052",trim:"#efaa70",dark:"#2c1b29",accent:"#c65350",window:"#f39b63",motif:"ember"},
+  Nuvola:{wall:"#526b8b",floor:"#b5cbe0",trim:"#f3f0f2",dark:"#34445f",accent:"#a4c8ed",window:"#e3f3ff",motif:"cloud"},
+  Umano:{wall:"#654637",floor:"#bd9468",trim:"#efd19b",dark:"#493126",accent:"#b96e46",window:"#9dc6c5",motif:"wood"},
+  Luce:{wall:"#80652f",floor:"#d8bd75",trim:"#fff0b1",dark:"#554322",accent:"#f4d66e",window:"#fff4c6",motif:"sun"},
+  Dolce:{wall:"#70486b",floor:"#d3a4bf",trim:"#ffe0ed",dark:"#50364e",accent:"#e99acb",window:"#f8d8ec",motif:"flower"},
+  Marino:{wall:"#20536a",floor:"#76b5b6",trim:"#c6f0e9",dark:"#173d54",accent:"#43a6b6",window:"#b7edf0",motif:"coral"},
+  Orso:{wall:"#4d392b",floor:"#a98254",trim:"#e5c58e",dark:"#33271f",accent:"#bd8d52",window:"#b5c5a2",motif:"pine"},
+  Mago:{wall:"#3c315c",floor:"#8d7db2",trim:"#e2d6ff",dark:"#29213f",accent:"#a78bdf",window:"#d6c7ff",motif:"rune"},
+  Salato:{wall:"#626b69",floor:"#c2c1ae",trim:"#f2e7c7",dark:"#3f4948",accent:"#a7b9b5",window:"#e7f0e9",motif:"crystal"}
+};
+const LAYOUTS=[
+  [{x:86,y:180,w:168,h:70},{x:545,y:175,w:165,h:78},{x:105,y:350,w:115,h:55},{x:580,y:345,w:112,h:60}],
+  [{x:78,y:175,w:210,h:90},{x:510,y:175,w:210,h:90},{x:290,y:345,w:220,h:65}],
+  [{x:85,y:175,w:130,h:100},{x:585,y:175,w:130,h:100},{x:285,y:155,w:230,h:62},{x:295,y:365,w:210,h:55}],
+  [{x:95,y:185,w:175,h:85},{x:530,y:185,w:175,h:85},{x:300,y:335,w:200,h:80}],
+  [{x:85,y:175,w:155,h:68},{x:560,y:175,w:155,h:68},{x:85,y:350,w:155,h:68},{x:560,y:350,w:155,h:68}],
+  [{x:90,y:175,w:135,h:95},{x:575,y:175,w:135,h:95},{x:300,y:165,w:200,h:70},{x:300,y:360,w:200,h:55}]
 ];
-
-function drawRoom(ctx, room, player, tick) {
-  const n = Math.max(0, (room.number || 1) - 1) % ROOM_LAYOUTS.length;
-  const palettes = [
-    ["#284d35","#a2b879","#e2c98e"],["#294c35","#b9a16d","#e9d6a5"],
-    ["#51402e","#c59a62","#f1d5a0"],["#49372d","#b78a58","#f0d4a0"],
-    ["#354a36","#9cae79","#e6d09a"],["#3d3b32","#aa8a61","#ead2a1"]
-  ];
-  const [wall,floor,trim] = palettes[n];
-  ctx.clearRect(0,0,ROOM_W,ROOM_H);
-  ctx.fillStyle="#17231b"; ctx.fillRect(0,0,ROOM_W,ROOM_H);
-  ctx.fillStyle=wall; ctx.fillRect(28,22,744,476);
-  ctx.fillStyle=floor; ctx.fillRect(48,150,704,324);
-  ctx.fillStyle=trim; ctx.fillRect(28,132,744,18);
-  ctx.fillStyle="rgba(35,24,16,.18)";
-  for(let y=165;y<470;y+=48) for(let x=55+(Math.floor(y/48)%2)*24;x<750;x+=48) ctx.fillRect(x,y,42,2);
-  // Finestre, travi e dettagli architettonici.
-  ctx.fillStyle="#382d26"; ctx.fillRect(105,52,112,70); ctx.fillRect(583,52,112,70);
-  ctx.fillStyle=n===1?"#9bc9bd":"#9bc4d2"; ctx.fillRect(113,60,96,54); ctx.fillRect(591,60,96,54);
-  ctx.fillStyle="#5b402b"; ctx.fillRect(158,58,5,58); ctx.fillRect(113,85,96,5); ctx.fillRect(636,58,5,58); ctx.fillRect(591,85,96,5);
-  // Mobili specifici per la stanza.
-  for(const o of ROOM_LAYOUTS[n]){
-    ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(o.x+5,o.y+8,o.w,o.h);
-    ctx.fillStyle=o.c;ctx.fillRect(o.x,o.y,o.w,o.h);
-    ctx.fillStyle="#d8b77d";ctx.fillRect(o.x,o.y,o.w,7);
-    ctx.fillStyle="rgba(30,22,16,.35)";ctx.fillRect(o.x+8,o.y+o.h-9,o.w-16,5);
-    if(n===1||n===4){ctx.fillStyle="#4f8b50";ctx.fillRect(o.x+o.w/2-9,o.y-18,18,18);ctx.fillStyle="#9cbd68";ctx.fillRect(o.x+o.w/2-3,o.y-27,6,12);}
+function drawThemeMotif(ctx,motif,t){
+  const px=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  ctx.save();
+  if(motif==="leaf"){px(385,36,5,54,t.accent);px(360,47,28,12,t.trim);px(388,63,30,12,t.accent);px(375,43,12,5,t.window);}
+  if(motif==="circuit"){px(360,48,80,5,t.accent);px(397,28,5,65,t.trim);px(340,45,5,25,t.accent);px(455,65,5,25,t.accent);px(335,65,20,5,t.trim);px(445,85,20,5,t.trim);}
+  if(motif==="ember"){for(let i=0;i<5;i++){px(350+i*24,75-(i%2)*14,5,18,t.accent);px(353+i*24,66-(i%2)*14,4,8,t.trim);}}
+  if(motif==="cloud"){for(let i=0;i<4;i++){ctx.fillStyle=i%2?t.accent:t.trim;ctx.beginPath();ctx.arc(350+i*32,65-(i%2)*10,17,0,Math.PI*2);ctx.fill();}}
+  if(motif==="wood"){for(let i=0;i<6;i++)px(350+i*20,36,5,55,i%2?t.accent:t.dark);}
+  if(motif==="sun"){ctx.strokeStyle=t.trim;ctx.lineWidth=5;ctx.beginPath();ctx.arc(400,62,24,0,Math.PI*2);ctx.stroke();px(397,25,6,15,t.trim);px(397,84,6,15,t.trim);px(360,59,15,6,t.trim);px(425,59,15,6,t.trim);}
+  if(motif==="flower"){for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.fillStyle=t.accent;ctx.beginPath();ctx.arc(400+Math.cos(a)*16,62+Math.sin(a)*16,12,0,Math.PI*2);ctx.fill();}px(394,56,12,12,t.trim);}
+  if(motif==="coral"){ctx.strokeStyle=t.trim;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(400,90);ctx.lineTo(400,38);ctx.lineTo(375,20);ctx.moveTo(400,60);ctx.lineTo(428,36);ctx.stroke();}
+  if(motif==="pine"){for(let i=0;i<3;i++){px(370+i*25,38,5,54,t.dark);ctx.fillStyle=t.accent;ctx.beginPath();ctx.moveTo(372+i*25,25);ctx.lineTo(350+i*25,70);ctx.lineTo(394+i*25,70);ctx.fill();}}
+  if(motif==="rune"){ctx.strokeStyle=t.trim;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(370,83);ctx.lineTo(400,27);ctx.lineTo(430,83);ctx.moveTo(380,65);ctx.lineTo(420,65);ctx.stroke();ctx.fillStyle=t.accent;ctx.fillRect(395,50,10,10);}
+  if(motif==="crystal"){ctx.fillStyle=t.trim;ctx.beginPath();ctx.moveTo(400,22);ctx.lineTo(430,57);ctx.lineTo(400,94);ctx.lineTo(370,57);ctx.closePath();ctx.fill();ctx.fillStyle=t.accent;ctx.fillRect(396,36,8,44);}
+  ctx.restore();
+}
+function drawRoom(ctx,house,player,tick){
+  const theme=THEMES[house.city.faction]||THEMES.Umano;
+  const layout=LAYOUTS[((house.number||1)-1)%LAYOUTS.length];
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#101a1b";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=theme.wall;ctx.fillRect(25,20,750,480);
+  ctx.fillStyle=theme.floor;ctx.fillRect(45,145,710,330);
+  ctx.fillStyle=theme.trim;ctx.fillRect(25,128,750,18);
+  // Floor tiles and beams.
+  ctx.globalAlpha=.2;ctx.fillStyle=theme.dark;
+  for(let y=160;y<470;y+=38)for(let x=52+(Math.floor(y/38)%2)*19;x<750;x+=38)ctx.fillRect(x,y,32,2);
+  ctx.globalAlpha=1;
+  ctx.fillStyle=theme.dark;ctx.fillRect(75,53,118,70);ctx.fillRect(607,53,118,70);
+  ctx.fillStyle=theme.window;ctx.fillRect(83,61,102,54);ctx.fillRect(615,61,102,54);
+  ctx.fillStyle=theme.trim;ctx.fillRect(132,61,5,54);ctx.fillRect(83,85,102,5);ctx.fillRect(664,61,5,54);ctx.fillRect(615,85,102,5);
+  drawThemeMotif(ctx,theme.motif,theme);
+  // Furniture arrangement differs by room number; materials follow the faction.
+  for(const [i,o] of layout.entries()){
+    ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(o.x+6,o.y+8,o.w,o.h);
+    ctx.fillStyle=theme.dark;ctx.fillRect(o.x,o.y,o.w,o.h);
+    ctx.fillStyle=i%2?theme.accent:theme.trim;ctx.fillRect(o.x+5,o.y+5,o.w-10,Math.max(7,o.h*.23));
+    ctx.fillStyle=theme.floor;ctx.fillRect(o.x+10,o.y+o.h*.48,o.w-20,Math.max(6,o.h*.25));
+    if(theme.motif==="rune"||theme.motif==="crystal"){ctx.fillStyle=theme.trim;ctx.fillRect(o.x+o.w/2-3,o.y+o.h*.35,6,o.h*.35);}
   }
-  // Tappeto centrale e porta d'uscita sul lato sud.
-  ctx.fillStyle="#6f493d";ctx.fillRect(320,230,160,105);ctx.fillStyle="#c99b69";ctx.fillRect(328,238,144,89);
-  ctx.fillStyle="#4b3024";ctx.fillRect(365,420,70,78);ctx.fillStyle="#b88a50";ctx.fillRect(371,426,58,72);
-  ctx.fillStyle="#f3d18b";ctx.fillRect(414,459,5,5);
-  // Personaggio in pixel art.
-  const x=player.x,y=player.y,step=Math.floor(tick/10)%2;
-  ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(x-13,y+17,27,6);
-  ctx.fillStyle="#302a35";ctx.fillRect(x-9,y+5,7,13);ctx.fillRect(x+3,y+5,7,13);
+  // Central rug/altar/work area.
+  ctx.fillStyle=theme.dark;ctx.fillRect(310,240,180,100);
+  ctx.fillStyle=theme.accent;ctx.fillRect(320,250,160,80);
+  ctx.fillStyle=theme.trim;ctx.fillRect(330,260,140,60);
+  if(theme.motif==="leaf"||theme.motif==="flower"){ctx.fillStyle=theme.dark;ctx.fillRect(394,272,12,38);ctx.fillRect(370,278,25,7);ctx.fillRect(405,288,25,7);}
+  if(theme.motif==="circuit"||theme.motif==="rune"){ctx.fillStyle=theme.trim;ctx.fillRect(365,275,70,5);ctx.fillRect(397,265,6,50);}
+  if(theme.motif==="coral"||theme.motif==="crystal"){ctx.fillStyle=theme.window;ctx.beginPath();ctx.moveTo(400,265);ctx.lineTo(430,295);ctx.lineTo(400,320);ctx.lineTo(370,295);ctx.closePath();ctx.fill();}
+  // Exit doorway: south wall, visible and physically reachable.
+  ctx.fillStyle=theme.dark;ctx.fillRect(355,418,90,82);
+  ctx.fillStyle=theme.trim;ctx.fillRect(362,425,76,75);
+  ctx.fillStyle=theme.dark;ctx.fillRect(370,433,60,67);
+  ctx.fillStyle=theme.accent;ctx.fillRect(418,466,5,5);
+  // Player avatar in the same pixel scale as the room.
+  const {x,y}=player,step=Math.floor(tick/10)%2;
+  ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-13,y+17,27,6);
+  ctx.fillStyle="#302a35";ctx.fillRect(x-9,y+5+(step?1:0),7,13);ctx.fillRect(x+3,y+5,7,13);
   ctx.fillStyle="#4779a5";ctx.fillRect(x-12,y-10,24,18);
   ctx.fillStyle="#e6b88e";ctx.fillRect(x-10,y-27,20,18);
   ctx.fillStyle="#49352d";ctx.fillRect(x-11,y-30,22,8);ctx.fillRect(x-13,y-24,5,10);
   ctx.fillStyle="#25202a";ctx.fillRect(x-5,y-20,3,3);ctx.fillRect(x+4,y-20,3,3);
   ctx.fillStyle="#e8c69b";ctx.fillRect(x-15+(step?2:0),y-5,5,13);ctx.fillRect(x+10-(step?2:0),y-5,5,13);
 }
-
-export default function AdventureHouseInterior({ house, onExit }) {
-  const canvasRef=useRef(null);
-  const position=useRef({x:400,y:350});
-  const keys=useRef({});
-  const [player,setPlayer]=useState({x:400,y:350});
-  const [dialogue,setDialogue]=useState("");
-  const [nearNpc,setNearNpc]=useState(false);
-  const [nearExit,setNearExit]=useState(false);
+export default function AdventureHouseInterior({house,onExit}){
+  const canvasRef=useRef(null),position=useRef({x:400,y:350}),keys=useRef({});
+  const [dialogue,setDialogue]=useState(""),[nearNpc,setNearNpc]=useState(false),[nearExit,setNearExit]=useState(false);
   const [tick,setTick]=useState(0);
-  const title=house.city.id==="natura"
-    ? ["Rifugio tra le fronde","Bottega dell'erborista","Casa del raccoglitore","Locanda del sottobosco","Dimora del custode","Officina del legno vivo"][(house.number||1)-1]
-    : ["Casa del viandante","Bottega delle mappe","Casa degli abitanti","Locanda","Casa del custode","Laboratorio"][(house.number||1)-1];
-  const faction=house.city.faction;
+  const titles=["Rifugio","Bottega","Casa degli abitanti","Locanda","Dimora del custode","Laboratorio"];
+  const title=house.city.id==="natura"?["Rifugio tra le fronde","Bottega dell'erborista","Casa del raccoglitore","Locanda del sottobosco","Dimora del custode","Officina del legno vivo"][(house.number||1)-1]:titles[(house.number||1)-1];
+  const theme=THEMES[house.city.faction]||THEMES.Umano;
   useEffect(()=>{
     const down=e=>{const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d","e"].includes(k)){e.preventDefault();keys.current[k]=true;}};
     const up=e=>{keys.current[e.key.toLowerCase()]=false;};
@@ -75,51 +99,44 @@ export default function AdventureHouseInterior({ house, onExit }) {
     return()=>{window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);};
   },[]);
   useEffect(()=>{
-    let raf,last=0,frame=0;
-    const canvas=canvasRef.current,ctx=canvas?.getContext("2d");
-    if(!ctx)return;
+    let raf,last=0,frame=0;const ctx=canvasRef.current?.getContext("2d");if(!ctx)return;
     const loop=now=>{
       const dt=Math.min((now-last)/16.67,2);last=now;frame++;
-      let dx=0,dy=0;const k=keys.current;
+      const k=keys.current;let dx=0,dy=0;
       if(k.w||k.arrowup)dy--;if(k.s||k.arrowdown)dy++;if(k.a||k.arrowleft)dx--;if(k.d||k.arrowright)dx++;
-      if(dx||dy){const len=Math.hypot(dx,dy);const next={x:Math.max(72,Math.min(728,position.current.x+dx/len*3.1*dt)),y:Math.max(190,Math.min(410,position.current.y+dy/len*3.1*dt))};position.current=next;setPlayer(next);}
-      const npcNear=Math.hypot(position.current.x-400,position.current.y-205)<92;
-      const exitNear=position.current.y>438&&Math.abs(position.current.x-400)<72;
-      setNearNpc(npcNear);setNearExit(exitNear);
-      if(frame%8===0)setTick(t=>t+1);
-      drawRoom(ctx,house,position.current,frame);
-      raf=requestAnimationFrame(loop);
+      if(dx||dy){const len=Math.hypot(dx,dy);position.current={x:Math.max(65,Math.min(735,position.current.x+dx/len*3.1*dt)),y:Math.max(190,Math.min(474,position.current.y+dy/len*3.1*dt))};}
+      const npc=Math.hypot(position.current.x-400,position.current.y-205)<88;
+      const exit=position.current.y>445&&Math.abs(position.current.x-400)<62;
+      setNearNpc(npc);setNearExit(exit);if(frame%8===0)setTick(t=>t+1);
+      drawRoom(ctx,house,position.current,frame);raf=requestAnimationFrame(loop);
     };
     raf=requestAnimationFrame(loop);return()=>cancelAnimationFrame(raf);
   },[house]);
-  const interact=()=>{
-    if(nearExit){onExit();return;}
-    if(nearNpc)setDialogue(house.dialogue||"Benvenuto! Ogni casa custodisce una storia di questa città.");
-  };
+  const interact=()=>{if(nearExit){onExit();return;}if(nearNpc)setDialogue(house.dialogue||"Benvenuto! Questa casa custodisce una storia della città.");};
   const move=(key,active)=>{keys.current[key]=active;};
-  return <div className="fixed inset-0 z-[90] flex flex-col bg-[#101810] text-white">
-    <div className="flex items-center justify-between border-b border-white/15 bg-black/70 px-4 py-3">
-      <div><div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">{house.city.city} · {faction}</div><div className="text-lg font-black">{title}</div></div>
+  return <div className="fixed inset-0 z-[90] flex flex-col text-white" style={{background:theme.dark}}>
+    <header className="flex items-center justify-between border-b border-white/15 bg-black/55 px-4 py-3">
+      <div><div className="text-[10px] font-black uppercase tracking-[.3em]" style={{color:theme.trim}}>{house.city.city} · {house.city.faction}</div><div className="text-lg font-black">{title}</div></div>
       <button onClick={onExit} className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold">Esci dalla casa</button>
-    </div>
-    <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
+    </header>
+    <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
       <div className="relative w-full max-w-[1100px]">
-        <canvas ref={canvasRef} width={ROOM_W} height={ROOM_H} className="block aspect-[20/13] w-full rounded-xl border-4 border-[#8d704b] shadow-2xl" style={{imageRendering:"pixelated"}} />
+        <canvas ref={canvasRef} width={W} height={H} className="block aspect-[20/13] w-full rounded-xl border-4 shadow-2xl" style={{imageRendering:"pixelated",borderColor:theme.trim}}/>
         <div className="pointer-events-none absolute left-1/2 top-[36%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
-          <AdventureTravelerSprite traveler={house.resident} faction={faction} size={42} direction="down" walking={false}/>
-          <span className="rounded bg-black/75 px-2 py-1 text-[10px] font-black">{house.resident}</span>
+          <AdventureTravelerSprite traveler={house.resident} faction={house.city.faction} size={48} direction="down" walking={false}/>
+          <span className="rounded bg-black/80 px-2 py-1 text-[10px] font-black">{house.resident}</span>
         </div>
-        {dialogue&&<div className="absolute bottom-3 left-1/2 w-[min(90%,560px)] -translate-x-1/2 rounded-xl border border-emerald-200/40 bg-black/90 p-4 text-sm shadow-xl"><b className="text-emerald-200">{house.resident}</b><p className="mt-1">{dialogue}</p><button onClick={()=>setDialogue("")} className="mt-3 rounded-lg bg-white px-3 py-1.5 text-xs font-black text-black">Continua</button></div>}
+        {dialogue&&<div className="absolute bottom-3 left-1/2 w-[min(90%,560px)] -translate-x-1/2 rounded-xl border bg-black/90 p-4 text-sm shadow-xl" style={{borderColor:theme.trim}}><b style={{color:theme.trim}}>{house.resident}</b><p className="mt-1">{dialogue}</p><button onClick={()=>setDialogue("")} className="mt-3 rounded-lg bg-white px-3 py-1.5 text-xs font-black text-black">Continua</button></div>}
       </div>
-    </div>
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-black/60 px-4 py-3">
-      <div className="text-xs text-white/65">WASD / frecce per muoverti · E per parlare o uscire</div>
+    </main>
+    <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-black/55 px-4 py-3">
+      <div className="text-xs text-white/70">WASD / frecce per muoverti · raggiungi la porta a sud e premi E</div>
       <div className="flex items-center gap-2">
         <button onPointerDown={()=>move("arrowleft",true)} onPointerUp={()=>move("arrowleft",false)} onPointerLeave={()=>move("arrowleft",false)} className="rounded-lg bg-white/15 px-4 py-3 font-black">←</button>
         <div className="flex flex-col gap-1"><button onPointerDown={()=>move("arrowup",true)} onPointerUp={()=>move("arrowup",false)} onPointerLeave={()=>move("arrowup",false)} className="rounded-lg bg-white/15 px-4 py-1 font-black">↑</button><button onPointerDown={()=>move("arrowdown",true)} onPointerUp={()=>move("arrowdown",false)} onPointerLeave={()=>move("arrowdown",false)} className="rounded-lg bg-white/15 px-4 py-1 font-black">↓</button></div>
         <button onPointerDown={()=>move("arrowright",true)} onPointerUp={()=>move("arrowright",false)} onPointerLeave={()=>move("arrowright",false)} className="rounded-lg bg-white/15 px-4 py-3 font-black">→</button>
-        <button onClick={interact} className="ml-2 rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black text-[#102016]">{nearExit?"ESCI":nearNpc?"PARLA":"INTERAGISCI"}</button>
+        <button onClick={interact} className="ml-2 rounded-xl px-5 py-3 text-xs font-black text-black" style={{background:theme.trim}}>{nearExit?"ESCI":nearNpc?"PARLA":"INTERAGISCI"}</button>
       </div>
-    </div>
+    </footer>
   </div>;
 }
