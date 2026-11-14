@@ -66,6 +66,20 @@ const BATTLE_TRACKS = [
 
 let sharedMusicAudio = null;
 
+const ADVENTURE_TRACKS = [
+  { cityId: "natura", city: "Verdelume", name: "Lantern Deer", url: "/audio/Lantern Deer.mp3" },
+  { cityId: "demone", city: "Braciombra", name: "Eroica tensione", url: "/audio/Eroica tensione.mp3" },
+  { cityId: "robot", city: "Ferrovia", name: "H1CQS", url: "/audio/H1CQS.mp3" },
+  { cityId: "nuvola", city: "Altacielo", name: "Dream Creature Path", url: "/audio/Dream Creature Path.mp3" },
+  { cityId: "umano", city: "Crocevia", name: "Motivo Mediterraneo", url: "/audio/Motivo Mediterraneo.mp3" },
+  { cityId: "luce", city: "Auroria", name: "Sognatori Overture", url: "/audio/Sognatori Overture.mp3" },
+  { cityId: "dolce", city: "Zuccherìa", name: "Come gocce di tiglio", url: "/audio/Come gocce di tiglio.mp3" },
+  { cityId: "marino", city: "Marequieto", name: "Arrivederci Roma", url: "/audio/001 Sognatori - Arrivederci Roma.mp3" },
+  { cityId: "orso", city: "Zannaforte", name: "El Buitre", url: "/audio/El Buitre.mp3" },
+  { cityId: "mago", city: "Arcania", name: "Adli il Mago", url: "/audio/Adli il mago.mp3" },
+  { cityId: "salato", city: "Salmastra", name: "Sognatori Awakes", url: "/audio/Sognatori Awakes.mp3" },
+];
+
 const AUCTION_TRACKS = [
   {
     name: "Franco",
@@ -118,7 +132,9 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
       ? BATTLE_TRACKS
       : musicMode === "auction"
         ? AUCTION_TRACKS
-        : MAIN_TRACKS;
+        : musicMode === "adventure"
+          ? ADVENTURE_TRACKS
+          : MAIN_TRACKS;
 
   const current = tracks[trackIdx] || tracks[0];
 
@@ -141,11 +157,16 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
           ? BATTLE_TRACKS
           : mode === "auction"
             ? AUCTION_TRACKS
-            : MAIN_TRACKS;
+            : mode === "adventure"
+              ? ADVENTURE_TRACKS
+              : MAIN_TRACKS;
 
-      const nextIndex = Math.floor(
-        Math.random() * nextTracks.length
-      );
+      const cityIndex = mode === "adventure"
+        ? nextTracks.findIndex((track) => track.cityId === event.detail?.cityId)
+        : -1;
+      const nextIndex = cityIndex >= 0
+        ? cityIndex
+        : Math.floor(Math.random() * nextTracks.length);
 
       setMusicModeState(mode);
       setTrackIdx(nextIndex);
@@ -412,7 +433,9 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
                   ? "Battle"
                   : musicMode === "auction"
                     ? "Asta"
-                    : "Playlist"}
+                    : musicMode === "adventure"
+                      ? "Avventura · città"
+                      : "Playlist"}
               </div>
 
               {/* BRANI */}
