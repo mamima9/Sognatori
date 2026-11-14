@@ -756,13 +756,13 @@ export default function Avventura() {
   const { user, isLoadingAuth, authChecked } = useAuth();
 
   // L'accesso all'Avventura è riservato a chi ha vinto la campagna Arcade completa.
-  const testerAllowed =
-    user?.user_metadata?.sognatori_arcade_completed === true ||
-    user?.email?.toLowerCase() === "bibitoeuro@gmail.com";
+  const accountEmail = String(user?.email || user?.user_metadata?.email || "").trim().toLowerCase();
+  const isPersonalTester = accountEmail === "bibitoeuro@gmail.com";
 
-  // Accesso personale: tutte le porte delle città sono aperte soltanto per questo account.
-  const personalAllDoorsUnlocked =
-    user?.email?.trim()?.toLowerCase() === "bibitoeuro@gmail.com";
+  // Accesso all'Avventura e porte personali riservati a questo account o ai vincitori Arcade.
+  const testerAllowed =
+    user?.user_metadata?.sognatori_arcade_completed === true || isPersonalTester;
+  const personalAllDoorsUnlocked = isPersonalTester;
 
   /*
     ============================
@@ -1670,17 +1670,8 @@ const [message, setMessage] = useState("");
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
 
-    const nearestNpc = cityNpcCharacters
-      .map((npc) => ({ ...npc, interactionDistance: distance(currentPosition, npc) }))
-      .filter((npc) => npc.interactionDistance < interactionRadius)
-      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
-
-    if (nearestNpc) {
-      setDialogue(nearestNpc);
-      return;
-    }
-
-    if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius) {
+    // Le porte hanno priorità sugli NPC: un personaggio vicino non deve intercettare l'interazione.
+    if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius + 42) {
       if (!personalAllDoorsUnlocked && !defeatedLeaders.has(activeMapId)) {
         const leader = CHALLENGERS.find((challenger) => challenger.id === activeMapId);
         setMessage("La strada è sbarrata da " + (leader?.name || "il Capo fazione") + ". Sconfiggilo per proseguire.");
@@ -1698,7 +1689,7 @@ const [message, setMessage] = useState("");
       return;
     }
 
-    if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius) {
+    if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius + 42) {
       if (personalAllDoorsUnlocked) {
         const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
         const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
@@ -1712,6 +1703,16 @@ const [message, setMessage] = useState("");
       }
       setMessage("Porta nord sigillata. La progressione avviene solo verso sud, dopo aver sconfitto il Capo fazione.");
       setTimeout(() => setMessage(""), 2800);
+      return;
+    }
+
+    const nearestNpc = cityNpcCharacters
+      .map((npc) => ({ ...npc, interactionDistance: distance(currentPosition, npc) }))
+      .filter((npc) => npc.interactionDistance < interactionRadius)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestNpc) {
+      setDialogue(nearestNpc);
       return;
     }
 
