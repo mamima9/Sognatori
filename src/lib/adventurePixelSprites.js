@@ -302,6 +302,7 @@ const WILD_SPECIES_DESIGNS = {
   shoboshi: { shape:"ghost", colors:["#425c85","#8db8e4","#d9e8f7","#fff6ef"] },
   elmas: { shape:"crystal", colors:["#4c5558","#929b95","#c9c9b7","#ffffff"] },
   "ring-ape": { shape:"ring-ape", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
+  eriiro: { shape:"oni-demon", colors:["#4b2038","#a83d50","#e66c61","#ffd08a"] },
 };
 
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
@@ -469,6 +470,16 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-8,-29+bob,16,10,light);px(ctx,-15,-27+bob,8,9,dark);px(ctx,7,-27+bob,8,9,dark);
       px(ctx,-4,-6+bob,8,5,shine);px(ctx,-19,-14+bob,8,12,main);px(ctx,11,-14+bob,8,12,main);
       ctx.strokeStyle=shine;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-33+bob,8,Math.PI,Math.PI*2);ctx.stroke();break;
+    case "oni-demon":
+      // Eriiro: demone bipede con corna gemelle e corazza a piastre.
+      px(ctx,-12,-16+bob,24,16,dark);px(ctx,-10,-23+bob,20,14,main);
+      px(ctx,-8,-31+bob,16,12,light);px(ctx,-12,-38+bob,6,11,dark);px(ctx,6,-38+bob,6,11,dark);
+      px(ctx,-11,-42+bob,5,8,shine);px(ctx,6,-42+bob,5,8,shine);
+      px(ctx,-18,-18+bob,7,13,main);px(ctx,11,-18+bob,7,13,main);
+      px(ctx,-15,-8+bob,5,8,light);px(ctx,10,-8+bob,5,8,light);
+      px(ctx,-7,-4+bob,5,7,dark);px(ctx,3,-4+bob,5,7,dark);
+      px(ctx,-6,-26+bob,4,3,shine);px(ctx,3,-26+bob,4,3,shine);
+      px(ctx,-3,-17+bob,6,3,shine);break;
     default:
       px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-22+bob,16,10,light);
       px(ctx,-4,-30+bob,8,8,shine);break;
@@ -535,6 +546,10 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-5,-28+bob,2,8,shine);px(ctx,4,-25+bob,2,6,shine);px(ctx,-10,-14+bob,4,2,light);break;
     case "ring-ape":
       px(ctx,-7,-31+bob,14,2,shine);px(ctx,-4,-20+bob,8,3,light);px(ctx,-2,-9+bob,4,2,shine);break;
+    case "oni-demon":
+      px(ctx,-13,-34+bob,4,3,shine);px(ctx,9,-34+bob,4,3,shine);
+      px(ctx,-8,-19+bob,4,2,"#ffd08a");px(ctx,5,-19+bob,4,2,"#ffd08a");
+      px(ctx,-3,-12+bob,6,2,dark);px(ctx,-16,-15+bob,3,5,shine);px(ctx,13,-15+bob,3,5,shine);break;
   }
 
   // Volto, riflessi e piccoli dettagli restano leggibili anche alla scala overworld.
