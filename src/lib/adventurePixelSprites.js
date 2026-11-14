@@ -169,7 +169,32 @@ const TRAVELER_DESIGNS = {
 };
 function px(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
 export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, scale=1, direction="down"){
-  const d=TRAVELER_DESIGNS[traveler]||TRAVELER_DESIGNS.Mira;
+  const base=TRAVELER_DESIGNS[traveler]||TRAVELER_DESIGNS.Mira;
+  const identity=String(traveler||"Viandante");
+  const seed=Array.from(identity).reduce((n,ch)=>(n*31+ch.charCodeAt(0))>>>0,7);
+  const factionColors={
+    Natura:["#365c3c","#668a49","#8cbd61","#b7d77d","#493a2b","#e8bd91"],
+    Robot:["#315d72","#397f91","#55b8bd","#8de0d5","#244653","#a8e6df"],
+    Demone:["#762d42","#a83d4e","#e66d62","#f3c477","#30202c","#e6a28d"],
+    Nuvola:["#536c9b","#829ed0","#a9c8ed","#f5f0f5","#c5d9ef","#e8d8d1"],
+    Umano:["#79503d","#b46b45","#d28b52","#dfc18a","#352a2b","#d99b72"],
+    Luce:["#b28a35","#e0b84c","#f7e18c","#fff0bc","#f3e5b7","#f3d5a1"],
+    Dolce:["#985b8d","#ca79aa","#e9a6d0","#ffe4ee","#744768","#f0c1c9"],
+    Marino:["#28647d","#348da0","#5eb7c4","#bcebed","#25475a","#9dd4d8"],
+    Orso:["#745033","#a87843","#bd8a4d","#e2c18a","#3a2b24","#d5a779"],
+    Mago:["#59417e","#8064ad","#a48bd8","#d4c3f4","#302746","#d9b7a4"],
+    Salato:["#646b6a","#898d83","#c5c5b4","#e8d8b1","#353b43","#d5d1c4"]
+  };
+  const palette=factionColors[faction]||factionColors.Umano;
+  const d={
+    ...base,
+    coat:base===TRAVELER_DESIGNS.Mira&&!TRAVELER_DESIGNS[traveler]?palette[seed%4]:base.coat,
+    trim:palette[(seed+1)%4],
+    accent:palette[(seed+2)%4],
+    hair:palette[4+(seed%2)],
+    skin:base===TRAVELER_DESIGNS.Mira&&!TRAVELER_DESIGNS[traveler]?palette[5]:base.skin,
+    variant:seed%5
+  };
   ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
   // Il profilo sinistro viene specchiato; il destro usa il profilo naturale.
   if(direction==="left"){ctx.scale(-1,1);}
@@ -204,6 +229,18 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
     px(ctx,-5,-49+bob,2,2,"#24232b");
     px(ctx,3,-49+bob,2,2,"#24232b");
     px(ctx,-1,-44+bob,3,1,"#9e5f58");
+  }
+  // Distinct silhouette details derived from the resident's identity.
+  if(d.variant===0){px(ctx,-11,-37+bob,5,9,d.accent);px(ctx,6,-30+bob,5,8,d.trim);}
+  if(d.variant===1){px(ctx,-8,-62+bob,5,5,d.trim);px(ctx,3,-64+bob,5,7,d.accent);px(ctx,7,-56+bob,3,5,d.hair);}
+  if(d.variant===2){px(ctx,-13,-29+bob,4,10,d.trim);px(ctx,9,-29+bob,4,10,d.accent);px(ctx,-5,-10+bob,10,3,d.trim);}
+  if(d.variant===3){px(ctx,-7,-60+bob,4,7,d.accent);px(ctx,3,-60+bob,5,6,d.trim);px(ctx,5,-47+bob,4,3,d.accent);}
+  if(d.variant===4){px(ctx,-10,-34+bob,4,6,d.trim);px(ctx,6,-36+bob,5,8,d.accent);px(ctx,-3,-18+bob,7,3,d.trim);}
+  // Natura inhabitants are all elves: pointed ears are the shared Verdelume trait.
+  if(faction==="Natura" && direction!=="up"){
+    px(ctx,-14,-53+bob,7,3,d.skin);px(ctx,-19,-57+bob,7,5,d.accent);
+    px(ctx,7,-53+bob,7,3,d.skin);px(ctx,12,-57+bob,7,5,d.accent);
+    px(ctx,-17,-56+bob,4,2,d.trim);px(ctx,13,-56+bob,4,2,d.trim);
   }
   // recognizable faction headpiece
   if(d.hat==="horn"){px(ctx,-9,-65+bob,4,7,d.trim);px(ctx,5,-65+bob,4,7,d.trim);}
