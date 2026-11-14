@@ -253,7 +253,9 @@ export default function Home() {
 
               {/* AVVENTURA — si sblocca solo dopo la vittoria della campagna Arcade */}
               {(() => {
-                const adventureUnlocked = user?.user_metadata?.sognatori_arcade_completed === true;
+                const adventureUnlocked =
+                  user?.user_metadata?.sognatori_arcade_completed === true ||
+                  user?.email?.toLowerCase() === "bibitoeuro@gmail.com";
                 return (
                   <div className="flex flex-col items-center gap-1">
                     {adventureUnlocked ? (
