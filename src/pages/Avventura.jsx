@@ -1733,7 +1733,7 @@ const [message, setMessage] = useState("");
 
     const nearestHouse = ADVENTURE_HOUSES
       .filter((item) => item.city.id === activeMapId)
-      .map((item) => ({ ...item, x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y), interactionDistance: distance(currentPosition, { x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y) }) }))
+      .map((item) => ({ ...item, lore: ADVENTURE_FACTION_LORE[item.city.id] || {}, x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y), interactionDistance: distance(currentPosition, { x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y) }) }))
       .filter((item) => item.interactionDistance < 92)
       .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
 
