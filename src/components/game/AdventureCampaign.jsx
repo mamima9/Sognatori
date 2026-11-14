@@ -159,9 +159,14 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     [save.partyIds]
   );
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
+  const expectedCityTeamSize = encounter?.faction === "Nuvola" ? 5 : 4;
   const cityTeam = useMemo(
-    () => encounter ? (encounter.team?.length === 4 ? encounter.team : buildCityTeam(encounter.faction, encounter.id)) : [],
-    [encounter?.id]
+    () => encounter
+      ? (encounter.team?.length === expectedCityTeamSize
+        ? encounter.team
+        : buildCityTeam(encounter.faction, encounter.id))
+      : [],
+    [encounter?.id, expectedCityTeamSize]
   );
   const rewards = useMemo(
     () => encounter ? getCityRewards(encounter).filter((s) => !save.ownedIds.includes(s.id)) : [],
@@ -208,7 +213,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   };
 
   const startCityBattle = () => {
-    if (party.length < 2 || cityTeam.length !== 4) return;
+    if (party.length < 2 || cityTeam.length !== expectedCityTeamSize) return;
     setBattleKey((n) => n + 1);
     setPhase("battle");
   };
@@ -507,7 +512,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mx-4 mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:mx-7 sm:p-4">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-[9px] font-black uppercase tracking-[.22em] text-amber-100/60">SQUADRA DEL RIVALE</span>
-                <span className="text-[9px] font-bold text-white/35">4 SOGNATORI</span>
+                <span className="text-[9px] font-bold text-white/35">{cityTeam.length} SOGNATORI</span>
               </div>
               <div className="flex justify-around gap-1">
                 {cityTeam.map((s) => <div key={s.id} className="flex min-w-0 flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={52} walking={true}/><span className="mt-1 max-w-full truncate text-[8px] font-bold text-white/75">{s.nome}</span></div>)}
@@ -515,7 +520,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </div>
             <div className="grid grid-cols-2 gap-2 p-4 sm:px-7 sm:pb-7">
               <button onClick={() => { onClose?.(); setPhase("idle"); }} className="rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold text-white/70 transition hover:bg-white/10">TORNA A ESPLORARE</button>
-              <button disabled={party.length < 2 || cityTeam.length !== 4} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : "SFIDA IL CAPO FAZIONE"}</button>
+              <button disabled={party.length < 2 || cityTeam.length !== expectedCityTeamSize} onClick={startCityBattle} className="rounded-xl bg-gradient-to-r from-amber-200 to-amber-400 py-3 text-xs font-black tracking-wide text-[#241b16] shadow-lg shadow-amber-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35">{party.length < 2 ? "SERVONO 2 COMPAGNI" : "SFIDA IL CAPO FAZIONE"}</button>
             </div>
           </div>
         </div>
