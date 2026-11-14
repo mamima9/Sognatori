@@ -2635,22 +2635,80 @@ function drawWildArea(ctx, area) {
     }
   }
 
-  // Piante, pietre e piccoli segni distribuiti in modo deterministico.
+  // Ecosistema di contorno: silhouette diverse per ogni bioma, posizionate con seed fisso.
   for (let i = 0; i < 18; i++) {
     const angle = i * 2.399;
-    const distance = 92 + (i % 4) * 18;
+    const distance = 96 + (i % 4) * 17;
     const px = Math.cos(angle) * distance;
-    const py = Math.sin(angle) * distance * .72;
-    ctx.fillStyle = i % 2 ? area.color : "rgba(238,235,207,.72)";
-    if (area.biome === "ocean") {
-      ctx.fillRect(px, py, 12, 3);
-      ctx.fillRect(px + 4, py - 4, 3, 8);
-    } else if (area.biome === "forest" || area.biome === "prairie" || area.biome === "candy") {
-      ctx.fillRect(px, py, 4, 12);
-      ctx.fillRect(px - 4, py + 2, 12, 3);
-    } else {
-      ctx.fillRect(px, py, 8, 8);
+    const py = Math.sin(angle) * distance * .7;
+    const flip = i % 2 ? 1 : -1;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(flip, 1);
+    switch (area.biome) {
+      case "lava":
+        ctx.fillStyle = "#392b31"; ctx.fillRect(-7, -3, 17, 12);
+        ctx.fillStyle = i % 3 ? "#a94d43" : "#ef8050";
+        ctx.fillRect(-4, -6, 10, 5); ctx.fillRect(2, -9, 3, 4);
+        if (i % 3 === 0) { ctx.fillStyle = "rgba(255,176,91,.7)"; ctx.fillRect(5, -13, 2, 3); }
+        break;
+      case "circuit":
+        ctx.strokeStyle = "#76cfc3"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(-10, 8); ctx.lineTo(-10, 0); ctx.lineTo(0, 0); ctx.lineTo(0, -8); ctx.lineTo(10, -8); ctx.stroke();
+        ctx.fillStyle = "#c5f5e7"; ctx.fillRect(-12, 6, 4, 4); ctx.fillRect(8, -10, 4, 4);
+        break;
+      case "forest":
+        ctx.fillStyle = "#513b2b"; ctx.fillRect(-3, -2, 6, 16);
+        ctx.fillStyle = i % 2 ? "#286044" : "#43834b";
+        ctx.fillRect(-10, -10, 20, 12); ctx.fillRect(-7, -15, 14, 8);
+        ctx.fillStyle = "#a8d477"; ctx.fillRect(-5, -12, 4, 3);
+        if (i % 3 === 0) { ctx.fillStyle = "#e7c1d2"; ctx.fillRect(10, 4, 4, 4); }
+        break;
+      case "cloud":
+        ctx.fillStyle = "rgba(245,251,255,.9)";
+        ctx.beginPath(); ctx.arc(-6, 0, 7, 0, Math.PI * 2); ctx.arc(2, -5, 9, 0, Math.PI * 2); ctx.arc(10, 1, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#9fc2e5"; ctx.fillRect(-2, 6, 8, 3);
+        break;
+      case "prairie":
+        ctx.fillStyle = "#72543a"; ctx.fillRect(-9, 5, 18, 4);
+        ctx.fillStyle = "#d0a16c"; ctx.fillRect(-7, 1, 14, 4);
+        ctx.fillStyle = "#72944f"; ctx.fillRect(-2, -9, 3, 13); ctx.fillRect(-7, -5, 5, 3); ctx.fillRect(2, -7, 5, 3);
+        if (i % 3 === 0) { ctx.fillStyle = "#e9c7a1"; ctx.fillRect(7, -12, 4, 4); }
+        break;
+      case "sun":
+        ctx.fillStyle = "#9b7838"; ctx.fillRect(-3, -2, 6, 15);
+        ctx.fillStyle = "#4f7c45"; ctx.fillRect(-12, -9, 24, 12);
+        ctx.fillStyle = "#e8bf53"; ctx.fillRect(-8, -14, 16, 9);
+        ctx.fillStyle = "#fff1ad"; ctx.fillRect(-3, -11, 6, 4);
+        break;
+      case "candy":
+        ctx.fillStyle = "#a95f91"; ctx.fillRect(-3, 0, 6, 13);
+        ctx.fillStyle = i % 2 ? "#f4b8d6" : "#e7a7cb";
+        ctx.fillRect(-11, -8, 22, 10); ctx.fillRect(-7, -13, 14, 7);
+        ctx.fillStyle = "#fff2df"; ctx.fillRect(-2, -10, 4, 4);
+        break;
+      case "ocean":
+        ctx.strokeStyle = i % 2 ? "#8ce0e1" : "#3b9eaa"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-12, 5); ctx.quadraticCurveTo(-5, -5, 2, 5); ctx.quadraticCurveTo(9, 14, 13, 2); ctx.stroke();
+        ctx.fillStyle = "#e7d6ad"; ctx.fillRect(-10, -5, 5, 3);
+        break;
+      case "mountain":
+        ctx.fillStyle = "#554536"; ctx.beginPath(); ctx.moveTo(-12, 10); ctx.lineTo(-5, -11); ctx.lineTo(2, 2); ctx.lineTo(9, -8); ctx.lineTo(14, 10); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#e3c18a"; ctx.fillRect(-6, -8, 4, 5); ctx.fillRect(7, -6, 3, 4);
+        break;
+      case "arcane":
+        ctx.strokeStyle = "#bba9ec"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#f2d68a"; ctx.fillRect(-2, -12, 4, 4); ctx.fillRect(-2, 8, 4, 4);
+        ctx.fillStyle = "#d8cafa"; ctx.fillRect(-2, -2, 4, 4);
+        break;
+      default:
+        ctx.fillStyle = "#858b82"; ctx.fillRect(-9, 2, 18, 8);
+        ctx.fillStyle = "#e8e2cb"; ctx.beginPath(); ctx.moveTo(-8, 2); ctx.lineTo(-3, -12); ctx.lineTo(2, 2); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(1, 2); ctx.lineTo(8, -8); ctx.lineTo(11, 2); ctx.closePath(); ctx.fill();
+        break;
     }
+    ctx.restore();
   }
 
   // Nome dell'area, leggibile anche a distanza di esplorazione.
