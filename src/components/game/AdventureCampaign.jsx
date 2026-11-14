@@ -65,17 +65,20 @@ function buildResonanceTrial(seedValue) {
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+    if (!raw) return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
     const parsed = JSON.parse(raw);
     return {
       ownedIds: Array.isArray(parsed.ownedIds) ? parsed.ownedIds : [],
       partyIds: Array.isArray(parsed.partyIds) ? parsed.partyIds.slice(0, 4) : [],
+      starterIds: Array.isArray(parsed.starterIds)
+        ? parsed.starterIds.filter((id) => (parsed.partyIds || []).includes(id)).slice(0, 2)
+        : (Array.isArray(parsed.partyIds) ? parsed.partyIds.slice(0, 2) : []),
       completedCities: Array.isArray(parsed.completedCities) ? parsed.completedCities : [],
       conqueredLeaders: Array.isArray(parsed.conqueredLeaders) ? parsed.conqueredLeaders : [],
       introDone: !!parsed.introDone,
     };
   } catch {
-    return { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+    return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
   }
 }
 
@@ -154,10 +157,11 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     () => save.ownedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean),
     [save.ownedIds]
   );
-  const party = useMemo(
-    () => save.partyIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean),
-    [save.partyIds]
-  );
+  const party = useMemo(() => {
+    const starters = (save.starterIds || []).filter((id) => save.partyIds.includes(id));
+    const orderedIds = [...starters, ...save.partyIds.filter((id) => !starters.includes(id))];
+    return orderedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean);
+  }, [save.partyIds, save.starterIds]);
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
   const expectedCityTeamSize = encounter?.faction === "Nuvola" ? 5 : 4;
   const cityTeam = useMemo(
@@ -199,6 +203,9 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       introDone: true,
       ownedIds: old.ownedIds.includes(starterSognatore.id) ? old.ownedIds : [...old.ownedIds, starterSognatore.id],
       partyIds: old.partyIds.includes(starterSognatore.id) ? old.partyIds : [...old.partyIds, starterSognatore.id].slice(0, 4),
+      starterIds: old.starterIds?.length >= 2 || old.partyIds.includes(starterSognatore.id)
+        ? (old.starterIds || old.partyIds.slice(0, 2))
+        : [...(old.starterIds || old.partyIds.slice(0, 2)), starterSognatore.id].slice(0, 2),
     }));
     setPhase("idle");
   };
@@ -206,9 +213,29 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const toggleParty = (id) => {
     setSave((old) => {
       const inParty = old.partyIds.includes(id);
-      if (inParty) return { ...old, partyIds: old.partyIds.filter((x) => x !== id) };
+      if (inParty) {
+        const partyIds = old.partyIds.filter((x) => x !== id);
+        const starters = (old.starterIds || old.partyIds.slice(0, 2)).filter((x) => x !== id);
+        const nextStarters = [...starters, ...partyIds.filter((x) => !starters.includes(x))].slice(0, 2);
+        return { ...old, partyIds, starterIds: nextStarters };
+      }
       if (old.partyIds.length >= 4) return old;
-      return { ...old, partyIds: [...old.partyIds, id] };
+      const partyIds = [...old.partyIds, id];
+      const starters = old.starterIds || old.partyIds.slice(0, 2);
+      return { ...old, partyIds, starterIds: starters.length < 2 ? [...starters, id] : starters };
+    });
+  };
+
+  const toggleStarter = (id) => {
+    setSave((old) => {
+      if (!old.partyIds.includes(id)) return old;
+      const starters = (old.starterIds || old.partyIds.slice(0, 2)).filter((x) => old.partyIds.includes(x));
+      if (starters.includes(id)) {
+        const replacement = old.partyIds.find((x) => x !== id && !starters.includes(x));
+        if (!replacement) return old;
+        return { ...old, starterIds: [...starters.filter((x) => x !== id), replacement].slice(0, 2) };
+      }
+      return { ...old, starterIds: [...starters.slice(0, 1), id] };
     });
   };
 
@@ -349,7 +376,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mt-5 grid grid-cols-2 gap-2">
               <button onClick={() => setConfirmRestart(false)} className="rounded-xl bg-white/10 py-3 text-sm font-bold">ANNULLA</button>
               <button onClick={() => {
-                const freshSave = { ownedIds: [], partyIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+                const freshSave = { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
                 setSave(freshSave);
                 try { localStorage.removeItem(storageKey); } catch {}
                 setConfirmRestart(false);
@@ -371,7 +398,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[.25em] text-emerald-200/60">Il tuo viaggio</div>
                 <h2 className="text-2xl font-black">{panel === "party" ? "La tua squadra" : "Box deposito"}</h2>
-                <p className="mt-1 text-xs text-white/50">{panel === "party" ? "Massimo 4 compagni ti seguono nel mondo." : "I Sognatori che non porti con te restano al sicuro qui."}</p>
+                <p className="mt-1 text-xs text-white/50">{panel === "party" ? "Scegli 2 titolari: gli altri 2 saranno in panchina. Puoi cambiare scelta quando vuoi." : "I Sognatori che non porti con te restano al sicuro qui."}</p>
               </div>
               <button onClick={() => setPanel("")} className="rounded-lg bg-white/10 px-3 py-2 text-sm font-bold">Chiudi</button>
             </div>
@@ -381,10 +408,19 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </div>
             <div className="grid max-h-[58vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
               {(panel === "party" ? party : deposit).map((s) => (
-                <div key={s.id} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3">
+                <div key={s.id} className={"flex items-center gap-2 rounded-xl border p-3 " + (panel === "party" && (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
                   <AdventureSognatoreSprite s={s} size={42} />
-                  <div className="min-w-0 flex-1"><div className="truncate text-sm font-black">{s.nome}</div><div className="text-[10px] text-white/45">{s.tipo}</div></div>
-                  <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black">{panel === "party" ? "BOX" : "AGGIUNGI"}</button>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-black">{s.nome}</div>
+                    <div className="text-[10px] text-white/45">{s.tipo}</div>
+                    {panel === "party" && <div className={"mt-1 text-[9px] font-black uppercase tracking-wider " + ((save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "text-amber-200" : "text-sky-200/70")}>{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "TITOLARE" : "PANCHINA"}</div>}
+                  </div>
+                  {panel === "party" ? (
+                    <div className="flex flex-col gap-1">
+                      <button onClick={() => toggleStarter(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "CAMBIA" : "TITOLARE"}</button>
+                      <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">BOX</button>
+                    </div>
+                  ) : <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black">AGGIUNGI</button>}
                 </div>
               ))}
               {(panel === "party" ? party : deposit).length === 0 && <div className="col-span-full rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
@@ -472,7 +508,11 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                           if (old.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome)) return old;
                           const ownedIds = [...old.ownedIds, wildSognatore.id];
                           const partyIds = old.partyIds.length < 4 ? [...old.partyIds, wildSognatore.id] : old.partyIds;
-                          return { ...old, ownedIds, partyIds };
+                          const starters = old.starterIds || old.partyIds.slice(0, 2);
+                          const starterIds = partyIds.includes(wildSognatore.id) && starters.length < 2
+                            ? [...starters, wildSognatore.id]
+                            : starters;
+                          return { ...old, ownedIds, partyIds, starterIds };
                         });
                         setPhase("idle");
                         onWildClose?.(true);
