@@ -2406,6 +2406,53 @@ function drawPlayer(ctx, p, facing = { x: 0, y: -1 }, frame = 0, walking = false
   ctx.fillStyle = "#e6bd79";
   ctx.fillRect(-9, 4, 3, 2);
   ctx.fillRect(6, 4, 3, 2);
+
+  // Rifinitura pixel-art: contorni, cuciture, riflessi e accessori leggibili
+  // anche sullo schermo mobile senza cambiare hitbox o punto d'appoggio.
+  ctx.fillStyle = "#512d2b";
+  ctx.fillRect(-13, -15, 2, 19);
+  ctx.fillRect(11, -15, 2, 19);
+  ctx.fillRect(-10, 5, 2, 9);
+  ctx.fillRect(8, 5, 2, 9);
+  ctx.fillStyle = "#f7bd69";
+  ctx.fillRect(-8, -12, 2, 5);
+  ctx.fillRect(6, -10, 2, 4);
+  ctx.fillRect(-10, 3, 3, 2);
+  ctx.fillRect(7, 3, 3, 2);
+  ctx.fillStyle = "#713c32";
+  ctx.fillRect(-5, -7, 2, 9);
+  ctx.fillRect(4, -7, 2, 9);
+  ctx.fillStyle = "#f6d18a";
+  ctx.fillRect(-2, -5, 4, 2);
+  ctx.fillRect(-2, 1, 4, 2);
+
+  // Tracolla e tasca dello zaino: visibili solo nelle viste in cui lo zaino
+  // è esposto, così il retro resta distinto dal fronte.
+  if (back || side) {
+    ctx.fillStyle = "#2d2930";
+    ctx.fillRect(-14, -15, 3, 19);
+    ctx.fillStyle = "#d9a65e";
+    ctx.fillRect(-13, -10, 2, 3);
+    ctx.fillRect(-13, -1, 2, 3);
+    ctx.fillStyle = "#6e452f";
+    ctx.fillRect(-15, -1, 8, 7);
+    ctx.fillStyle = "#d9a65e";
+    ctx.fillRect(-14, 0, 6, 1);
+    ctx.fillRect(-14, 4, 6, 1);
+  }
+
+  // Occhi e riflesso del ciuffo: il profilo mantiene un solo occhio.
+  if (!back) {
+    ctx.fillStyle = "#fff0d4";
+    if (side) ctx.fillRect(3, -31, 1, 1);
+    else {
+      ctx.fillRect(-6, -31, 1, 1);
+      ctx.fillRect(4, -31, 1, 1);
+    }
+    ctx.fillStyle = "#ffd98c";
+    ctx.fillRect(-7, -46, 5, 1);
+    ctx.fillRect(2, -46, 5, 1);
+  }
   ctx.restore();
 }
 /*
