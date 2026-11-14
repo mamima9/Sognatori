@@ -355,7 +355,9 @@ function drawFactionLoreSite(ctx, faction, x, y, label, cornerIndex = 0) {
 }
 
 const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
-const MAP_SPAWN = { x: 1800, y: 210 };
+const MAP_NORTH_DOOR = { x: 1800, y: 150, radius: 94 };
+const MAP_SPAWN = { x: 1800, y: 320 };
+const MAP_SOUTH_SPAWN = { x: 1800, y: 2080 };
 
 const CHALLENGERS = ADVENTURE_CITIES.map((city) => {
   const lore = ADVENTURE_FACTION_LORE[city.id];
@@ -427,6 +429,8 @@ function buildWorld() {
     if (
       Math.hypot(x - 1800, y - 1200) < 390 ||
       Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_SOUTH_SPAWN.x, y - MAP_SOUTH_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_NORTH_DOOR.x, y - MAP_NORTH_DOOR.y) < 165 ||
       Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
       WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 470)
     ) continue;
@@ -453,6 +457,8 @@ function buildWorld() {
     if (
       Math.hypot(x - 1800, y - 1200) < 390 ||
       Math.hypot(x - MAP_SPAWN.x, y - MAP_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_SOUTH_SPAWN.x, y - MAP_SOUTH_SPAWN.y) < 145 ||
+      Math.hypot(x - MAP_NORTH_DOOR.x, y - MAP_NORTH_DOOR.y) < 165 ||
       Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
       WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 470)
     ) continue;
@@ -1280,6 +1286,7 @@ const [message, setMessage] = useState("");
 
       // Portale di collegamento: ogni mappa conduce alla successiva.
       drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color, "PORTA · " + nextCityName(activeMapId));
+      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "PORTA · " + previousCityName(activeMapId), Math.PI);
 
       /*
         ROCCE
@@ -1527,6 +1534,18 @@ const [message, setMessage] = useState("");
       cameraRef.current = { ...MAP_SPAWN };
       setPlayer({ ...MAP_SPAWN });
       setMessage("Ingresso a " + nextCity.city + " · " + nextCity.faction);
+      setTimeout(() => setMessage(""), 2200);
+      return;
+    }
+
+    if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius) {
+      const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
+      const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
+      setActiveMapId(previousCity.id);
+      playerRef.current = { ...MAP_SOUTH_SPAWN };
+      cameraRef.current = { ...MAP_SOUTH_SPAWN };
+      setPlayer({ ...MAP_SOUTH_SPAWN });
+      setMessage("Ritorno a " + previousCity.city + " · " + previousCity.faction);
       setTimeout(() => setMessage(""), 2200);
       return;
     }
@@ -1815,6 +1834,7 @@ const [message, setMessage] = useState("");
           ))}
           <div title={activeCity.city + " · " + activeCity.faction} className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white" style={{ left: "50%", top: "50%", background: activeCity.color }} />
           <div title={"Porta per " + nextCityName(activeMapId)} className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white" style={{ left: "50%", top: (MAP_DOOR.y / WORLD.height * 100) + "%", background: "#f8df91" }} />
+          <div title={"Porta per " + previousCityName(activeMapId)} className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white" style={{ left: "50%", top: (MAP_NORTH_DOOR.y / WORLD.height * 100) + "%", background: "#9edbff" }} />
 
           <div
             className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]"
@@ -1899,9 +1919,15 @@ function nextCityName(cityId) {
   return ADVENTURE_CITIES[(index + 1) % ADVENTURE_CITIES.length].city;
 }
 
-function drawAdventureDoor(ctx, x, y, color, label) {
+function previousCityName(cityId) {
+  const index = ADVENTURE_CITIES.findIndex((city) => city.id === cityId);
+  return ADVENTURE_CITIES[(index - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length].city;
+}
+
+function drawAdventureDoor(ctx, x, y, color, label, rotation = 0) {
   ctx.save();
   ctx.translate(x, y);
+  ctx.rotate(rotation);
   ctx.fillStyle = "rgba(0,0,0,.32)";
   ctx.beginPath(); ctx.ellipse(0, 8, 76, 20, 0, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = "#34333f";
