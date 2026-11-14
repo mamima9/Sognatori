@@ -411,7 +411,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
           <div className="w-full max-w-md rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
             <div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">Il vostro primo legame</div>
             <h2 className="mt-2 text-3xl font-black">Ti affidiamo {starterSognatore.nome}</h2>
-            <div className="my-5 flex justify-center"><AdventureSognatoreSprite s={starterSognatore} size={128}/></div>
+            <div className="my-5 flex justify-center"><AdventureSognatoreSprite s={starterSognatore} size={220} walking={false} crisp /></div>
             <div className="text-sm font-bold text-emerald-200">{starterSognatore.tipo || starterSognatore.fazione}</div>
             <p className="mt-3 text-sm leading-6 text-white/65">Le tue risposte hanno rivelato un'affinità speciale. Non è una cattura: da oggi questo Sognatore sceglie di iniziare il viaggio insieme a te.</p>
             <button onClick={recruitStarter} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">ACCETTA IL PRIMO LEGAME</button>
@@ -561,7 +561,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
           <div className="w-full max-w-xl rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-center text-white shadow-2xl">
             <div className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-200">Dopo la vittoria</div>
             <h2 className="mt-2 text-3xl font-black">Un nuovo legame</h2>
-            <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={currentReward} size={90}/></div>
+            <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={currentReward} size={180} walking={false} crisp /></div>
             <div className="text-xl font-black">{currentReward.nome}</div>
             <p className="mt-2 text-sm text-white/65">Per unirsi a te deve superare una prova di risonanza in tre fasi: 4, 6 e 8 rune, con tre errori disponibili.</p>
             {renderResonanceTrial("emerald")}
