@@ -124,7 +124,6 @@ export default function AdventureHouseInterior({house,onExit}){
   return <div className="fixed inset-0 z-[90] flex flex-col text-white" style={{background:theme.dark}}>
     <header className="flex items-center justify-between border-b border-white/15 bg-black/55 px-4 py-3">
       <div><div className="text-[10px] font-black uppercase tracking-[.3em]" style={{color:theme.trim}}>{house.city.city} · {house.city.faction}</div><div className="text-lg font-black">{title}</div></div>
-      <button onClick={onExit} className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold">Esci dalla casa</button>
     </header>
     <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
       <div className="relative w-full max-w-[1100px]">
