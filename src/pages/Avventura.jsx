@@ -788,6 +788,7 @@ const [message, setMessage] = useState("");
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
   const [discoveredWildClues, setDiscoveredWildClues] = useState({});
+  const [completedWildTasks, setCompletedWildTasks] = useState({});
 
   const [time, setTime] = useState(9);
   const [activeMapId, setActiveMapId] = useState("natura");
@@ -1609,6 +1610,22 @@ const [message, setMessage] = useState("");
       return;
     }
 
+    const nearestTask = wildRef.current
+      .filter((sognatore) => sognatore.recruitable && discoveredWildClues[activeMapId + ":" + sognatore.rosterId] && !completedWildTasks[activeMapId + ":" + sognatore.rosterId])
+      .map((sognatore) => ({
+        ...sognatore,
+        interactionDistance: distance(currentPosition, { x: sognatore.habitatX + 42, y: sognatore.habitatY + 58 }),
+      }))
+      .filter((sognatore) => sognatore.interactionDistance < 78)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+
+    if (nearestTask) {
+      setCompletedWildTasks((old) => ({ ...old, [activeMapId + ":" + nearestTask.rosterId]: true }));
+      setMessage("Obiettivo completato nell'habitat di " + nearestTask.name + "! Ora puoi parlargli.");
+      setTimeout(() => setMessage(""), 2600);
+      return;
+    }
+
     const nearestWild = wildRef.current
       .map((sognatore) => ({
         ...sognatore,
@@ -1625,8 +1642,13 @@ const [message, setMessage] = useState("");
         setTimeout(() => setMessage(""), 2200);
         return;
       }
+      if (nearestWild.recruitable && !completedWildTasks[activeMapId + ":" + nearestWild.rosterId]) {
+        setMessage("Completa prima l'azione indicata nell'habitat.");
+        setTimeout(() => setMessage(""), 2200);
+        return;
+      }
       encounterOpenRef.current = true;
-      setEncounter(nearestWild);
+      setEncounter({ ...nearestWild, taskCompleted: true });
       return;
     }
 
