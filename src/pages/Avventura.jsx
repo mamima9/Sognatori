@@ -1620,6 +1620,15 @@ const [message, setMessage] = useState("");
       return;
     }
 
+    // Il Grande Seme è il cuore narrativo di Verdelume: si può consultare senza avviare un combattimento.
+    if (activeMapId === "natura" && Math.hypot(currentPosition.x - 1800, currentPosition.y - 1200) < 105) {
+      setDialogue({
+        name: "Il Grande Seme",
+        dialogue: "Le radici di Verdelume custodiscono i ricordi di ogni creatura nata nella foresta. Non chiede di essere protetto con la forza: vuole che tu ascolti, curi ciò che si è spezzato e lasci spazio a una nuova crescita. Quando la città sarà in armonia, anche i suoi sentieri riveleranno segreti.",
+      });
+      return;
+    }
+
     const nearestHouse = ADVENTURE_HOUSES
       .filter((item) => item.city.id === activeMapId)
       .map((item) => ({ ...item, x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y), interactionDistance: distance(currentPosition, { x: 1800 + (item.x - item.city.x), y: 1200 + (item.y - item.city.y) }) }))
