@@ -2373,6 +2373,30 @@ function drawNpc(ctx, npc) {
       ctx.fillStyle = "#c5df83"; ctx.fillRect(13, -17, 11, 5);
       ctx.fillStyle = "#e5c17f"; ctx.fillRect(15, 13, 7, 3);
     }
+    // Equipaggiamento individuale: ogni residente ha una silhouette distinta.
+    if (role === 0) {
+      // Raccoglitore: tracolla, borsa e foglie raccolte.
+      ctx.fillStyle = "#65452f"; ctx.fillRect(-13, -3, 8, 13);
+      ctx.fillStyle = "#b9854d"; ctx.fillRect(-14, 1, 10, 9);
+      ctx.fillStyle = "#d8b66b"; ctx.fillRect(-13, 0, 8, 2);
+      ctx.fillStyle = "#78a94f"; ctx.fillRect(-12, -4, 3, 5); ctx.fillRect(-7, -6, 3, 5);
+      ctx.strokeStyle = "#e5c17f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, -4); ctx.lineTo(8, 8); ctx.stroke();
+    } else if (role === 1) {
+      // Erborista: grembiule chiaro, tasche e fiala appesa alla cintura.
+      ctx.fillStyle = "#e6d4a5"; ctx.fillRect(-8, -3, 16, 17);
+      ctx.fillStyle = "#c2a16a"; ctx.fillRect(-7, 2, 14, 2); ctx.fillRect(-6, 7, 5, 5); ctx.fillRect(2, 7, 4, 5);
+      ctx.fillStyle = "#79c7b4"; ctx.fillRect(11, 5, 5, 9);
+      ctx.fillStyle = "#d8f1d9"; ctx.fillRect(12, 3, 3, 3);
+      ctx.strokeStyle = "#d8b66b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-9, -3); ctx.lineTo(9, -3); ctx.stroke();
+    } else {
+      // Custode: mantello a foglia, fibbia e pendente del Grande Seme.
+      ctx.fillStyle = "#294b35"; ctx.fillRect(-15, -5, 30, 18);
+      ctx.fillStyle = "#6eaa55"; ctx.fillRect(-12, -4, 24, 15);
+      ctx.fillStyle = "#a8cf63"; ctx.fillRect(-13, 7, 6, 5); ctx.fillRect(7, 7, 6, 5);
+      ctx.fillStyle = "#f1d98b"; ctx.fillRect(-3, -1, 6, 6);
+      ctx.fillStyle = "#9bd66c"; ctx.fillRect(-2, 0, 4, 4);
+      ctx.fillStyle = "#765638"; ctx.fillRect(15, -13, 4, 28);
+    }
     // Piccolo equipaggiamento e dettagli da RPG portatile 2010.
     ctx.fillStyle = "#e5c17f"; ctx.fillRect(-8, -4, 3, 9);
     ctx.fillStyle = "rgba(255,244,210,.75)"; ctx.fillRect(-7, -3, 1, 5);
