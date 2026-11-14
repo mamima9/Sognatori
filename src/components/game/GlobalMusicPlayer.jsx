@@ -64,6 +64,8 @@ const BATTLE_TRACKS = [
   },
 ];
 
+let sharedMusicAudio = null;
+
 const AUCTION_TRACKS = [
   {
     name: "Franco",
@@ -166,49 +168,39 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
    * CREA AUDIO
    */
   useEffect(() => {
-    if (!current) return;
-
-    const audio = new Audio(current.url);
-
-    audio.loop = false;
-    audio.volume = volume;
-    audio.preload = "auto";
-
-    audio.onended = () => {
-      setTrackIdx(
-        (i) => (i + 1) % tracks.length
-      );
-    };
-
-    audioRef.current = audio;
-
-    /*
-     * Se il player era già in riproduzione,
-     * continua automaticamente con il nuovo brano.
-     */
-    if (playingRef.current) {
-      audio
-        .play()
-        .then(() => {
-          setPlaying(true);
-        })
-        .catch(() => {
-          setPlaying(false);
-        });
+    // Un solo elemento audio condiviso: la musica sopravvive
+    // ai cambi pagina e agli eventuali remount del player.
+    if (!sharedMusicAudio) {
+      sharedMusicAudio = new Audio();
+      sharedMusicAudio.preload = "auto";
+      sharedMusicAudio.loop = false;
     }
 
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.src = "";
+    const audio = sharedMusicAudio;
+    audioRef.current = audio;
+    audio.volume = volume;
 
-      if (audioRef.current === audio) {
-        audioRef.current = null;
-      }
+    audio.onended = () => {
+      setTrackIdx((i) => (i + 1) % tracks.length);
     };
 
-    // tracks cambia in base alla modalità, ma non deve
-    // essere usato direttamente come dipendenza.
+    if (current && audio.src !== new URL(current.url, window.location.origin).href) {
+      audio.src = current.url;
+      audio.load();
+
+      if (playingRef.current) {
+        audio.play()
+          .then(() => setPlaying(true))
+          .catch(() => setPlaying(false));
+      }
+    }
+
+    // Non mettere in pausa né azzerare l'audio nel cleanup:
+    // la riproduzione deve fermarsi solo dal pulsante del player.
+    return () => {
+      if (audio.onended) audio.onended = null;
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackIdx, musicMode]);
 
