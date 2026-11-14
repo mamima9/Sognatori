@@ -531,77 +531,26 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
         >
 
           {/* In Avventura le tracce sono fisse per città e porta: niente selezione manuale. */}
-          {musicMode !== "adventure" && <>
-          {/* PREVIOUS */}
-          <button
-            onClick={previousTrack}
-            className="
-              w-7
-              h-7
-              flex-shrink-0
-              rounded-full
-              hover:bg-white/10
-              flex
-              items-center
-              justify-center
-              text-xs
-              text-slate-300
-              transition
-            "
-            aria-label="Brano precedente"
-          >
-            ⏮
-          </button>
+          {musicMode !== "adventure" && (
+            <button onClick={previousTrack} className="w-7 h-7 flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center text-xs text-slate-300 transition" aria-label="Brano precedente">
+              ⏮
+            </button>
+          )}
 
           {/* PLAY / PAUSE */}
           <button
             onClick={togglePlay}
-            className="
-              w-8
-              h-8
-              flex-shrink-0
-              rounded-full
-              bg-gradient-to-r
-              from-amber-500
-              to-orange-500
-              flex
-              items-center
-              justify-center
-              text-sm
-              hover:brightness-110
-              transition
-            "
-            aria-label={
-              playing
-                ? "Pausa"
-                : "Riproduci"
-            }
+            className="w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-sm hover:brightness-110 transition"
+            aria-label={playing ? "Pausa" : "Riproduci"}
           >
             {playing ? "⏸" : "▶"}
           </button>
 
-          {musicMode !== "adventure" && <>
-          {/* NEXT */}
-          <button
-            onClick={nextTrack}
-            className="
-              w-7
-              h-7
-              flex-shrink-0
-              rounded-full
-              hover:bg-white/10
-              flex
-              items-center
-              justify-center
-              text-xs
-              text-slate-300
-              transition
-            "
-            aria-label="Brano successivo"
-          >
-            ⏭
-          </button>
-          </>}
+          {musicMode !== "adventure" && (
+            <button onClick={nextTrack} className="w-7 h-7 flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center text-xs text-slate-300 transition" aria-label="Brano successivo">
+              ⏭
+            </button>
+          )}
 
           {/* CURRENT TRACK: non selezionabile in Avventura */}
           {musicMode === "adventure" ? (
