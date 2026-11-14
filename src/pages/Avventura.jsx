@@ -3060,7 +3060,7 @@ function drawAdventureFactionCityLife(ctx, city) {
     ctx.globalAlpha = 1;
   };
   // Quattro presidi riconoscibili circondano la piazza, senza coprire porte o case.
-  const sites = [[-205,-118], [205,-118], [-205,118], [205,118]];
+  const sites = [[-245,-80], [245,-80], [-245,80], [245,80]];
   sites.forEach(([x,y],i) => {
     ctx.fillStyle = "rgba(5,12,18,.28)";
     ctx.beginPath(); ctx.ellipse(x,y+18,32,9,0,0,Math.PI*2); ctx.fill();
