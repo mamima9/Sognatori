@@ -506,7 +506,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="my-4 flex justify-center"><AdventureSognatoreSprite s={currentReward} size={90}/></div>
             <div className="text-xl font-black">{currentReward.nome}</div>
             <p className="mt-2 text-sm text-white/65">Per unirsi a te deve superare una prova di risonanza in tre fasi: 4, 6 e 8 rune, con tre errori disponibili.</p>
-            {renderResonanceTrial("emerald")}}
+            {renderResonanceTrial("emerald")}
           </div>
         </div>
       )}
