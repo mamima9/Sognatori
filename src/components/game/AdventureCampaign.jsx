@@ -417,7 +417,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                   </div>
                   {panel === "party" ? (
                     <div className="flex flex-col gap-1">
-                      <button onClick={() => toggleStarter(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "CAMBIA" : "TITOLARE"}</button>
+                      <button onClick={() => toggleStarter(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "PANCHINA" : "TITOLARE"}</button>
                       <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">BOX</button>
                     </div>
                   ) : <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black">AGGIUNGI</button>}
