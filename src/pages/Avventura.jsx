@@ -756,8 +756,13 @@ export default function Avventura() {
   const { user, isLoadingAuth, authChecked } = useAuth();
 
   // L'accesso all'Avventura è riservato a chi ha vinto la campagna Arcade completa.
-  const accountEmail = String(user?.email || user?.user_metadata?.email || "").trim().toLowerCase();
-  const isPersonalTester = accountEmail === "bibitoeuro@gmail.com";
+  const accountEmails = [
+    user?.email,
+    user?.user_metadata?.email,
+    user?.app_metadata?.email,
+    ...(Array.isArray(user?.identities) ? user.identities.map((identity) => identity?.identity_data?.email) : []),
+  ].filter(Boolean).map((email) => String(email).trim().toLowerCase());
+  const isPersonalTester = accountEmails.includes("bibitoeuro@gmail.com");
 
   // Accesso all'Avventura e porte personali riservati a questo account o ai vincitori Arcade.
   const testerAllowed =
@@ -1656,6 +1661,7 @@ const [message, setMessage] = useState("");
     discoveredWildClues,
     completedWildTasks,
     defeatedLeaders,
+    personalAllDoorsUnlocked,
   ]);
 
   /*
