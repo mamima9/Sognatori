@@ -1094,6 +1094,10 @@ const [message, setMessage] = useState("");
       "resize",
       resize
     );
+    const resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(resize)
+      : null;
+    if (worldFrameRef.current) resizeObserver?.observe(worldFrameRef.current);
 
     let frame;
 
@@ -1429,6 +1433,7 @@ const [message, setMessage] = useState("");
         "resize",
         resize
       );
+      resizeObserver?.disconnect();
     };
   }, [
     player,
@@ -1566,18 +1571,18 @@ const [message, setMessage] = useState("");
   */
 
   return (
-    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col items-center justify-between overflow-hidden bg-[#090d0a] px-2 py-2 text-white select-none touch-none">
-      <div className="flex w-full max-w-[1100px] items-center justify-between px-2">
+    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col items-center gap-1 overflow-hidden bg-[#090d0a] px-1 py-1 text-white select-none touch-none">
+      <div className="flex w-full max-w-[1100px] shrink-0 items-center justify-between px-2 py-0.5">
         <div className="text-xs font-black tracking-[.25em] text-emerald-100/70">SOGNATORI · AVVENTURA</div>
         <div className="text-xs font-bold text-white/60">{activeCity.city} · {activeCity.faction} · {zone.name}</div>
       </div>
-      <div ref={worldFrameRef} className="relative aspect-[4/3] w-full max-w-[min(100vw,calc((100dvh-80px)*4/3))] shrink overflow-hidden rounded-lg border-4 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_12px_40px_rgba(0,0,0,.55)]">
+      <div ref={worldFrameRef} className="relative min-h-0 w-full max-w-[1100px] flex-1 overflow-hidden rounded-md border-2 border-[#536b50] bg-black shadow-[0_0_0_2px_#172719,0_8px_24px_rgba(0,0,0,.45)]">
         <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none h-full w-full" />
 
       </div>
 
       {/* CONTROLLI ESTERNI AL MONDO */}
-      <div className="flex w-full max-w-[1100px] items-center justify-between gap-3 px-2 pb-1">
+      <div className="flex w-full max-w-[1100px] shrink-0 items-center justify-between gap-3 px-2 pb-0.5 pt-0.5">
         <div className="grid grid-cols-3 gap-1 touch-none">
           <span />
           <button aria-label="Su" onPointerDown={(e) => { e.preventDefault(); keysRef.current.arrowup = true; }} onPointerUp={() => { keysRef.current.arrowup = false; }} onPointerLeave={() => { keysRef.current.arrowup = false; }} className="h-11 w-11 rounded-lg border border-white/15 bg-[#263629] text-xl font-black active:bg-emerald-700">▲</button>
