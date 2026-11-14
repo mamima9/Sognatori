@@ -1435,7 +1435,6 @@ const [message, setMessage] = useState("");
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
           ctx.fillText("✦", wild.x, wild.y - 105); ctx.restore();
         }
-        const wildKey = activeMapId + ":" + wild.rosterId;
         if (wild.recruitable && !discoveredWildClues[wildKey]) {
           const clueX = wild.habitatX;
           const clueY = wild.habitatY + 48;
