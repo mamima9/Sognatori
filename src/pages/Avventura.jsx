@@ -858,17 +858,48 @@ const [message, setMessage] = useState("");
 
   const [challengerEncounter, setChallengerEncounter] =
     useState(null);
-  const [discoveredWildClues, setDiscoveredWildClues] = useState({});
-  const [completedWildTasks, setCompletedWildTasks] = useState({});
+
+  const adventureSaveKey = "sognatori-adventure-v1-" + (user?.id || user?.email || "guest");
+  const readAdventureSave = () => {
+    try {
+      const raw = localStorage.getItem(adventureSaveKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const [discoveredWildClues, setDiscoveredWildClues] = useState(() => {
+    const saved = readAdventureSave();
+    return saved?.discoveredWildClues && typeof saved.discoveredWildClues === "object"
+      ? saved.discoveredWildClues
+      : {};
+  });
+  const [completedWildTasks, setCompletedWildTasks] = useState(() => {
+    const saved = readAdventureSave();
+    return saved?.completedWildTasks && typeof saved.completedWildTasks === "object"
+      ? saved.completedWildTasks
+      : {};
+  });
 
   const [time, setTime] = useState(9);
   const [defeatedLeaders, setDefeatedLeaders] = useState(() => {
-    try {
-      const raw = localStorage.getItem("sognatori-adventure-v1-" + (user?.id || user?.email || "guest"));
-      const saved = raw ? JSON.parse(raw) : null;
-      return new Set(Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : []);
-    } catch { return new Set(); }
+    const saved = readAdventureSave();
+    return new Set(Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : []);
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(adventureSaveKey, JSON.stringify({
+        ...readAdventureSave(),
+        conqueredLeaders: Array.from(defeatedLeaders),
+        discoveredWildClues,
+        completedWildTasks,
+      }));
+    } catch (error) {
+      console.warn("Impossibile salvare i progressi dell'Avventura:", error);
+    }
+  }, [adventureSaveKey, defeatedLeaders, discoveredWildClues, completedWildTasks]);
   const [activeMapId, setActiveMapId] = useState("natura");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
