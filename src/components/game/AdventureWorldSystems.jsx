@@ -101,19 +101,19 @@ export default function AdventureWorldSystems({ saveKey, activeCity, time, defea
   const completedQuestCount = Object.keys(saved.quests || {}).length;
   const unlockedCities = Math.min(11, Math.max(1, new Set(defeatedLeaders).size + 1));
 
-  return <div className="fixed bottom-4 right-4 z-[58] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2">
-    {eventNotice && <div className="w-[min(340px,calc(100vw-2rem))] rounded-2xl border border-amber-200/30 bg-[#17140f]/95 p-3 text-white shadow-2xl">
+  return <div className="w-full flex flex-col gap-3 border-t border-white/10 pt-3">
+    {eventNotice && <div className="w-full rounded-2xl border border-amber-200/30 bg-[#17140f]/95 p-3 text-white">
       <div className="flex items-center justify-between gap-2"><b className="text-xs uppercase tracking-wider text-amber-200">✦ Evento · {eventNotice.title}</b><button onClick={() => setEventNotice(null)} className="text-white/60">✕</button></div>
       <p className="mt-1 text-xs leading-5 text-white/80">{eventNotice.text}</p>
       <button onClick={() => { setSaved((old) => ({ ...old, eventDiscoveries: [...new Set([...(old.eventDiscoveries || []), eventNotice.id + ":" + eventNotice.cityId])] })); setEventNotice(null); setPanel("secrets"); }} className="mt-2 rounded-lg bg-amber-200 px-3 py-1.5 text-[10px] font-black text-black">ESPLORA L'EVENTO</button>
     </div>}
     {secretNotice && <div className="rounded-xl border border-violet-300/30 bg-violet-950/95 px-3 py-2 text-xs text-violet-100">{secretNotice}<button onClick={() => setSecretNotice("")} className="ml-3 font-black">✕</button></div>}
-    <div className="flex flex-wrap justify-end gap-2">
-      <button onClick={() => setPanel(panel === "quest" ? "" : "quest")} className="rounded-xl border border-amber-200/30 bg-black/85 px-3 py-2 text-[11px] font-black text-amber-100 shadow-xl">📜 DIARIO · {completedQuestCount}/11</button>
-      <button onClick={() => setPanel(panel === "dex" ? "" : "dex")} className="rounded-xl border border-emerald-200/30 bg-black/85 px-3 py-2 text-[11px] font-black text-emerald-100 shadow-xl">📖 BESTIARIO</button>
-      <button onClick={() => setPanel(panel === "secrets" ? "" : "secrets")} className="rounded-xl border border-violet-200/30 bg-black/85 px-3 py-2 text-[11px] font-black text-violet-100 shadow-xl">✧ SEGRETI</button>
+    <div className="flex flex-col gap-2">
+      <button onClick={() => setPanel(panel === "quest" ? "" : "quest")} className="w-full rounded-xl border border-amber-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-amber-100 hover:bg-white/10">📜 DIARIO · {completedQuestCount}/11</button>
+      <button onClick={() => setPanel(panel === "dex" ? "" : "dex")} className="w-full rounded-xl border border-emerald-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-emerald-100 hover:bg-white/10">📖 BESTIARIO</button>
+      <button onClick={() => setPanel(panel === "secrets" ? "" : "secrets")} className="w-full rounded-xl border border-violet-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-violet-100 hover:bg-white/10">✧ SEGRETI</button>
     </div>
-    {panel && <section className="max-h-[min(62vh,560px)] w-[min(390px,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-white/15 bg-[#101713]/[.97] p-4 text-white shadow-2xl backdrop-blur-xl">
+    {panel && <section className="max-h-[min(48vh,460px)] w-full overflow-y-auto rounded-2xl border border-white/15 bg-[#101713] p-4 text-white">
       <header className="mb-3 flex items-center justify-between"><b className="text-sm font-black uppercase tracking-wider">{panel === "quest" ? "Diario delle missioni" : panel === "dex" ? "Enciclopedia Sognatori" : "Segreti del mondo"}</b><button onClick={() => setPanel("")} className="rounded-lg bg-white/10 px-2 py-1 text-xs">CHIUDI</button></header>
       {panel === "quest" && <>
         <div className="mb-3 text-[11px] text-white/55">Missioni secondarie · le scelte restano salvate e modificano il legame con la fazione.</div>
