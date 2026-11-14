@@ -1506,7 +1506,40 @@ const [message, setMessage] = useState("");
       return;
     }
 
-    setMessage("Avvicinati a un abitante, a un Sognatore, al Capo fazione o alla porta e premi E.");
+    // Esplorazione ambientale: alberi e rocce sono punti d'interazione.
+    const nearestTree = WORLD_OBJECTS.trees
+      .map((object) => ({ ...object, interactionDistance: distance(currentPosition, object) }))
+      .filter((object) => object.interactionDistance < interactionRadius)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+    const nearestRock = WORLD_OBJECTS.rocks
+      .map((object) => ({ ...object, interactionDistance: distance(currentPosition, object) }))
+      .filter((object) => object.interactionDistance < interactionRadius)
+      .sort((a, b) => a.interactionDistance - b.interactionDistance)[0];
+    const natureObject = !nearestTree ? nearestRock
+      : !nearestRock ? nearestTree
+      : nearestTree.interactionDistance <= nearestRock.interactionDistance ? nearestTree : nearestRock;
+
+    if (natureObject) {
+      const isTree = natureObject.id.startsWith("tree-");
+      const observations = {
+        Demone: isTree ? "La corteccia è annerita dal calore. Tra le radici brillano braci ancora vive." : "La roccia è vulcanica: è calda e attraversata da sottili venature rosse.",
+        Robot: isTree ? "Un albero-metallico vibra a intervalli regolari. Sembra alimentato da un nucleo interno." : "La superficie minerale contiene filamenti conduttivi. Potrebbe essere un componente naturale.",
+        Natura: isTree ? "Le foglie emanano un profumo intenso. Piccoli germogli crescono attorno alle radici." : "Il muschio ricopre la pietra e forma minuscole geometrie. La foresta è piena di vita.",
+        Nuvola: isTree ? "La chioma è leggerissima e ondeggia anche senza vento." : "La pietra è porosa e levigata: sembra essersi formata tra le correnti d'aria.",
+        Umano: isTree ? "Un albero robusto, con segni di vecchi raccolti e corde sul tronco." : "Una pietra da costruzione. Qualcuno ha inciso un vecchio simbolo sulla superficie.",
+        Luce: isTree ? "La linfa riflette la luce come oro liquido." : "La roccia rifrange la luce in piccoli lampi dorati.",
+        Dolce: isTree ? "Dalla corteccia filtra un aroma zuccherino. I frutti sembrano caramellati." : "La pietra è cristallizzata come zucchero grezzo e luccica ai bordi.",
+        Marino: isTree ? "Le foglie sono umide e salmastre. Il tronco porta i segni delle maree." : "La roccia è levigata dall'acqua e contiene conchiglie fossilizzate.",
+        Orso: isTree ? "Il tronco è enorme e resistente. Ci sono graffi profondi lasciati da artigli." : "Un masso compatto, usato probabilmente come punto di riferimento del branco.",
+        Mago: isTree ? "Runichette luminose si accendono tra gli anelli del tronco." : "La pietra pulsa appena: percepisci una traccia di magia al suo interno.",
+        Salato: isTree ? "La corteccia è pallida e coperta da cristalli di sale." : "Un blocco di salgemma compatto. Le sue facce brillano come vetro opaco.",
+      };
+      setMessage(observations[activeCity.faction]?.[isTree ? "tree" : "rock"] || (isTree ? "Un albero antico, radicato profondamente nel terreno." : "Una roccia consumata dal tempo."));
+      setTimeout(() => setMessage(""), 2600);
+      return;
+    }
+
+    setMessage("Avvicinati a un abitante, a un Sognatore, a un albero, a una roccia, al Capo fazione o alla porta e premi E.");
     setTimeout(() => setMessage(""), 1800);
   };
 
