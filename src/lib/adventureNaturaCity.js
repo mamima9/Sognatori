@@ -83,6 +83,33 @@ export function drawAdventureNaturaCity(ctx, city) {
   ctx.beginPath(); ctx.ellipse(-83, 91, 35, 13, -.18, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = "#83d4bd";
   ctx.beginPath(); ctx.ellipse(-83, 88, 26, 6, -.18, 0, Math.PI * 2); ctx.fill();
+
+  // Ponticello in legno sullo stagno: dettaglio scenico, senza modificare le collisioni.
+  ctx.save();
+  ctx.translate(-83, 91);
+  ctx.rotate(-.18);
+  ctx.fillStyle = "#493526"; ctx.fillRect(-37, -7, 74, 14);
+  ctx.fillStyle = "#b9854d"; ctx.fillRect(-34, -5, 68, 9);
+  ctx.fillStyle = "#e0b875";
+  for (let plank = -28; plank <= 28; plank += 14) ctx.fillRect(plank, -5, 3, 9);
+  ctx.fillStyle = "#765334"; ctx.fillRect(-38, -10, 76, 3); ctx.fillRect(-38, 8, 76, 3);
+  ctx.restore();
+
+  // Piccole creature del sottobosco: rane sul bordo e farfalle tra le chiome.
+  ctx.fillStyle = "#4b8b50";
+  for (const [fx, fy] of [[-119, 84], [-48, 103]]) {
+    ctx.fillRect(fx - 5, fy - 3, 10, 7);
+    ctx.fillRect(fx - 7, fy - 6, 4, 4); ctx.fillRect(fx + 3, fy - 6, 4, 4);
+    ctx.fillStyle = "#f5e9ad";
+    ctx.fillRect(fx - 4, fy - 5, 2, 2); ctx.fillRect(fx + 2, fy - 5, 2, 2);
+    ctx.fillStyle = "#4b8b50";
+  }
+  for (const [bx, by, wing] of [[-105, -112, "#f0c5d2"], [94, -126, "#f4df8e"], [156, 9, "#d7c4f2"]]) {
+    ctx.fillStyle = wing;
+    ctx.fillRect(bx - 7, by - 3, 6, 6); ctx.fillRect(bx + 1, by - 3, 6, 6);
+    ctx.fillStyle = "#59452f"; ctx.fillRect(bx - 1, by - 4, 2, 9);
+    ctx.fillRect(bx - 3, by - 7, 2, 3); ctx.fillRect(bx + 2, by - 7, 2, 3);
+  }
   ctx.fillStyle = "#b4df7c";
   for (let i = 0; i < 9; i++) {
     const fx = -185 + i * 45;
