@@ -350,7 +350,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mt-2 border-t border-white/10 px-3 pt-3">
               <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[.12em] text-white/55">
                 <span>Sognatori con cui hai stretto legame</span>
-                <span className="shrink-0 text-emerald-200">{owned.length}/29</span>
+                <span className="shrink-0 text-emerald-200">{owned.length}/{ROSTER.length}</span>
               </div>
             </div>
             <button
