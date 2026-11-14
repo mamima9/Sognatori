@@ -1363,7 +1363,9 @@ const [message, setMessage] = useState("");
       }
 
       // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
-      drawCityDistrict(ctx, activeCity);
+      if (activeCity.faction !== "Nuvola") {
+        drawCityDistrict(ctx, activeCity);
+      }
       if (activeCity.faction !== "Natura") {
         drawAdventureFactionCity(ctx, activeCity);
       }
