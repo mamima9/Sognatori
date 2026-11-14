@@ -498,7 +498,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <span className="text-[9px] font-bold text-white/35">4 SOGNATORI</span>
               </div>
               <div className="flex justify-around gap-1">
-                {cityTeam.map((s) => <div key={s.id} className="flex min-w-0 flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={52}/><span className="mt-1 max-w-full truncate text-[8px] font-bold text-white/75">{s.nome}</span></div>)}
+                {cityTeam.map((s) => <div key={s.id} className="flex min-w-0 flex-1 flex-col items-center"><AdventureSognatoreSprite s={s} size={52} walking={false}/><span className="mt-1 max-w-full truncate text-[8px] font-bold text-white/75">{s.nome}</span></div>)}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 p-4 sm:px-7 sm:pb-7">
