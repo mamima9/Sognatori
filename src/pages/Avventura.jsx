@@ -1498,7 +1498,7 @@ const [message, setMessage] = useState("");
         Gli artwork ufficiali vengono disegnati nel mondo, non in un layer HTML
         separato: così condividono scala, camera e profondità con il giocatore.
       */
-      const spriteFrame = Math.floor(performance.now() / 360) % 2;
+      const spriteFrame = Math.floor(performance.now() / 250) % 4;
       const labeledWildNames = new Set();
       const drawnLoreSites = new Set();
       for (const wild of wildRef.current) {
@@ -1613,7 +1613,7 @@ const [message, setMessage] = useState("");
 
       for (const travelerData of CHALLENGERS.filter((item) => item.id === activeMapId)) {
         const traveler = { ...travelerData, x: 1800, y: 1900 };
-        const travelerFrame = Math.floor(performance.now() / 380) % 2;
+        const travelerFrame = Math.floor(performance.now() / 270) % 4;
         const faceX = playerRef.current.x - traveler.x;
         const faceY = playerRef.current.y - traveler.y;
         const facing = Math.abs(faceX) > Math.abs(faceY) ? (faceX < 0 ? "left" : "right") : (faceY < 0 ? "up" : "down");
@@ -1652,7 +1652,7 @@ const [message, setMessage] = useState("");
         ctx,
         playerRef.current,
         playerFacingRef.current,
-        Math.floor(performance.now() / 170) % 2,
+        Math.floor(performance.now() / 135) % 4,
         playerIsWalking
       );
 
@@ -2276,7 +2276,8 @@ function drawPlayer(ctx, p, facing = { x: 0, y: -1 }, frame = 0, walking = false
   // Il punto p resta ancorato ai piedi: collisioni, camera e coordinate non cambiano.
   const side = Math.abs(facing.x || 0) > Math.abs(facing.y || 0);
   const back = !side && (facing.y || 0) < 0;
-  const step = walking && frame === 1 ? 2 : 0;
+  const walkPhase = ((frame % 4) + 4) % 4;
+  const step = walking ? (walkPhase === 1 ? 2 : walkPhase === 3 ? -1 : 0) : 0;
   ctx.save();
   ctx.translate(Math.round(p.x / 2) * 2, Math.round(p.y / 2) * 2);
   if (side && facing.x < 0) ctx.scale(-1, 1);
@@ -2331,7 +2332,7 @@ function drawPlayer(ctx, p, facing = { x: 0, y: -1 }, frame = 0, walking = false
   ctx.fillRect(5, -8, 2, 4);
 
   // Braccia animate; in vista posteriore la giacca copre parte delle maniche.
-  const armSwing = walking && frame === 1 ? 2 : 0;
+  const armSwing = walking ? (walkPhase === 1 ? 2 : walkPhase === 3 ? -1 : 0) : 0;
   ctx.fillStyle = "#b96b4d";
   ctx.fillRect(-17, -12 + armSwing, 5, 14);
   ctx.fillRect(12, -12 - armSwing, 5, 14);

@@ -199,11 +199,14 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
   // Il profilo sinistro viene specchiato; il destro usa il profilo naturale.
   if(direction==="left"){ctx.scale(-1,1);}
   const sideFacing=direction==="left"||direction==="right";
-  const bob=frame?1:0;
+  const motion=((frame%4)+4)%4;
+  const bob=motion===1?1:motion===3?-1:0;
+  const stride=motion===1?2:motion===3?-1:0;
   // grounding shadow and separated feet
   ctx.fillStyle="rgba(4,10,13,.34)";ctx.beginPath();ctx.ellipse(0,1,15,4,0,0,Math.PI*2);ctx.fill();
-  px(ctx,-9, -9+bob,7,9,"#30303a");px(ctx,2,-9+(frame?0:1),7,9,"#30303a");
-  px(ctx,-10,-2+bob,9,3,"#252630");px(ctx,2,-2+(frame?0:1),9,3,"#252630");
+  px(ctx,-9, -9+bob,7,9,"#30303a");px(ctx,2,-9-bob,7,9,"#30303a");
+  px(ctx,-10,-2+bob,9,3,"#252630");px(ctx,2,-2-bob,9,3,"#252630");
+  px(ctx,-10,-1+bob,8,1,"#8a7662");px(ctx,2,-1-bob,8,1,"#8a7662");
   // backpack and silhouette
   px(ctx,-13,-35+bob,6,19,"#332d36");px(ctx,-12,-33+bob,4,13,d.trim);
   px(ctx,-10,-35+bob,20,25,"#292b39");
@@ -264,9 +267,25 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
   if(d.hat==="fur"){px(ctx,-10,-64+bob,6,6,d.trim);px(ctx,-3,-66+bob,7,5,d.trim);px(ctx,5,-64+bob,6,6,d.trim);}
   if(d.hat==="hat"){px(ctx,-12,-61+bob,24,4,d.hair);px(ctx,-7,-68+bob,14,8,d.hair);px(ctx,-10,-58+bob,20,2,d.trim);}
   if(d.hat==="crystal"){px(ctx,-8,-66+bob,4,7,d.trim);px(ctx,-2,-69+bob,4,10,d.accent);px(ctx,5,-66+bob,4,7,d.trim);}
-  // stitch highlights and walk-step pixels
+  // Rifinitura HD: cuciture, pieghe, bordi in luce e accessori leggibili.
   px(ctx,-7,-31+bob,3,5,d.accent);px(ctx,5,-27+bob,2,7,d.trim);
-  if(frame){px(ctx,-10,-3,6,2,d.trim);px(ctx,4,-2,6,2,d.trim);}
+  if(direction!=="up"){
+    px(ctx,-8,-35+bob,2,16,"#302a35");px(ctx,-7,-34+bob,1,13,d.trim);
+    px(ctx,-3,-13+bob,6,2,"#3b3036");px(ctx,-1,-13+bob,3,2,d.trim);
+    px(ctx,-8,-29+bob,2,2,d.accent);px(ctx,6,-23+bob,2,2,d.accent);
+  }
+  px(ctx,-9,-32+bob,2,14,"#292b39");px(ctx,7,-31+bob,2,12,d.accent);
+  px(ctx,-3,-31+bob,1,11,d.trim);px(ctx,3,-29+bob,1,8,"rgba(255,255,255,.35)");
+  px(ctx,-8,-17+bob,4,1,d.trim);px(ctx,4,-16+bob,4,1,d.accent);
+  if(direction!=="up"){
+    if(sideFacing)px(ctx,direction==="left"?-5:4,-49+bob,1,1,"#fff4d8");
+    else {px(ctx,-5,-49+bob,1,1,"#fff4d8");px(ctx,4,-49+bob,1,1,"#fff4d8");px(ctx,-7,-45+bob,2,1,"#e89a88");px(ctx,6,-45+bob,2,1,"#e89a88");}
+    px(ctx,-2,-42+bob,4,1,"#b86f68");
+  }
+  px(ctx,-14,-13+bob,4,5,"#292b39");px(ctx,-13,-12+bob,2,3,d.accent);
+  px(ctx,10,-12+bob,4,5,"#292b39");px(ctx,11,-11+bob,2,3,d.trim);
+  px(ctx,-7,-5+bob,4,1,d.trim);px(ctx,4,-5+bob,4,1,d.trim);
+  if(motion===1||motion===3){px(ctx,-10,-1+stride,5,2,d.trim);px(ctx,5,-1-stride,5,2,d.trim);}
   ctx.restore();
 }
 
@@ -323,11 +342,12 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   };
   const design = WILD_SPECIES_DESIGNS[id];
   const [main,light,dark,shine] = design?.colors || factionPalettes[type] || factionPalettes.Natura;
-  const bob = frame ? 1.5 : 0;
+  const motion=((frame%4)+4)%4;
+  const bob=motion===1?1.5:motion===3?-0.75:0;
   const shape = design?.shape || "seedling";
   ctx.save();
   ctx.translate(Math.round(x),Math.round(y));
-  ctx.scale(scale * (frame ? 1.025 : 1), scale);
+  ctx.scale(scale * (motion===1?1.018:motion===3?0.995:1), scale);
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = "rgba(0,0,0,.34)";
   ctx.beginPath();
@@ -552,6 +572,33 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-3,-12+bob,6,2,dark);px(ctx,-16,-15+bob,3,5,shine);px(ctx,13,-15+bob,3,5,shine);break;
   }
 
+  // Passaggio di rifinitura pixel-HD: ombre a gradini, riflessi speculari e micro-movimenti.
+  px(ctx,-10,-4+bob,4,2,dark);px(ctx,6,-4+bob,4,2,dark);
+  px(ctx,-8,-2+bob,3,1,shine);px(ctx,5,-2+bob,3,1,shine);
+  px(ctx,-4,-10+bob,2,2,light);px(ctx,3,-12+bob,2,2,shine);
+  if(motion===1){
+    if(["stormbird","cloud-dancer","angel","pink-cloud","old-cloud"].includes(shape)){
+      px(ctx,-19,-15+bob,4,5,shine);px(ctx,15,-15+bob,4,5,shine);
+    } else if(["lobster","shrimp","ant","ring-ape"].includes(shape)){
+      px(ctx,-19,-10+bob,3,4,light);px(ctx,16,-10+bob,3,4,light);
+    } else if(["ember","oni-demon"].includes(shape)){
+      px(ctx,-14,-31+bob,2,4,shine);px(ctx,13,-29+bob,2,4,shine);
+    } else if(["robot-box","long-robot"].includes(shape)){
+      px(ctx,-15,-17+bob,3,3,shine);px(ctx,13,-17+bob,3,3,shine);
+    } else {px(ctx,-13,-7+bob,3,3,light);px(ctx,10,-7+bob,3,3,shine);}
+  } else if(motion===3){
+    if(["stormbird","cloud-dancer","angel","pink-cloud","old-cloud"].includes(shape)){
+      px(ctx,-18,-12+bob,4,4,light);px(ctx,14,-12+bob,4,4,light);
+    } else if(["ember","oni-demon"].includes(shape)){
+      px(ctx,-13,-28+bob,2,3,shine);px(ctx,12,-30+bob,2,3,shine);
+    }
+  }
+  const glintSeed=Array.from(String(id)).reduce((n,ch)=>n+ch.charCodeAt(0),0);
+  const glintX=(glintSeed%2===0)?13:-15;
+  if(motion===0||motion===2){
+    px(ctx,glintX,-25+(glintSeed%5),2,2,shine);
+    if(motion===2)px(ctx,glintX+(glintSeed%2?2:-2),-29+(glintSeed%4),1,1,"#ffffff");
+  }
   // Volto, riflessi e piccoli dettagli restano leggibili anche alla scala overworld.
   if(!["bread","stormbird","cloud-dancer","spell-scroll","arcane-book","ghost","crystal"].includes(shape)){
     px(ctx,-6,-14+bob,3,3,"#24232b");
