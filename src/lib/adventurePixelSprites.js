@@ -304,20 +304,6 @@ const WILD_SPECIES_DESIGNS = {
   "ring-ape": { shape:"ring-ape", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
 };
 
-const WILD_OFFICIAL_ART_CACHE = new Map();
-
-function getWildOfficialArt(src) {
-  if (!src || typeof Image === "undefined") return null;
-  let image = WILD_OFFICIAL_ART_CACHE.get(src);
-  if (image) return image;
-  image = new Image();
-  image.onload = () => { image.__ready = true; };
-  image.onerror = () => { image.__failed = true; };
-  image.src = src;
-  WILD_OFFICIAL_ART_CACHE.set(src, image);
-  return image;
-}
-
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   const id = s?.id || "";
   const type = s?.tipo || "Natura";
@@ -336,37 +322,19 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   };
   const design = WILD_SPECIES_DESIGNS[id];
   const [main,light,dark,shine] = design?.colors || factionPalettes[type] || factionPalettes.Natura;
-  const bob = frame ? 1 : 0;
+  const bob = frame ? 1.5 : 0;
   const shape = design?.shape || "seedling";
   ctx.save();
   ctx.translate(Math.round(x),Math.round(y));
-  ctx.scale(scale,scale);
+  ctx.scale(scale * (frame ? 1.025 : 1), scale);
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = "rgba(0,0,0,.34)";
   ctx.beginPath();
   ctx.ellipse(0,1,14,4,0,0,Math.PI*2);
   ctx.fill();
 
-  // Prima scelta: artwork ufficiale del Sognatore, ritagliato dall'illustrazione della sua carta.
-  // Il crop esclude nome, statistiche e testo, mantenendo la creatura e il suo fondale illustrato.
-  const officialArt = getWildOfficialArt(s?.img);
-  if (officialArt?.complete && officialArt.naturalWidth > 0 && !officialArt.__failed) {
-    const sw = officialArt.naturalWidth;
-    const sh = officialArt.naturalHeight;
-    const sx = Math.round(sw * 0.17);
-    const sy = Math.round(sh * 0.15);
-    const sourceW = Math.round(sw * 0.66);
-    const sourceH = Math.round(sh * 0.46);
-    const bobY = frame ? -0.5 : 0;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(officialArt, sx, sy, sourceW, sourceH, -12, -29 + bobY, 24, 28);
-    // Riflesso pixel-art leggero per armonizzare l'illustrazione con l'overworld.
-    ctx.fillStyle = "rgba(255,245,220,.08)";
-    ctx.fillRect(-11, -28 + bobY, 22, 1);
-    ctx.restore();
-    return;
-  }
-
+  // Creature native, non crop delle carte: ogni specie mantiene una silhouette
+  // propria, con volume, ombra e animazione leggibili nell'overworld.
   // Fallback dedicato: resta disponibile se un artwork non è presente o non si carica.
   switch(shape){
     case "mage":
