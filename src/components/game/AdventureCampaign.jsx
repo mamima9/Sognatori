@@ -31,17 +31,17 @@ const FIRST_BOND_QUESTIONS = [
   { q: "Quale valore non vorresti mai perdere?", a: [["La libertà","Nuvola"],["La sincerità","Salato"],["La speranza","Luce"],["La determinazione","Demone"]] },
 ];
 const WILD_RECRUIT_QUESTS = {
-  Demone: { clue: "Tra le rocce trovi cenere ancora calda: qualcuno ha protetto questo luogo durante una tempesta di fuoco.", task: "Metti in sicurezza il passaggio spostando le pietre instabili.", action: "Metto in sicurezza il passaggio", bond: "Non voglio dimostrare di essere più forte. Voglio che nessuno resti indietro." },
-  Robot: { clue: "Sul terreno lampeggiano piccoli frammenti metallici: sembrano parte di un vecchio dispositivo.", task: "Raccogli i componenti e ricostruisci il circuito vicino al punto d'osservazione.", action: "Ricompongo il circuito", bond: "La tua logica mi incuriosisce, ma voglio conoscere anche ciò che non puoi calcolare." },
-  Natura: { clue: "Le impronte conducono a una pianta appassita che cresce lontano dall'acqua.", task: "Trova una sorgente vicina e riporta l'acqua alla pianta.", action: "Salvo la pianta", bond: "La vita va custodita, non posseduta. Se vuoi, esploriamo insieme." },
-  Nuvola: { clue: "Piccole piume sospese nell'aria indicano una corrente che sale verso una rupe.", task: "Raggiungi il punto panoramico e osserva il percorso del vento.", action: "Seguo la corrente", bond: "Non voglio trattenerti. Possiamo viaggiare insieme restando liberi." },
-  Umano: { clue: "Un viandante ha lasciato cadere una lettera prima di entrare nel bosco.", task: "Ritrova il destinatario e consegna il messaggio.", action: "Consegno il messaggio", bond: "Le storie diventano più grandi quando vengono condivise." },
-  Luce: { clue: "Un piccolo bagliore pulsa sotto una pietra: sembra una lanterna rimasta senza energia.", task: "Raccogli una fonte luminosa nell'area e riaccendi la lanterna.", action: "Riaccendo la lanterna", bond: "Anche una luce piccola può guidare qualcuno. Camminiamo insieme." },
-  Dolce: { clue: "Un profumo zuccherino porta a un cespuglio con frutti ancora acerbi.", task: "Trova un frutto maturo da lasciare vicino al rifugio.", action: "Preparo il dono", bond: "La gentilezza è un dono che si sceglie ogni giorno." },
-  Marino: { clue: "Conchiglie spezzate e alghe fresche segnano il passaggio verso una pozza nascosta.", task: "Recupera un oggetto trascinato dalla marea senza danneggiare il piccolo habitat.", action: "Recupero l'oggetto", bond: "Come la marea, anche noi possiamo cambiare senza perderci." },
-  Orso: { clue: "Vicino al rifugio trovi rami spezzati e segni di un piccolo animale in difficoltà.", task: "Libera il sentiero e metti al sicuro l'animale.", action: "Proteggo l'animale", bond: "La forza serve a proteggere. Hai capito cosa conta davvero." },
-  Mago: { clue: "Un simbolo antico è inciso su una pietra, ma manca una parte della sequenza.", task: "Osserva i segni attorno al luogo e completa il simbolo.", action: "Completo il simbolo", bond: "La conoscenza vale quando viene condivisa. Ti accompagnerò." },
-  Salato: { clue: "Due sentieri si incrociano: uno è coperto di sale, l'altro di fiori selvatici.", task: "Trova un modo per far convivere i due ambienti senza alterare il luogo.", action: "Ristabilisco l'equilibrio", bond: "Gli opposti possono collaborare senza annullarsi." },
+  Demone: { clue: "Tra le rocce trovi cenere ancora calda: qualcuno ha protetto questo luogo durante una tempesta di fuoco.", task: "Metti in sicurezza il passaggio spostando le pietre instabili.", action: "Metto in sicurezza il passaggio", bond: "Non voglio dimostrare di essere più forte. Voglio che nessuno resti indietro.", choices: ["Spingo via le rocce senza controllare","Creo un passaggio sicuro e stabile","Accendo le braci per attirare la creatura"], correct: 1 },
+  Robot: { clue: "Sul terreno lampeggiano piccoli frammenti metallici: sembrano parte di un vecchio dispositivo.", task: "Raccogli i componenti e ricostruisci il circuito vicino al punto d'osservazione.", action: "Ricompongo il circuito", bond: "La tua logica mi incuriosisce, ma voglio conoscere anche ciò che non puoi calcolare.", choices: ["Ricollego i componenti seguendo i segnali","Rompo il dispositivo per recuperare il nucleo","Aspetto che il circuito si ripari da solo"], correct: 0 },
+  Natura: { clue: "Le impronte conducono a una pianta appassita che cresce lontano dall'acqua.", task: "Trova una sorgente vicina e riporta l'acqua alla pianta.", action: "Salvo la pianta", bond: "La vita va custodita, non posseduta. Se vuoi, esploriamo insieme.", choices: ["Strappo la pianta e la porto altrove","La copro con pietre","Cerco acqua e la verso lentamente alle radici"], correct: 2 },
+  Nuvola: { clue: "Piccole piume sospese nell'aria indicano una corrente che sale verso una rupe.", task: "Raggiungi il punto panoramico e osserva il percorso del vento.", action: "Seguo la corrente", bond: "Non voglio trattenerti. Possiamo viaggiare insieme restando liberi.", choices: ["Seguo la corrente osservando le banderuole","Salto dalla rupe per prendere quota","Corro controvento senza guardare"], correct: 0 },
+  Umano: { clue: "Un viandante ha lasciato cadere una lettera prima di entrare nel bosco.", task: "Ritrova il destinatario e consegna il messaggio.", action: "Consegno il messaggio", bond: "Le storie diventano più grandi quando vengono condivise.", choices: ["Tengo la lettera per me","Cerco il destinatario e verifico il nome","Lascio la lettera sul sentiero"], correct: 1 },
+  Luce: { clue: "Un piccolo bagliore pulsa sotto una pietra: sembra una lanterna rimasta senza energia.", task: "Raccogli una fonte luminosa nell'area e riaccendi la lanterna.", action: "Riaccendo la lanterna", bond: "Anche una luce piccola può guidare qualcuno. Camminiamo insieme.", choices: ["Copra la lanterna con un panno","La scuoto finché si accende","Cerco una fonte luminosa e la avvicino allo stoppino"], correct: 2 },
+  Dolce: { clue: "Un profumo zuccherino porta a un cespuglio con frutti ancora acerbi.", task: "Trova un frutto maturo da lasciare vicino al rifugio.", action: "Preparo il dono", bond: "La gentilezza è un dono che si sceglie ogni giorno.", choices: ["Scelgo un frutto maturo senza rovinare il cespuglio","Raccolgo tutti i frutti acerbi","Rompo i rami per raggiungere i frutti"], correct: 0 },
+  Marino: { clue: "Conchiglie spezzate e alghe fresche segnano il passaggio verso una pozza nascosta.", task: "Recupera un oggetto trascinato dalla marea senza danneggiare il piccolo habitat.", action: "Recupero l'oggetto", bond: "Come la marea, anche noi possiamo cambiare senza perderci.", choices: ["Scavo la pozza per cercare meglio","Recupero l'oggetto senza disturbare il fondale","Sposto tutte le conchiglie"], correct: 1 },
+  Orso: { clue: "Vicino al rifugio trovi rami spezzati e segni di un piccolo animale in difficoltà.", task: "Libera il sentiero e metti al sicuro l'animale.", action: "Proteggo l'animale", bond: "La forza serve a proteggere. Hai capito cosa conta davvero.", choices: ["Allontano l'animale spaventandolo","Ignoro il sentiero bloccato","Libero il passaggio e accompagno l'animale al sicuro"], correct: 2 },
+  Mago: { clue: "Un simbolo antico è inciso su una pietra, ma manca una parte della sequenza.", task: "Osserva i segni attorno al luogo e completa il simbolo.", action: "Completo il simbolo", bond: "La conoscenza vale quando viene condivisa. Ti accompagnerò.", choices: ["Osservo i simboli e completo la sequenza mancante","Cancello il simbolo e ne invento uno","Aspetto che la pietra si illumini da sola"], correct: 0 },
+  Salato: { clue: "Due sentieri si incrociano: uno è coperto di sale, l'altro di fiori selvatici.", task: "Trova un modo per far convivere i due ambienti senza alterare il luogo.", action: "Ristabilisco l'equilibrio", bond: "Gli opposti possono collaborare senza annullarsi.", choices: ["Ricopro tutto di sale","Creo un passaggio che protegga entrambi gli ambienti","Rimuovo i fiori per allargare il sentiero"], correct: 1 },
 };
 function getWildRecruitQuest(sognatore) {
   const faction = sognatore?.tipo || sognatore?.fazione || "Natura";
@@ -97,6 +97,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [trialMode, setTrialMode] = useState("preview");
   const [trialError, setTrialError] = useState("");
   const [wildQuestStep, setWildQuestStep] = useState(0);
+  const [wildQuestFeedback, setWildQuestFeedback] = useState("");
   const [confirmRestart, setConfirmRestart] = useState(false);
   const currentReward = rewardQueue[rewardIndex];
   const wildSognatore = wildEncounter ? ROSTER.find((s) => s.id === wildEncounter.rosterId) || ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
@@ -132,6 +133,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   useEffect(() => {
     if (wildEncounter) {
       setWildQuestStep(0);
+      setWildQuestFeedback("");
       setPhase("wildTalk");
     } else if (encounter) {
         setPhase(save.conqueredLeaders.includes(encounter.id) ? "completed" : "traveler");
@@ -426,10 +428,25 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                       <button onClick={() => setWildQuestStep(1)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">SEGUI GLI INDIZI</button>
                     </> : wildQuestStep === 1 ? <>
                       <p className="mt-3 text-sm leading-6 text-white/80">{quest.task}</p>
-                      <p className="mt-2 text-xs text-cyan-100/55">Non serve combattere: dimostra attenzione e rispetto per il suo mondo.</p>
-                      <button onClick={() => setWildQuestStep(2)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">{quest.action.toUpperCase()}</button>
+                      <p className="mt-2 text-xs text-cyan-100/55">Scegli come affrontare la situazione. La soluzione giusta dipende dalla personalità del Sognatore.</p>
+                      <div className="mt-4 grid gap-2">
+                        {quest.choices.map((choice, index) => (
+                          <button key={choice} onClick={() => {
+                            if (index === quest.correct) {
+                              setWildQuestFeedback("Hai trovato la soluzione giusta. Il Sognatore si fida un po' di più di te.");
+                              setWildQuestStep(2);
+                            } else {
+                              setWildQuestFeedback("Non è la scelta migliore. Osserva gli indizi e prova un approccio diverso.");
+                            }
+                          }} className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-bold text-white transition hover:border-cyan-200/40 hover:bg-cyan-300/10">
+                            {choice}
+                          </button>
+                        ))}
+                      </div>
+                      {wildQuestFeedback && <p className="mt-3 rounded-xl bg-black/30 p-3 text-xs leading-5 text-cyan-100">{wildQuestFeedback}</p>}
                     </> : <>
                       <p className="mt-3 text-sm leading-6 text-white/80">{quest.bond}</p>
+                      <p className="mt-2 text-xs text-emerald-200/70">{wildQuestFeedback}</p>
                       <p className="mt-2 text-xs text-emerald-200/70">Il legame è pronto. {save.partyIds.length < 4 ? "Potrà unirsi alla tua squadra." : "La squadra è piena: entrerà nella tua collezione."}</p>
                       <button onClick={() => {
                         setSave((old) => {
