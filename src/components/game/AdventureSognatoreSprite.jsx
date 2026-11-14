@@ -5,7 +5,7 @@ import { createWildSognatoreSpriteSheet } from "@/lib/adventurePixelSprites";
  * Sprite overworld Avventura: usa l'artwork individuale del roster,
  * ridotto a una risoluzione controllata per ottenere un look da RPG 2D.
  */
-export default function AdventureSognatoreSprite({ s, size = 88, className = "", walking = true }) {
+export default function AdventureSognatoreSprite({ s, size = 88, className = "", walking = true, crisp = false }) {
   const [sheetUrl, setSheetUrl] = useState("");
   const [pixelArtwork, setPixelArtwork] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
@@ -78,7 +78,7 @@ export default function AdventureSognatoreSprite({ s, size = 88, className = "",
             />
           )}
           <img
-            src={pixelArtwork || artwork}
+            src={crisp ? artwork : (pixelArtwork || artwork)}
             alt={s.nome || "Sognatore"}
             draggable={false}
             onError={() => setImageFailed(true)}
@@ -87,9 +87,9 @@ export default function AdventureSognatoreSprite({ s, size = 88, className = "",
               height: "100%",
               objectFit: "contain",
               objectPosition: "center bottom",
-              imageRendering: pixelArtwork ? "pixelated" : "auto",
+              imageRendering: crisp ? "auto" : (pixelArtwork ? "pixelated" : "auto"),
               // In modalità statica non mostrare GIF/WebP animate prima dello snapshot PNG.
-              visibility: !walking && !pixelArtwork ? "hidden" : "visible"
+              visibility: !crisp && !walking && !pixelArtwork ? "hidden" : "visible"
             }}
           />
         </>
