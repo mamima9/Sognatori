@@ -65,12 +65,14 @@ export default function AdventureBattleArena({
   opponentFaction,
 }) {
   useEffect(() => {
-  setMusicMode("battle");
+    setMusicMode("battle");
 
-  return () => {
-    setMusicMode("main");
-  };
-}, []);
+    return () => {
+      // Le lotte dei Capi fazione tornano alla musica della città
+      // e conservano il lato d'ingresso (nord/sud).
+      setMusicMode(adventureMode ? "adventure" : "main");
+    };
+  }, [adventureMode]);
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const m = bm(lang);
