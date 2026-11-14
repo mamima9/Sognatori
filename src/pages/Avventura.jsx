@@ -1232,13 +1232,27 @@ const [message, setMessage] = useState("");
         ROCCE
       */
 
+      const rockPalettes = {
+        Demone: ["#452d38", "#8d4650", "#d06a54"],
+        Robot: ["#344e5c", "#638d98", "#a4d7d2"],
+        Natura: ["#3e4548", "#727b7b", "#9da09a"],
+        Nuvola: ["#526982", "#91aac5", "#d7e5f4"],
+        Umano: ["#51483e", "#89775f", "#c2ad88"],
+        Luce: ["#796039", "#c09a4c", "#f4d887"],
+        Dolce: ["#704b70", "#b77cae", "#f0c1df"],
+        Marino: ["#294d60", "#4b8795", "#9bd1d0"],
+        Orso: ["#49372b", "#806044", "#b9915c"],
+        Mago: ["#3d3655", "#776b9d", "#c1b2e8"],
+        Salato: ["#555d5b", "#a4aaa3", "#e4e5dc"],
+      };
+      const [rockShadow, rockMid, rockLight] = rockPalettes[activeCity.faction] || rockPalettes.Natura;
       for (const rock of WORLD_OBJECTS.rocks) {
         ctx.save();
         ctx.translate(Math.round(rock.x / 3) * 3, Math.round(rock.y / 3) * 3);
         ctx.fillStyle = "rgba(9,15,18,.28)";
         ctx.beginPath(); ctx.ellipse(3, rock.r * .62, rock.r * 1.25, rock.r * .42, 0, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = "#3e4548";
+        ctx.fillStyle = rockShadow;
         ctx.beginPath();
         ctx.moveTo(-rock.r * 1.1, rock.r * .35);
         ctx.lineTo(-rock.r * .8, -rock.r * .35);
@@ -1248,7 +1262,7 @@ const [message, setMessage] = useState("");
         ctx.lineTo(rock.r * .72, rock.r * .7);
         ctx.closePath(); ctx.fill();
 
-        ctx.fillStyle = "#727b7b";
+        ctx.fillStyle = rockMid;
         ctx.beginPath();
         ctx.moveTo(-rock.r * .8, -rock.r * .35);
         ctx.lineTo(-rock.r * .18, -rock.r);
@@ -1256,11 +1270,11 @@ const [message, setMessage] = useState("");
         ctx.lineTo(-rock.r * .2, rock.r * .12);
         ctx.closePath(); ctx.fill();
 
-        ctx.fillStyle = "#9da09a";
+        ctx.fillStyle = rockLight;
         ctx.fillRect(-rock.r * .16, -rock.r * .82, Math.max(3, rock.r * .22), Math.max(3, rock.r * .16));
-        ctx.fillStyle = "#4e595b";
+        ctx.fillStyle = rockShadow;
         ctx.fillRect(rock.r * .48, -rock.r * .35, Math.max(3, rock.r * .18), Math.max(3, rock.r * .28));
-        ctx.fillStyle = "rgba(211,219,205,.35)";
+        ctx.fillStyle = "rgba(255,255,255,.28)";
         ctx.fillRect(-rock.r * .58, rock.r * .08, Math.max(3, rock.r * .2), 3);
         ctx.restore();
       }
@@ -1984,9 +1998,9 @@ function drawTree(ctx, x, y, r, faction = "Natura") {
   ctx.fill();
 
   // Tronco leggibile sotto la chioma.
-  ctx.fillStyle = "#493426";
+  ctx.fillStyle = bark;
   ctx.fillRect(x - 7, y - 8, 14, 34);
-  ctx.fillStyle = "#795039";
+  ctx.fillStyle = foliage;
   ctx.fillRect(x - 3, y - 5, 5, 27);
   ctx.fillStyle = highlight;
   ctx.fillRect(x + 3, y + 1, 3, 13);
