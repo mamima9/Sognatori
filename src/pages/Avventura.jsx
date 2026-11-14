@@ -89,6 +89,8 @@ function buildMapWildStarts(city) {
       x: centerX + ox,
       y: centerY + oy,
       name: sognatore.nome,
+      img: sognatore.img,
+      tipo: sognatore.tipo || sognatore.fazione,
       recruitable: copy === 0,
       speciesIndex: index,
       cornerIndex: index % WILD_CORNER_ANCHORS.length,
