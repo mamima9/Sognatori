@@ -760,6 +760,10 @@ export default function Avventura() {
     user?.user_metadata?.sognatori_arcade_completed === true ||
     user?.email?.toLowerCase() === "bibitoeuro@gmail.com";
 
+  // Accesso personale: tutte le porte delle città sono aperte soltanto per questo account.
+  const personalAllDoorsUnlocked =
+    user?.email?.trim()?.toLowerCase() === "bibitoeuro@gmail.com";
+
   /*
     ============================
     REFS PRINCIPALI
@@ -1345,10 +1349,13 @@ const [message, setMessage] = useState("");
 
       // Portale di collegamento: ogni mappa conduce alla successiva.
       const currentLeaderDefeated = defeatedLeaders.has(activeMapId);
+      const canUseCityDoors = personalAllDoorsUnlocked || currentLeaderDefeated;
       drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
-        currentLeaderDefeated ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
-        0, !currentLeaderDefeated);
-      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color, "BLOCCATA · " + previousCityName(activeMapId), Math.PI, true);
+        canUseCityDoors ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
+        0, !canUseCityDoors);
+      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color,
+        personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId) : "BLOCCATA · " + previousCityName(activeMapId),
+        Math.PI, !personalAllDoorsUnlocked);
 
       /*
         ROCCE
@@ -1674,7 +1681,7 @@ const [message, setMessage] = useState("");
     }
 
     if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius) {
-      if (!defeatedLeaders.has(activeMapId)) {
+      if (!personalAllDoorsUnlocked && !defeatedLeaders.has(activeMapId)) {
         const leader = CHALLENGERS.find((challenger) => challenger.id === activeMapId);
         setMessage("La strada è sbarrata da " + (leader?.name || "il Capo fazione") + ". Sconfiggilo per proseguire.");
         setTimeout(() => setMessage(""), 2600);
@@ -1692,6 +1699,17 @@ const [message, setMessage] = useState("");
     }
 
     if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius) {
+      if (personalAllDoorsUnlocked) {
+        const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
+        const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
+        setActiveMapId(previousCity.id);
+        playerRef.current = { ...MAP_SPAWN };
+        cameraRef.current = { ...MAP_SPAWN };
+        setPlayer({ ...MAP_SPAWN });
+        setMessage("Ingresso a " + previousCity.city + " · " + previousCity.faction);
+        setTimeout(() => setMessage(""), 2200);
+        return;
+      }
       setMessage("Porta nord sigillata. La progressione avviene solo verso sud, dopo aver sconfitto il Capo fazione.");
       setTimeout(() => setMessage(""), 2800);
       return;
