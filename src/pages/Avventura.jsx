@@ -492,19 +492,51 @@ const NPC_FACTION_COLORS = {
   Mago: "#b9a1ed", Salato: "#d4d2bd",
 };
 
-function buildOutdoorNPCs(city, lore) {
+function buildOutdoorNPCs(city, lore, gameTime = 9) {
   const mapIndex = Math.max(0, ADVENTURE_CITIES.findIndex((item) => item.id === city.id));
   const positions = OUTDOOR_NPC_POSITIONS[mapIndex % OUTDOOR_NPC_POSITIONS.length];
   const residents = lore?.npcs || [];
-  return positions.map(([x, y], index) => ({
-    id: "outdoor-" + city.id + "-" + index,
-    name: residents[index]?.[0] || ["Viandante", "Esploratore", "Artigiano"][index],
-    dialogue: residents[index]?.[1] || "Ogni angolo di questa terra custodisce una storia.",
-    x, y,
-    faction: city.faction,
-    index,
-    color: NPC_FACTION_COLORS[city.faction] || "#d6b47a",
-  }));
+  const hour = ((Number(gameTime) || 0) % 24 + 24) % 24;
+  const isNatura = city.faction === "Natura";
+
+  return positions.map(([baseX, baseY], index) => {
+    let x = baseX;
+    let y = baseY;
+    let activity = "IN PAESE";
+    let routine = "Sono felice di vivere a Verdelume.";
+
+    // Piccoli spostamenti intorno alle postazioni originali: non invadono
+    // ingressi, punti di spawn o il Grande Seme. La stessa coordinata
+    // viene usata dal rendering e dal sistema di interazione.
+    if (isNatura) {
+      const morning = hour >= 6 && hour < 12;
+      const afternoon = hour >= 12 && hour < 18;
+      const evening = hour >= 18 || hour < 6;
+
+      if (index === 0) {
+        if (morning) { x += 54; y += 28; activity = "RACCOGLIE ERBE"; routine = "Il mattino è il momento migliore per raccogliere le erbe."; }
+        else if (afternoon) { x -= 42; y += 22; activity = "SISTEMA LE AIUOLE"; routine = "Sto rimettendo in ordine le aiuole del villaggio."; }
+        else { x += 12; y -= 24; activity = "SI RIPOSA"; routine = "Anche la foresta ha bisogno di riposo."; }
+      } else if (index === 1) {
+        if (morning || afternoon) { x -= 48; y += 26; activity = "PREPARA RIMEDI"; routine = "Le piante dello stagno hanno proprietà preziose."; }
+        else { x += 30; y -= 32; activity = "BOTTEGA CHIUSA"; routine = "Domani riaprirò la bottega con nuove tisane."; }
+      } else {
+        if (evening) { x -= 34; y += 30; activity = "VEGLIA NOTTURNA"; routine = "Di notte veglio sul Grande Seme e sulle sue radici."; }
+        else { x += 26; y -= 36; activity = "CUSTODISCE IL SEME"; routine = "Il Grande Seme custodisce la memoria di Verdelume."; }
+      }
+    }
+
+    return {
+      id: "outdoor-" + city.id + "-" + index,
+      name: residents[index]?.[0] || ["Viandante", "Esploratore", "Artigiano"][index],
+      dialogue: isNatura ? routine : (residents[index]?.[1] || "Ogni angolo di questa terra custodisce una storia."),
+      x, y,
+      faction: city.faction,
+      index,
+      activity: isNatura ? activity : null,
+      color: NPC_FACTION_COLORS[city.faction] || "#d6b47a",
+    };
+  });
 }
 
 const ZONES = [
@@ -798,7 +830,7 @@ const [message, setMessage] = useState("");
   const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
   const activeCity = { ...activeCityBase, ...activeLore, x: 1800, y: 1200 };
-  const cityNpcCharacters = buildOutdoorNPCs(activeCityBase, activeLore);
+  const cityNpcCharacters = buildOutdoorNPCs(activeCityBase, activeLore, time);
   const activeWildAreaBase = ADVENTURE_WILD_AREAS.find((area) => area.faction === activeCity.faction) || ADVENTURE_WILD_AREAS[0];
   const activeWildArea = { ...activeWildAreaBase, x: 1800, y: 760 };
 
@@ -2342,10 +2374,15 @@ function drawNpc(ctx, npc) {
       ctx.fillStyle = "#c5df83"; ctx.fillRect(13, -17, 11, 5);
       ctx.fillStyle = "#e5c17f"; ctx.fillRect(15, 13, 7, 3);
     }
-    ctx.fillStyle = "rgba(12,18,27,.86)"; ctx.fillRect(-48, 27, 96, 20);
-    ctx.fillStyle = "#a8cf63"; ctx.fillRect(-48, 27, 4, 20);
-    ctx.fillStyle = "#fff4df"; ctx.font = "bold 12px monospace"; ctx.textAlign = "center";
-    ctx.fillText(npc.name, 0, 42, 90);
+    // Piccolo equipaggiamento e dettagli da RPG portatile 2010.
+    ctx.fillStyle = "#e5c17f"; ctx.fillRect(-8, -4, 3, 9);
+    ctx.fillStyle = "rgba(255,244,210,.75)"; ctx.fillRect(-7, -3, 1, 5);
+    ctx.fillStyle = "rgba(12,18,27,.92)"; ctx.fillRect(-58, 27, 116, 31);
+    ctx.fillStyle = "#a8cf63"; ctx.fillRect(-58, 27, 4, 31);
+    ctx.fillStyle = "#fff4df"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+    ctx.fillText(npc.name, 0, 39, 108);
+    ctx.fillStyle = "#c5df83"; ctx.font = "bold 8px monospace";
+    ctx.fillText(npc.activity || "IN PAESE", 0, 51, 108);
     ctx.restore();
     return;
   }
