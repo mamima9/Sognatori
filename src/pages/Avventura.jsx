@@ -2198,6 +2198,43 @@ function drawCityDistrict(ctx, city) {
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.ellipse(0, 0, 168, 135, 0, 0, Math.PI * 2); ctx.stroke();
 
+  // Pavimentazione modulare e leggibile: la piazza ha una trama prospettica,
+  // bordi in pietra e piccoli riflessi, senza trasformarsi in una griglia piatta.
+  ctx.fillStyle = "rgba(238,220,177,.22)";
+  ctx.beginPath(); ctx.ellipse(0, 0, 142, 111, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(91,76,58,.24)";
+  ctx.lineWidth = 2;
+  for (let row = -4; row <= 4; row++) {
+    const py = row * 22;
+    const half = 132 * Math.sqrt(Math.max(.08, 1 - (py * py) / (112 * 112)));
+    ctx.beginPath(); ctx.moveTo(-half, py); ctx.lineTo(half, py); ctx.stroke();
+  }
+  for (let col = -5; col <= 5; col++) {
+    const px = col * 25;
+    ctx.beginPath(); ctx.moveTo(px, -108); ctx.lineTo(px * .82, 108); ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(255,245,215,.32)";
+  ctx.fillRect(-118, -5, 236, 3);
+  ctx.fillRect(-3, -91, 6, 182);
+
+  // Piccole aiuole e lampioni ai margini della piazza, come landmark urbani DS.
+  for (const side of [-1, 1]) {
+    const lx = side * 151;
+    ctx.fillStyle = "rgba(8,15,18,.28)";
+    ctx.beginPath(); ctx.ellipse(lx + 3, 52, 15, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = city.faction === "Marino" ? "#347b83" : "#66513a";
+    ctx.fillRect(lx - 3, 12, 6, 39);
+    ctx.fillStyle = city.faction === "Luce" || city.faction === "Nuvola" ? "#fff0ad" : color;
+    ctx.fillRect(lx - 8, 4, 16, 11);
+    ctx.fillStyle = "rgba(255,246,208,.8)";
+    ctx.fillRect(lx - 3, 6, 6, 5);
+    ctx.fillStyle = city.faction === "Natura" || city.faction === "Dolce" ? "#4f8a50" : "#8b7655";
+    ctx.fillRect(lx - 15, 57, 30, 8);
+    ctx.fillStyle = city.faction === "Natura" ? "#91c86b" : "#c4a36c";
+    ctx.fillRect(lx - 10, 53, 7, 5);
+    ctx.fillRect(lx + 4, 51, 7, 7);
+  }
+
   // Monumenti, skyline e piazze differenti per ciascuna fazione.
   drawCityIdentity(ctx, city);
   drawFactionDistrictDetails(ctx, city);
@@ -2238,8 +2275,30 @@ function drawCityDistrict(ctx, city) {
     ctx.fillStyle = "rgba(237,239,215,.9)";
     ctx.fillRect(left + 10, top + 25, 9, 10);
     ctx.fillRect(left + w - 19, top + 25, 9, 10);
+    // Serramenti profondi, davanzali e imposte: facciate più ricche in stile DS.
+    ctx.fillStyle = "rgba(20,34,42,.62)";
+    ctx.fillRect(left + 8, top + 24, 13, 13);
+    ctx.fillRect(left + w - 21, top + 24, 13, 13);
+    ctx.fillStyle = city.faction === "Luce" || city.faction === "Nuvola" ? "#fff0b8" : "#8ed1d5";
+    ctx.fillRect(left + 10, top + 26, 9, 9);
+    ctx.fillRect(left + w - 19, top + 26, 9, 9);
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.fillRect(left + 11, top + 26, 2, 7);
+    ctx.fillRect(left + w - 18, top + 26, 2, 7);
+    ctx.fillStyle = "#5a4031";
+    ctx.fillRect(left + 6, top + 38, 17, 3);
+    ctx.fillRect(left + w - 23, top + 38, 17, 3);
     ctx.fillStyle = "#382d2b";
     ctx.fillRect(bx - 6, top + h - 19, 12, 19);
+    ctx.fillStyle = "rgba(255,226,166,.7)";
+    ctx.fillRect(bx - 3, top + h - 15, 2, 10);
+    // Fascia decorativa e tegole a piccoli blocchi sul tetto.
+    ctx.fillStyle = "rgba(255,242,205,.38)";
+    ctx.fillRect(left - 2, top + 12, w + 4, 3);
+    ctx.fillStyle = "rgba(48,37,43,.35)";
+    for (let tile = 0; tile < 4; tile++) {
+      ctx.fillRect(left + 5 + tile * 13, top + 4, 8, 3);
+    }
     if (city.faction === "Robot") {
       ctx.fillStyle = "#b8eee2"; ctx.fillRect(bx - 2, top - 7, 4, 13);
     }
