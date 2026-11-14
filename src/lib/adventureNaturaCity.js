@@ -39,6 +39,23 @@ export function drawAdventureNaturaCity(ctx, city) {
     ctx.strokeStyle = "#b88751"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(22, 0); ctx.lineTo(22, 34); ctx.moveTo(31, 0); ctx.lineTo(31, 34); ctx.stroke();
     for (let rung = 7; rung < 34; rung += 8) { ctx.beginPath(); ctx.moveTo(22, rung); ctx.lineTo(31, rung); ctx.stroke(); }
+    // Balconcino, ringhiera e travi.
+    ctx.fillStyle = "#68472f"; ctx.fillRect(-28, -7, 56, 5);
+    ctx.fillStyle = "#d2a36a"; ctx.fillRect(-27, -9, 54, 2);
+    ctx.fillStyle = "#8d603c";
+    for (let post = -24; post <= 24; post += 8) ctx.fillRect(post, -15, 3, 8);
+    ctx.fillRect(-29, -16, 59, 3);
+    ctx.strokeStyle = "#493526"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(-18, -3); ctx.lineTo(-27, 8); ctx.moveTo(17, -4); ctx.lineTo(25, 7); ctx.stroke();
+    ctx.strokeStyle = "#78a957"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-25, -48); ctx.quadraticCurveTo(-34, -29, -29, -19); ctx.moveTo(24, -54); ctx.quadraticCurveTo(34, -37, 28, -25); ctx.stroke();
+    ctx.fillStyle = "#493526"; ctx.fillRect(-17, -25, 10, 10); ctx.fillRect(7, -25, 10, 10);
+    ctx.fillStyle = "#8bd1d0"; ctx.fillRect(-15, -23, 6, 6); ctx.fillRect(9, -23, 6, 6);
+    ctx.fillStyle = "#f6d98c"; ctx.fillRect(-13, -22, 2, 4); ctx.fillRect(11, -22, 2, 4);
+    ctx.fillStyle = "#68472f"; ctx.fillRect(-19, -15, 14, 2); ctx.fillRect(5, -15, 14, 2);
+    ctx.strokeStyle = "#493526"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -31); ctx.lineTo(0, -25); ctx.stroke();
+    ctx.fillStyle = "#f6d77e"; ctx.fillRect(-3, -25, 6, 7);
+    ctx.fillStyle = "rgba(255,220,120,.24)"; ctx.fillRect(-6, -28, 12, 13);
     ctx.restore();
   };
 
@@ -116,6 +133,32 @@ export function drawAdventureNaturaCity(ctx, city) {
     ctx.fillRect(fx, 111 + (i % 3) * 7, 3, 8);
     ctx.fillRect(fx - 4, 111 + (i % 3) * 7, 4, 3);
     ctx.fillRect(fx + 3, 108 + (i % 3) * 7, 4, 3);
+  }
+
+  // Arredi di piazza e micro-dettagli leggibili alla scala di gioco.
+  const stone = (sx, sy, w = 12) => {
+    ctx.fillStyle = "#786f59"; ctx.fillRect(sx, sy, w, 7);
+    ctx.fillStyle = "#b8aa83"; ctx.fillRect(sx + 2, sy, w - 4, 3);
+    ctx.fillStyle = "rgba(30,42,28,.22)"; ctx.fillRect(sx + 2, sy + 6, w, 2);
+  };
+  for (const [sx, sy] of [[-72,-5],[-55,8],[-38,20],[38,-16],[56,-4],[73,10],[-14,108],[5,120],[24,132]]) stone(sx, sy, 13);
+  for (const side of [-1, 1]) {
+    const bx = side * 112;
+    ctx.fillStyle = "#493526"; ctx.fillRect(bx - 15, 12, 30, 5);
+    ctx.fillStyle = "#b9854d"; ctx.fillRect(bx - 14, 9, 28, 4);
+    ctx.fillStyle = "#765334"; ctx.fillRect(bx - 11, 17, 4, 8); ctx.fillRect(bx + 7, 17, 4, 8);
+    ctx.fillStyle = "#a85e45"; ctx.fillRect(bx + side * 23 - 5, 12, 10, 8);
+    ctx.fillStyle = "#78a957"; ctx.fillRect(bx + side * 23 - 2, 5, 4, 8);
+    ctx.fillStyle = "#f1d58a"; ctx.fillRect(bx + side * 23 - 6, 3, 4, 4); ctx.fillRect(bx + side * 23 + 2, 1, 4, 4);
+  }
+  // Lampioni con luce calda per la fase notturna.
+  for (const [lx, ly] of [[-178,-28],[178,-28],[-178,92],[178,92]]) {
+    ctx.fillStyle = "#493526"; ctx.fillRect(lx - 3, ly - 4, 6, 36);
+    ctx.fillStyle = "#8d603c"; ctx.fillRect(lx - 8, ly - 7, 16, 4);
+    ctx.fillStyle = "#f4d77e"; ctx.fillRect(lx - 5, ly - 19, 10, 12);
+    ctx.fillStyle = "#fff0b0"; ctx.fillRect(lx - 2, ly - 17, 4, 8);
+    ctx.fillStyle = "rgba(255,220,120,.14)"; ctx.beginPath(); ctx.arc(lx, ly - 13, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#493526"; ctx.fillRect(lx - 8, ly + 31, 16, 4);
   }
 
   // Sei case-albero: posizioni e ingombri restano compatibili con le collisioni esistenti.
