@@ -17,7 +17,8 @@ export const ADVENTURE_CITIES = [
 export function buildCityTeam(faction, cityId) {
   const pool = ROSTER.filter((s) => (s.tipo || s.fazione) === faction);
   if (!pool.length) return [];
-  return Array.from({ length: 4 }, (_, index) => {
+  const teamSize = faction === "Nuvola" ? 5 : 4;
+  return Array.from({ length: teamSize }, (_, index) => {
     const base = pool[index % pool.length];
     return {
       ...base,
