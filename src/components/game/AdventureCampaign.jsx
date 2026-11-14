@@ -139,10 +139,6 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     [save.partyIds]
   );
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
-  const leaderArtwork = encounter?.faction
-    ? `/images/leader-artworks/${String(encounter.faction).toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")}.webp`
-    : "";
-
   const cityTeam = useMemo(
     () => encounter ? (encounter.team?.length === 4 ? encounter.team : buildCityTeam(encounter.faction, encounter.id)) : [],
     [encounter?.id]
@@ -423,17 +419,13 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md">
           <div className="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-amber-100/20 bg-gradient-to-br from-[#20233b] via-[#111a2b] to-[#172d31] text-white shadow-[0_24px_80px_rgba(0,0,0,.65)]">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-amber-200/80 to-transparent" />
-            <div className="grid grid-cols-[minmax(124px,220px)_1fr] gap-3 px-4 pt-5 sm:grid-cols-[minmax(190px,280px)_1fr] sm:gap-5 sm:px-7 sm:pt-7">
-              <div className="relative min-h-[150px] overflow-hidden rounded-2xl border border-amber-100/20 bg-black/30 sm:min-h-[210px]">
-                <img
-                  src={leaderArtwork}
-                  alt={`Artwork di ${encounter.traveler || encounter.name}, capo della fazione ${encounter.faction}`}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#101522]/35 via-transparent to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-200/70 to-transparent" />
+            <div className="grid grid-cols-[112px_1fr] gap-3 px-4 pt-5 sm:grid-cols-[180px_1fr] sm:gap-5 sm:px-7 sm:pt-7">
+              <div className="relative flex min-h-[190px] items-end justify-center sm:min-h-[230px]">
+                <div className="absolute bottom-2 h-7 w-28 rounded-full bg-black/35 blur-md" />
+                <div className="relative z-[1]">
+                  <AdventureTravelerSprite traveler={encounter.traveler || encounter.name} faction={encounter.faction} size={150} />
+                </div>
+                <div className="absolute bottom-0 left-1/2 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
               </div>
               <div className="min-w-0 self-center py-3">
                 <div className="text-[9px] font-black uppercase tracking-[.28em] text-amber-200/65">{encounter.city} · {encounter.faction} · CAPO FAZIONE</div>
