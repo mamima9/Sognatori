@@ -30,6 +30,23 @@ const FIRST_BOND_QUESTIONS = [
   { q: "In un gruppo, quale ruolo assumi?", a: [["Organizzo e pianifico","Robot"],["Incoraggio tutti","Umano"],["Trovo idee insolite","Nuvola"],["Tengo unito il gruppo","Dolce"]] },
   { q: "Quale valore non vorresti mai perdere?", a: [["La libertà","Nuvola"],["La sincerità","Salato"],["La speranza","Luce"],["La determinazione","Demone"]] },
 ];
+const WILD_RECRUIT_QUESTS = {
+  Demone: { clue: "Tra le rocce trovi cenere ancora calda: qualcuno ha protetto questo luogo durante una tempesta di fuoco.", task: "Metti in sicurezza il passaggio spostando le pietre instabili.", action: "Metto in sicurezza il passaggio", bond: "Non voglio dimostrare di essere più forte. Voglio che nessuno resti indietro." },
+  Robot: { clue: "Sul terreno lampeggiano piccoli frammenti metallici: sembrano parte di un vecchio dispositivo.", task: "Raccogli i componenti e ricostruisci il circuito vicino al punto d'osservazione.", action: "Ricompongo il circuito", bond: "La tua logica mi incuriosisce, ma voglio conoscere anche ciò che non puoi calcolare." },
+  Natura: { clue: "Le impronte conducono a una pianta appassita che cresce lontano dall'acqua.", task: "Trova una sorgente vicina e riporta l'acqua alla pianta.", action: "Salvo la pianta", bond: "La vita va custodita, non posseduta. Se vuoi, esploriamo insieme." },
+  Nuvola: { clue: "Piccole piume sospese nell'aria indicano una corrente che sale verso una rupe.", task: "Raggiungi il punto panoramico e osserva il percorso del vento.", action: "Seguo la corrente", bond: "Non voglio trattenerti. Possiamo viaggiare insieme restando liberi." },
+  Umano: { clue: "Un viandante ha lasciato cadere una lettera prima di entrare nel bosco.", task: "Ritrova il destinatario e consegna il messaggio.", action: "Consegno il messaggio", bond: "Le storie diventano più grandi quando vengono condivise." },
+  Luce: { clue: "Un piccolo bagliore pulsa sotto una pietra: sembra una lanterna rimasta senza energia.", task: "Raccogli una fonte luminosa nell'area e riaccendi la lanterna.", action: "Riaccendo la lanterna", bond: "Anche una luce piccola può guidare qualcuno. Camminiamo insieme." },
+  Dolce: { clue: "Un profumo zuccherino porta a un cespuglio con frutti ancora acerbi.", task: "Trova un frutto maturo da lasciare vicino al rifugio.", action: "Preparo il dono", bond: "La gentilezza è un dono che si sceglie ogni giorno." },
+  Marino: { clue: "Conchiglie spezzate e alghe fresche segnano il passaggio verso una pozza nascosta.", task: "Recupera un oggetto trascinato dalla marea senza danneggiare il piccolo habitat.", action: "Recupero l'oggetto", bond: "Come la marea, anche noi possiamo cambiare senza perderci." },
+  Orso: { clue: "Vicino al rifugio trovi rami spezzati e segni di un piccolo animale in difficoltà.", task: "Libera il sentiero e metti al sicuro l'animale.", action: "Proteggo l'animale", bond: "La forza serve a proteggere. Hai capito cosa conta davvero." },
+  Mago: { clue: "Un simbolo antico è inciso su una pietra, ma manca una parte della sequenza.", task: "Osserva i segni attorno al luogo e completa il simbolo.", action: "Completo il simbolo", bond: "La conoscenza vale quando viene condivisa. Ti accompagnerò." },
+  Salato: { clue: "Due sentieri si incrociano: uno è coperto di sale, l'altro di fiori selvatici.", task: "Trova un modo per far convivere i due ambienti senza alterare il luogo.", action: "Ristabilisco l'equilibrio", bond: "Gli opposti possono collaborare senza annullarsi." },
+};
+function getWildRecruitQuest(sognatore) {
+  const faction = sognatore?.tipo || sognatore?.fazione || "Natura";
+  return WILD_RECRUIT_QUESTS[faction] || WILD_RECRUIT_QUESTS.Natura;
+}
 const TRIAL_RUNES = ["◆", "✦", "●", "▲", "☾", "✚"];
 function buildResonanceTrial(seedValue) {
   const raw = String(seedValue || "sognatore");
@@ -79,6 +96,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const [trialLives, setTrialLives] = useState(3);
   const [trialMode, setTrialMode] = useState("preview");
   const [trialError, setTrialError] = useState("");
+  const [wildQuestStep, setWildQuestStep] = useState(0);
   const [confirmRestart, setConfirmRestart] = useState(false);
   const currentReward = rewardQueue[rewardIndex];
   const wildSognatore = wildEncounter ? ROSTER.find((s) => s.id === wildEncounter.rosterId) || ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
@@ -113,7 +131,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
 
   useEffect(() => {
     if (wildEncounter) {
-      setTrialRound(0); setTrialStep(0); setTrialLives(3); setTrialMode("preview"); setTrialError("");
+      setWildQuestStep(0);
       setPhase("wildTalk");
     } else if (encounter) {
         setPhase(save.conqueredLeaders.includes(encounter.id) ? "completed" : "traveler");
@@ -249,16 +267,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       setTrialMode("preview");
       return;
     }
-    if (phase === "wildTalk" && wildSognatore && wildCanRecruit) {
-      setSave((old) => {
-        if (old.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome)) return old;
-        const ownedIds = [...old.ownedIds, wildSognatore.id];
-        const partyIds = old.partyIds.length < 4 ? [...old.partyIds, wildSognatore.id] : old.partyIds;
-        return { ...old, ownedIds, partyIds };
-      });
-      setPhase("idle");
-      onWildClose?.(true);
-    } else if (phase === "reward" && currentReward) {
+    if (phase === "reward" && currentReward) {
       convince(currentReward);
     }
   };
@@ -406,10 +415,36 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">Hai già stretto un legame con {wildSognatore.nome}. Gli altri esemplari della stessa specie restano liberi nel loro habitat, ma non possono essere arruolati una seconda volta.</div>
               ) : !wildCanRecruit ? (
                 <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">Questo esemplare vive in branco e non è arruolabile. Cerca il suo simile contrassegnato dalla stella dorata ✦: uno solo per specie può stringere il legame con te.</div>
-              ) : <>
-                <p className="mt-2 text-sm text-white/60">Completa tre fasi di memoria: 4, 6 e 8 rune. Hai soltanto tre errori per l'intera prova.</p>
-                {renderResonanceTrial("cyan")}
-              </>}
+              ) : (() => {
+                const quest = getWildRecruitQuest(wildSognatore);
+                return (
+                  <div className="mt-4 rounded-2xl border border-cyan-200/15 bg-cyan-950/25 p-4 text-left">
+                    <div className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-200">Percorso di sintonia · {wildQuestStep + 1}/3</div>
+                    {wildQuestStep === 0 ? <>
+                      <p className="mt-3 text-sm leading-6 text-white/80">{quest.clue}</p>
+                      <p className="mt-2 text-xs text-cyan-100/55">Osserva l'habitat e scopri cosa è successo prima di avvicinarti.</p>
+                      <button onClick={() => setWildQuestStep(1)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">SEGUI GLI INDIZI</button>
+                    </> : wildQuestStep === 1 ? <>
+                      <p className="mt-3 text-sm leading-6 text-white/80">{quest.task}</p>
+                      <p className="mt-2 text-xs text-cyan-100/55">Non serve combattere: dimostra attenzione e rispetto per il suo mondo.</p>
+                      <button onClick={() => setWildQuestStep(2)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">{quest.action.toUpperCase()}</button>
+                    </> : <>
+                      <p className="mt-3 text-sm leading-6 text-white/80">{quest.bond}</p>
+                      <p className="mt-2 text-xs text-emerald-200/70">Il legame è pronto. {save.partyIds.length < 4 ? "Potrà unirsi alla tua squadra." : "La squadra è piena: entrerà nella tua collezione."}</p>
+                      <button onClick={() => {
+                        setSave((old) => {
+                          if (old.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome)) return old;
+                          const ownedIds = [...old.ownedIds, wildSognatore.id];
+                          const partyIds = old.partyIds.length < 4 ? [...old.partyIds, wildSognatore.id] : old.partyIds;
+                          return { ...old, ownedIds, partyIds };
+                        });
+                        setPhase("idle");
+                        onWildClose?.(true);
+                      }} className="mt-4 w-full rounded-xl bg-emerald-300 py-3 text-sm font-black text-slate-950">STRINGI IL LEGAME</button>
+                    </>}
+                  </div>
+                );
+              })()}
             </> : <p className="mt-4">Questo Sognatore non è presente nel roster attuale.</p>}
             <button onClick={() => { setPhase("idle"); onWildClose?.(false); }} className="mt-4 w-full rounded-xl bg-white/10 py-3 text-sm font-bold">LASCIALO LIBERO</button>
           </div>
