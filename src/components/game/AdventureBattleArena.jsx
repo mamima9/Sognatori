@@ -498,10 +498,51 @@ Object.entries(usedActions).forEach(([key, a]) => {
 while (remainingActions.length > 0) {
   const act = remainingActions.shift();
 
+  const hitTarget = act.target;
+  const hitTargetHpBefore = hitTarget?.hp;
   const { log: actionLog, events } = processAction(
     act,
     lang
   );
+
+  // ABSTRACTION (Chino): dopo aver subito un colpo, si ritira in panchina
+  // e il primo compagno disponibile prende immediatamente il suo posto.
+  if (
+    hitTarget?.abilKey === "chino_abstraction" &&
+    !hitTarget.fainted &&
+    hitTarget.hp < hitTargetHpBefore
+  ) {
+    const isPlayerTarget = pActive.some((s) => s === hitTarget);
+    const activeTeam = isPlayerTarget ? pActive : eActive;
+    const benchTeam = isPlayerTarget ? pBench : eBench;
+    const activeSlot = activeTeam.findIndex((s) => s === hitTarget);
+    const benchIndex = benchTeam.findIndex((s) => s && !s.fainted);
+
+    if (activeSlot !== -1 && benchIndex !== -1) {
+      const incoming = benchTeam[benchIndex];
+      resetStatsOnBench(hitTarget);
+      activeTeam[activeSlot] = incoming;
+      benchTeam[benchIndex] = hitTarget;
+
+      // Gli eventuali attacchi già in coda sullo stesso slot colpiscono
+      // il compagno appena entrato, non Chino ormai in panchina.
+      remainingActions.forEach((queued) => {
+        if (queued.target === hitTarget) queued.target = incoming;
+      });
+
+      const switchMessage = lang === "en"
+        ? `Abstraction: Chino retreats to the bench. ${incoming.nome} takes the field!`
+        : `Abstraction: Chino passa in panchina. Entra ${incoming.nome}!`;
+      actionLog.push(switchMessage);
+
+      onEntry(
+        incoming,
+        activeTeam,
+        isPlayerTarget ? eActive : pActive,
+        lang
+      ).forEach((line) => actionLog.push(line));
+    }
+  }
 
   setLog((prev) => [...prev, ...actionLog]);
 
@@ -534,6 +575,9 @@ while (remainingActions.length > 0) {
         : s
     )
   );
+
+  setPlayerBench([...pBench]);
+  setEnemyBench([...eBench]);
 
   await sleep(4000);
 
