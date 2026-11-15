@@ -634,6 +634,16 @@ if (
 
         break;
 
+      case "ponte_inzuppare":
+        if (dmg > 0 && !act.target.fainted) {
+          act.target.statusEffect = "inzuppato";
+          act.target.statusTurns = Math.max(act.target.statusTurns || 0, 2);
+          msg += lang === "en"
+            ? ` · ${act.target.nome} is soaked! (Inzuppato)`
+            : ` · ${act.target.nome} è Inzuppato!`;
+        }
+        break;
+
       case "uesditti_debuff":
         if (
           applyMod(
@@ -1317,6 +1327,16 @@ export function applyEndOfTurn(
 
     s.turnsInPlay =
       (s.turnsInPlay || 0) + 1;
+
+    if (s.statusEffect === "inzuppato" && s.statusTurns > 0) {
+      s.statusTurns -= 1;
+      if (s.statusTurns <= 0) {
+        s.statusEffect = null;
+        log.push(lang === "en"
+          ? `${s.nome} is no longer soaked.`
+          : `${s.nome} non è più Inzuppato.`);
+      }
+    }
 
     const abil =
       s.abilityNullified

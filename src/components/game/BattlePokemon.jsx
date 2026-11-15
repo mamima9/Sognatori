@@ -86,6 +86,17 @@ export default function BattlePokemon({ s, side, popup, cinematic = false }) {
         )}
       </AnimatePresence>
 
+      {s.statusEffect === "inzuppato" && (
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 rounded-full border border-cyan-300/70 bg-blue-950/90 px-2 py-0.5 text-[10px] font-black text-cyan-200 shadow-lg whitespace-nowrap"
+          title={lang === "en" ? "Soaked" : "Inzuppato"}
+        >
+          💧 INZUPPATO
+        </motion.div>
+      )}
+
       <div className="flex gap-1 mb-1 items-center">
         <FactionBadge type={getType(s)} />
         {s.tipo2 && <FactionBadge type={s.tipo2} />}
