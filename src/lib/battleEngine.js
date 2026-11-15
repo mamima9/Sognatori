@@ -1369,11 +1369,6 @@ export function applyEndOfTurn(
       }
     }
 
-    const abil =
-      s.abilityNullified
-        ? null
-        : s.abilKey;
-
     if (
       abil === "nina_regen" &&
       s.hp < s.hpMax
@@ -2223,11 +2218,6 @@ export function applyEndOfTurnDual(
 
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
-
-    const abil =
-      s.abilityNullified
-        ? null
-        : s.abilKey;
 
     if (
       abil === "nina_regen" &&
