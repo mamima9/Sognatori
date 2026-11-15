@@ -283,6 +283,10 @@ export function calcDamage(attacker, defender) {
         ? "res"
         : "neutral";
 
+  if (target && target.dominanceProtected) {
+    return { dmg: 0, bonus, immune: true, efficacy: "protected" };
+  }
+
   return {
     dmg: Math.max(1, raw),
     bonus,
@@ -307,6 +311,13 @@ export function onEntry(
     : s.abilKey;
 
   s.blockFirstAttack = false;
+
+  if (abil === "roccota_dominance") {
+    s.dominanceProtected = true;
+    log.push(lang === "en"
+      ? "Dominance: Roccotà is immune to damage this turn."
+      : "Dominance: Roccotà non subisce danni in questo turno.");
+  }
 
   switch (abil) {
     case "ring_ape_spargimiele": {
@@ -1328,6 +1339,9 @@ export function applyEndOfTurn(
     s.turnsInPlay =
       (s.turnsInPlay || 0) + 1;
 
+    // Dominance protegge solo durante il turno d'ingresso.
+    s.dominanceProtected = false;
+
     if (s.statusEffect === "inzuppato" && s.statusTurns > 0) {
       s.statusTurns -= 1;
       if (s.statusTurns <= 0) {
@@ -2172,6 +2186,9 @@ export function applyEndOfTurnDual(
 
     s.turnsInPlay =
       (s.turnsInPlay || 0) + 1;
+
+    // Dominance protegge solo durante il turno d'ingresso.
+    s.dominanceProtected = false;
 
     const abil =
       s.abilityNullified
