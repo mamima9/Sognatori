@@ -283,7 +283,7 @@ export function calcDamage(attacker, defender) {
         ? "res"
         : "neutral";
 
-  if (target && target.dominanceProtected) {
+  if (defender && defender.dominanceProtected) {
     return { dmg: 0, bonus, immune: true, efficacy: "protected" };
   }
 
