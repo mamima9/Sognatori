@@ -371,6 +371,7 @@ const WILD_SPECIES_DESIGNS = {
   "ring-ape": { shape:"ring-ape", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
   eriiro: { shape:"oni-demon", colors:["#4b2038","#a83d50","#e66c61","#ffd08a"] },
   chino: { shape:"caterpillar", colors:["#4d465d","#e5b96f","#342d43","#ffe0a0"] },
+  riwi: { shape:"hedgehog", colors:["#7d572f","#d6a15a","#3e2b24","#f8e2a5"] },
 };
 
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
@@ -405,7 +406,7 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
 
   // Chino usa il PNG originale del roster: elimina il fondale nero e ritaglia
   // il soggetto prima di disegnarlo, così non compare un quadrato nell'overworld.
-  if (id === "chino" && s?.img) {
+  if ((id === "chino" || id === "riwi") && s?.img) {
     const sprite = getAdventureWildImage(s.img);
     if (sprite) {
       const height = 36;

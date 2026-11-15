@@ -90,6 +90,34 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
     ordered.forEach((action) => {
       const outcome = processActionDual(action, mIt, mEn);
       turnLogs.push(...(lang === "en" ? outcome.log_en : outcome.log_it));
+
+      // Riccioarmatura: chi colpisce Riwi perde 3 HP e, se sopravvive,
+      // viene sostituito da un compagno della panchina avversaria.
+      const hitRiwi = action.target?.abilKey === "riwi_riccioarmatura"
+        && !action.target.abilityNullified
+        && (outcome.events || []).some((event) => event.targetId === action.target.id && event.dmg > 0);
+      if (hitRiwi) {
+        const enemyIndex = next.enemyActive.findIndex((s) => s && s.id === action.attacker.id);
+        if (enemyIndex >= 0 && !action.attacker.fainted) {
+          action.attacker.hp = Math.max(0, action.attacker.hp - 3);
+          turnLogs.push(lang === "en"
+            ? "Riccioarmatura: the attacker loses 3 HP and is sent to the bench!"
+            : "Riccioarmatura: l'attaccante perde 3 HP e viene mandato in panchina!");
+          if (action.attacker.hp <= 0) {
+            action.attacker.fainted = true;
+          } else {
+            const reserveIndex = (next.enemyBench || []).findIndex((s) => s && !s.fainted && s.hp > 0);
+            if (reserveIndex >= 0) {
+              const [incoming] = next.enemyBench.splice(reserveIndex, 1);
+              next.enemyBench.push(action.attacker);
+              const fresh = initBattleSognatore(incoming);
+              next.enemyActive[enemyIndex] = fresh;
+              const entry = onEntryDual(fresh, next.enemyActive, next.playerActive, mIt, mEn);
+              turnLogs.push(...(lang === "en" ? entry.log_en : entry.log_it));
+            }
+          }
+        }
+      }
     });
 
     const end = applyEndOfTurnDual([...next.playerActive, ...next.enemyActive], mIt, mEn);

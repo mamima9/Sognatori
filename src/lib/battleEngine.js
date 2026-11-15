@@ -1351,9 +1351,8 @@ export function applyEndOfTurn(
     ) {
       applyMod(s, "att", 3, allActive);
       s.slurpoAthTriggered = true;
-      log.push(lang === "en"
-        ? "ATH: Slurpo gains +3 ATK for reaching its third turn in battle!"
-        : "ATH: Slurpo raggiunge il terzo turno in campo e ottiene +3 ATT!");
+      log_it.push("ATH: Slurpo raggiunge il terzo turno in campo e ottiene +3 ATT!");
+      log_en.push("ATH: Slurpo gains +3 ATK on its third turn in battle!");
     }
 
     // Dominance protegge solo durante il turno d'ingresso.
