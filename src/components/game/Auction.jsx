@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ROSTER } from "@/lib/sognatoriData";
 
 // Eriiro è un personaggio esclusivo della modalità Avventura.
-const ARCADE_ROSTER = ROSTER.filter((s) => s.id !== "eriiro" && s.id !== "chino" && s.id !== "ponte");
+const ARCADE_ROSTER = ROSTER.filter((s) => s.id !== "eriiro" && s.id !== "chino" && s.id !== "ponte" && s.id !== "roccota");
 import { FactionBadge } from "./HealthBar";
 import { useCountdown, TimerBar } from "./Timer";
 import AbandonButton from "./AbandonButton";
