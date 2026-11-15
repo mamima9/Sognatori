@@ -1339,6 +1339,23 @@ export function applyEndOfTurn(
     s.turnsInPlay =
       (s.turnsInPlay || 0) + 1;
 
+    const abil =
+      s.abilityNullified
+        ? null
+        : s.abilKey;
+
+    if (
+      abil === "slurpo_ath" &&
+      s.turnsInPlay === 2 &&
+      !s.slurpoAthTriggered
+    ) {
+      applyMod(s, "att", 3, allActive);
+      s.slurpoAthTriggered = true;
+      log.push(lang === "en"
+        ? "ATH: Slurpo gains +3 ATK for reaching its third turn in battle!"
+        : "ATH: Slurpo raggiunge il terzo turno in campo e ottiene +3 ATT!");
+    }
+
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
 
@@ -2186,6 +2203,23 @@ export function applyEndOfTurnDual(
 
     s.turnsInPlay =
       (s.turnsInPlay || 0) + 1;
+
+    const abil =
+      s.abilityNullified
+        ? null
+        : s.abilKey;
+
+    if (
+      abil === "slurpo_ath" &&
+      s.turnsInPlay === 2 &&
+      !s.slurpoAthTriggered
+    ) {
+      applyMod(s, "att", 3, allActive);
+      s.slurpoAthTriggered = true;
+      log.push(lang === "en"
+        ? "ATH: Slurpo gains +3 ATK for reaching its third turn in battle!"
+        : "ATH: Slurpo raggiunge il terzo turno in campo e ottiene +3 ATT!");
+    }
 
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
