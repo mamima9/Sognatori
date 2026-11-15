@@ -291,6 +291,54 @@ export function drawAdventureTraveler(ctx, traveler, faction, x, y, frame=0, sca
 
 
 
+const ADVENTURE_WILD_IMAGE_CACHE = new Map();
+
+function getAdventureWildImage(src) {
+  if (!src || typeof Image === "undefined" || typeof document === "undefined") return null;
+  let entry = ADVENTURE_WILD_IMAGE_CACHE.get(src);
+  if (!entry) {
+    const image = new Image();
+    entry = { image, canvas: null };
+    ADVENTURE_WILD_IMAGE_CACHE.set(src, entry);
+    image.onload = () => {
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
+      const source = document.createElement("canvas");
+      source.width = sourceWidth;
+      source.height = sourceHeight;
+      const sourceCtx = source.getContext("2d", { willReadFrequently: true });
+      if (!sourceCtx) return;
+      sourceCtx.drawImage(image, 0, 0);
+      const pixels = sourceCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+      let minX = sourceWidth, minY = sourceHeight, maxX = -1, maxY = -1;
+      for (let y = 0; y < sourceHeight; y++) {
+        for (let x = 0; x < sourceWidth; x++) {
+          const i = (y * sourceWidth + x) * 4;
+          const red = pixels.data[i], green = pixels.data[i + 1], blue = pixels.data[i + 2];
+          if (red < 24 && green < 24 && blue < 24) {
+            pixels.data[i + 3] = 0;
+          } else if (pixels.data[i + 3] > 0) {
+            minX = Math.min(minX, x); minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+          }
+        }
+      }
+      if (maxX < minX || maxY < minY) return;
+      sourceCtx.putImageData(pixels, 0, 0);
+      const cropped = document.createElement("canvas");
+      cropped.width = maxX - minX + 1;
+      cropped.height = maxY - minY + 1;
+      cropped.getContext("2d")?.drawImage(
+        source, minX, minY, cropped.width, cropped.height,
+        0, 0, cropped.width, cropped.height
+      );
+      entry.canvas = cropped;
+    };
+    image.src = src;
+  }
+  return entry.canvas;
+}
+
 const WILD_SPECIES_DESIGNS = {
   adlimago: { shape:"mage", colors:["#44315f","#9b79c9","#d9c4f3","#f3d88b"] },
   cancucc: { shape:"bread", colors:["#8a4c31","#d7a16f","#f5d8a6","#fff0d2"] },
@@ -322,10 +370,11 @@ const WILD_SPECIES_DESIGNS = {
   elmas: { shape:"crystal", colors:["#4c5558","#929b95","#c9c9b7","#ffffff"] },
   "ring-ape": { shape:"ring-ape", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
   eriiro: { shape:"oni-demon", colors:["#4b2038","#a83d50","#e66c61","#ffd08a"] },
+  chino: { shape:"caterpillar", colors:["#4d465d","#e5b96f","#342d43","#ffe0a0"] },
 };
 
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
-  const id = s?.id || "";
+  const id = s?.rosterId || s?.id || "";
   const type = s?.tipo || "Natura";
   const factionPalettes = {
     Dolce:["#a96a91","#f0b9d4","#653e68","#fff0df"],
@@ -353,6 +402,20 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   ctx.beginPath();
   ctx.ellipse(0,1,14,4,0,0,Math.PI*2);
   ctx.fill();
+
+  // Chino usa il PNG originale del roster: elimina il fondale nero e ritaglia
+  // il soggetto prima di disegnarlo, così non compare un quadrato nell'overworld.
+  if (id === "chino" && s?.img) {
+    const sprite = getAdventureWildImage(s.img);
+    if (sprite) {
+      const height = 36;
+      const width = height * sprite.width / sprite.height;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite, -width / 2, -height, width, height);
+      ctx.restore();
+      return;
+    }
+  }
 
   // Creature native, non crop delle carte: ogni specie mantiene una silhouette
   // propria, con volume, ombra e animazione leggibili nell'overworld.
