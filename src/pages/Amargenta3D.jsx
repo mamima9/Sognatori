@@ -731,13 +731,21 @@ export default function Amargenta3D({ onExit }) {
     {panel&&<div style={{position:"absolute",left:18,top:82,width:"min(330px,calc(100vw - 36px))",maxHeight:"60vh",overflowY:"auto",padding:16,borderRadius:15,background:"#17231fee",border:"1px solid #d8b77d99",boxShadow:"0 16px 45px #0009",fontSize:12,lineHeight:1.65}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>{panel==="map"?"MAPPA DI AMARGENTA":panel==="journal"?"DIARIO DEL VIAGGIATORE":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       {panel==="map"&&<div>
-        <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(145deg,#526c49 0%,#718354 45%,#345d5c 46%,#31504b 55%,#6b7850 56%,#455d3e 100%)"}}>
-          <div style={{position:"absolute",left:"48%",top:0,width:10,height:"100%",background:"#397f83",opacity:.8}}/>
-          <div style={{position:"absolute",left:"14%",top:"45%",width:"72%",height:12,background:"#b79a71",transform:"rotate(-12deg)"}}/>
-          {[[50,50],[22,27],[78,72],[28,75],[70,20]].map(([x,y],i)=><div key={i} style={{position:"absolute",left:x+"%",top:y+"%",width:8,height:8,borderRadius:8,background:i===0?"#f1d18b":"#e5b66b",border:"1px solid #33271f"}}/>)}
-          <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff"}}/>
+        <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
+          <div style={{position:"absolute",left:"68%",top:0,width:9,height:"100%",background:"#397f83",opacity:.9}}/>
+          <div style={{position:"absolute",left:"60%",top:"27%",width:"25%",height:7,background:"#b99a71",border:"1px solid #6d563d"}}/>
+          <div style={{position:"absolute",left:"60%",top:"50%",width:"25%",height:7,background:"#b99a71",border:"1px solid #6d563d"}}/>
+          <div style={{position:"absolute",left:"17%",top:"49%",width:"47%",height:7,background:"#c7a47a",transform:"rotate(-2deg)"}}/>
+          <div style={{position:"absolute",left:"48%",top:"50%",width:"23%",height:6,background:"#c7a47a",transform:"rotate(24deg)"}}/>
+          {[
+            ["Ingresso",-44,2,"#f1d18b"],["Piazza",0,0,"#e5b66b"],["Lina",-24,-31,"#d9d58b"],
+            ["Orma",-10,-19,"#c7a5df"],["Bruno",18,-7,"#78b6c1"],["Torrefazione",16,28,"#a64c36"],
+            ["Caffè",-22,-1,"#a64c36"],["Cripta",-70,-43,"#d4b3ff"]
+          ].map(([name,x,z,color])=><div key={name} title={name} style={{position:"absolute",left:Math.max(2,Math.min(98,(x+72)/144*100))+"%",top:Math.max(2,Math.min(98,(z+72)/144*100))+"%",width:8,height:8,borderRadius:8,background:color,border:"1px solid #33271f",transform:"translate(-50%,-50%)"}}/>)}
+          <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff",transform:"translate(-50%,-50%)"}}/>
+          <div style={{position:"absolute",right:7,top:5,fontSize:9,fontWeight:900,color:"#fff4d8",textShadow:"0 1px 3px #000"}}>N ↑</div>
         </div>
-        <div style={{marginTop:8,color:"#d7c5a5"}}>Piazza del Chicco · Terrazze · Torrefazione · Caffè delle Tre Foglie · Cripta segreta</div>
+        <div style={{marginTop:8,color:"#d7c5a5"}}>Punti dorati: ingresso e piazza · Simboli: personaggi, botteghe e Cripta · Punto bianco: tu</div>
       </div>}
       {panel==="journal"&&<div>
         {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
