@@ -613,19 +613,29 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
   };
   const factionPalettes = {
     Demone: ["#75434a", "#96504c", "#b65d4d", "#633b43", "#c87555"],
-    Robot: ["#345c62", "#3f7378", "#568d8c", "#294d5b", "#70a7a0"],
+    Robot: ["#7d8993", "#89949e", "#9ba5ad", "#78848e", "#b9c1c8"],
     Natura: ["#426f45", "#52864a", "#659c52", "#365f40", "#79ad60"],
-    Nuvola: ["#8da8c4", "#a8bdd2", "#c1d1df", "#7897b8", "#d4deeb"],
-    Umano: ["#98734d", "#ad8557", "#c09a68", "#876344", "#d0ae7b"],
+    Nuvola: ["#dce7ef", "#e3edf4", "#edf4f8", "#cbd9e4", "#f7fbff"],
+    Umano: ["#41454b", "#55585d", "#686d73", "#34383e", "#858b91"],
     Luce: ["#b49a4b", "#c9ad57", "#ddc46d", "#a98b3e", "#ead58c"],
-    Dolce: ["#a96f9b", "#c083ae", "#d79ac0", "#95618d", "#e8b4d0"],
+    Dolce: ["#a97849", "#c89a62", "#d9b17f", "#986b43", "#e5c18a"],
     Marino: ["#367b88", "#438e9b", "#58a5ae", "#2e697e", "#80c1c5"],
     Orso: ["#766044", "#92734d", "#aa875a", "#624e3c", "#c09b69"],
     Mago: ["#62517f", "#79649a", "#907ab0", "#51436e", "#b09ad0"],
-    Salato: ["#8b8b7d", "#a3a394", "#b9b9a8", "#747b79", "#d0cbb6"],
+    Salato: ["#a96f77", "#c98e91", "#d9a5a5", "#98676d", "#e8c5c2"],
   };
   const factionPalette = factionPalettes[faction] || palettes["Prato dei Sogni"];
-  const flowerColors = ["#f4e8c4", "#e8a8c8", "#d7e9ef", "#f1cf72"];
+  const detailColors = {
+    Robot: "#d4d9de", Nuvola: "#ffffff", Umano: "#858b91",
+    Dolce: "#e5c18a", Salato: "#e8c5c2",
+  };
+  const detailColor = detailColors[faction] || "#83b365";
+  const flowerColors = faction === "Robot" ? ["#d4d9de", "#f6f8fa", "#aeb8c1", "#ffffff"]
+    : faction === "Nuvola" ? ["#ffffff", "#f4f9fd", "#d3e2ec", "#ffffff"]
+    : faction === "Umano" ? ["#858b91", "#d5d9dd", "#aeb3b8", "#ffffff"]
+    : faction === "Dolce" ? ["#e5c18a", "#fff0d0", "#d9b17f", "#f0d7b5"]
+    : faction === "Salato" ? ["#e8c5c2", "#fff0e8", "#d9a5a5", "#f1d8d5"]
+    : ["#f4e8c4", "#e8a8c8", "#d7e9ef", "#f1cf72"];
   for (let y = top; y < bottom; y += tile) {
     for (let x = left; x < right; x += tile) {
       const zone = ZONES.find(z => x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) || ZONES[0];
@@ -645,7 +655,7 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
       if (seed % 3 === 0) {
         const gx = x + 7 + seed % 29;
         const gy = y + 8 + (seed >> 3) % 27;
-        ctx.fillStyle = zone.name === "Monti di Cenere" ? "#aaa08d" : zone.name === "Valle Dorata" ? "#d1b66a" : "#83b365";
+        ctx.fillStyle = detailColor;
         ctx.fillRect(gx, gy, 3, 7);
         ctx.fillRect(gx + 4, gy - 3, 3, 6);
         ctx.fillRect(gx + 8, gy + 1, 3, 5);
@@ -1364,30 +1374,39 @@ const [message, setMessage] = useState("");
       drawGroundTiles(ctx, cam, w, h, scale, activeCity.faction);
 
       /* SENTIERI: bordi d'erba, terra calda e tracce di ghiaia. */
+      const pathPalettes = {
+        Robot: ["#4f5b65", "#8b969f", "#d4d9de", "#aeb8c1"],
+        Salato: ["#80565d", "#c98e91", "#e8c5c2", "#b9787e"],
+        Dolce: ["#815333", "#c89a62", "#e5c18a", "#b77b45"],
+        Nuvola: ["#aabac8", "#e3edf4", "#ffffff", "#d3e2ec"],
+        Umano: ["#292c31", "#55585d", "#858b91", "#41454b"],
+      };
+      const [pathShadow, pathMain, pathLight, pathDetail] =
+        pathPalettes[activeCity.faction] || ["#66513d", "#92744b", "#c7a56a", "#a68a61"];
       const paths = [
         { x: 0, y: 1002, w: WORLD.width, h: 116, horizontal: true },
         { x: 1732, y: 0, w: 136, h: WORLD.height, horizontal: false },
         { x: 792, y: 542, w: 2116, h: 86, horizontal: true },
       ];
       for (const path of paths) {
-        ctx.fillStyle = "rgba(37,42,29,.3)";
+        ctx.fillStyle = pathShadow;
         ctx.fillRect(path.x, path.y, path.w, path.h);
-        ctx.fillStyle = "#92744b";
+        ctx.fillStyle = pathMain;
         ctx.fillRect(path.x, path.y + 5, path.w, path.h - 10);
-        ctx.fillStyle = "#c7a56a";
+        ctx.fillStyle = pathLight;
         ctx.fillRect(path.x, path.y + 9, path.w, path.h - 18);
-        ctx.fillStyle = "rgba(246,218,157,.34)";
+        ctx.fillStyle = pathDetail;
         ctx.fillRect(path.x, path.y + 12, path.w, 5);
-        ctx.fillStyle = "rgba(102,76,47,.22)";
+        ctx.fillStyle = pathShadow;
         ctx.fillRect(path.x, path.y + path.h - 15, path.w, 5);
 
         const step = 54;
         for (let n = 0; n < (path.horizontal ? path.w : path.h); n += step) {
           const px = path.horizontal ? path.x + n + ((n / step) % 2) * 9 : path.x + 24 + (n % 3) * 18;
           const py = path.horizontal ? path.y + 25 + (n % 3) * 17 : path.y + n + ((n / step) % 2) * 8;
-          ctx.fillStyle = "rgba(245,220,171,.45)";
+          ctx.fillStyle = pathDetail;
           ctx.fillRect(px, py, 7, 3);
-          ctx.fillStyle = "rgba(106,79,49,.24)";
+          ctx.fillStyle = pathShadow;
           ctx.fillRect(px + 13, py + 10, 5, 3);
         }
       }
@@ -1446,16 +1465,16 @@ const [message, setMessage] = useState("");
 
       const rockPalettes = {
         Demone: ["#452d38", "#8d4650", "#d06a54"],
-        Robot: ["#344e5c", "#638d98", "#a4d7d2"],
+        Robot: ["#4f5b65", "#8b969f", "#d4d9de"],
         Natura: ["#3e4548", "#727b7b", "#9da09a"],
-        Nuvola: ["#526982", "#91aac5", "#d7e5f4"],
-        Umano: ["#51483e", "#89775f", "#c2ad88"],
+        Nuvola: ["#aabac8", "#e3edf4", "#ffffff"],
+        Umano: ["#292c31", "#55585d", "#858b91"],
         Luce: ["#796039", "#c09a4c", "#f4d887"],
-        Dolce: ["#704b70", "#b77cae", "#f0c1df"],
+        Dolce: ["#815333", "#c89a62", "#e5c18a"],
         Marino: ["#294d60", "#4b8795", "#9bd1d0"],
         Orso: ["#49372b", "#806044", "#b9915c"],
         Mago: ["#3d3655", "#776b9d", "#c1b2e8"],
-        Salato: ["#555d5b", "#a4aaa3", "#e4e5dc"],
+        Salato: ["#80565d", "#c98e91", "#e8c5c2"],
       };
       const [rockShadow, rockMid, rockLight] = rockPalettes[activeCity.faction] || rockPalettes.Natura;
       for (const rock of WORLD_OBJECTS.rocks) {
@@ -2553,16 +2572,16 @@ function drawPlayer(ctx, p, facing = { x: 0, y: -1 }, frame = 0, walking = false
 function drawTree(ctx, x, y, r, faction = "Natura") {
   const palettes = {
     Demone: ["#49303a", "#8f3545", "#c9514e", "#f18a59"],
-    Robot: ["#304c59", "#477c83", "#68c9bd", "#c5f4e5"],
+    Robot: ["#414b55", "#626f7a", "#8b969f", "#d4d9de"],
     Natura: ["#493426", "#173d2b", "#24583a", "#65a65b"],
-    Nuvola: ["#526b91", "#829fc4", "#c4d9ef", "#f1f7ff"],
-    Umano: ["#60452f", "#315d3b", "#57864b", "#9abf65"],
+    Nuvola: ["#aabac8", "#cbd9e4", "#e3edf4", "#ffffff"],
+    Umano: ["#292c31", "#41454b", "#55585d", "#aeb3b8"],
     Luce: ["#73562c", "#a98639", "#e2c35e", "#fff0a8"],
-    Dolce: ["#714565", "#a65c91", "#e18fbd", "#ffd9eb"],
+    Dolce: ["#815333", "#a97849", "#c89a62", "#f0d7b5"],
     Marino: ["#31505a", "#27677a", "#3d9ba3", "#9ce0d9"],
     Orso: ["#49372b", "#604631", "#8b633d", "#c39a61"],
     Mago: ["#403553", "#554879", "#8571b5", "#c8b7f4"],
-    Salato: ["#555d5b", "#777f79", "#b5b9ae", "#f0eee3"],
+    Salato: ["#80565d", "#a96f77", "#c98e91", "#f1d8d5"],
   };
   const [bark, shade, foliage, highlight] = palettes[faction] || palettes.Natura;
   const size = Math.max(32, Math.round(r * 1.9 / 4) * 4);
