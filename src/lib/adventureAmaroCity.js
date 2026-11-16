@@ -68,12 +68,66 @@ function drawCoffeeMountainChain(c,t){
   plantationTier(c,286,-126,190,116,2,t);
   plantationTier(c,190,218,166,108,1,t);
   plantationTier(c,-270,218,170,106,1,t);
+  // Rampe fisiche leggibili tra il fondovalle e le terrazze rialzate.
+  drawCoffeeRamp(ctx,[-390,-40],[-286,-69],19);
+  drawCoffeeRamp(ctx,[390,-40],[286,-68],19);
+  drawCoffeeRamp(ctx,[-390,125],[-270,165],18);
+  drawCoffeeRamp(ctx,[390,120],[190,164],18);
+  drawCoffeeRamp(ctx,[-286,-181],[-180,-191],15);
   // Sentieri di collegamento che salgono a tornanti tra le quote.
   line(c,[[-388,-65],[-358,-78],[-340,-52],[-315,-66],[-292,-40]],"#d5ae7c",7);
   line(c,[[270,145],[298,125],[320,145],[350,124]],"#d5ae7c",7);
   line(c,[[-180,-175],[-155,-158],[-174,-139],[-147,-120]],"#e1bd8c",4);
   line(c,[[185,164],[210,145],[194,127],[222,110]],"#e1bd8c",4);
 }
+
+const AMARO_ELEVATED_PLOTS = [
+  { x:-286, y:-125, w:184, d:112, height:34 },
+  { x:-180, y:-238, w:142, d:94, height:28 },
+  { x:286, y:-126, w:190, d:116, height:34 },
+  { x:190, y:218, w:166, d:108, height:28 },
+  { x:-270, y:218, w:170, d:106, height:28 },
+];
+const AMARO_RAMPS = [
+  { a:[-390,-40], b:[-286,-69], from:0, to:34, width:19 },
+  { a:[390,-40], b:[286,-68], from:0, to:34, width:19 },
+  { a:[-390,125], b:[-270,165], from:0, to:28, width:18 },
+  { a:[390,120], b:[190,164], from:0, to:28, width:18 },
+  { a:[-286,-181], b:[-180,-191], from:34, to:28, width:15 },
+];
+function pointInDiamond(px,py,x,y,w,d) {
+  return Math.abs(px-x)/(w/2) + Math.abs(py-y)/(d/2) <= 1;
+}
+function projectToSegment(px,py,a,b) {
+  const dx=b[0]-a[0], dy=b[1]-a[1], length2=dx*dx+dy*dy;
+  const t=Math.max(0,Math.min(1,((px-a[0])*dx+(py-a[1])*dy)/length2));
+  return { t, distance:Math.hypot(px-(a[0]+dx*t),py-(a[1]+dy*t)) };
+}
+export function getAmaroElevationAt(worldX,worldY) {
+  const x=(worldX-1800)/1.55, y=(worldY-1200)/1.55;
+  for (const ramp of AMARO_RAMPS) {
+    const p=projectToSegment(x,y,ramp.a,ramp.b);
+    if (p.distance<=ramp.width) return (ramp.from+(ramp.to-ramp.from)*p.t)*1.55;
+  }
+  for (const plot of AMARO_ELEVATED_PLOTS) {
+    if (pointInDiamond(x,y,plot.x,plot.y,plot.w,plot.d)) return plot.height*1.55;
+  }
+  return 0;
+}
+export function canTraverseAmaroElevation(fromX,fromY,toX,toY) {
+  const from=getAmaroElevationAt(fromX,fromY), to=getAmaroElevationAt(toX,toY);
+  return Math.abs(to-from)<=12;
+}
+function drawCoffeeRamp(c,a,b,width) {
+  line(c,[[a[0],a[1]+width/2],[b[0],b[1]+width/2]],"#493027",width+7);
+  line(c,[a,b],"#c18a58",width);
+  line(c,[[a[0],a[1]-width/2],[b[0],b[1]-width/2]],"#e1bd8c",2);
+  for(let i=1;i<8;i++) {
+    const t=i/8, x=a[0]+(b[0]-a[0])*t, y=a[1]+(b[1]-a[1])*t;
+    line(c,[[x-width*.45,y],[x+width*.45,y]],"#e5c292",1.5);
+  }
+}
+
 export function drawAdventureAmaroCity(ctx,city){
   const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
   // Fondovalle terrazzato e mura concentriche della città fortificata.
