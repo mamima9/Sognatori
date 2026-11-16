@@ -656,6 +656,16 @@ if (
 
         break;
 
+      case "pingcake_abbiocco":
+        if (dmg > 0 && !act.target.fainted) {
+          act.target.statusEffect = "abbiocco";
+          act.target.statusTurns = Math.max(act.target.statusTurns || 0, 2);
+          msg += lang === "en"
+            ? ` · ${act.target.nome} is drowsy! (Abbiocco)`
+            : ` · ${act.target.nome} è in Abbiocco!`;
+        }
+        break;
+
       case "ponte_inzuppare":
         if (dmg > 0 && !act.target.fainted) {
           act.target.statusEffect = "inzuppato";
@@ -1136,6 +1146,16 @@ export function processAction(
 
       break;
 
+    case "pingcake_abbiocco":
+      if (dmg > 0 && !act.target.fainted) {
+        act.target.statusEffect = "abbiocco";
+        act.target.statusTurns = Math.max(act.target.statusTurns || 0, 2);
+        msg += lang === "en"
+          ? ` · ${act.target.nome} is drowsy! (Abbiocco)`
+          : ` · ${act.target.nome} è in Abbiocco!`;
+      }
+      break;
+
     case "uesditti_debuff":
       if (
         applyMod(
@@ -1368,6 +1388,16 @@ export function applyEndOfTurn(
 
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
+
+    if (s.statusEffect === "abbiocco" && s.statusTurns > 0) {
+      s.statusTurns -= 1;
+      if (s.statusTurns <= 0) {
+        s.statusEffect = null;
+        log.push(lang === "en"
+          ? `${s.nome} has shaken off its drowsiness.`
+          : `${s.nome} si è ripreso dall'Abbiocco.`);
+      }
+    }
 
     if (s.statusEffect === "assetato" && s.statusTurns > 0) {
       s.statusTurns -= 1;
