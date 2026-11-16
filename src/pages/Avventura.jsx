@@ -1009,10 +1009,14 @@ export default function Avventura() {
     ...(Array.isArray(user?.identities) ? user.identities.map((identity) => identity?.identity_data?.email) : []),
   ].filter(Boolean).map((email) => String(email).trim().toLowerCase());
   const isPersonalTester = accountEmails.includes("bibitoeuro@gmail.com");
+  // Accesso Avventura concesso anche all'account Mangu, senza privilegi extra sulle porte.
+  const isManguAccount = accountEmails.includes("manuelylari@gmail.com");
 
-  // Accesso all'Avventura e porte personali riservati a questo account o ai vincitori Arcade.
+  // Accesso all'Avventura riservato ai vincitori Arcade e agli account autorizzati.
   const testerAllowed =
-    user?.user_metadata?.sognatori_arcade_completed === true || isPersonalTester;
+    user?.user_metadata?.sognatori_arcade_completed === true ||
+    isPersonalTester ||
+    isManguAccount;
   const personalAllDoorsUnlocked = isPersonalTester;
 
   /*
