@@ -106,6 +106,46 @@ function loadSave(key) {
   }
 }
 
+function FactionMedal({ faction, color }) {
+  const common = { fill: color || "#d8c7ff", stroke: "#241d24", strokeWidth: 3, strokeLinejoin: "round" };
+  let shape = null;
+  switch (faction) {
+    case "Demone":
+      shape = <><path d="M8 42C2 28 3 12 8 5C18 11 23 20 24 31C27 18 34 8 44 4C49 20 47 34 38 43L31 35L24 43Z" {...common}/><path d="M9 9L18 29M43 8L31 29" stroke="#ff9b52" strokeWidth="4" fill="none"/></>;
+      break;
+    case "Marino":
+      shape = <path d="M25 3C19 14 8 24 8 34a17 17 0 0 0 34 0C42 24 31 14 25 3Z" {...common}/>;
+      break;
+    case "Dolce":
+      shape = <><path d="M25 4L31 13L42 10L40 22L48 29L38 36L36 47L25 42L14 47L12 36L2 29L10 22L8 10L19 13Z" {...common}/><circle cx="25" cy="27" r="11" fill="#f5d48b" stroke="#6d4537" strokeWidth="3"/></>;
+      break;
+    case "Natura":
+      shape = <><path d="M25 45C6 37 3 17 9 7C24 8 34 16 37 29C39 15 45 9 50 7C54 26 45 42 25 45Z" {...common}/><path d="M12 42L40 15M25 31L20 19M31 25L40 27" stroke="#315a32" strokeWidth="3" fill="none"/></>;
+      break;
+    case "Robot":
+      shape = <><rect x="8" y="13" width="34" height="29" rx="7" {...common}/><path d="M25 13V5M20 5H30M8 22H3M42 22H47" stroke="#dbe8ee" strokeWidth="4"/><circle cx="18" cy="27" r="4" fill="#d9fbff"/><circle cx="32" cy="27" r="4" fill="#d9fbff"/><path d="M17 36H33" stroke="#26343a" strokeWidth="3"/></>;
+      break;
+    case "Nuvola":
+      shape = <path d="M13 40a11 11 0 0 1-1-22a14 14 0 0 1 27-2a12 12 0 0 1 3 24Z" {...common}/>;
+      break;
+    case "Umano":
+      shape = <path d="M5 42V18L15 24L25 5L35 24L45 18V42Z" {...common}/>;
+      break;
+    case "Luce":
+      shape = <><path d="M25 5C15 15 12 24 18 29L25 22L32 29C38 24 35 15 25 5Z" {...common}/><path d="M8 29L25 45L42 29M14 35L25 45L36 35" stroke="#fff0b0" strokeWidth="4" fill="none"/></>;
+      break;
+    case "Mago":
+      shape = <><path d="M5 39L18 9L27 25L35 5L46 39Z" {...common}/><path d="M7 40H45" stroke="#f6e4a4" strokeWidth="5"/><circle cx="25" cy="16" r="3" fill="#fff3b0"/></>;
+      break;
+    case "Orso":
+      shape = <><circle cx="25" cy="31" r="14" {...common}/><circle cx="10" cy="17" r="7" {...common}/><circle cx="22" cy="11" r="7" {...common}/><circle cx="36" cy="14" r="7" {...common}/><circle cx="44" cy="25" r="6" {...common}/></>;
+      break;
+    default:
+      shape = <><path d="M25 4L44 15L40 39L25 48L10 39L6 15Z" {...common}/><path d="M25 4V48M6 15L44 39M44 15L6 39" stroke="#fff4d5" strokeWidth="2" opacity=".7" fill="none"/></>;
+  }
+  return <svg viewBox="0 0 50 52" role="img" aria-label={"Medaglia " + faction} className="h-10 w-10 drop-shadow-[0_2px_5px_rgba(0,0,0,.55)]">{shape}</svg>;
+}
+
 export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, onLeaderDefeated, menuContent, grantAllFactionGems = false }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
@@ -402,7 +442,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <div className="flex flex-wrap gap-3">
                   {(save.factionGems || []).map((gem) => (
                     <div key={gem.leaderId} className="flex min-w-[3.5rem] flex-col items-center gap-1" title={gem.faction + " · Gemma di potere"}>
-                      <div className="relative h-7 w-7 rotate-45 rounded-[5px] border-2 border-white/70 shadow-[0_0_13px_var(--gem-color)]" style={{ "--gem-color": gem.color, background: "linear-gradient(135deg, #ffffff 0%, " + gem.color + " 38%, #252033 100%)", boxShadow: "0 0 12px " + gem.color }} />
+                      <FactionMedal faction={gem.faction} color={gem.color} />
                       <span className="text-[8px] font-black uppercase text-white/70">{gem.faction}</span>
                     </div>
                   ))}
