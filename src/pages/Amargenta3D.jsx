@@ -21,8 +21,10 @@ export default function Amargenta3D({ onExit }) {
   const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
   const [inventory, setInventory] = useState(() => ({
-    amberBeans: 0, recipeFragments: 0, waterCrystals: 0, citrus: 0, relics: 0,
-    ...(savedProgress.inventory || {})
+    amberBeans: 0, recipeFragments: 0, waterCrystals: 0, citrus: 0, relics: 0, coffeeBlend: 0, herbalTea: 0,
+    ...(savedProgress.inventory || {}),
+    coffeeBlend: Number(savedProgress.inventory?.coffeeBlend) || 0,
+    herbalTea: Number(savedProgress.inventory?.herbalTea) || 0
   }));
   const [recipeStarted, setRecipeStarted] = useState(Boolean(savedProgress.recipeStarted));
   const [recipePages, setRecipePages] = useState(Number(savedProgress.recipePages) || 0);
@@ -57,8 +59,17 @@ export default function Amargenta3D({ onExit }) {
   const activatedValvesRef = useRef(new Set(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []));
   const vaultClaimedRef = useRef(Boolean(savedProgress.vaultClaimed));
   const zoneRef = useRef("Ingresso di Amargenta");
+  const controlsLockedRef = useRef(false);
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
+  useEffect(() => {
+    controlsLockedRef.current = Boolean(dialogue || panel);
+  }, [dialogue, panel]);
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timeout = window.setTimeout(() => setToast(""), 2800);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
 
   useEffect(() => {
     try {
@@ -100,7 +111,34 @@ export default function Amargenta3D({ onExit }) {
     const box = (w,h,d,material,parent,x,y,z) => addMesh(new THREE.BoxGeometry(w,h,d),material,parent,x,y,z);
     const cylinder = (rt,rb,h,material,parent,x,y,z,segments=12) => addMesh(new THREE.CylinderGeometry(rt,rb,h,segments),material,parent,x,y,z);
     const sphere = (r,material,parent,x,y,z,detail=1) => addMesh(new THREE.IcosahedronGeometry(r,detail),material,parent,x,y,z);
-    const addCollider = (x,z,r) => colliders.push({x,z,r});
+    const addCollider = (x,z,r) => colliders.push({type:"circle",x,z,r});
+    const addBoxCollider = (x,z,w,d,rotation=0) => colliders.push({
+      type:"box",x,z,halfW:w/2,halfD:d/2,rotation
+    });
+    const isBlockedAt = (x,z,radius=.55) => colliders.some(collider => {
+      if (collider.type !== "box") {
+        return Math.hypot(x-collider.x,z-collider.z) < collider.r+radius;
+      }
+      const dx=x-collider.x, dz=z-collider.z;
+      const cos=Math.cos(collider.rotation||0), sin=Math.sin(collider.rotation||0);
+      const localX=dx*cos+dz*sin, localZ=-dx*sin+dz*cos;
+      const closestX=THREE.MathUtils.clamp(localX,-collider.halfW,collider.halfW);
+      const closestZ=THREE.MathUtils.clamp(localZ,-collider.halfD,collider.halfD);
+      return Math.hypot(localX-closestX,localZ-closestZ)<radius;
+    });
+    const addInteriorWallColliders = (cx,cz,width,depth,doorSide="north",doorWidth=3.2) => {
+      const halfW=width/2, halfD=depth/2, wall=.5, gap=doorWidth/2;
+      if (doorSide==="north") {
+        addBoxCollider(cx-(gap+halfW)/2,cz-halfD,(halfW-gap),wall);
+        addBoxCollider(cx+(gap+halfW)/2,cz-halfD,(halfW-gap),wall);
+      } else addBoxCollider(cx,cz-halfD,width,wall);
+      if (doorSide==="south") {
+        addBoxCollider(cx-(gap+halfW)/2,cz+halfD,(halfW-gap),wall);
+        addBoxCollider(cx+(gap+halfW)/2,cz+halfD,(halfW-gap),wall);
+      } else addBoxCollider(cx,cz+halfD,width,wall);
+      addBoxCollider(cx-halfW,cz,wall,depth);
+      addBoxCollider(cx+halfW,cz,wall,depth);
+    };
     const makeTree = (x,z,s=1,berries=false) => {
       const g=new THREE.Group(); scene.add(g); g.position.set(x,0,z); g.scale.setScalar(s);
       cylinder(0.18,0.28,2.2,wood,g,0,1.1,0,7);
@@ -131,7 +169,7 @@ export default function Amargenta3D({ onExit }) {
       for(const pz of [-3.2,3.2])box(9.5,.16,.16,frame,g,0,3.45,pz);
       const roofGlass=addMesh(new THREE.BoxGeometry(10,.12,7),glass,g,0,3.5,0);roofGlass.rotation.x=.02;
       for(let i=0;i<5;i++){const plant=makeCoffeePlant(x-3.5+i*1.7,z,.9);plant.position.y=.25;}
-      addCollider(x,z,3.8);
+      addBoxCollider(x,z,10,7);
     };
     const makeHouse = (x,z,w=5,d=4,h=3.3,variant=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
@@ -144,21 +182,21 @@ export default function Amargenta3D({ onExit }) {
       const roofMesh=addMesh(new THREE.ConeGeometry(w*.78,.95,4),roof,g,0,h+.42,0);roofMesh.rotation.y=Math.PI/4;roofMesh.scale.z=d/w;
       box(.9,1.7,.13,wood,g,0,.86,d/2+.08);
       for(const wx of [-w*.29,w*.29]){box(.58,.72,.12,darkStone,g,wx,2.05,d/2+.08);box(.38,.5,.04,gold,g,wx,2.05,d/2+.15);}
-      addCollider(x,z,Math.max(w,d)*.58);
+      addBoxCollider(x,z,w+.7,d+.7);
       return g;
     };
     const makeWall = (x,z,length,height=1.2,rot=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rot;
       box(length,height,.65,stone,g,0,height/2,0);
       for(let i=0;i<Math.floor(length/.8);i++) box(.7,.12,.72,stoneLight,g,-length/2+.4+i*.8,height+.04,0);
-      addCollider(x,z,length*.52);
+      addBoxCollider(x,z,length,.9,rot);
     };
     const makeBridge = (x,z,length=12) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
       box(length,.65,3.3,stone,g,0,2,0);
       for(let i=0;i<Math.floor(length/.8);i++){box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,2.55,-1.65);box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,2.55,1.65);}
       const arch=addMesh(new THREE.TorusGeometry(length*.32,.34,8,32,Math.PI),darkStone,g,0,.7,0);arch.rotation.z=Math.PI;
-      addCollider(x,z,length*.5);
+      // Il ponte deve restare attraversabile: la collisione dell'acqua viene gestita ai suoi lati.
     };
     const makeTerrace = (x,z,w,depth,level) => {
       const y=level*1.45;
@@ -228,7 +266,7 @@ export default function Amargenta3D({ onExit }) {
       box(4,.14,2.3,mat(accent),g,0,3,-.1);
       for(let i=0;i<5;i++) box(.72,.09,2.32,i%2?mat("#f1dfbd"):mat(accent),g,-1.44+i*.72,2.93,-.1);
       for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
-      addCollider(x,z,1.5);
+      addBoxCollider(x,z,4,2.3);
     };
     const makeInterior = (cx,cz) => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
@@ -246,6 +284,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<4;i++){const pipe=cylinder(.09,.09,3,brass,scene,cx-4+i*1.1,2.7,cz+2,8);pipe.rotation.z=Math.PI/2;}
       for(let i=0;i<4;i++){const sack=sphere(.58,mat("#a88a61"),scene,cx-4+i*1.25,.55,cz+4,1);sack.scale.set(.8,1.1,.8);}
       makeLamp(cx-3,cz-2);makeLamp(cx+4,cz-3);
+      addInteriorWallColliders(cx,cz,14,12,"north");
     };
 
 
@@ -267,7 +306,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<3;i++){cylinder(.09,.09,.65,gold,scene,cx+2.3+i*.7,1.55,cz-3.7,8);cylinder(.22,.22,.12,mat("#f1dfbd"),scene,cx+2.3+i*.7,1.17,cz-3.7,12);}
       for(let i=0;i<6;i++){box(2.4,.16,.3,darkWood,scene,cx-5.8,1.5+i*.62,cz+4.5);for(let j=0;j<4;j++)cylinder(.13,.16,.34,j%2?gold:wood,scene,cx-6.5+j*.42,1.78+i*.62,cz+4.5,8);}
       for(let i=0;i<4;i++){sphere(.18,mat("#ffd58b",.25,{emissive:"#d58c35",emissiveIntensity:1.1}),scene,cx-5+i*3.3,3.35,cz,2);cylinder(.035,.035,.8,darkWood,scene,cx-5+i*3.3,3.75,cz,6);}
-      addCollider(cx-7,cz,1);addCollider(cx+7,cz,1);
+      addInteriorWallColliders(cx,cz,15,13,"north");
     };
 
     const makeWaterfall = (x,z,h=9) => {
@@ -333,6 +372,10 @@ export default function Amargenta3D({ onExit }) {
       makeInterior(68,68);
       makeCafeInterior(-68,68);
       makeInterior(68,-68);
+      // Le condotte sono invalicabili fuori dai due ponti in pietra.
+      addBoxCollider(28,-42,12,12);
+      addBoxCollider(28,-16,12,27);
+      addBoxCollider(28,28,12,48);
       // Cripta delle Miscele: accesso segreto legato alle tre missioni cittadine.
       const vaultArch=new THREE.Group();scene.add(vaultArch);vaultArch.position.set(-70,0,-48);
       box(8,3.4,.7,darkStone,vaultArch,0,1.7,0);
@@ -522,8 +565,10 @@ export default function Amargenta3D({ onExit }) {
       }, undefined, () => {}));
       const groundRay=new THREE.Raycaster();
       const onKeyDown=e=>{
-        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}
-        if(e.code==="KeyE"&&!e.repeat){
+        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
+          if(!controlsLockedRef.current){keys.add(e.code);e.preventDefault();}
+        }
+        if(e.code==="KeyE"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
@@ -551,9 +596,11 @@ export default function Amargenta3D({ onExit }) {
         const dt=Math.min(clock.getDelta(),.04);
         const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0);
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
-        if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=player.position.x+move.x,nz=player.position.z+move.z;
-          const blocked=colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.55);
-          if(!blocked){player.position.x=THREE.MathUtils.clamp(nx,-82,82);player.position.z=THREE.MathUtils.clamp(nz,-82,82);}
+        if(controlsLockedRef.current) keys.clear();
+        if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-82,82),nz=THREE.MathUtils.clamp(player.position.z+move.z,-82,82);
+          // Collisione separata sugli assi: il personaggio scivola lungo gli ostacoli invece di bloccarsi in diagonale.
+          if(!isBlockedAt(nx,player.position.z)) player.position.x=nx;
+          if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
           player.rotation.y=Math.atan2(move.x,move.z);
           const stride=clock.elapsedTime*10;playerMotion.leftArm.rotation.x=Math.sin(stride)*.38;playerMotion.rightArm.rotation.x=-Math.sin(stride)*.38;playerMotion.leftLeg.rotation.x=-Math.sin(stride)*.42;playerMotion.rightLeg.rotation.x=Math.sin(stride)*.42;
         } else {playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
@@ -579,7 +626,7 @@ export default function Amargenta3D({ onExit }) {
           actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
         });
         scene.traverse(o=>{if(o.userData.amberPickup){o.rotation.y+=dt*.65;}});
-        const nextZone=p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
       };
@@ -637,7 +684,7 @@ export default function Amargenta3D({ onExit }) {
       </div>}
     </div>}
     <div style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
-      <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Prototipo 3D isolato · modelli GLB Scenario da integrare</span>
+      <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Amargenta · esplorazione, missioni, crafting e segreti</span>
     </div>
     {nearby&&!dialogue&&<button onClick={()=>{if(nearby.action)nearby.action();else setDialogue({title:nearby.title,text:nearby.text});}} style={{position:"absolute",left:"50%",bottom:30,transform:"translateX(-50%)",padding:"10px 16px",borderRadius:12,background:"#18221eef",border:"1px solid #e1c28d",fontSize:13,boxShadow:"0 8px 30px #0008",whiteSpace:"nowrap",color:"#f5ead7",cursor:"pointer"}}><strong style={{color:"#f0c98d"}}>E · INTERAGISCI</strong><span style={{marginLeft:10}}>{nearby.title}</span></button>}
     {dialogue&&<div role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:18,background:"linear-gradient(145deg,#30231ff5,#17241ff5)",border:"1px solid #d7b77d",boxShadow:"0 18px 60px #0009"}}>
