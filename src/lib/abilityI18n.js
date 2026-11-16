@@ -57,6 +57,7 @@ fierononno_naturale: {
   desc: "Just arrived, it still cannot control its full powers.",
 },
   torosucco_soulbound: { name: "Soulbound", desc: "When withdrawn, loses 9 HP." },
+  crunchypat_avalanche: { name: "Avalanche", desc: "When it Protects, gains +1 ATK, +1 DEF and +1 SPD." },
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };
