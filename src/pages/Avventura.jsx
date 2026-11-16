@@ -11,7 +11,7 @@ import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
-import { drawAdventureAmaroCity, getAmaroElevationAt, canTraverseAmaroElevation } from "@/lib/adventureAmaroCity";
+import { drawAdventureAmaroCity, drawAdventureAmaroOccluders, getAmaroElevationAt, canTraverseAmaroElevation } from "@/lib/adventureAmaroCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
 
@@ -971,6 +971,24 @@ function circleRectCollision(
 }
 
 function collidesWithCityBuildings(x, y, radius, city) {
+  if (city.faction === "Amaro") {
+    const scale=1.55;
+    const buildings=[
+      {x:-137,y:-91,w:88,h:65,door:true},
+      {x:139,y:-91,w:72,h:56,door:true},
+      {x:-139,y:94,w:72,h:56,door:true},
+      {x:139,y:94,w:72,h:56,door:true},
+      {x:0,y:166,w:72,h:56,door:true},
+      {x:0,y:-163,w:96,h:50,door:false},
+      {x:0,y:7,w:130,h:100,door:true},
+    ];
+    return buildings.some((b)=>{
+      const bx=city.x+b.x*scale,by=city.y+b.y*scale,w=b.w*scale,h=b.h*scale;
+      const inDoor=b.door&&Math.abs(x-bx)<18*scale&&y>=by+h/2-8*scale&&y<=by+h/2+42*scale;
+      if(inDoor)return false;
+      return circleRectCollision(x,y,radius,bx-w/2,by-h/2-8*scale,w,h+18*scale);
+    });
+  }
   const cityScale = 1.55;
   const offsets = [
     [-132, -88], [0, -158], [132, -88],
@@ -1867,6 +1885,9 @@ const [message, setMessage] = useState("");
         Math.floor(performance.now() / 135) % 4,
         playerIsWalking
       );
+      if (activeMapId === "amaro") {
+        drawAdventureAmaroOccluders(ctx, activeCity, playerRef.current.y);
+      }
 
       /*
         ZONE LABEL
