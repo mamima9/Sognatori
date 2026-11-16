@@ -50,8 +50,7 @@ const PLAYER_START = {
   y: 1100,
 };
 
-// Ogni specie occupa un habitat distinto in uno dei quattro angoli della mappa.
-// I quattro esemplari restano vicini al proprio elemento di lore; solo il primo è arruolabile.
+// Ogni specie compare una sola volta nella città della propria fazione.
 const WILD_CORNER_ANCHORS = [
   { x: 430, y: 390, corner: "NO" },
   { x: 3170, y: 390, corner: "NE" },
@@ -78,8 +77,7 @@ function buildMapWildStarts(city) {
   // Un solo incontro per specie in ogni città: niente copie duplicate dello stesso Sognatore.
   const offsets = [[0, 0]];
   return residents.flatMap((sognatore, index) => {
-    // Il gruppo iniziale è spostato a lato del corridoio nord:
-    // lascia libero l'asse centrale tra portale e città.
+    // Distribuisce gli incontri tra i quattro settori, lasciando libero l'asse centrale.
     const anchor = index === 0
       ? { x: 1500, y: 360, corner: "NORD-OVEST" }
       : WILD_CORNER_ANCHORS[index % WILD_CORNER_ANCHORS.length];
@@ -93,8 +91,7 @@ function buildMapWildStarts(city) {
     return offsets.map(([ox, oy], copy) => ({
       id: "wild-" + city.id + "-" + sognatore.id + "-" + (copy + 1),
       rosterId: sognatore.id,
-      // Anche il primo Sognatore resta nel gruppo laterale:
-      // non deve occupare il corridoio centrale davanti alla porta nord.
+      // Un solo esemplare della specie, sempre quello arruolabile.
       x: centerX + ox,
       y: centerY + oy,
       isSleepingBlocker: false,
