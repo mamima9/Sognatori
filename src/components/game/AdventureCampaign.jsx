@@ -140,8 +140,13 @@ function FactionMedal({ faction }) {
       shape = <><path d="M5 40L8 16L19 26L25 7L32 26L44 15L46 40Z" {...medal("#171719")}/><path d="M8 44H44" stroke="#050506" strokeWidth="5" strokeLinecap="round"/><circle cx="8" cy="14" r="3" fill="#080809"/><circle cx="25" cy="5" r="3" fill="#080809"/><circle cx="45" cy="13" r="3" fill="#080809"/></>;
       break;
     case "Luce":
-      // Mani giunte color oro.
-      shape = <><path d="M25 6C19 13 15 19 17 26L25 34L33 26C35 19 31 13 25 6Z" {...medal("#e4bd45")}/><path d="M7 25L23 43L25 34L27 43L43 25L36 22L27 31L25 27L23 31L14 22Z" {...medal("#d9a92e")}/><path d="M18 17L25 26L32 17M25 34V45" fill="none" stroke="#fff0a3" strokeWidth="2.5" strokeLinecap="round"/></>;
+      // Due mani unite in preghiera, dita rivolte verso l'alto e polsi dorati.
+      shape = <>
+        <path d="M15 46L10 39L17 32L22 37L25 34L28 37L33 32L40 39L35 46Z" {...medal("#b98722")}/>
+        <path d="M25 39L11 25C8 22 8 18 11 15C14 12 18 14 21 17L25 21L29 17C32 14 36 12 39 15C42 18 42 22 39 25L25 39Z" {...medal("#e4bd45")}/>
+        <path d="M19 18L22 8C23 5 26 5 27 8L29 18M25 21L25 37" fill="none" stroke="#fff0a3" strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M12 25L25 38L38 25" fill="none" stroke="#f7d979" strokeWidth="2" strokeLinecap="round"/>
+      </>;
       break;
     case "Mago":
       // Cappello da mago viola con fascia gialla e stella.
