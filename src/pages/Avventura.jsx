@@ -906,7 +906,30 @@ function drawFactionBorderTerrain(ctx, faction) {
     } else if(faction==="Dolce"){
       ctx.strokeStyle="#fff0d0";ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(x-25,y-5);ctx.lineTo(x-25,y-65);ctx.stroke();ctx.fillStyle="#f1a4c2";ctx.beginPath();ctx.arc(x-25,y-75,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff0d0";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x-38,y-87);ctx.lineTo(x-12,y-63);ctx.stroke();
     } else if(faction==="Luce"){
-      ctx.fillStyle=p[3];ctx.beginPath();ctx.arc(x,y-55,24,0,Math.PI*2);ctx.fill();ctx.strokeStyle=p[4];ctx.lineWidth=5;for(let a=0;a<8;a++){const q=a*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(q)*34,y-55+Math.sin(q)*34);ctx.lineTo(x+Math.cos(q)*56,y-55+Math.sin(q)*56);ctx.stroke();}
+      // Piccoli cancelli celesti dorati, con archi, colonne e coppe d'oro.
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.fillStyle="#b99543";ctx.fillRect(-42,-112,10,112);ctx.fillRect(32,-112,10,112);
+      ctx.fillStyle="#f4df9a";ctx.fillRect(-48,-118,22,9);ctx.fillRect(26,-118,22,9);
+      ctx.strokeStyle="#e8c96c";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-42,-108);ctx.quadraticCurveTo(0,-190,42,-108);ctx.stroke();
+      ctx.strokeStyle="#fff0b5";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-33,-110);ctx.quadraticCurveTo(0,-169,33,-110);ctx.stroke();
+      ctx.fillStyle="#d9b85c";ctx.fillRect(-52,-8,104,9);
+      ctx.fillStyle="#f1d77e";ctx.beginPath();ctx.moveTo(-26,-42);ctx.lineTo(-19,-20);ctx.quadraticCurveTo(0,-10,19,-20);ctx.lineTo(26,-42);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="#fff0b5";ctx.lineWidth=3;ctx.stroke();
+      ctx.fillStyle="#fff1b9";ctx.beginPath();ctx.arc(0,-48,7,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    } else if(faction==="Umano"){
+      // Industrie carbonifere, ciminiere e fumo scuro: il distretto esterno di Crocevia.
+      ctx.save();ctx.translate(x,y);
+      ctx.fillStyle="#343337";ctx.fillRect(-55,-92,110,92);
+      ctx.fillStyle="#514c4b";ctx.fillRect(-45,-82,90,82);
+      ctx.fillStyle="#28272b";ctx.fillRect(-36,-152,24,72);ctx.fillRect(13,-188,28,108);
+      ctx.fillStyle="#77706a";ctx.fillRect(-40,-157,32,8);ctx.fillRect(9,-194,32,8);
+      ctx.fillStyle="#a49a8d";ctx.fillRect(-50,-45,100,6);ctx.fillRect(-50,-15,100,5);
+      ctx.fillStyle="#252329";for(let k=0;k<5;k++){ctx.fillRect(-44+k*21,-70,13,20);}
+      ctx.fillStyle="rgba(42,43,47,.55)";for(let k=0;k<4;k++){ctx.beginPath();ctx.arc(-24+k*24,-210-k*20,17+k*3,0,Math.PI*2);ctx.fill();}
+      ctx.strokeStyle="#a36a42";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-52,-6);ctx.lineTo(52,-6);ctx.stroke();
+      ctx.restore();
     } else if(faction==="Demone"){
       // Piccoli coni vulcanici, con colate incandescenti e pennacchi.
       drawMountain(x,y+30,.52+seeded(i)*.3,true);
