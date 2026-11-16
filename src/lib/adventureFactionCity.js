@@ -2,15 +2,15 @@
 // Solo grafica: non altera coordinate, porte, collisioni, incontri o logica di gioco.
 const P={
 Demone:["#4d303a","#2d202b","#b95754","#ffb36a","#7e4249"],
-Robot:["#365965","#203d4b","#69d1c6","#dcfff2","#4d8991"],
+Robot:["#8b969f","#4f5b65","#d4d9de","#f6f8fa","#aeb8c1"],
 Nuvola:["#819cbd","#536d8d","#cce4f5","#fff9ef","#a9c9e7"],
 Umano:["#94734e","#60462f","#d8b17a","#f5e2b6","#b98b5c"],
 Luce:["#b89a53","#79602f","#f2d77e","#fff5c4","#d6b85f"],
-Dolce:["#a66d94","#714967","#f0b5d4","#fff0e6","#d48db8"],
+Dolce:["#c89a62","#815333","#e5c18a","#fff0d0","#b77b45"],
 Marino:["#397b8b","#214f65","#80d5d6","#d9fff1","#58a9b4"],
 Orso:["#816044","#4a382c","#c49b63","#f1d8a5","#a67d4e"],
 Mago:["#655785","#3d3459","#b9a7eb","#f4eaff","#8b78b9"],
-Salato:["#929b91","#58625f","#e2dfce","#fffdf2","#b8bcb0"]};
+Salato:["#c98e91","#80565d","#e8c5c2","#fff0e8","#b9787e"]};
 function ellipse(c,x,y,rx,ry,col){c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
 function tree(c,x,y,s,p,type=0){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,4,18,28,8,"rgba(8,15,18,.25)");c.fillStyle=p[1];c.fillRect(-5,-3,10,25);if(type===1){c.fillStyle=p[4];c.beginPath();c.moveTo(0,-55);c.lineTo(-27,4);c.lineTo(27,4);c.closePath();c.fill();c.fillStyle=p[2];c.beginPath();c.moveTo(0,-40);c.lineTo(-19,5);c.lineTo(19,5);c.closePath();c.fill();}else{for(const [x,y,r,col] of [[-16,-17,17,p[1]],[0,-31,21,p[4]],[17,-17,17,p[2]],[0,-9,23,p[4]]])ellipse(c,x,y,r,r,col);c.fillStyle=p[3];c.fillRect(-11,-29,7,4);c.fillRect(5,-37,8,4);}c.restore();}
 function lamp(c,x,y,p,t){c.fillStyle=p[1];c.fillRect(x-3,y-2,6,36);c.fillRect(x-10,y-5,20,5);c.fillStyle=p[4];c.fillRect(x-8,y-20,16,16);c.globalAlpha=.7+.25*Math.sin(t*2+x);c.fillStyle=p[3];c.fillRect(x-4,y-16,8,10);c.globalAlpha=1;ellipse(c,x,y-12,19,19,"rgba(255,224,140,.09)");}
