@@ -405,7 +405,7 @@ export default function Amargenta3D({ onExit }) {
         amberPickups.push(g);g.userData.amberPickup=true;
         addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
-          if(g.userData.collected)return;
+          if(g.userData.collected||collectedAmberRef.current.has(i))return;
           g.userData.collected=true;g.visible=false;collectedAmberRef.current.add(i);
           const nextCollected=[...collectedAmberRef.current];setCollectedAmber(nextCollected);
           questCountRef.current+=1;setQuestCount(questCountRef.current);
