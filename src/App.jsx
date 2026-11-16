@@ -25,6 +25,7 @@ import SognatoriStats from '@/pages/SognatoriStats';
 import TestRandom from '@/pages/TestRandom';
 import Profile from '@/pages/Profile';
 import Avventura from '@/pages/Avventura';
+import Amargenta3D from '@/pages/Amargenta3D';
 import TelegramAuthGate from '@/components/TelegramAuthGate';
 
 const AuthenticatedApp = () => {
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
            <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="/avventura" element={<Avventura />} />
+        <Route path="/amargenta-3d" element={<Amargenta3D />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <GlobalMusicPlayer />
