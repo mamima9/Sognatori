@@ -4,6 +4,7 @@ export const ADVENTURE_CITIES = [
   { id:"demone", city:"Braciombra", faction:"Demone", traveler:"Vark", x:520, y:400, color:"#bd5360", line:"Qui nessuno sogna senza pagare un prezzo. Dimostra di sapere cosa desideri." },
   { id:"robot", city:"Ferrovia", faction:"Robot", traveler:"Unit-07", x:2920, y:360, color:"#c4cbd2", line:"Ogni scelta ha una logica. Il tuo viaggio supera il mio modello predittivo." },
   { id:"natura", city:"Verdelume", faction:"Natura", traveler:"Silva", x:850, y:1320, color:"#70b96b", line:"Non si conquista la natura. Si impara ad ascoltarla." },
+  { id:"amaro", city:"Amargenta", faction:"Amaro", traveler:"Bibito", x:1800, y:1200, color:"#a7c7b5", line:"Una città segreta, custodita oltre la porta occidentale di Verdelume." },
   { id:"nuvola", city:"Altacielo", faction:"Nuvola", traveler:"Cirrus", x:2440, y:260, color:"#e3edf4", line:"Da quassù ogni ambizione sembra piccola. Cosa ti spinge a salire?" },
   { id:"umano", city:"Crocevia", faction:"Umano", traveler:"Mira", x:1660, y:1740, color:"#55585d", line:"I sogni nascono dalle persone. Raccontami il tuo." },
   { id:"luce", city:"Auroria", faction:"Luce", traveler:"Aurelia", x:3220, y:1080, color:"#f0d36d", line:"La luce non si impone: si riconosce. Sei pronto a guardarti dentro?" },
@@ -55,6 +56,7 @@ export const ADVENTURE_WILD_AREAS = [
   { id:"wild-demone", name:"Caldera delle Braci", faction:"Demone", biome:"lava", x:900, y:350, radius:320, color:"#c65b4b", sognatore:"Pepe", detail:"Campi vulcanici, fumarole e rocce incandescenti." },
   { id:"wild-robot", name:"Selva dei Circuiti", faction:"Robot", biome:"circuit", x:3370, y:690, radius:310, color:"#c4cbd2", sognatore:"Deb", detail:"Alberi metallici, relitti e sentieri luminosi." },
   { id:"wild-natura", name:"Giungla delle Radici", faction:"Natura", biome:"forest", x:420, y:1250, radius:320, color:"#79ad58", sognatore:"Cillymbu", detail:"Radici giganti, felci e sorgenti nascoste." },
+  { id:"wild-amaro", name:"Giardino del Retrogusto", faction:"Amaro", biome:"forest", x:520, y:1180, radius:300, color:"#a7c7b5", sognatore:"", detail:"Serre scure, agrumeti e vapori aromatici." },
   { id:"wild-nuvola", name:"Arcipelago delle Nuvole", faction:"Nuvola", biome:"cloud", x:1780, y:300, radius:310, color:"#e3edf4", sognatore:"Eroe", detail:"Isole sospese, correnti d'aria e fiori celesti." },
   { id:"wild-umano", name:"Praterie del Viandante", faction:"Umano", biome:"prairie", x:1260, y:2020, radius:310, color:"#55585d", sognatore:"Sparkly", detail:"Prati aperti, vecchi accampamenti e sentieri di mercanti." },
   { id:"wild-luce", name:"Deserto dell'Alba", faction:"Luce", biome:"sun", x:3380, y:1510, radius:320, color:"#f0d36d", sognatore:"Nina", detail:"Dune dorate, obelischi e specchi di luce." },
@@ -92,6 +94,19 @@ export const ADVENTURE_FACTION_LORE = {
       ["Vela", "I binari non trasportano merci: portano energia e messaggi tra i quartieri. Ascolta il loro ritmo."],
       ["Qubit", "La nostra memoria collettiva è una biblioteca, ma nessuno può leggere il ricordo di un altro senza permesso."],
       ["Unit-12", "La prova del Custode cambia a ogni sfidante. NEX-0 non cerca la risposta più veloce, ma quella più consapevole."]
+    ]
+  },
+  amaro: {
+    leader: "Bibito", title: "Custode di Amargenta",
+    lore: "Amargenta è una città segreta nata per gli esperimenti più audaci dei Sognatori. Le sue serre custodiscono essenze amare, alberi d'agrumi e laboratori nascosti. La città non compare sulle mappe e la sua unica porta è sigillata da un patto personale.",
+    district: "Viali di pietra verde, serre monumentali, canali scuri e architetture sperimentali si intrecciano in un giardino segreto.",
+    npcs: [
+      ["Custode", "Questa città non esiste per il mondo esterno. Solo Bibito può attraversare la porta."],
+      ["Alchimista", "Qui sperimentiamo senza alterare il viaggio degli altri."],
+      ["Giardiniere", "Le piante di Amargenta crescono grazie a un equilibrio di sapori impossibile altrove."],
+      ["Archivista", "Ogni esperimento viene annotato, ma nessun segreto lascia queste mura."],
+      ["Sentinella", "La porta occidentale di Verdelume riconosce un solo account."],
+      ["Ricercatore", "Benvenuto nel laboratorio più riservato del mondo."],
     ]
   },
   natura: {
