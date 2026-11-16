@@ -11,6 +11,8 @@ export default function Amargenta3D({ onExit }) {
   const hostRef = useRef(null);
   const [hint, setHint] = useState("WASD per muoverti · trascina per ruotare la visuale · rotella per zoom");
   const [zone, setZone] = useState("Ingresso di Amargenta");
+  const [dialogue, setDialogue] = useState(null);
+  const [nearby, setNearby] = useState(null);
   const zoneRef = useRef("Ingresso di Amargenta");
 
   useEffect(() => {
@@ -22,6 +24,8 @@ export default function Amargenta3D({ onExit }) {
     const clock = new THREE.Clock();
     const player = new THREE.Group();
     const colliders = [];
+    const interactables = [];
+    const npcActors = [];
     const raycaster = new THREE.Raycaster();
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
     let dragging = false, lastX = 0, lastY = 0;
@@ -106,6 +110,57 @@ export default function Amargenta3D({ onExit }) {
       box(1.1,6.5,1.1,darkStone,scene,x+3.7,7,z-2.2);
       for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);puff.userData.smoke=true;}
     };
+
+    const addInteraction = (id, title, text, x, z, action=null, radius=3.2) => {
+      interactables.push({id,title,text,x,z,action,radius});
+    };
+    const makeNpc = (id,name,job,x,z,shirt,lines,scale=1) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
+      const skin=mat("#d9ad83"), dark=mat("#302a2a"), trousers=mat("#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
+      cylinder(.28,.34,.78,cloth,g,0,1.02,0,9);
+      sphere(.29,skin,g,0,1.62,0,2);
+      sphere(.31,dark,g,0,1.83,-.025,1).scale.set(1,.42,1);
+      box(.1,.07,.045,mat("#241f20"),g,-.105,1.64,.255);
+      box(.1,.07,.045,mat("#241f20"),g,.105,1.64,.255);
+      box(.13,.62,.14,cloth,g,-.36,1.04,0).rotation.z=-.16;
+      box(.13,.62,.14,cloth,g,.36,1.04,0).rotation.z=.16;
+      box(.19,.62,.2,trousers,g,-.14,.43,0);
+      box(.19,.62,.2,trousers,g,.14,.43,0);
+      box(.24,.13,.34,boot,g,-.14,.12,.08);
+      box(.24,.13,.34,boot,g,.14,.12,.08);
+      const badge=sphere(.09,gold,g,0,1.12,.3,1);
+      badge.scale.set(1,.8,.3);
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7});
+      addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
+      return g;
+    };
+    const makeMarketStall = (x,z,accent) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      box(4,.22,2.3,wood,g,0,1.05,0);
+      box(.16,2.1,.16,wood,g,-1.8,1.9,-.85);box(.16,2.1,.16,wood,g,1.8,1.9,-.85);
+      box(4,.14,2.3,mat(accent),g,0,3,-.1);
+      for(let i=0;i<5;i++) box(.72,.09,2.32,i%2?mat("#f1dfbd"):mat(accent),g,-1.44+i*.72,2.93,-.1);
+      for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
+      addCollider(x,z,1.5);
+    };
+    const makeInterior = (cx,cz) => {
+      const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
+      box(14,.35,12,floor,scene,cx,.05,cz);
+      box(14,4,.35,wall,scene,cx,2,cz-6);
+      box(.35,4,12,wall,scene,cx-7,2,cz);
+      box(.35,4,12,wall,scene,cx+7,2,cz);
+      box(14,4,.35,wall,scene,cx,2,cz+6);
+      for(let x=-6;x<=6;x+=3){box(.22,4,.28,beam,scene,cx+x,2,cz-5.72);box(.22,4,.28,beam,scene,cx+x,2,cz+5.72);}
+      for(let x=-5;x<=5;x+=5){box(.2,4,11,beam,scene,cx+x,2,cz);}
+      for(let i=0;i<5;i++){box(1.8,.35,.55,beam,scene,cx-5.3+i*2.5,2.2,cz-4.8);for(let j=0;j<3;j++)box(.38,.48,.38,j%2?gold:wood,scene,cx-5+i*2.5,2.58,cz-4.8+j*.12);}
+      box(3,.25,2.2,wood,scene,cx+2,.95,cz+1);
+      cylinder(.72,.85,1.6,brass,scene,cx+2,1.85,cz+1,16);
+      cylinder(.55,.68,.25,gold,scene,cx+2,2.75,cz+1,16);
+      for(let i=0;i<4;i++){const pipe=cylinder(.09,.09,3,brass,scene,cx-4+i*1.1,2.7,cz+2,8);pipe.rotation.z=Math.PI/2;}
+      for(let i=0;i<4;i++){const sack=sphere(.58,mat("#a88a61"),scene,cx-4+i*1.25,.55,cz+4,1);sack.scale.set(.8,1.1,.8);}
+      makeLamp(cx-3,cz-2);makeLamp(cx+4,cz-3);
+    };
+
     const makeWaterfall = (x,z,h=9) => {
       const fall=box(3.2,h,.18,water,scene,x,h/2,z);
       fall.material=water; fall.material.transparent=true; fall.material.opacity=.82;
@@ -157,6 +212,25 @@ export default function Amargenta3D({ onExit }) {
       // Arredi, carri, sacchi e casse
       for(let i=0;i<8;i++){const x=-8+(i%4)*4,z=17+Math.floor(i/4)*3;box(1.2,.8,.9,wood,scene,x,.4,z);box(1.25,.12,.95,gold,scene,x,.85,z);}
       for(let i=0;i<5;i++){cylinder(.38,.42,.9,wood,scene,20+i*1.2, .45,35,10);}
+      // Mercato, botteghe vive e arredi della piazza.
+      makeMarketStall(-8,9,"#a64c36");makeMarketStall(8,10,"#d0a05d");makeMarketStall(-17,19,"#567b68");
+      for(const [x,z] of [[-5,4],[5,4],[18,-5],[-20,-18]]){cylinder(.08,.1,1.1,wood,scene,x,.55,z,8);box(1.6,.12,.55,wood,scene,x,.95,z);}
+      // Tubature, valvole e depositi esterni della torrefazione.
+      for(let i=0;i<4;i++){const p=cylinder(.12,.12,5,gold,scene,10+i*1.6,3.4,32,10);p.rotation.z=Math.PI/2;box(.45,.45,.45,wood,scene,9+i*2, .4,35);}
+      // Interno reale della torrefazione: stanza separata raggiungibile dalla porta.
+      makeInterior(68,68);
+      const interiorDoor=box(2.4,2.8,.2,wood,scene,68,1.45,62);
+      box(1.5,2.2,.08,gold,scene,68,1.4,61.86);
+      addInteraction("roastery-door","Torrefazione di Amargenta","La porta conduce al laboratorio della torrefazione.",16,33,()=>{player.position.set(68,0,59.5);setZone("Interno della Torrefazione");},4.2);
+      addInteraction("roastery-exit","Uscita della torrefazione","Tornare alla piazza del borgo?",68,62,()=>{player.position.set(16,0,33.5);setZone("Distretto della Torrefazione");},4.2);
+      // Personaggi con dialoghi contestuali.
+      makeNpc("barista","Mira","Barista",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
+      makeNpc("merchant","Nerio","Mercante di fave",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
+      makeNpc("archivist","Orma","Archivista", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
+      makeNpc("guard","Bruno","Guardiano del ponte",23,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
+      makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
+      makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
+      makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       // Player placeholder 3D leggibile, sostituibile con personaggio riggato GLB
       const body=cylinder(.36,.48,1.25,mat("#3d5366"),player,0,1.05,0,10);body.castShadow=true;
       sphere(.34,mat("#d7b18b"),player,0,1.95,0,2);
@@ -178,7 +252,15 @@ export default function Amargenta3D({ onExit }) {
         scene.add(gltf.scene);
       }, undefined, () => {}));
       const groundRay=new THREE.Raycaster();
-      const onKeyDown=e=>{if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}};
+      const onKeyDown=e=>{
+        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}
+        if(e.code==="KeyE"&&!e.repeat){
+          const p=player.position;
+          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+          if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
+        }
+        if(e.code==="Escape")setDialogue(null);
+      };
       const onKeyUp=e=>keys.delete(e.code);
       const onPointerDown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
       const onPointerUp=()=>dragging=false;
@@ -199,7 +281,7 @@ export default function Amargenta3D({ onExit }) {
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
         if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar(8*dt);const nx=player.position.x+move.x,nz=player.position.z+move.z;
           const blocked=colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.55);
-          if(!blocked){player.position.x=THREE.MathUtils.clamp(nx,-55,52);player.position.z=THREE.MathUtils.clamp(nz,-55,58);}
+          if(!blocked){player.position.x=THREE.MathUtils.clamp(nx,-82,82);player.position.z=THREE.MathUtils.clamp(nz,-82,82);}
           player.rotation.y=Math.atan2(move.x,move.z);
         }
         const target=new THREE.Vector3(player.position.x,1.5,player.position.z);
@@ -207,7 +289,9 @@ export default function Amargenta3D({ onExit }) {
         camera.position.lerp(cp,.12);camera.lookAt(target);
         scene.traverse(o=>{if(o.userData.smoke){o.position.y+=dt*.45;if(o.position.y>13)o.position.y=10;}});
         const p=player.position;
-
+        const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+        setNearby(old=>old?.id===closest?.id?old:(closest||null));
+        npcActors.forEach((actor,i)=>{actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;actor.group.rotation.y=Math.sin(clock.elapsedTime*.45+actor.phase)*.08;});
         const nextZone=p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
