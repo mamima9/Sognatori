@@ -285,8 +285,8 @@ He is a champion of a particular water sport. He sends the Pirimar to trade with
   },
 
   fourmori: {
-    it: `Fourmori è un grande combattente della fazione Luce. Il suo sogno è raggiungere la Casa della Beatitudine, un luogo sacro per i Luce.`,
-    en: `Fourmori is a great fighter of the Light faction. His dream is to reach the House of Bliss, a sacred place for the Light Dreamers.`,
+    it: `Fourmori è un Sognatore della fazione Umano. È un grande combattente e sogna di raggiungere la Casa della Beatitudine, inseguendo il proprio ideale di vittoria.`,
+    en: `Fourmori is a Human-faction Dreamer. He is a great fighter who dreams of reaching the House of Bliss, pursuing his own ideal of victory.`,
   },
 
   pirimar: {
