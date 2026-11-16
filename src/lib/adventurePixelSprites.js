@@ -142,15 +142,85 @@ function wildFrame(ctx,s,frame){
   if(seed%3===0)wildPixel(ctx,11,0,2,3,shine);
   if(frame){wildPixel(ctx,6,21,4,1,main);wildPixel(ctx,14,21,4,1,main);}
 }
-export function createWildSognatoreSpriteSheet(s){
-  const sheet=document.createElement("canvas");sheet.width=48;sheet.height=64;
-  const ctx=sheet.getContext("2d");if(!ctx)return sheet;
-  for(let frame=0;frame<2;frame++){
-    ctx.save();ctx.translate(frame*24,0);
-    drawAdventureWildSognatore(ctx,s,12,31,frame,.9);
-    ctx.restore();
+// Sprite sheet completo: 4 colonne (frame 0-3) x 4 righe
+// nell'ordine down, left, right, up. Ogni cella è 48x48 con alpha reale.
+const WILD_SHEET_CACHE = new Map();
+const WILD_DIRECTIONS = ["down", "left", "right", "up"];
+
+function renderWildDirectionFrame(ctx, s, direction, frame) {
+  const cell = document.createElement("canvas");
+  cell.width = 48;
+  cell.height = 48;
+  const c = cell.getContext("2d");
+  if (!c) return cell;
+
+  // La silhouette e i dettagli restano specifici per specie grazie al renderer
+  // WILD_SPECIES_DESIGNS; le direzioni cambiano volume, profilo e dettagli.
+  const facing = document.createElement("canvas");
+  facing.width = 48;
+  facing.height = 48;
+  const f = facing.getContext("2d");
+  if (!f) return cell;
+  drawAdventureWildSognatore(f, s, 24, 44, frame, 1);
+
+  if (direction === "down") {
+    c.drawImage(facing, 0, 0);
+  } else if (direction === "left" || direction === "right") {
+    c.save();
+    if (direction === "left") {
+      c.translate(48, 0);
+      c.scale(-1, 1);
+    }
+    c.translate(24, 0);
+    c.scale(0.76, 1);
+    c.drawImage(facing, -24, 0);
+    c.restore();
+    const palette = WILD_PALETTES[s?.tipo] || WILD_PALETTES.Natura;
+    wildPixel(c, direction === "left" ? 17 : 29, 20, 3, 3, palette[3]);
+    wildPixel(c, direction === "left" ? 20 : 25, 22, 2, 2, palette[0]);
+  } else {
+    // Vista posteriore: elimina i tratti del volto e mette in evidenza
+    // dorso, nuca e segno distintivo della specie/fazione.
+    c.drawImage(facing, 0, 0);
+    const palette = WILD_PALETTES[s?.tipo] || WILD_PALETTES.Natura;
+    wildPixel(c, 13, 18, 22, 12, palette[0]);
+    wildPixel(c, 15, 17, 18, 3, palette[1]);
+    wildPixel(c, 18, 21, 12, 7, palette[1]);
+    wildPixel(c, 21, 21, 6, 8, palette[2]);
+    wildPixel(c, 20, 30, 8, 2, palette[3]);
   }
+  return cell;
+}
+
+export function createWildSognatoreSpriteSheet(s) {
+  const sheet = document.createElement("canvas");
+  sheet.width = 192;
+  sheet.height = 192;
+  const ctx = sheet.getContext("2d");
+  if (!ctx) return sheet;
+  WILD_DIRECTIONS.forEach((direction, row) => {
+    for (let frame = 0; frame < 4; frame += 1) {
+      const cell = renderWildDirectionFrame(ctx, s, direction, frame);
+      ctx.drawImage(cell, frame * 48, row * 48);
+    }
+  });
   return sheet;
+}
+
+export function drawAdventureWildSognatoreDirectional(ctx, s, x, y, frame = 0, scale = 1, direction = "down") {
+  const key = String(s?.rosterId || s?.id || s?.nome || "wild");
+  let sheet = WILD_SHEET_CACHE.get(key);
+  if (!sheet) {
+    sheet = createWildSognatoreSpriteSheet(s);
+    WILD_SHEET_CACHE.set(key, sheet);
+  }
+  const row = Math.max(0, WILD_DIRECTIONS.indexOf(direction));
+  const col = ((Math.floor(frame) % 4) + 4) % 4;
+  const size = 48 * scale;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sheet, col * 48, row * 48, 48, 48, x - size / 2, y - size + 4 * scale, size, size);
+  ctx.restore();
 }
 
 
