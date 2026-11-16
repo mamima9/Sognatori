@@ -15,10 +15,54 @@ export default function Amargenta3D({ onExit }) {
   const [nearby, setNearby] = useState(null);
   const [questStarted, setQuestStarted] = useState(false);
   const [questCount, setQuestCount] = useState(0);
-  const [questDone, setQuestDone] = useState(false);
-  const questActiveRef = useRef(false);
-  const questCountRef = useRef(0);
+  const [savedProgress] = useState(() => {
+    try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
+    catch { return {}; }
+  });
+  const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
+  const [inventory, setInventory] = useState(() => ({
+    amberBeans: 0, recipeFragments: 0, waterCrystals: 0, citrus: 0, relics: 0,
+    ...(savedProgress.inventory || {})
+  }));
+  const [recipeStarted, setRecipeStarted] = useState(Boolean(savedProgress.recipeStarted));
+  const [recipePages, setRecipePages] = useState(Number(savedProgress.recipePages) || 0);
+  const [recipeDone, setRecipeDone] = useState(Boolean(savedProgress.recipeDone));
+  const [waterStarted, setWaterStarted] = useState(Boolean(savedProgress.waterStarted));
+  const [valves, setValves] = useState(Number(savedProgress.valves) || 0);
+  const [waterDone, setWaterDone] = useState(Boolean(savedProgress.waterDone));
+  const [secretUnlocked, setSecretUnlocked] = useState(Boolean(savedProgress.secretUnlocked));
+  const [vaultClaimed, setVaultClaimed] = useState(Boolean(savedProgress.vaultClaimed));
+  const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
+  const [collectedPages, setCollectedPages] = useState(Array.isArray(savedProgress.collectedPages) ? savedProgress.collectedPages : []);
+  const [activatedValves, setActivatedValves] = useState(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []);
+  const [panel, setPanel] = useState(null);
+  const [playerCoords, setPlayerCoords] = useState({ x: -44, z: 2 });
+  const [worldMoment, setWorldMoment] = useState("Mattina");
+  const [toast, setToast] = useState("");
+  const questActiveRef = useRef(Boolean(savedProgress.questStarted));
+  const questCountRef = useRef(Number(savedProgress.questCount) || 0);
+  const recipeStartedRef = useRef(Boolean(savedProgress.recipeStarted));
+  const recipePagesRef = useRef(Number(savedProgress.recipePages) || 0);
+  const waterStartedRef = useRef(Boolean(savedProgress.waterStarted));
+  const valvesRef = useRef(Number(savedProgress.valves) || 0);
+  const collectedAmberRef = useRef(new Set(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []));
+  const collectedPagesRef = useRef(new Set(Array.isArray(savedProgress.collectedPages) ? savedProgress.collectedPages : []));
+  const activatedValvesRef = useRef(new Set(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []));
+  const vaultClaimedRef = useRef(Boolean(savedProgress.vaultClaimed));
   const zoneRef = useRef("Ingresso di Amargenta");
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("sognatori:amargenta:save:v2", JSON.stringify({
+        questStarted, questCount, questDone, inventory,
+        recipeStarted, recipePages, recipeDone,
+        waterStarted, valves, waterDone, secretUnlocked, vaultClaimed,
+        collectedAmber, collectedPages, activatedValves
+      }));
+    } catch (error) {
+      console.warn("Salvataggio Amargenta non disponibile", error);
+    }
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, collectedAmber, collectedPages, activatedValves]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -34,7 +78,7 @@ export default function Amargenta3D({ onExit }) {
     const npcActors = [];
     const raycaster = new THREE.Raycaster();
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
-    let dragging = false, lastX = 0, lastY = 0;
+    let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
     const stone = mat("#9a8871"), stoneLight = mat("#c0ad91"), darkStone = mat("#655747");
     const roof = mat("#704638"), wood = mat("#65442f"), leaf = mat("#365d38"), leaf2 = mat("#587d43");
@@ -60,6 +104,24 @@ export default function Amargenta3D({ onExit }) {
       cylinder(.045,.07,.72,wood,g,0,.36,0,6);
       for(let i=0;i<7;i++){const a=i*2.4;const l=sphere(.38,i%2?leaf:leaf2,g,Math.cos(a)*.26,.55+(i%3)*.08,Math.sin(a)*.26,1);l.scale.set(1.35,.35,.72);}
       for(let i=0;i<5;i++){const a=i*2.4;sphere(.09,coffeeRed,g,Math.cos(a)*.34,.38+(i%3)*.13,Math.sin(a)*.34,1);}
+    };
+    const makeCitrusTree = (x,z,s=1) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
+      cylinder(.16,.24,1.8,wood,g,0,.9,0,7);
+      for(let i=0;i<6;i++){const a=i*2.4;const crown=sphere(.9,i%2?leaf:leaf2,g,Math.cos(a)*.38,2+Math.sin(a)*.22,Math.sin(a)*.38,1);crown.scale.set(1.2,.8,1);}
+      for(let i=0;i<9;i++){const a=i*2.399;const r=.55+(i%3)*.12;sphere(.12,mat("#e5a33d"),g,Math.cos(a)*r,1.45+(i%4)*.28,Math.sin(a)*r,1);}
+      addCollider(x,z,.5*s);
+      return g;
+    };
+    const makeGreenhouse = (x,z) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      const frame=mat("#60452f"), glass=mat("#8bb9a1",.18,{transparent:true,opacity:.36,metalness:.08});
+      box(10,.22,7,stoneLight,g,0,.12,0);
+      for(const px of [-4.7,0,4.7])box(.16,3.5,.16,frame,g,px,1.85,0);
+      for(const pz of [-3.2,3.2])box(9.5,.16,.16,frame,g,0,3.45,pz);
+      const roofGlass=addMesh(new THREE.BoxGeometry(10,.12,7),glass,g,0,3.5,0);roofGlass.rotation.x=.02;
+      for(let i=0;i<5;i++){const plant=makeCoffeePlant(x-3.5+i*1.7,z,.9);plant.position.y=.25;}
+      addCollider(x,z,3.8);
     };
     const makeHouse = (x,z,w=5,d=4,h=3.3,variant=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
@@ -136,6 +198,15 @@ export default function Amargenta3D({ onExit }) {
       box(.24,.13,.34,boot,g,.14,.12,.08);
       const badge=sphere(.09,gold,g,0,1.12,.3,1);
       badge.scale.set(1,.8,.3);
+      if(id==="barista"||id==="roaster"){
+        box(.34,.46,.055,mat("#e8d7bd"),g,0,1.12,.405);
+        box(.38,.08,.06,mat("#8c5036"),g,0,.91,.42);
+      }
+      if(id==="merchant"){cylinder(.34,.08,.16,mat("#8b5735"),g,0,1.95,0,10);box(.16,.22,.16,gold,g,0,2.08,0);}
+      if(id==="archivist"){box(.32,.42,.09,mat("#8a6749"),g,.48,1.05,.02);box(.25,.32,.035,mat("#e7d2a8"),g,.48,1.05,.08);}
+      if(id==="guard"){const spear=cylinder(.035,.05,2.2,gold,g,.62,1.35,0,6);spear.rotation.z=-.08;sphere(.1,stoneLight,g,.62,2.48,0,1);}
+      if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
+      if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7});
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
       return g;
@@ -234,6 +305,9 @@ export default function Amargenta3D({ onExit }) {
       makeRoastery(16,28);makeHouse(7,39,6,5,3.3,0);makeHouse(25,42,5,5,3,1);
       // Muretti, scale e terrazzamenti di collegamento
       for(let i=0;i<5;i++){makeWall(-12+i*5,22+i*3,9,.9,-.45);for(let s=0;s<4;s++)box(2.1,.32,1.3,stoneLight,scene,-18+i*4+s*1.1,1.1+s*.35,24+i*3);}
+      // Giardini agrumati e serre della corporazione del caffè.
+      for(let i=0;i<9;i++)makeCitrusTree(-48+(i%3)*7,18+Math.floor(i/3)*7,.85+(i%2)*.12);
+      makeGreenhouse(-52,-16);
       // Sentiero panoramico, rocce e vegetazione
       for(let i=0;i<48;i++){const a=i*2.399,rr=38+(i%5)*4;makeTree(Math.cos(a)*rr,Math.sin(a)*rr,.7+(i%3)*.18,i%4===0);}
       for(let i=0;i<24;i++){const x=-35+(i%6)*8,z=-4+Math.floor(i/6)*9;sphere(1.2,stoneLight,scene,x,.25,z,1);}
@@ -248,12 +322,38 @@ export default function Amargenta3D({ onExit }) {
       // Interni accessibili: laboratorio della torrefazione e caffetteria storica.
       makeInterior(68,68);
       makeCafeInterior(-68,68);
+      makeInterior(68,-68);
+      // Cripta delle Miscele: accesso segreto legato alle tre missioni cittadine.
+      const vaultArch=new THREE.Group();scene.add(vaultArch);vaultArch.position.set(-70,0,-48);
+      box(8,3.4,.7,darkStone,vaultArch,0,1.7,0);
+      box(3.1,3,.3,gold,vaultArch,0,1.5,.42);
+      box(2.2,2.5,.22,wood,vaultArch,0,1.3,.62);
+      for(let i=0;i<5;i++)sphere(.12,gold,vaultArch,-1.35+i*.68,3.2,.45,1);
+      const vaultChest=box(1.8,1.15,1.1,wood,scene,68,.62,-68);
+      box(1.9,.2,1.16,gold,scene,68,1.27,-68);
+      const vaultGem=sphere(.28,mat("#d4b3ff",.2,{emissive:"#8d59d4",emissiveIntensity:.8}),scene,68,1.65,-68,2);
       const interiorDoor=box(2.4,2.8,.2,wood,scene,68,1.45,62);
       box(1.5,2.2,.08,gold,scene,68,1.4,61.86);
       addInteraction("roastery-door","Torrefazione di Amargenta","La porta conduce al laboratorio della torrefazione.",16,33,()=>{player.position.set(68,0,59.5);setZone("Interno della Torrefazione");},4.2);
       addInteraction("roastery-exit","Uscita della torrefazione","Tornare alla piazza del borgo?",68,62,()=>{player.position.set(16,0,33.5);setZone("Distretto della Torrefazione");},4.2);
       addInteraction("cafe-door","Caffè delle Tre Foglie","Entra nella caffetteria più antica di Amargenta.",-22,-1.5,()=>{player.position.set(-68,0,59.5);setZone("Caffè delle Tre Foglie");},6.4);
       addInteraction("cafe-exit","Uscita del Caffè delle Tre Foglie","Tornare alle terrazze della città?",-68,62,()=>{player.position.set(-22,1,-.5);setZone("Piazza del Chicco");},4.2);
+      addInteraction("vault-door","Cripta delle Miscele","Una porta sigillata da tre prove.",-70,-43,()=>{
+        if(!(questDone&&recipeDone&&waterDone)){
+          setDialogue({title:"Cripta delle Miscele · Sigillata",text:"Il sigillo richiede tre prove: le Fave d'Ambra, la Ricetta Perduta e le Condotte Riattivate."});
+          return;
+        }
+        setSecretUnlocked(true);
+        player.position.set(68,0,-59.5);setZone("Cripta delle Miscele");
+        setToast("La Cripta delle Miscele è stata aperta");
+      },4.8);
+      addInteraction("vault-exit","Uscita della Cripta","Tornare ai giardini di Amargenta?",68,-62,()=>{player.position.set(-70,0,-39.5);setZone("Giardino del Retrogusto");},4.2);
+      addInteraction("vault-chest","Scrigno delle Miscele","Un antico scrigno custodisce il cuore della città.",68,-68,()=>{
+        if(!secretUnlocked){setDialogue({title:"Scrigno sigillato",text:"Il sigillo della cripta non è ancora stato spezzato."});return;}
+        if(vaultClaimedRef.current){setDialogue({title:"Scrigno delle Miscele",text:"Lo scrigno è vuoto. Hai già recuperato il Cuore del Retrogusto."});return;}
+        vaultClaimedRef.current=true;setVaultClaimed(true);setInventory(old=>({...old,relics:old.relics+1}));
+        setDialogue({title:"Cuore del Retrogusto",text:"Hai ottenuto una reliquia unica di Amargenta. Il suo aroma cambia con la luce."});
+      },3.2);
       // Personaggi con dialoghi contestuali.
       makeNpc("barista","Mira","Barista",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
       makeNpc("merchant","Nerio","Mercante di fave",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
@@ -262,27 +362,95 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
-        if(questCountRef.current>=3){setQuestDone(true);setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! La terrazza ti riconosce come raccoglitore esperto."});}
-        else if(!questActiveRef.current){questActiveRef.current=true;setQuestStarted(true);setDialogue({title:"Lina · La raccolta delle Fave d'Ambra",text:"Tre fave speciali sono cadute tra le terrazze. Le riconosci dal bagliore dorato. Raccoglile e torna da me."});}
-        else setDialogue({title:"Lina · Coltivatrice",text:"Te ne mancano ancora "+(3-questCountRef.current)+". Cerca tra i filari delle terrazze."});
+        if(questCountRef.current>=3){
+          if(!questDone){setQuestDone(true);setInventory(old=>({...old,amberBeans:old.amberBeans+3}));setToast("Missione completata · Fave d'Ambra");}
+          setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
+        } else if(!questActiveRef.current){
+          questActiveRef.current=true;setQuestStarted(true);
+          setDialogue({title:"Lina · La raccolta delle Fave d'Ambra",text:"Tre fave speciali sono cadute tra le terrazze. Le riconosci dal bagliore dorato. Raccoglile e torna da me."});
+        } else setDialogue({title:"Lina · Coltivatrice",text:"Te ne mancano ancora "+(3-questCountRef.current)+". Cerca tra i filari delle terrazze."});
+      };
+      const ormaInteraction=interactables.find(item=>item.id==="archivist");
+      if(ormaInteraction)ormaInteraction.action=()=>{
+        if(recipePagesRef.current>=4){
+          if(!recipeDone){setRecipeDone(true);setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));setToast("Missione completata · Ricetta Perduta");}
+          setDialogue({title:"Orma · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
+        } else if(!recipeStartedRef.current){
+          recipeStartedRef.current=true;setRecipeStarted(true);
+          setDialogue({title:"Orma · La Ricetta Perduta",text:"Quattro pagine della ricetta originale sono state disperse per Amargenta. Recuperale: la quinta tostatura non deve andare perduta."});
+        } else setDialogue({title:"Orma · Archivista",text:"Pagine recuperate: "+recipePagesRef.current+"/4. Cerca nei luoghi antichi, vicino ai ponti e alle botteghe."});
+      };
+      const brunoInteraction=interactables.find(item=>item.id==="guard");
+      if(brunoInteraction)brunoInteraction.action=()=>{
+        if(valvesRef.current>=3){
+          if(!waterDone){setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
+          setDialogue({title:"Bruno · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
+        } else if(!waterStartedRef.current){
+          waterStartedRef.current=true;setWaterStarted(true);
+          setDialogue({title:"Bruno · Le Condotte Antiche",text:"Tre valvole sono bloccate lungo il fiume. Riattivale per riportare acqua ai giardini e alle cascate."});
+        } else setDialogue({title:"Bruno · Guardiano del ponte",text:"Condotte riattivate: "+valvesRef.current+"/3. Cerca le valvole vicino ai ponti e alla torrefazione."});
       };
       const amberPickups=[];
       [[-34,-37],[-12,-45],[-4,-28]].forEach((p,i)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(p[0],.8,p[1]);
+        if(collectedAmberRef.current.has(i))g.visible=false;
         const core=sphere(.34,gold,g,0,0,0,2);core.scale.set(.78,1.25,.78);
         const ring=addMesh(new THREE.TorusGeometry(.56,.045,6,20),mat("#f4d28d",.3,{emissive:"#c58a42",emissiveIntensity:.7}),g,0,0,0);ring.rotation.x=Math.PI/2;
         amberPickups.push(g);g.userData.amberPickup=true;
         addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
           if(g.userData.collected)return;
-          g.userData.collected=true;g.visible=false;questCountRef.current+=1;setQuestCount(questCountRef.current);
+          g.userData.collected=true;g.visible=false;collectedAmberRef.current.add(i);
+          const nextCollected=[...collectedAmberRef.current];setCollectedAmber(nextCollected);
+          questCountRef.current+=1;setQuestCount(questCountRef.current);
+          setInventory(old=>({...old,amberBeans:old.amberBeans+1}));
           if(questCountRef.current===3)setDialogue({title:"Raccolta completata",text:"Hai trovato tutte e tre le Fave d'Ambra. Torna da Lina per concludere la missione."});
           else setDialogue({title:"Fava d'Ambra raccolta",text:"Fave trovate: "+questCountRef.current+"/3."});
         },2.8);
       });
+      // Quattro pagine della ricetta originale, ciascuna custodita in un punto diverso.
+      [[-35,-16],[28,-30],[-61,62],[76,79]].forEach((p,i)=>{
+        const page=new THREE.Group();scene.add(page);page.position.set(p[0],.9,p[1]);
+        const parchment=box(.55,.08,.72,mat("#e9d3a7"),page,0,0,0);parchment.rotation.y=.25;
+        box(.38,.025,.04,mat("#9d7048"),page,0,.055,-.15);
+        box(.3,.025,.04,mat("#9d7048"),page,0,.055,0);
+        box(.34,.025,.04,mat("#9d7048"),page,0,.055,.15);
+        if(collectedPagesRef.current.has(i))page.visible=false;
+        addInteraction("recipe-page-"+i,"Pagina della Ricetta Perduta","Una pagina antica della Ricetta delle Sette Tostature.",p[0],p[1],()=>{
+          if(!recipeStartedRef.current){setDialogue({title:"Pagina della Ricetta",text:"Una pagina preziosa. Orma saprà cosa farne."});return;}
+          if(collectedPagesRef.current.has(i))return;
+          collectedPagesRef.current.add(i);setCollectedPages([...collectedPagesRef.current]);
+          recipePagesRef.current+=1;setRecipePages(recipePagesRef.current);
+          setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));
+          page.visible=false;
+          setDialogue({title:"Pagina recuperata",text:"Pagine della ricetta: "+recipePagesRef.current+"/4."});
+          if(recipePagesRef.current===4)setToast("Hai recuperato tutte le pagine: torna da Orma");
+        },2.8);
+      });
+      // Tre valvole interattive lungo le condotte: ogni attivazione cambia davvero lo stato.
+      [[29,-18],[33,18],[13,38]].forEach((p,i)=>{
+        const valve=new THREE.Group();scene.add(valve);valve.position.set(p[0],0,p[1]);
+        cylinder(.18,.22,1.25,darkStone,valve,0,.62,0,8);
+        const wheel=addMesh(new THREE.TorusGeometry(.52,.09,8,16),gold,valve,0,1.3,0);wheel.rotation.x=Math.PI/2;
+        const handle=box(.12,1.1,.12,wood,valve,0,1.3,0);
+        if(activatedValvesRef.current.has(i)){wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");}
+        addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
+          if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Bruno al ponte dovrebbe sapere come riattivare le condotte."});return;}
+          if(activatedValvesRef.current.has(i))return;
+          activatedValvesRef.current.add(i);setActivatedValves([...activatedValvesRef.current]);
+          valvesRef.current+=1;setValves(valvesRef.current);
+          wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");
+          setDialogue({title:"Condotta riattivata",text:"Valvole attivate: "+valvesRef.current+"/3."});
+          if(valvesRef.current===3)setToast("Le tre condotte sono di nuovo attive: torna da Bruno");
+        },3.1);
+      });
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
+      addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
+        setInventory(old=>({...old,citrus:old.citrus+1}));
+        setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta."});
+      },4.5);
       // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
       const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
       const torso=cylinder(.37,.48,1.12,jacket,player,0,1.18,0,12);torso.scale.z=.82;
@@ -330,13 +498,16 @@ export default function Amargenta3D({ onExit }) {
       }, undefined, () => {}));
       const groundRay=new THREE.Raycaster();
       const onKeyDown=e=>{
-        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}
+        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}
         if(e.code==="KeyE"&&!e.repeat){
           const p=player.position;
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
-        if(e.code==="Escape")setDialogue(null);
+        if(e.code==="Escape"){setDialogue(null);setPanel(null);}
+        if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
+        if(!e.repeat&&e.code==="KeyI")setPanel(old=>old==="inventory"?null:"inventory");
+        if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
       };
       const onKeyUp=e=>keys.delete(e.code);
       const onPointerDown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
@@ -356,7 +527,7 @@ export default function Amargenta3D({ onExit }) {
         const dt=Math.min(clock.getDelta(),.04);
         const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0);
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
-        if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar(8*dt);const nx=player.position.x+move.x,nz=player.position.z+move.z;
+        if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=player.position.x+move.x,nz=player.position.z+move.z;
           const blocked=colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.55);
           if(!blocked){player.position.x=THREE.MathUtils.clamp(nx,-82,82);player.position.z=THREE.MathUtils.clamp(nz,-82,82);}
           player.rotation.y=Math.atan2(move.x,move.z);
@@ -367,9 +538,22 @@ export default function Amargenta3D({ onExit }) {
         camera.position.lerp(cp,.12);camera.lookAt(target);
         scene.traverse(o=>{if(o.userData.smoke){o.position.y+=dt*.45;if(o.position.y>13)o.position.y=10;}});
         const p=player.position;
+        if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
+        const period=Math.floor((clock.elapsedTime%240)/60);
+        const moments=["Mattina","Pomeriggio","Tramonto","Notte"];
+        if(moments[period]!==worldMoment)setWorldMoment(moments[period]);
+        const daylight=period===0?1:period===1?.82:period===2?.48:.22;
+        sun.intensity=3.2*daylight;
+        sun.position.set(Math.cos(clock.elapsedTime*.025)*38,22+daylight*34,Math.sin(clock.elapsedTime*.025)*32);
+        scene.background.setHSL(.55,.22,.28+daylight*.22);
+        scene.fog.color.copy(scene.background);
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
-        npcActors.forEach((actor,i)=>{actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;actor.group.rotation.y=Math.sin(clock.elapsedTime*.45+actor.phase)*.08;});
+        npcActors.forEach((actor,i)=>{
+          actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;
+          const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
+          actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+        });
         scene.traverse(o=>{if(o.userData.amberPickup){o.rotation.y+=dt*.65;}});
         const nextZone=p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
@@ -392,16 +576,42 @@ export default function Amargenta3D({ onExit }) {
       <div style={{fontSize:12,opacity:.8}}>La città segreta del caffè</div>
     </div>
     <div style={{position:"absolute",top:20,right:20,padding:"10px 14px",border:"1px solid #d8c19a66",borderRadius:12,background:"#18221eaa",backdropFilter:"blur(8px)",fontSize:12}}>
-      <div style={{fontSize:9,letterSpacing:2,color:"#d9b37c"}}>ZONA</div><strong>{zone}</strong>
+      <div style={{fontSize:9,letterSpacing:2,color:"#d9b37c"}}>ZONA · {worldMoment.toUpperCase()}</div><strong>{zone}</strong>
     </div>
-    {questStarted&&!questDone&&<div style={{position:"absolute",top:100,right:20,width:230,padding:13,border:"1px solid #d8b77d88",borderRadius:12,background:"#18221edb",fontSize:12,lineHeight:1.55}}>
-      <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>MISSIONE · AMARGENTA</div>
-      <strong>Le Fave d'Ambra</strong>
-      <div style={{marginTop:5,color:"#f0dfc2"}}>Raccogli le fave rare sulle terrazze.</div>
-      <div style={{marginTop:8,fontWeight:900,color:"#eac27f"}}>{questCount} / 3 raccolte</div>
-      <div style={{height:5,marginTop:5,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(questCount/3*100)+"%",background:"#e1ae5e",transition:"width .2s"}}/></div>
+    <div style={{position:"absolute",top:92,right:20,width:238,padding:13,border:"1px solid #d8b77d88",borderRadius:12,background:"#18221edb",fontSize:11,lineHeight:1.5}}>
+      <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>DIARIO DI AMARGENTA</div>
+      <div style={{marginTop:5,display:"flex",justifyContent:"space-between"}}><strong>Fave d'Ambra</strong><span>{questDone?"✓":questCount+"/3"}</span></div>
+      <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(questCount/3*100)+"%",background:"#e1ae5e"}}/></div>
+      <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Ricetta Perduta</strong><span>{recipeDone?"✓":recipePages+"/4"}</span></div>
+      <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(recipePages/4*100)+"%",background:"#c7a5df"}}/></div>
+      <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Condotte Antiche</strong><span>{waterDone?"✓":valves+"/3"}</span></div>
+      <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(valves/3*100)+"%",background:"#78b6c1"}}/></div>
+      <div style={{marginTop:9,color:"#d9bd91",fontSize:10}}>Z {playerCoords.x} · X {playerCoords.z}</div>
+    </div>
+    <div style={{position:"absolute",top:18,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6,pointerEvents:"auto"}}>
+      {[["map","M","Mappa"],["journal","J","Diario"],["inventory","I","Borsa"]].map(([id,key,label])=><button key={id} onClick={()=>setPanel(old=>old===id?null:id)} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#18221edb",color:"#f6ead5",padding:"8px 11px",fontSize:11,fontWeight:800,cursor:"pointer"}}>{key} · {label}</button>)}
+    </div>
+    {toast&&<div style={{position:"absolute",top:66,left:"50%",transform:"translateX(-50%)",padding:"9px 16px",borderRadius:10,background:"#26382bee",border:"1px solid #e0c18b",color:"#f6e8cf",fontSize:12,fontWeight:800}}>{toast}</div>}
+    {panel&&<div style={{position:"absolute",left:18,top:82,width:"min(330px,calc(100vw - 36px))",maxHeight:"60vh",overflowY:"auto",padding:16,borderRadius:15,background:"#17231fee",border:"1px solid #d8b77d99",boxShadow:"0 16px 45px #0009",fontSize:12,lineHeight:1.65}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>{panel==="map"?"MAPPA DI AMARGENTA":panel==="journal"?"DIARIO DEL VIAGGIATORE":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
+      {panel==="map"&&<div>
+        <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(145deg,#526c49 0%,#718354 45%,#345d5c 46%,#31504b 55%,#6b7850 56%,#455d3e 100%)"}}>
+          <div style={{position:"absolute",left:"48%",top:0,width:10,height:"100%",background:"#397f83",opacity:.8}}/>
+          <div style={{position:"absolute",left:"14%",top:"45%",width:"72%",height:12,background:"#b79a71",transform:"rotate(-12deg)"}}/>
+          {[[50,50],[22,27],[78,72],[28,75],[70,20]].map(([x,y],i)=><div key={i} style={{position:"absolute",left:x+"%",top:y+"%",width:8,height:8,borderRadius:8,background:i===0?"#f1d18b":"#e5b66b",border:"1px solid #33271f"}}/>)}
+          <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+82)/164*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+82)/164*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff"}}/>
+        </div>
+        <div style={{marginTop:8,color:"#d7c5a5"}}>Piazza del Chicco · Terrazze · Torrefazione · Caffè delle Tre Foglie · Cripta segreta</div>
+      </div>}
+      {panel==="journal"&&<div>
+        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
+        <div style={{marginTop:10,color:"#e6c28b"}}>Segreto: {secretUnlocked?"Cripta aperta":"completa tutte e tre le missioni."}</div>
+      </div>}
+      {panel==="inventory"&&<div>
+        {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
+        <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
+      </div>}
     </div>}
-    {questDone&&<div style={{position:"absolute",top:100,right:20,padding:"10px 14px",border:"1px solid #d8b77d",borderRadius:12,background:"#26382beF",fontSize:12}}>✓ Missione completata · Fave d'Ambra</div>}
     <div style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
       <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Prototipo 3D isolato · modelli GLB Scenario da integrare</span>
     </div>
