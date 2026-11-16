@@ -2037,40 +2037,40 @@ const [message, setMessage] = useState("");
 
       }
 
-      /*
-        ZONE LABEL
-      */
-
-      ctx.fillStyle =
-        "rgba(0,0,0,.35)";
-
-      ctx.roundRect(
-        playerRef.current.x -
-          180,
-        playerRef.current.y -
-          120,
-        360,
-        50,
-        20
-      );
-
-      ctx.fill();
-
-      ctx.fillStyle =
-        "#fff";
-
-      ctx.font =
-        "700 27px system-ui";
-
-      ctx.textAlign =
-        "center";
-
-      ctx.fillText(
-        zone.name,
-        playerRef.current.x,
-        playerRef.current.y -
-          88
-      );
+      if (activeMapId !== "amaro") {
+        ctx.fillStyle =
+          "rgba(0,0,0,.35)";
+  
+        ctx.roundRect(
+          playerRef.current.x -
+            180,
+          playerRef.current.y -
+            120,
+          360,
+          50,
+          20
+        );
+  
+        ctx.fill();
+  
+        ctx.fillStyle =
+          "#fff";
+  
+        ctx.font =
+          "700 27px system-ui";
+  
+        ctx.textAlign =
+          "center";
+  
+        ctx.fillText(
+          zone.name,
+          playerRef.current.x,
+          playerRef.current.y -
+            88
+        );
+  
+  
+      }
 
       ctx.restore();
 
