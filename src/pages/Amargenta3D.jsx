@@ -28,6 +28,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
+    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null };
     const colliders = [];
     const interactables = [];
     const npcActors = [];
@@ -282,10 +283,35 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
-      // Player placeholder 3D leggibile, sostituibile con personaggio riggato GLB
-      const body=cylinder(.36,.48,1.25,mat("#3d5366"),player,0,1.05,0,10);body.castShadow=true;
-      sphere(.34,mat("#d7b18b"),player,0,1.95,0,2);
-      box(.5,.12,.22,wood,player,0,1.65,.34);
+      // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
+      const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
+      const torso=cylinder(.37,.48,1.12,jacket,player,0,1.18,0,12);torso.scale.z=.82;
+      sphere(.38,skinTone,player,0,2.02,.015,2);
+      // Collo, colletto e dettagli della giacca.
+      cylinder(.13,.15,.22,skinTone,player,0,1.78,0,10);
+      box(.55,.16,.13,jacketLight,player,0,1.68,.27);
+      box(.09,.72,.07,leather,player,0,1.2,.36);
+      for(let i=0;i<3;i++)sphere(.035,gold,player,0,1.42+i*.2,.405,1);
+      // Cappellino rosso con visiera frontale.
+      sphere(.4,redCap,player,0,2.24,-.005,2).scale.set(1,.38,1);
+      box(.64,.09,.42,capShade,player,0,2.18,.22);
+      box(.28,.09,.12,mat("#e8d7bd"),player,0,2.28,-.02);
+      // Zaino in cuoio, fibbie e tasca esterna.
+      box(.68,.82,.34,leather,player,0,1.25,-.36);
+      box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
+      box(.58,.09,.08,gold,player,0,1.47,-.56);
+      box(.2,.24,.08,wood,player,0,1.28,-.58);
+      // Braccia e mani.
+      playerMotion.leftArm=box(.18,.76,.2,jacket,player,-.48,1.2,0);
+      playerMotion.rightArm=box(.18,.76,.2,jacket,player,.48,1.2,0);
+      sphere(.13,skinTone,player,-.48,.78,.02,1);sphere(.13,skinTone,player,.48,.78,.02,1);
+      // Pantaloni, ginocchia e scarponi.
+      playerMotion.leftLeg=box(.23,.72,.25,pants,player,-.19,.43,0);
+      playerMotion.rightLeg=box(.23,.72,.25,pants,player,.19,.43,0);
+      box(.28,.18,.43,bootMat,player,-.19,.09,.11);
+      box(.28,.18,.43,bootMat,player,.19,.09,.11);
+      // Spallacci e fibbie dello zaino.
+      for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
       scene.add(player);player.position.set(-44,0,2);
 
       // I modelli GLB sostituiscono gradualmente i moduli procedurali quando vengono aggiunti.
@@ -334,7 +360,8 @@ export default function Amargenta3D({ onExit }) {
           const blocked=colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.55);
           if(!blocked){player.position.x=THREE.MathUtils.clamp(nx,-82,82);player.position.z=THREE.MathUtils.clamp(nz,-82,82);}
           player.rotation.y=Math.atan2(move.x,move.z);
-        }
+          const stride=clock.elapsedTime*10;playerMotion.leftArm.rotation.x=Math.sin(stride)*.38;playerMotion.rightArm.rotation.x=-Math.sin(stride)*.38;playerMotion.leftLeg.rotation.x=-Math.sin(stride)*.42;playerMotion.rightLeg.rotation.x=Math.sin(stride)*.42;
+        } else {playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
         const target=new THREE.Vector3(player.position.x,1.5,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         camera.position.lerp(cp,.12);camera.lookAt(target);
