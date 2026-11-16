@@ -523,7 +523,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
 
       {panel && phase !== "battle" && (
         <div className="absolute inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-          <div className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-3xl border border-white/15 bg-slate-950 p-4 text-white shadow-2xl sm:p-6">
+          <div className="max-h-[94vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-white/15 bg-slate-950 p-4 text-white shadow-2xl sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[.25em] text-emerald-200/60">Il tuo viaggio</div>
@@ -536,24 +536,29 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <button onClick={() => setPanel("party")} className={"rounded-lg px-3 py-2 " + (panel === "party" ? "bg-emerald-300 text-black" : "bg-white/10")}>Squadra ({party.length}/4)</button>
               <button onClick={() => setPanel("box")} className={"rounded-lg px-3 py-2 " + (panel === "box" ? "bg-violet-300 text-black" : "bg-white/10")}>Deposito ({deposit.length})</button>
             </div>
-            <div className="grid max-h-[58vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
-              {(panel === "party" ? party : deposit).map((s) => (
-                <div key={s.id} className={"flex items-center gap-2 rounded-xl border p-3 " + (panel === "party" && (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
-                  <AdventureSognatoreSprite s={s} size={42} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-black">{s.nome}</div>
-                    <div className="text-[10px] text-white/45">{s.tipo}</div>
-                    {panel === "party" && <div className={"mt-1 text-[9px] font-black uppercase tracking-wider " + ((save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "text-amber-200" : "text-sky-200/70")}>{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "TITOLARE" : "PANCHINA"}</div>}
-                  </div>
-                  {panel === "party" ? (
-                    <div className="flex flex-col gap-1">
-                      <button onClick={() => toggleStarter(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">{(save.starterIds || save.partyIds.slice(0, 2)).includes(s.id) ? "PANCHINA" : "TITOLARE"}</button>
-                      <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[9px] font-black">BOX</button>
+            <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
+              {(panel === "party" ? party : deposit).map((s) => {
+                const isStarter = (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id);
+                return (
+                  <div key={s.id} className={"flex w-full flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center " + (panel === "party" && isStarter ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <AdventureSognatoreSprite s={s} size={58} />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="break-words text-base font-black leading-tight">{s.nome}</div>
+                        <div className="text-sm text-white/65"><span className="font-bold text-white/45">FAZIONE:</span> {s.tipo}</div>
+                        {panel === "party" && <div className={"text-sm font-black uppercase tracking-wider " + (isStarter ? "text-amber-200" : "text-sky-200")}>{isStarter ? "TITOLARE" : "PANCHINA"}</div>}
+                      </div>
                     </div>
-                  ) : <button onClick={() => toggleParty(s.id)} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black">AGGIUNGI</button>}
-                </div>
-              ))}
-              {(panel === "party" ? party : deposit).length === 0 && <div className="col-span-full rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
+                    {panel === "party" ? (
+                      <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
+                        <button onClick={() => toggleStarter(s.id)} className="rounded-lg border border-amber-200/20 bg-amber-200/10 px-4 py-2 text-xs font-black text-amber-100">{isStarter ? "METTI IN PANCHINA" : "RENDI TITOLARE"}</button>
+                        <button onClick={() => toggleParty(s.id)} className="rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-xs font-black">SPOSTA NEL BOX</button>
+                      </div>
+                    ) : <button onClick={() => toggleParty(s.id)} className="shrink-0 rounded-lg bg-white/10 px-4 py-3 text-xs font-black">AGGIUNGI ALLA SQUADRA</button>}
+                  </div>
+                );
+              })}
+              {(panel === "party" ? party : deposit).length === 0 && <div className="rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
             </div>
             <div className="mt-3 text-[10px] text-white/45">Posseduti: {owned.length} · In squadra: {party.length} · Nel deposito: {deposit.length}</div>
           </div>
