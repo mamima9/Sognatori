@@ -9,7 +9,7 @@ import AdventureHouseInterior from "@/components/game/AdventureHouseInterior";
 import AdventureWorldSystems from "@/components/game/AdventureWorldSystems";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
-import { drawAdventureTraveler, drawAdventureWildSognatore } from "@/lib/adventurePixelSprites";
+import { drawAdventureTraveler, drawAdventureWildSognatore, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
@@ -2298,37 +2298,19 @@ function loadOverworldArtwork(src) {
 }
 
 function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false, direction = "down") {
-  const entry = loadOverworldArtwork(s?.img);
-  if (!entry?.canvas) {
-    if (!entry?.failed) {
-      drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
-      return;
-    }
-    drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
-    return;
-  }
-  const artwork = entry.canvas;
-  const maxWidth = sleepingBlocker ? 112 : 82;
-  const maxHeight = sleepingBlocker ? 112 : 82;
-  const scale = Math.min(maxWidth / artwork.width, maxHeight / artwork.height);
-  const width = artwork.width * scale;
-  const height = artwork.height * scale;
-  const motion = ((frame % 4) + 4) % 4;
-  const bob = motion === 1 ? 2 : motion === 3 ? 1 : 0;
-  const squash = motion === 1 ? 0.985 : motion === 3 ? 1.01 : 1;
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  ctx.translate(x, y - bob);
-  // L'artwork ufficiale fornisce il fronte; il profilo laterale si specchia
-  // sull'asse orizzontale senza deformare la creatura.
-  if (direction === "left") ctx.scale(-1, 1);
-  ctx.scale(1, squash);
-  ctx.fillStyle = "rgba(0,0,0,.28)";
-  ctx.beginPath();
-  ctx.ellipse(0, -2 + bob, Math.max(15, width * .34), 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.drawImage(artwork, -width / 2, -height, width, height);
-  ctx.restore();
+  // Tutte le 35 specie usano il renderer pixel-art direzionale:
+  // 4 direzioni x 4 frame, con silhouette e palette legate al roster.
+  // Le illustrazioni originali restano nelle schede e nel bestiario.
+  const scale = sleepingBlocker ? 1.72 : 1.28;
+  drawAdventureWildSognatoreDirectional(
+    ctx,
+    s,
+    x,
+    y,
+    frame,
+    scale,
+    direction || "down"
+  );
 }
 
 function nextCityName(cityId) {
