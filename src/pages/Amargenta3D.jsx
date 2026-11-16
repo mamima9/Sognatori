@@ -309,7 +309,7 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeInterior = (cx,cz,doorSide="north") => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
-      box(14,.35,12,floor,scene,cx,.05,cz);
+      box(14,.35,12,floor,scene,cx,-.175,cz);
       const doorWidth=3.2, sideLength=(14-doorWidth)/2, sideOffset=(14+doorWidth)/4;
       if(doorSide==="north"){
         box(sideLength,4,.35,wall,scene,cx-sideOffset,2,cz-6);
@@ -339,7 +339,7 @@ export default function Amargenta3D({ onExit }) {
 
     const makeCafeInterior = (cx,cz) => {
       const floor=mat("#826448"), plaster=mat("#d2b88e"), darkWood=mat("#4b3028"), redFabric=mat("#a64d38");
-      box(15,.35,13,floor,scene,cx,.05,cz);
+      box(15,.35,13,floor,scene,cx,-.175,cz);
       const doorWidth=3.2, sideLength=(15-doorWidth)/2, sideOffset=(15+doorWidth)/4;
       box(sideLength,4,.35,plaster,scene,cx-sideOffset,2,cz-6.5);
       box(sideLength,4,.35,plaster,scene,cx+sideOffset,2,cz-6.5);
