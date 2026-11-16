@@ -896,13 +896,15 @@ function drawFactionBorderTerrain(ctx, faction) {
     const x=-650+i*215, y=-95-(seeded(i+4)*85);
     if(faction==="Natura"||faction==="Orso") drawTree(x,y,.72+seeded(i+12)*.48);
     else if(faction==="Robot"){
-      ctx.fillStyle=p[1];ctx.fillRect(x-32,y-155,64,155);ctx.fillStyle=p[3];ctx.fillRect(x-22,y-135,44,9);ctx.fillRect(x-22,y-95,44,7);ctx.fillStyle=p[4];ctx.fillRect(x-5,y-170,10,15);
+      ctx.fillStyle=p[1];ctx.font="bold 28px monospace";ctx.textAlign="center";ctx.fillText(i%2?"1010":"0101",x,y-35);ctx.fillStyle=p[3];ctx.fillRect(x-28,y-15,56,5);
     } else if(faction==="Marino"){
       ctx.strokeStyle=p[3];ctx.lineWidth=23;ctx.beginPath();ctx.moveTo(x-100,y-30);ctx.bezierCurveTo(x-45,y-100,x+25,y+10,x+105,y-55);ctx.stroke();
     } else if(faction==="Nuvola"){
       ctx.fillStyle=p[3];for(const [dx,dy,r] of [[-35,-30,45],[10,-55,62],[65,-25,42]]){ctx.beginPath();ctx.arc(x+dx,y+dy,r,0,Math.PI*2);ctx.fill();}
-    } else if(faction==="Mago"||faction==="Salato"){
-      ctx.fillStyle=p[2];ctx.beginPath();ctx.moveTo(x,y-190-seeded(i)*80);ctx.lineTo(x-62,y);ctx.lineTo(x+65,y);ctx.closePath();ctx.fill();ctx.fillStyle=p[3];ctx.fillRect(x-4,y-100,8,75);
+    } else if(faction==="Mago"){
+      ctx.save();ctx.translate(x,y-35);ctx.rotate(.18);ctx.fillStyle="#684b91";ctx.fillRect(-25,-18,50,36);ctx.fillStyle="#e5d5ad";ctx.fillRect(-20,-12,40,3);ctx.fillRect(-20,-3,40,3);ctx.fillRect(-20,6,40,3);ctx.restore();
+    } else if(faction==="Dolce"){
+      ctx.strokeStyle="#fff0d0";ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(x-25,y-5);ctx.lineTo(x-25,y-65);ctx.stroke();ctx.fillStyle="#f1a4c2";ctx.beginPath();ctx.arc(x-25,y-75,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff0d0";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x-38,y-87);ctx.lineTo(x-12,y-63);ctx.stroke();
     } else if(faction==="Luce"){
       ctx.fillStyle=p[3];ctx.beginPath();ctx.arc(x,y-55,24,0,Math.PI*2);ctx.fill();ctx.strokeStyle=p[4];ctx.lineWidth=5;for(let a=0;a<8;a++){const q=a*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(q)*34,y-55+Math.sin(q)*34);ctx.lineTo(x+Math.cos(q)*56,y-55+Math.sin(q)*56);ctx.stroke();}
     } else if(faction==="Demone"){
