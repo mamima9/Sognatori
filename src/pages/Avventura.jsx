@@ -11,7 +11,7 @@ import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
-import { drawAdventureAmaroCity } from "@/lib/adventureAmaroCity";
+import { drawAdventureAmaroCity, getAmaroElevationAt, canTraverseAmaroElevation } from "@/lib/adventureAmaroCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
 
@@ -1403,6 +1403,12 @@ const [message, setMessage] = useState("");
           blocked = true;
         }
 
+        // Amargenta: i dislivelli si attraversano soltanto seguendo le rampe.
+        if (!blocked && activeMapId === "amaro" &&
+          !canTraverseAmaroElevation(playerRef.current.x, playerRef.current.y, next.x, next.y)) {
+          blocked = true;
+        }
+
         // Nessuna collisione residua del vecchio lago: il centro città è attraversabile.
 
         /*
@@ -1851,9 +1857,12 @@ const [message, setMessage] = useState("");
         keysRef.current.arrowup || keysRef.current.arrowdown ||
         keysRef.current.arrowleft || keysRef.current.arrowright
       );
+      const playerElevation = activeMapId === "amaro"
+        ? getAmaroElevationAt(playerRef.current.x, playerRef.current.y)
+        : 0;
       drawPlayer(
         ctx,
-        playerRef.current,
+        { ...playerRef.current, y: playerRef.current.y - playerElevation },
         playerFacingRef.current,
         Math.floor(performance.now() / 135) % 4,
         playerIsWalking
