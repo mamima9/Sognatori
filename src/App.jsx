@@ -29,7 +29,14 @@ import Amargenta3D from '@/pages/Amargenta3D';
 import TelegramAuthGate from '@/components/TelegramAuthGate';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const { user, isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const amargentaEmails = [
+    user?.email,
+    user?.user_metadata?.email,
+    user?.app_metadata?.email,
+    ...(Array.isArray(user?.identities) ? user.identities.map((identity) => identity?.identity_data?.email) : []),
+  ].filter(Boolean).map((email) => String(email).trim().toLowerCase());
+  const canAccessAmargenta3D = amargentaEmails.includes("bibitoeuro@gmail.com");
   const { lang, setLang, t } = useLanguage();
 
   // Show loading spinner while checking app public settings or auth
@@ -65,7 +72,16 @@ const AuthenticatedApp = () => {
            <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="/avventura" element={<Avventura />} />
-        <Route path="/amargenta-3d" element={<Amargenta3D />} />
+        <Route path="/amargenta-3d" element={canAccessAmargenta3D ? <Amargenta3D /> : (
+          <div className="min-h-screen flex items-center justify-center bg-[#18221e] text-[#f4ead8] p-6">
+            <div className="max-w-md text-center rounded-2xl border border-[#d8b77d66] bg-[#243229] p-8 shadow-2xl">
+              <div className="text-4xl mb-4">🔒</div>
+              <h1 className="text-2xl font-black tracking-wide text-[#e7c28c]">AMARGENTA</h1>
+              <p className="mt-3 text-sm leading-6 text-[#e8ddc9]">La città segreta è custodita da un patto personale. L'accesso a questo prototipo 3D è riservato a Bibito.</p>
+              <a href="/avventura" className="inline-flex mt-6 rounded-xl border border-[#d8b77d] px-5 py-3 font-bold text-[#f4ead8] hover:bg-[#ffffff12]">Torna ad Avventura</a>
+            </div>
+          </div>
+        )} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <GlobalMusicPlayer />
