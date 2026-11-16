@@ -377,9 +377,15 @@ inc.protectedThisTurn = false;
         !pActive[i].protectedLastTurn
       ) {
         pActive[i].protectedThisTurn = true;
-        protectLogs.push(
-          m.protects(pActive[i].nome)
-        );
+        if (adventureMode && !pActive[i].abilityNullified && pActive[i].abilKey === "crunchypat_avalanche") {
+          pActive[i].statMods.att = (pActive[i].statMods.att || 0) + 1;
+          pActive[i].statMods.dif = (pActive[i].statMods.dif || 0) + 1;
+          pActive[i].statMods.vel = (pActive[i].statMods.vel || 0) + 1;
+          protectLogs.push(lang === "en"
+            ? "Avalanche: Crunchypat gains +1 ATK, +1 DEF and +1 SPD."
+            : "Avalanche: Crunchypat ottiene +1 ATT, +1 DIF e +1 VEL.");
+        }
+        protectLogs.push(m.protects(pActive[i].nome));
       }
     });
 
@@ -391,9 +397,15 @@ inc.protectedThisTurn = false;
         !eActive[i].protectedLastTurn
       ) {
         eActive[i].protectedThisTurn = true;
-        protectLogs.push(
-          m.enemyProtects(eActive[i].nome)
-        );
+        if (adventureMode && !eActive[i].abilityNullified && eActive[i].abilKey === "crunchypat_avalanche") {
+          eActive[i].statMods.att = (eActive[i].statMods.att || 0) + 1;
+          eActive[i].statMods.dif = (eActive[i].statMods.dif || 0) + 1;
+          eActive[i].statMods.vel = (eActive[i].statMods.vel || 0) + 1;
+          protectLogs.push(lang === "en"
+            ? "Avalanche: Crunchypat gains +1 ATK, +1 DEF and +1 SPD."
+            : "Avalanche: Crunchypat ottiene +1 ATT, +1 DIF e +1 VEL.");
+        }
+        protectLogs.push(m.enemyProtects(eActive[i].nome));
       }
     });
 
