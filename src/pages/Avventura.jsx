@@ -1774,22 +1774,7 @@ const [message, setMessage] = useState("");
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
           ctx.fillText("✦", wild.x, wild.y - 105); ctx.restore();
         }
-        if (wild.recruitable && !discoveredWildClues[wildKey]) {
-          const clueX = wild.habitatX;
-          const clueY = wild.habitatY + 48;
-          ctx.save();
-          ctx.translate(clueX, clueY);
-          ctx.shadowColor = "#67e8f9";
-          ctx.shadowBlur = 16;
-          ctx.fillStyle = "rgba(8,35,48,.92)";
-          ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = "#67e8f9"; ctx.lineWidth = 2; ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.font = "bold 21px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.fillStyle = "#a5f3fc"; ctx.fillText("?", 0, 1);
-          ctx.font = "bold 10px monospace"; ctx.fillStyle = "#e0f2fe"; ctx.fillText("INDIZIO", 0, 33);
-          ctx.restore();
-        } else if (wild.recruitable && !completedWildTasks[wildKey]) {
+        if (wild.recruitable && !completedWildTasks[wildKey]) {
           ctx.save();
           ctx.translate(wild.habitatX + 42, wild.habitatY + 58);
           ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 14;
