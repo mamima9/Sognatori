@@ -583,7 +583,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               })}
               {(panel === "party" ? party : deposit).length === 0 && <div className="rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
             </div>
-            </div>)}
+            )}
             <div className="mt-3 text-[10px] text-white/45">Posseduti: {owned.length} · In squadra: {party.length} · Nel deposito: {deposit.length}</div>
           </div>
         </div>
