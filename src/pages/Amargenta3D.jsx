@@ -205,11 +205,12 @@ export default function Amargenta3D({ onExit }) {
       walkablePlatforms.push({x,z,w:length,d:3.3,height:.24});
       // Il ponte resta attraversabile e la sua quota viene applicata al personaggio.
     };
-    const makeTerrace = (x,z,w,depth,level) => {
+    const makeTerrace = (x,z,w,depth,level,wallSide="south") => {
       const y=level*1.45;
       const top=addMesh(new THREE.BoxGeometry(w,.35,depth),groundMat,scene,x,y,z);
       walkablePlatforms.push({x,z,w,d:depth,height:y+.175});
-      box(w,.95,.55,stone,scene,x,y-.58,z+depth/2);
+      const retainingWallZ=wallSide==="north"?z-depth/2:z+depth/2;
+      box(w,.95,.55,stone,scene,x,y-.58,retainingWallZ);
       for(let i=0;i<Math.floor(w/2.2);i++) for(let j=0;j<2;j++) {
         const plant=makeCoffeePlant(x-w/2+1+i*2.1,z-depth/2+1+j*2.2,.8);
         plant.position.y=y+.2;
@@ -395,7 +396,10 @@ export default function Amargenta3D({ onExit }) {
       makeWall(-38,-8,15,2.2,Math.PI/2);makeWall(-38,12,15,2.2,Math.PI/2);
       const gate=addMesh(new THREE.TorusGeometry(2.5,.48,8,24,Math.PI),stoneLight,scene,-38,3,2);gate.rotation.z=Math.PI;
       // Terrazze a gradoni sul lato nord e sud
-      for(let l=0;l<3;l++){makeTerrace(-22,-36-l*12,25,9,l);makeTerrace(-18,39+l*10,28,9,l);}
+      for(let l=0;l<3;l++){
+        makeTerrace(-22,-36-l*12,25,9,l,l===0?"south":"north");
+        makeTerrace(-18,39+l*10,28,9,l,l===0?"north":"south");
+      }
       // Rampe percorribili che collegano fisicamente i tre livelli delle terrazze.
       makeWalkRamp([-22,-40.5],[-22,-48],6,.175,1.625);
       makeWalkRamp([-22,-52.5],[-22,-60],6,1.625,3.075);
