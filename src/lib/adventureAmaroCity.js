@@ -129,68 +129,186 @@ function drawCoffeeRamp(c,a,b,width) {
 }
 
 export function drawAdventureAmaroCity(ctx,city){
-  const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
-  // Fondovalle terrazzato e mura concentriche della città fortificata.
-  ellipse(ctx,0,22,316,248,"rgba(0,0,0,.32)");ellipse(ctx,0,5,302,238,"#302126");ellipse(ctx,0,-3,287,226,"#654334");ellipse(ctx,0,-7,274,215,"#b17a50");ellipse(ctx,0,-8,259,202,"#51372f");ellipse(ctx,0,-8,244,189,"#c18a58");
-  // Skyline montano e piantagioni su più quote, nello stile delle mappe RPG 2.5D.
-  drawCoffeeMountainChain(ctx,t);
-  // Mura merlate, contrafforti e torri con lanterne.
-  for(let i=0;i<40;i++){const a=i*Math.PI*2/40,x=Math.cos(a)*251,y=-8+Math.sin(a)*193;ctx.save();ctx.translate(x,y);ctx.rotate(a);rect(ctx,-7,-10,14,22,"#50342d");rect(ctx,-5,-8,10,16,"#d09a63");rect(ctx,-8,-13,16,5,"#f0c17c");ctx.restore();}
-  for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8,x=Math.cos(a)*235,y=-8+Math.sin(a)*177;ellipse(ctx,x,y+5,18,10,"rgba(0,0,0,.28)");rect(ctx,x-13,y-19,26,27,"#49302b");rect(ctx,x-9,y-16,18,20,"#b77c4e");ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(x-17,y-18);ctx.lineTo(x,y-43);ctx.lineTo(x+17,y-18);ctx.closePath();ctx.fill();rect(ctx,x-3,y-13,6,13,P.window);glow(ctx,x,y-29,16,.08);}
-  // Strade radiali in pietra e canali di drenaggio.
-  ctx.strokeStyle="#52372e";ctx.lineWidth=35;ctx.beginPath();ctx.ellipse(0,-5,194,151,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#d0a071";ctx.lineWidth=25;ctx.beginPath();ctx.ellipse(0,-5,192,149,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#f0d0a0";ctx.lineWidth=2;ctx.setLineDash([7,10]);ctx.beginPath();ctx.ellipse(0,-5,192,149,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-  const blocks=[[-139,-93],[0,-164],[139,-93],[-139,93],[139,93],[0,164]];
-  for(const [x,y] of blocks){line(ctx,[[0,0],[x*.82,y*.82]],"#604033",31);line(ctx,[[0,-2],[x*.82,y*.82]],"#d2a16e",21);line(ctx,[[0,-2],[x*.82,y*.82]],"#f0d0a0",1);}
-  // Quartiere delle piantagioni: aiuole a terrazza con alberi di Coffea e bacche rosse.
-  terrace(ctx,-185,-86,67,47);terrace(ctx,185,86,67,47);terrace(ctx,-90,151,66,43);terrace(ctx,91,-151,66,43);
-  for(let i=0;i<26;i++){const a=i*2.399,x=Math.cos(a)*(205+(i%3)*8),y=Math.sin(a)*(151+(i%4)*7);coffeeTree(ctx,x,y,.62+(i%3)*.08,i);}
-  // Canale di acqua ambrata e ponti in pietra.
-  ctx.save();ctx.translate(-164,8);ctx.rotate(-.48);ellipse(ctx,0,0,57,25,"#3b2928");ellipse(ctx,0,-4,51,19,P.water);ellipse(ctx,0,-7,43,13,P.waterLight);for(let i=0;i<5;i++){const xx=(t*15+i*18)%76-38;line(ctx,[[xx,-8],[xx+8,-7]],"#d5e6bd",1.5);}rect(ctx,-44,-9,88,18,"#49302a");rect(ctx,-40,-7,80,11,"#c18a58");for(let i=-32;i<=32;i+=12)rect(ctx,i,-6,4,9,P.gold);ctx.restore();
-  // Sei edifici unici: caffè storico, mercato, archivio, locanda, erboristeria e torrefazione.
-  cafe(ctx,-137,-91,"CAFFE' REGALE",1);cafe(ctx,139,-91,"MERCATO DELLE FAVE",0);cafe(ctx,-139,94,"LOCANDA CREMA",0);cafe(ctx,139,94,"SPEZIE & AROMI",0);cafe(ctx,0,166,"ARCHIVIO DEL GUSTO",0);roastery(ctx,0,-163,t);
-  // Piazza centrale: fontana-tazzina e monumento del chicco.
-  cupFountain(ctx,-83,22,t);beanMonument(ctx,91,22,t);
-  // Palazzo della Corporazione del Caffè, con cupola e vetrate.
-  ellipse(ctx,4,64,83,18,"rgba(0,0,0,.3)");rect(ctx,-65,-43,130,100,"#382426");rect(ctx,-58,-37,116,89,"#80513b");rect(ctx,-50,-30,100,79,"#b47a4c");rect(ctx,-43,-24,86,9,"#e0b176");
-  for(const s of [-1,1]){rect(ctx,s*49-15,-70,30,78,"#58382e");rect(ctx,s*49-11,-65,22,67,"#c18a58");rect(ctx,s*49-4,-54,8,26,P.window);ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(s*49-20,-70);ctx.lineTo(s*49,-102);ctx.lineTo(s*49+20,-70);ctx.closePath();ctx.fill();}
-  rect(ctx,-28,-62,56,77,"#49302b");ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(-34,-62);ctx.quadraticCurveTo(-30,-111,0,-119);ctx.quadraticCurveTo(30,-111,34,-62);ctx.closePath();ctx.fill();ctx.fillStyle="#d29a5e";ctx.beginPath();ctx.moveTo(-26,-62);ctx.quadraticCurveTo(-22,-101,0,-108);ctx.quadraticCurveTo(22,-101,26,-62);ctx.closePath();ctx.fill();rect(ctx,-3,-137,6,24,P.bark);bean(ctx,0,-146,1.5);
-  rect(ctx,-13,-42,26,45,"#392426");rect(ctx,-9,-38,18,37,P.window);for(let i=0;i<5;i++)rect(ctx,-42-i*5,57+i*4,84+i*10,4,i%2?"#9b6948":"#d4a16b");
-  // Pergolati, sacchi di juta, barili e tavolini esterni.
-  for(const [x,y] of [[-190,34],[190,-35],[-38,-192],[40,192]]){rect(ctx,x-25,y-3,50,5,"#49302a");rect(ctx,x-22,y-21,4,20,P.bark);rect(ctx,x+18,y-21,4,20,P.bark);rect(ctx,x-27,y-24,54,4,P.gold);bean(ctx,x-12,y-11,.55);bean(ctx,5,y-11,.55);}
-  for(const [x,y] of [[-47,105],[52,-108]]){ellipse(ctx,x,y+7,20,7,"rgba(0,0,0,.25)");rect(ctx,x-18,y-4,36,5,P.bark);rect(ctx,x-15,y-8,30,4,P.copper);rect(ctx,x-13,y-20,26,12,"#76503a");ellipse(ctx,x,y-20,13,4,"#bd8758");}
-  // Lampioni caldi, monumenti a chicco e insegne direzionali.
-  for(const [x,y,i] of [[-198,-72,0],[198,4,1],[-123,151,2],[125,151,3],[8,-190,4],[-12,190,5]])lamp(ctx,x,y,t,i);
-  coffeeRelic(ctx,108,5,.5,"#e9bc79");coffeeRelic(ctx,-190,111,.38,"#d89b61");coffeeRelic(ctx,185,-107,.38,"#e7c58d");
-  // Vapore delle torrefazioni, lucciole e chicchi che fluttuano nella piazza.
-  for(let i=0;i<18;i++){const p=t*(.35+(i%5)*.08)+i*1.31,x=Math.sin(p)*(150+(i%4)*20),y=Math.cos(p*.82)*(100+(i%3)*15);ctx.globalAlpha=.2+(Math.sin(p*2)+1)*.2;if(i%3===0)bean(ctx,x,y,.28,p);else ellipse(ctx,x,y,2,3,i%2?P.gold:P.ivory);}ctx.globalAlpha=1;
-  // Targhe e identità forte della città: nessuna confusione con una generica città fantasy.
-  rect(ctx,-123,211,246,34,"rgba(25,17,18,.96)");rect(ctx,-123,211,6,34,P.gold);text(ctx,"AMARGENTA",0,226,13,P.ivory);text(ctx,"CAPITALE DEL CAFFE'  •  FAZIONE AMARO",0,238,6,P.gold);
+  const t=performance.now()/1000;
+  ctx.save();
+  ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);
+  ctx.scale(1.55,1.55);
+  ctx.imageSmoothingEnabled=false;
+
+  // AMARGENTA: quartiere RPG top-down, organico e leggibile.
+  // Niente piattaforma circolare vuota: terreno continuo, sentieri, terrazze e case.
+  ellipse(ctx,0,24,390,292,"rgba(0,0,0,.28)");
+  ctx.fillStyle="#24452e";
+  ctx.beginPath();
+  ctx.moveTo(-360,-175);ctx.lineTo(-286,-250);ctx.lineTo(-105,-270);
+  ctx.lineTo(48,-245);ctx.lineTo(225,-260);ctx.lineTo(350,-168);
+  ctx.lineTo(370,18);ctx.lineTo(315,218);ctx.lineTo(180,270);
+  ctx.lineTo(-65,258);ctx.lineTo(-275,235);ctx.lineTo(-370,95);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle="#477344";
+  ctx.beginPath();
+  ctx.moveTo(-342,-168);ctx.lineTo(-270,-231);ctx.lineTo(-88,-250);
+  ctx.lineTo(64,-226);ctx.lineTo(232,-239);ctx.lineTo(332,-155);
+  ctx.lineTo(348,20);ctx.lineTo(295,197);ctx.lineTo(165,246);
+  ctx.lineTo(-65,238);ctx.lineTo(-252,216);ctx.lineTo(-346,82);
+  ctx.closePath();ctx.fill();
+
+  // Prato a tasselli irregolari, erba alta, fiori e piccoli sassi.
+  for(let i=0;i<250;i++){
+    const x=-330+((i*97)%660), y=-225+((i*61)%450);
+    const col=i%5===0?"#75944e":i%3===0?"#527d43":"#3d693d";
+    rect(ctx,x,y,2+(i%3),2,col);
+    if(i%11===0){rect(ctx,x+3,y-2,3,2,"#a9bd62");}
+    if(i%17===0){ellipse(ctx,x+8,y+5,2,2,i%2?"#e7c46b":"#e9a0a0");}
+  }
+  for(const [x,y] of [[-320,-110],[315,-85],[-300,130],[300,125],[-75,-245],[95,238]]){
+    for(let k=0;k<5;k++){
+      const a=k*1.25;
+      ellipse(ctx,x+Math.cos(a)*13,y+Math.sin(a)*8,5,3,k%2?"#5d9149":"#79a852");
+    }
+    ellipse(ctx,x,y+3,3,2,"#e8c66c");
+  }
+
+  // Sentieri di terra chiara con bordi in pietra: collegano ingressi,
+  // piazza, botteghe e terrazze senza creare un anello geometrico.
+  const road=(pts,width=30)=>{
+    line(ctx,pts,"#76513a",width+9);
+    line(ctx,pts,"#d5ad78",width);
+    line(ctx,pts,"#f0d0a0",2);
+  };
+  road([[-365,78],[-286,60],[-220,32],[-155,18],[-82,30],[0,42],[82,25],[155,0],[238,-24],[355,-45]],34);
+  road([[0,248],[8,190],[0,132],[0,78],[0,42]],31);
+  road([[-150,18],[-178,-45],[-180,-105],[-205,-155]],24);
+  road([[150,0],[180,-55],[188,-118],[220,-165]],24);
+  road([[-82,30],[-110,95],[-155,145],[-190,205]],22);
+  road([[82,25],[110,95],[155,145],[190,205]],22);
+  // Pietre sparse lungo i sentieri.
+  for(let i=0;i<34;i++){
+    const x=-300+((i*83)%600), y=-180+((i*47)%360);
+    if(i%3===0){ellipse(ctx,x,y,3+(i%3),2,"#b99468");}
+  }
+
+  // Cinque piantagioni terrazzate rialzate, con filari ordinati di Coffea.
+  plantationTier(ctx,-286,-125,184,112,2,t);
+  plantationTier(ctx,-180,-238,142,94,1,t);
+  plantationTier(ctx,286,-126,190,116,2,t);
+  plantationTier(ctx,190,218,166,108,1,t);
+  plantationTier(ctx,-270,218,170,106,1,t);
+  drawCoffeeRamp(ctx,[-390,-40],[-286,-69],19);
+  drawCoffeeRamp(ctx,[390,-40],[286,-68],19);
+  drawCoffeeRamp(ctx,[-390,125],[-270,165],18);
+  drawCoffeeRamp(ctx,[390,120],[190,164],18);
+  drawCoffeeRamp(ctx,[-286,-181],[-180,-191],15);
+
+  // Alberi di caffè e siepi ai margini del villaggio.
+  for(let i=0;i<30;i++){
+    const side=i%4, n=Math.floor(i/4);
+    const x=side===0?-335+n*12:side===1?335-n*12:-250+n*17;
+    const y=side===2?-225+n*10:side===3?225-n*10:-210+n*15;
+    coffeeTreeVolume(ctx,x,y,.55+(n%3)*.07,t+i);
+  }
+  // Alberi d'ombra più grandi: tronchi e chiome a livelli.
+  for(const [x,y,s] of [[-315,-5,1.25],[315,42,1.2],[-235,175,1.05],[250,-205,1.1]]){
+    ellipse(ctx,x+5,y+18,25,8,"rgba(0,0,0,.25)");
+    rect(ctx,x-5,y-12,10,34,"#5b3929");
+    ellipse(ctx,x-12,y-28,22,19,"#315b38");
+    ellipse(ctx,x+10,y-39,25,22,"#477b43");
+    ellipse(ctx,x+20,y-17,19,17,"#5c8a49");
+    ellipse(ctx,x-2,y-13,22,15,"#6d9950");
+    for(let k=0;k<5;k++)ellipse(ctx,x-16+k*8,y-30+(k%2)*9,3,4,k%2?"#c65c45":"#d47b4c");
+  }
+
+  // Piazza centrale in pietra, irregolare, con mosaico a chicco.
+  ctx.save();ctx.translate(0,42);
+  ctx.fillStyle="rgba(0,0,0,.24)";
+  ctx.beginPath();ctx.moveTo(-92,-34);ctx.lineTo(0,-65);ctx.lineTo(100,-30);ctx.lineTo(90,48);ctx.lineTo(0,76);ctx.lineTo(-98,43);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#76503a";
+  ctx.beginPath();ctx.moveTo(-94,-43);ctx.lineTo(0,-75);ctx.lineTo(104,-37);ctx.lineTo(96,49);ctx.lineTo(0,82);ctx.lineTo(-103,46);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#c08b59";
+  ctx.beginPath();ctx.moveTo(-84,-40);ctx.lineTo(0,-67);ctx.lineTo(92,-34);ctx.lineTo(85,42);ctx.lineTo(0,70);ctx.lineTo(-91,41);ctx.closePath();ctx.fill();
+  for(let i=0;i<9;i++)line(ctx,[[-76+i*18,-31+i*2],[-65+i*16,37-i*2]],"rgba(87,53,37,.38)",1);
+  bean(ctx,0,0,1.8,-.2);
+  ctx.restore();
+
+  // Edifici unici e ben separati, con tetti, facciate, finestre e ombre.
+  roastery(ctx,0,-174,t);
+  cafe(ctx,-142,-62,"CAFFE' REGALE",1);
+  cafe(ctx,142,-62,"MERCATO DELLE FAVE",0);
+  cafe(ctx,-145,111,"LOCANDA CREMA",0);
+  cafe(ctx,145,111,"SPEZIE & AROMI",0);
+  cafe(ctx,0,196,"ARCHIVIO DEL GUSTO",0);
+
+  // Casa della Corporazione: edificio principale a più livelli, non un cerchio vuoto.
+  ellipse(ctx,4,91,72,18,"rgba(0,0,0,.3)");
+  face(ctx,[[-62,15],[0,-28],[62,15],[62,88],[-62,88]],"#493027");
+  face(ctx,[[-62,15],[0,-28],[0,59],[-62,88]],"#815238");
+  face(ctx,[[0,-28],[62,15],[62,88],[0,59]],"#65402f");
+  face(ctx,[[-70,17],[0,-37],[70,17],[58,27],[0,-19],[-58,27]],"#382522");
+  line(ctx,[[-70,17],[0,-37],[70,17]],"#d3a06a",4);
+  rect(ctx,-48,31,96,8,"#d5a46c");
+  for(const x of [-38,-13,13,38]){
+    rect(ctx,x-5,43,10,23,"#392426");rect(ctx,x-3,46,6,17,P.window);
+  }
+  rect(ctx,-13,57,26,31,"#392426");rect(ctx,-9,61,18,27,"#c38a58");
+  bean(ctx,0,-8,1.25,-.15);
+  rect(ctx,-52,6,104,8,"#e0b176");
+
+  // Monumento del chicco e fontana-tazzina nella piazza.
+  cupFountain(ctx,-67,58,t);
+  beanMonument(ctx,72,57,t);
+  // Sacchi di juta, barili, tavolini, pergolati e insegne.
+  for(const [x,y] of [[-198,5],[198,-2],[-48,-220],[52,224]]){
+    rect(ctx,x-24,y-2,48,5,"#49302a");
+    rect(ctx,x-20,y-19,4,18,P.bark);rect(ctx,x+16,y-19,4,18,P.bark);
+    rect(ctx,x-26,y-22,52,4,P.gold);bean(ctx,x-10,y-10,.48);bean(ctx,8,y-10,.48);
+  }
+  for(const [x,y] of [[-85,145],[86,-120]]){
+    ellipse(ctx,x,y+7,19,7,"rgba(0,0,0,.25)");
+    rect(ctx,x-17,y-4,34,5,P.bark);rect(ctx,x-14,y-8,28,4,P.copper);
+    rect(ctx,x-12,y-20,24,12,"#76503a");ellipse(ctx,x,y-20,12,4,"#bd8758");
+  }
+  for(const [x,y,i] of [[-205,-74,0],[205,62,1],[-115,177,2],[118,177,3],[0,-222,4],[-10,238,5]])lamp(ctx,x,y,t,i);
+  coffeeRelic(ctx,100,53,.48);coffeeRelic(ctx,-190,112,.36);coffeeRelic(ctx,188,-105,.36);
+
+  // Bacche, foglie, lucciole e vapore animato.
+  for(let i=0;i<24;i++){
+    const p=t*(.3+(i%5)*.07)+i*1.31;
+    const x=Math.sin(p)*(150+(i%4)*28),y=Math.cos(p*.82)*(110+(i%3)*22);
+    ctx.globalAlpha=.2+(Math.sin(p*2)+1)*.18;
+    if(i%4===0)bean(ctx,x,y,.24,p);else ellipse(ctx,x,y,2,3,i%2?P.gold:P.ivory);
+  }
+  ctx.globalAlpha=1;
+  // Cartello leggibile all'ingresso della città.
+  rect(ctx,-124,260,248,31,"rgba(25,17,18,.94)");
+  rect(ctx,-124,260,6,31,P.gold);
+  text(ctx,"AMARGENTA",0,274,12,P.ivory);
+  text(ctx,"CAPITALE DEL CAFFE'  •  FAZIONE AMARO",0,284,5,P.gold);
   ctx.restore();
 }
 
+// Ridisegna le facciate anteriori per una corretta occlusione del personaggio.
 // Ridisegna gli edifici che si trovano davanti al protagonista per creare occlusione Y-sort.
 export function drawAdventureAmaroOccluders(ctx,city,playerGroundY){
   const buildings=[
-    {x:-137,y:-91,kind:1,anchor:-49},
-    {x:139,y:-91,kind:0,anchor:-53},
-    {x:-139,y:94,kind:0,anchor:132},
-    {x:139,y:94,kind:0,anchor:132},
-    {x:0,y:166,kind:0,anchor:204},
+    {x:-142,y:-62,kind:1,anchor:-19},
+    {x:142,y:-62,kind:0,anchor:-20},
+    {x:-145,y:111,kind:0,anchor:149},
+    {x:145,y:111,kind:0,anchor:149},
+    {x:0,y:196,kind:0,anchor:231},
   ];
-  ctx.save();
-  ctx.translate(city.x,city.y);
-  ctx.scale(1.55,1.55);
+  ctx.save();ctx.translate(city.x,city.y);ctx.scale(1.55,1.55);
   for(const b of buildings){
-    if(city.y+b.anchor*1.55>playerGroundY) cafe(ctx,b.x,b.y,b.kind===1?"CAFFE' REGALE":"",b.kind);
+    if(city.y+b.anchor*1.55>playerGroundY)cafe(ctx,b.x,b.y,"",b.kind);
   }
-  if(city.y+57*1.55>playerGroundY) roastery(ctx,0,-163,performance.now()/1000);
-  if(city.y+62*1.55>playerGroundY){
-    rect(ctx,-65,-43,130,100,"#382426");
-    rect(ctx,-58,-37,116,89,"#80513b");
-    rect(ctx,-50,-30,100,79,"#b47a4c");
-    rect(ctx,-28,-62,56,77,"#49302b");
-    rect(ctx,-13,-42,26,45,"#392426");
-    rect(ctx,-9,-38,18,37,P.window);
+  if(city.y-117*1.55>playerGroundY)roastery(ctx,0,-174,performance.now()/1000);
+  if(city.y+88*1.55>playerGroundY){
+    face(ctx,[[-62,15],[0,-28],[62,15],[62,88],[-62,88]],"#493027");
+    face(ctx,[[-62,15],[0,-28],[0,59],[-62,88]],"#815238");
+    face(ctx,[[0,-28],[62,15],[62,88],[0,59]],"#65402f");
+    face(ctx,[[-70,17],[0,-37],[70,17],[58,27],[0,-19],[-58,27]],"#382522");
+    rect(ctx,-48,31,96,8,"#d5a46c");
+    rect(ctx,-13,57,26,31,"#392426");
+    rect(ctx,-9,61,18,27,"#c38a58");
   }
   ctx.restore();
 }
