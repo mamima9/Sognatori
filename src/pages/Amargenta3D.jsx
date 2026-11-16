@@ -9,7 +9,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
  */
 export default function Amargenta3D({ onExit }) {
   const hostRef = useRef(null);
-  const [hint, setHint] = useState("WASD per muoverti · Shift per correre · trascina per ruotare · M mappa · J diario · I borsa");
+  const [hint, setHint] = useState("WASD/frecce per muoverti · Shift per correre · E interagisci · trascina per ruotare · M mappa · J diario · I borsa");
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
@@ -699,6 +699,7 @@ export default function Amargenta3D({ onExit }) {
         .amargenta-hud { top: 112px !important; right: 12px !important; width: min(205px, calc(100vw - 24px)) !important; }
         .amargenta-hint { left: 12px !important; right: 12px !important; bottom: 12px !important; max-width: none !important; }
         .amargenta-controls { right: 12px !important; bottom: 88px !important; }
+        .amargenta-interact { bottom: 158px !important; }
       }
     `}</style>
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
@@ -759,7 +760,7 @@ export default function Amargenta3D({ onExit }) {
     <div className="amargenta-hint" style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
       <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Amargenta · esplorazione, missioni, crafting e segreti</span>
     </div>
-    {nearby&&!dialogue&&<button onClick={()=>{if(nearby.action)nearby.action();else setDialogue({title:nearby.title,text:nearby.text});}} style={{position:"absolute",left:"50%",bottom:30,transform:"translateX(-50%)",padding:"10px 16px",borderRadius:12,background:"#18221eef",border:"1px solid #e1c28d",fontSize:13,boxShadow:"0 8px 30px #0008",whiteSpace:"nowrap",color:"#f5ead7",cursor:"pointer"}}><strong style={{color:"#f0c98d"}}>E · INTERAGISCI</strong><span style={{marginLeft:10}}>{nearby.title}</span></button>}
+    {nearby&&!dialogue&&<button className="amargenta-interact" onClick={()=>{if(nearby.action)nearby.action();else setDialogue({title:nearby.title,text:nearby.text});}} style={{position:"absolute",left:"50%",bottom:30,transform:"translateX(-50%)",padding:"10px 16px",borderRadius:12,background:"#18221eef",border:"1px solid #e1c28d",fontSize:13,boxShadow:"0 8px 30px #0008",whiteSpace:"nowrap",color:"#f5ead7",cursor:"pointer"}}><strong style={{color:"#f0c98d"}}>E · INTERAGISCI</strong><span style={{marginLeft:10}}>{nearby.title}</span></button>}
     {dialogue&&<div role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:18,background:"linear-gradient(145deg,#30231ff5,#17241ff5)",border:"1px solid #d7b77d",boxShadow:"0 18px 60px #0009"}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
