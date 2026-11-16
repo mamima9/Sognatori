@@ -2044,43 +2044,42 @@ const [message, setMessage] = useState("");
 
       <div className="overflow-hidden rounded-2xl border border-emerald-100/20 bg-[#17251e] shadow-xl">
         <div className="flex items-center justify-between border-b border-white/10 bg-black/20 px-3 py-2">
-          <div><div className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-100">Mappa del mondo</div><div className="text-[9px] text-white/45">Overworld · 3600 × 2400</div></div>
+          <div><div className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-100">Mappa di {activeCity.city}</div><div className="text-[9px] text-white/45">Carta locale · {activeCity.faction}</div></div>
           <div className="rounded-full border border-emerald-200/25 bg-emerald-300/10 px-2 py-1 text-[9px] font-bold text-emerald-100">● {activeCity.city}</div>
         </div>
-        <svg viewBox="0 0 3600 2400" role="img" aria-label="Mappa dell'overworld con città, biomi, sentieri e posizione del giocatore" className="block h-auto max-h-[270px] w-full">
+        <svg viewBox="0 0 900 600" role="img" aria-label={"Mappa locale della città di " + activeCity.city} className="block h-auto max-h-[270px] w-full">
           <defs>
-            <linearGradient id="worldMapBase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#527d4d"/><stop offset=".48" stopColor="#355f49"/><stop offset="1" stopColor="#263f3a"/></linearGradient>
-            <pattern id="worldMapForest" width="110" height="100" patternUnits="userSpaceOnUse"><path d="M18 66 L38 20 L58 66 Z M55 80 L74 37 L93 80 Z" fill="#173f32" opacity=".55"/></pattern>
-            <pattern id="worldMapRock" width="130" height="100" patternUnits="userSpaceOnUse"><path d="M10 70l22-35 35 5 18 34z M82 28l17-16 22 25-12 25z" fill="#a7a49a" opacity=".28"/></pattern>
-            <pattern id="worldMapSand" width="140" height="90" patternUnits="userSpaceOnUse"><path d="M0 55q35-25 70 0t70 0 M-10 78q35-25 70 0t70 0" fill="none" stroke="#f1d18a" strokeWidth="7" opacity=".25"/></pattern>
+            <linearGradient id="cityMapGround" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor={activeCity.faction === "Demone" ? "#733b36" : activeCity.faction === "Robot" ? "#52636c" : activeCity.faction === "Natura" ? "#507b48" : activeCity.faction === "Nuvola" ? "#8caec4" : activeCity.faction === "Umano" ? "#8b795f" : activeCity.faction === "Luce" ? "#c4a95c" : activeCity.faction === "Dolce" ? "#b87c78" : activeCity.faction === "Marino" ? "#397f91" : activeCity.faction === "Orso" ? "#69533d" : activeCity.faction === "Mago" ? "#574a83" : "#8a8064"}/>
+              <stop offset="1" stopColor="#182b2a"/>
+            </linearGradient>
+            <pattern id="cityMapTexture" width="72" height="72" patternUnits="userSpaceOnUse">
+              <path d="M0 18L72 54M-18 54L18 72M54 0L72 18" stroke="#f4e7c2" strokeWidth="2" opacity=".12"/>
+              <circle cx="14" cy="15" r="3" fill="#fff2ce" opacity=".16"/><circle cx="54" cy="48" r="2" fill="#fff2ce" opacity=".14"/>
+            </pattern>
           </defs>
-          <rect width="3600" height="2400" fill="url(#worldMapBase)"/>
-          <path d="M0 0H1800V1200H0Z" fill="#729b55" opacity=".72"/>
-          <path d="M0 1200H1600V2400H0Z" fill="#315b43" opacity=".82"/>
-          <path d="M1800 1200H3600V2400H1800Z" fill="#77766b" opacity=".72"/>
-          <path d="M1800 0H3600V1200H1800Z" fill="#a18a51" opacity=".72"/>
-          <path d="M0 0H1800V1200H0Z M0 1200H1600V2400H0Z" fill="url(#worldMapForest)"/>
-          <path d="M1800 1200H3600V2400H1800Z" fill="url(#worldMapRock)"/>
-          <path d="M1800 0H3600V1200H1800Z" fill="url(#worldMapSand)"/>
-          <path d="M-80 940 C500 760 690 1080 1120 950 S1760 650 2050 880 S2780 1260 3680 880" fill="none" stroke="#244f68" strokeWidth="145" opacity=".75"/>
-          <path d="M-80 940 C500 760 690 1080 1120 950 S1760 650 2050 880 S2780 1260 3680 880" fill="none" stroke="#5b9aaf" strokeWidth="92" opacity=".8"/>
-          <path d={ADVENTURE_CITIES.map((city,index)=>index===0 ? "M"+city.x+" "+city.y : "L"+city.x+" "+city.y).join(" ")} fill="none" stroke="#594d37" strokeWidth="34" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 28" opacity=".95"/>
-          {ADVENTURE_CITIES.map((city)=>(
-            <g key={city.id}>
-              <circle cx={city.x} cy={city.y} r="72" fill="#14251f" opacity=".55"/>
-              <circle cx={city.x} cy={city.y} r="48" fill={city.color} stroke="#fff0c7" strokeWidth="13"/>
-              <circle cx={city.x} cy={city.y} r="17" fill="#fff7df"/>
-              <text x={city.x} y={city.y+112} textAnchor="middle" fontSize="62" fontWeight="800" fill="#fff7df" stroke="#1b3028" strokeWidth="12" paintOrder="stroke">{city.city}</text>
-            </g>
-          ))}
-          <g transform={"translate("+player.x+" "+player.y+")"}>
-            <circle r="100" fill="#fff3a3" opacity=".22"/><circle r="62" fill="#fff3a3" stroke="#17251e" strokeWidth="16"/><circle r="24" fill="#17251e"/><path d="M0-115l-34 52h68z" fill="#fff3a3" stroke="#17251e" strokeWidth="12"/>
+          <rect width="900" height="600" fill="url(#cityMapGround)"/>
+          <rect width="900" height="600" fill="url(#cityMapTexture)"/>
+          {activeCity.faction === "Demone" ? <><path d="M0 470L180 310 300 410 455 210 620 380 790 180 900 300V600H0Z" fill="#332c2c" opacity=".62"/><path d="M90 0L170 130 130 205M650 0L590 130 650 210" stroke="#f18a4c" strokeWidth="12" opacity=".65" fill="none"/>{[170,430,700].map((x)=><circle key={x} cx={x} cy={430-(x%3)*30} r="15" fill="#ff9b42" opacity=".8"/>)}</>
+          : activeCity.faction === "Robot" ? <><path d="M0 120H900M0 300H900M0 480H900M160 0V600M450 0V600M740 0V600" stroke="#b9d0d4" strokeWidth="18" opacity=".28"/>{[120,330,540,750].map((x)=><rect key={x} x={x} y="210" width="82" height="150" rx="12" fill="#253d48" stroke="#c6e2df" strokeWidth="7"/>)}</>
+          : activeCity.faction === "Natura" ? <><path d="M0 530Q180 280 350 420T900 330V600H0Z" fill="#244e38" opacity=".72"/>{[100,230,370,610,780].map((x)=><g key={x} fill="#214b32"><path d={`M${x} 420l-52-120h104z M${x} 340l-42-100h84z`}/><rect x={x-7} y="420" width="14" height="70" fill="#78573a"/></g>)}</>
+          : activeCity.faction === "Nuvola" ? <><path d="M0 450Q220 330 420 430T900 350V600H0Z" fill="#d6e5ec" opacity=".45"/>{[110,320,540,760].map((x)=><path key={x} d={`M${x-55} 180q-20-48 28-62q20-62 82-24q60-10 58 48q54 28 12 65H${x-45}q-48-2-40-27z`} fill="#f5fbff" opacity=".72"/>)}</>
+          : activeCity.faction === "Umano" ? <><path d="M0 0H900V600H0Z" fill="#8a7357" opacity=".22"/>{[150,350,550,750].map((x)=><g key={x}><rect x={x-48} y="180" width="96" height="170" fill="#574c43" stroke="#d9c5a0" strokeWidth="7"/><path d={`M${x-60} 180l60-70 60 70`} fill="#a58a68"/></g>)}</>
+          : activeCity.faction === "Luce" ? <><circle cx="450" cy="280" r="210" fill="#f7e6a0" opacity=".15"/>{[150,300,600,750].map((x)=><path key={x} d={`M${x} 500V180m-34 40l34-60 34 60`} stroke="#fff0ad" strokeWidth="12" fill="none" opacity=".72"/>)}</>
+          : activeCity.faction === "Dolce" ? <><path d="M0 470Q220 350 450 470T900 420V600H0Z" fill="#8d4d69" opacity=".55"/>{[130,320,580,770].map((x)=><g key={x}><circle cx={x} cy="220" r="40" fill="#f3b5bd"/><circle cx={x-24} cy="210" r="22" fill="#ffe0a6"/><circle cx={x+25} cy="210" r="22" fill="#ffe0a6"/></g>)}</>
+          : activeCity.faction === "Marino" ? <><path d="M0 180Q130 100 260 180T520 180T900 180M0 360Q130 280 260 360T520 360T900 360M0 540Q130 460 260 540T520 540T900 540" stroke="#a8e5e8" strokeWidth="24" fill="none" opacity=".55"/>{[160,450,740].map((x)=><path key={x} d={`M${x} 110q-80 60 0 120q80-60 0-120z`} fill="#d4f2ec" opacity=".65"/>)}</>
+          : activeCity.faction === "Orso" ? <><path d="M0 460L180 270 310 420 510 190 690 420 830 250 900 340V600H0Z" fill="#493c30" opacity=".6"/>{[140,390,650,810].map((x)=><g key={x} fill="#253d2d"><circle cx={x} cy="210" r="34"/><circle cx={x-25} cy="235" r="26"/><circle cx={x+25} cy="235" r="26"/><rect x={x-9} y="230" width="18" height="150"/></g>)}</>
+          : activeCity.faction === "Mago" ? <><path d="M0 470Q220 380 450 470T900 420" stroke="#c2a9f4" strokeWidth="16" fill="none" opacity=".6"/>{[170,450,730].map((x)=><g key={x} stroke="#e4d5ff" strokeWidth="8" fill="none"><path d={`M${x-55} 390V230h110v160z`}/><path d={`M${x-75} 230l75-95 75 95z`}/></g>)}</>
+          : <><path d="M0 470Q200 350 400 470T900 400V600H0Z" fill="#d7d0b7" opacity=".25"/>{[120,330,570,790].map((x)=><path key={x} d={`M${x-55} 400l55-90 55 90z`} fill="#e7dfc7" opacity=".55"/>)}</>}
+          <path d="M80 510Q230 420 340 470T560 410T820 470" stroke="#e7d6ae" strokeWidth="24" strokeDasharray="24 18" fill="none" opacity=".72"/>
+          <g transform={`translate(${Math.max(35,Math.min(865,player.x/4))} ${Math.max(35,Math.min(565,player.y/4))})`}>
+            <circle r="34" fill="#fff3a3" opacity=".28"/><circle r="18" fill="#fff3a3" stroke="#17251e" strokeWidth="5"/><circle r="7" fill="#17251e"/>
           </g>
-          <g transform="translate(120 120)"><rect width="390" height="116" rx="28" fill="#12251e" opacity=".85"/><text x="32" y="76" fontSize="54" fontWeight="900" fill="#f6e8bd">N ↑</text></g>
-          <rect x="12" y="12" width="3576" height="2376" rx="36" fill="none" stroke="#d8d0a8" strokeWidth="24" opacity=".65"/>
+          <rect x="8" y="8" width="884" height="584" rx="24" fill="none" stroke="#f3e5bd" strokeWidth="8" opacity=".55"/>
+          <text x="28" y="52" fontSize="24" fontWeight="900" fill="#fff4d4" stroke="#17251e" strokeWidth="5" paintOrder="stroke">{activeCity.city.toUpperCase()}</text>
+          <text x="850" y="566" textAnchor="end" fontSize="17" fontWeight="800" fill="#fff4d4" stroke="#17251e" strokeWidth="4" paintOrder="stroke">N ↑</text>
         </svg>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/10 px-3 py-2 text-[9px] text-white/65"><span><b className="text-amber-200">●</b> Città e capi fazione</span><span><b className="text-white">◉</b> Tu sei qui</span><span><b className="text-sky-200">━</b> Fiume</span><span><b className="text-yellow-100">┄</b> Sentieri</span></div>
-        <div className="border-t border-white/10 bg-black/15 px-3 py-2 text-[10px] text-emerald-50/80">Posizione: {Math.round(player.x)} · {Math.round(player.y)} — {activeCity.faction}</div>
+        <div className="flex items-center justify-between border-t border-white/10 px-3 py-2 text-[9px] text-white/65"><span>◉ La tua posizione nella città</span><span>{activeCity.faction} · Mappa locale</span></div>
       </div>
           <GlobalMusicPlayer insideAdventureMenu />
           <AdventureWorldSystems saveKey={adventureSaveKey} activeCity={activeCity} time={time} defeatedLeaders={defeatedLeaders} discoveredWildClues={discoveredWildClues} completedWildTasks={completedWildTasks} recruitedIds={recruitedAdventureIds} />
