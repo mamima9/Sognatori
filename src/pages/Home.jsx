@@ -10,6 +10,8 @@ import ArcadeWorld from "@/components/game/ArcadeWorld";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase/client";
+import { ROSTER } from "@/lib/sognatoriData";
+import { ADVENTURE_CITIES } from "@/lib/adventureCampaignData";
 
 export default function Home() {
   const { isAuthenticated, user, logout, checkUserAuth } = useAuth();
@@ -26,6 +28,30 @@ export default function Home() {
   const [missionNotification, setMissionNotification] = useState(null);
   const [arcadeHumanOnlyRun, setArcadeHumanOnlyRun] = useState(true);
   const [arcadeHumanStagesCompleted, setArcadeHumanStagesCompleted] = useState(0);
+  const [adventureSave, setAdventureSave] = useState({ ownedIds: [], completedCities: [] });
+
+  useEffect(() => {
+    if (screen !== "missions") return;
+    try {
+      const adventureKey = "sognatori-adventure-v1-" + (user?.id || user?.email || "guest");
+      const saved = JSON.parse(window.localStorage.getItem(adventureKey) || "{}");
+      setAdventureSave({
+        ownedIds: Array.isArray(saved.ownedIds) ? saved.ownedIds : [],
+        completedCities: Array.isArray(saved.completedCities) ? saved.completedCities : [],
+      });
+    } catch {
+      setAdventureSave({ ownedIds: [], completedCities: [] });
+    }
+  }, [screen, user?.id, user?.email]);
+
+  const adventureCityCount = adventureSave.completedCities.filter((id) =>
+    ADVENTURE_CITIES.some((city) => city.id === id)
+  ).length;
+  const adventureBondCount = adventureSave.ownedIds.filter((id) =>
+    ROSTER.some((s) => s.id === id)
+  ).length;
+  const mission5Complete = ADVENTURE_CITIES.length > 0 && adventureCityCount === ADVENTURE_CITIES.length;
+  const mission6Complete = ROSTER.length > 0 && adventureBondCount === ROSTER.length;
 
   const groupedLog = (entries) => {
     const groups = [];
@@ -593,6 +619,37 @@ export default function Home() {
                 <div className="flex justify-between"><span>{lang === "en" ? "Human-only Arcade" : "Arcade solo Umano"}</span><b>{user?.user_metadata?.taomarco_human_arcade_completed ? "10/10 ✓" : "0/10"}</b></div>
               </div>
               {user?.user_metadata?.taomarco_lore_unlocked && <Link to="/lore" className="inline-flex mt-5 px-5 py-2.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-bold text-sm">📖 {lang === "en" ? "Read Tao Marco's Lore" : "Leggi la Lore di Taomarco"}</Link>}
+            </section>
+            <section className="rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-emerald-900/25 to-teal-950/50 p-5 shadow-xl mt-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-emerald-300 uppercase">{lang === "en" ? "MISSION 5" : "MISSIONE 5"}</span>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${mission5Complete ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>{mission5Complete ? (lang === "en" ? "COMPLETED" : "COMPLETATA") : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}</span>
+              </div>
+              <h2 className="text-xl font-black text-white">{lang === "en" ? "The House of Bliss" : "La casa della beatitudine"}</h2>
+              <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Complete Adventure mode and conquer all faction cities." : "Completa l'Avventura e conquista tutte le città delle fazioni."}</p>
+              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Cities conquered" : "Città conquistate"}</span><span className="text-amber-300">{adventureCityCount}/{ADVENTURE_CITIES.length}</span></div>
+              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style={{ width: `${ADVENTURE_CITIES.length ? adventureCityCount / ADVENTURE_CITIES.length * 100 : 0}%` }} /></div>
+              <div className="mt-4 border-t border-white/10 pt-3 space-y-2">
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">{lang === "en" ? "Lore rewards" : "Ricompensa · Lore"}</div>
+                <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Fourmouri</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission5Complete ? "Gran combattente, vuole raggiungere la casa della beatitudine, luogo sacro dei Luce." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
+                <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Pirimar</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission5Complete ? "I pirimar vivono nell'oceano e sono la moneta di scambio tra umani e marini." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-900/25 to-purple-950/50 p-5 shadow-xl mt-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-black tracking-widest text-fuchsia-300 uppercase">{lang === "en" ? "MISSION 6" : "MISSIONE 6"}</span>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${mission6Complete ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>{mission6Complete ? (lang === "en" ? "COMPLETED" : "COMPLETATA") : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}</span>
+              </div>
+              <h2 className="text-xl font-black text-white">{lang === "en" ? "Unbreakable Bonds" : "Legami indissolubili"}</h2>
+              <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Bond with every Dreamer in Adventure mode." : "Stringi un legame con ogni Sognatore presente nell'Avventura."}</p>
+              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Bonds formed" : "Legami stretti"}</span><span className="text-amber-300">{adventureBondCount}/{ROSTER.length}</span></div>
+              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-300 transition-all" style={{ width: `${ROSTER.length ? adventureBondCount / ROSTER.length * 100 : 0}%` }} /></div>
+              <div className="mt-4 border-t border-white/10 pt-3 space-y-2">
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">{lang === "en" ? "Lore rewards" : "Ricompensa · Lore"}</div>
+                <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Ginza</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission6Complete ? "Ginza è una ballerina che girovaga per tutte le città, allestendo spettacoli anche con maschere e marionette." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
+                <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Pequeno</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission6Complete ? "Pequeno è l'albero simbolo di un noto quartiere della fazione Natura. Un proprietario di un'azienda di Crocevia ha inciso un simbolo sulla sua corteccia." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
+              </div>
             </section>
           </motion.div>
         )}
