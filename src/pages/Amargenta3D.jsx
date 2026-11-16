@@ -161,6 +161,28 @@ export default function Amargenta3D({ onExit }) {
       makeLamp(cx-3,cz-2);makeLamp(cx+4,cz-3);
     };
 
+
+    const makeCafeInterior = (cx,cz) => {
+      const floor=mat("#826448"), plaster=mat("#d2b88e"), darkWood=mat("#4b3028"), redFabric=mat("#a64d38");
+      box(15,.35,13,floor,scene,cx,.05,cz);
+      box(15,4,.35,plaster,scene,cx,2,cz-6.5);box(15,4,.35,plaster,scene,cx,2,cz+6.5);
+      box(.35,4,13,plaster,scene,cx-7.5,2,cz);box(.35,4,13,plaster,scene,cx+7.5,2,cz);
+      for(let i=0;i<3;i++){
+        box(3,.18,1.7,darkWood,scene,cx-4+i*4,1.05,cz+1.8);
+        for(const dx of [-1.1,1.1])for(const dz of [-.5,.5])cylinder(.09,.1,.72,darkWood,scene,cx-4+i*4+dx,.42,cz+1.8+dz,8);
+        for(const dx of [-1,1])cylinder(.07,.08,.62,redFabric,scene,cx-4+i*4+dx,1.48,cz+1.8,8);
+      }
+      box(11,1.1,1.1,darkWood,scene,cx,1.1,cz-4.6);
+      box(11,.12,1.15,gold,scene,cx,1.72,cz-4.6);
+      for(let i=0;i<4;i++){cylinder(.32,.38,.65,wood,scene,cx-4+i*2.6,.38,cz-2.9,10);cylinder(.34,.38,.12,mat("#b88b5a"),scene,cx-4+i*2.6,.76,cz-2.9,10);}
+      box(2.3,1.25,.85,gold,scene,cx+3,2.25,cz-4.25);
+      box(2.1,.3,.9,darkWood,scene,cx+3,1.55,cz-4.25);
+      for(let i=0;i<3;i++){cylinder(.09,.09,.65,gold,scene,cx+2.3+i*.7,1.55,cz-3.7,8);cylinder(.22,.22,.12,mat("#f1dfbd"),scene,cx+2.3+i*.7,1.17,cz-3.7,12);}
+      for(let i=0;i<6;i++){box(2.4,.16,.3,darkWood,scene,cx-5.8,1.5+i*.62,cz+4.5);for(let j=0;j<4;j++)cylinder(.13,.16,.34,j%2?gold:wood,scene,cx-6.5+j*.42,1.78+i*.62,cz+4.5,8);}
+      for(let i=0;i<4;i++){sphere(.18,mat("#ffd58b",.25,{emissive:"#d58c35",emissiveIntensity:1.1}),scene,cx-5+i*3.3,3.35,cz,2);cylinder(.035,.035,.8,darkWood,scene,cx-5+i*3.3,3.75,cz,6);}
+      addCollider(cx-7,cz,1);addCollider(cx+7,cz,1);
+    };
+
     const makeWaterfall = (x,z,h=9) => {
       const fall=box(3.2,h,.18,water,scene,x,h/2,z);
       fall.material=water; fall.material.transparent=true; fall.material.opacity=.82;
@@ -217,12 +239,15 @@ export default function Amargenta3D({ onExit }) {
       for(const [x,z] of [[-5,4],[5,4],[18,-5],[-20,-18]]){cylinder(.08,.1,1.1,wood,scene,x,.55,z,8);box(1.6,.12,.55,wood,scene,x,.95,z);}
       // Tubature, valvole e depositi esterni della torrefazione.
       for(let i=0;i<4;i++){const p=cylinder(.12,.12,5,gold,scene,10+i*1.6,3.4,32,10);p.rotation.z=Math.PI/2;box(.45,.45,.45,wood,scene,9+i*2, .4,35);}
-      // Interno reale della torrefazione: stanza separata raggiungibile dalla porta.
+      // Interni accessibili: laboratorio della torrefazione e caffetteria storica.
       makeInterior(68,68);
+      makeCafeInterior(-68,68);
       const interiorDoor=box(2.4,2.8,.2,wood,scene,68,1.45,62);
       box(1.5,2.2,.08,gold,scene,68,1.4,61.86);
       addInteraction("roastery-door","Torrefazione di Amargenta","La porta conduce al laboratorio della torrefazione.",16,33,()=>{player.position.set(68,0,59.5);setZone("Interno della Torrefazione");},4.2);
       addInteraction("roastery-exit","Uscita della torrefazione","Tornare alla piazza del borgo?",68,62,()=>{player.position.set(16,0,33.5);setZone("Distretto della Torrefazione");},4.2);
+      addInteraction("cafe-door","Caffè delle Tre Foglie","Entra nella caffetteria più antica di Amargenta.",-22,-1.5,()=>{player.position.set(-68,0,59.5);setZone("Caffè delle Tre Foglie");},6.4);
+      addInteraction("cafe-exit","Uscita del Caffè delle Tre Foglie","Tornare alle terrazze della città?",-68,62,()=>{player.position.set(-22,1,-.5);setZone("Piazza del Chicco");},4.2);
       // Personaggi con dialoghi contestuali.
       makeNpc("barista","Mira","Barista",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
       makeNpc("merchant","Nerio","Mercante di fave",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
@@ -231,6 +256,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
+      makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       // Player placeholder 3D leggibile, sostituibile con personaggio riggato GLB
       const body=cylinder(.36,.48,1.25,mat("#3d5366"),player,0,1.05,0,10);body.castShadow=true;
       sphere(.34,mat("#d7b18b"),player,0,1.95,0,2);
@@ -292,7 +318,7 @@ export default function Amargenta3D({ onExit }) {
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;actor.group.rotation.y=Math.sin(clock.elapsedTime*.45+actor.phase)*.08;});
-        const nextZone=p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
       };
