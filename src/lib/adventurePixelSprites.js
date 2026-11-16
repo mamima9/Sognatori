@@ -517,25 +517,6 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   ctx.ellipse(0,1,14,4,0,0,Math.PI*2);
   ctx.fill();
 
-  // Chino usa il PNG originale del roster: elimina il fondale nero e ritaglia
-  // il soggetto prima di disegnarlo, così non compare un quadrato nell'overworld.
-  if ((id === "chino" || id === "riwi") && s?.img) {
-    const sprite = getAdventureWildImage(s.img);
-    if (sprite) {
-      // Ogni frame dello spritesheet overworld è largo 24px:
-      // il PNG va contenuto nel frame, senza fuoriuscire e venire tagliato.
-      const maxWidth = 22;
-      const maxHeight = 30;
-      const ratio = Math.min(maxWidth / sprite.width, maxHeight / sprite.height);
-      const width = sprite.width * ratio;
-      const height = sprite.height * ratio;
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(sprite, -width / 2, -height, width, height);
-      ctx.restore();
-      return;
-    }
-  }
-
   // Creature native, non crop delle carte: ogni specie mantiene una silhouette
   // propria, con volume, ombra e animazione leggibili nell'overworld.
   // Design procedurale dedicato alla specie: il rendering non dipende da file immagine.
