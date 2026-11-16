@@ -9,7 +9,7 @@ import AdventureHouseInterior from "@/components/game/AdventureHouseInterior";
 import AdventureWorldSystems from "@/components/game/AdventureWorldSystems";
 import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
-import { drawAdventureTraveler, drawAdventureWildSognatore, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
+import { drawAdventureTraveler, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
@@ -1550,7 +1550,7 @@ const [message, setMessage] = useState("");
         if (!creature) continue;
         const playerDx = playerRef.current.x - wild.x;
         const playerDy = playerRef.current.y - wild.y;
-        const wildFacing = Math.abs(playerDx) > Math.abs(playerDy) && playerDx < 0 ? "left" : "down";
+        const wildFacing = Math.abs(playerDx) > Math.abs(playerDy) ? (playerDx < 0 ? "left" : "right") : (playerDy < 0 ? "up" : "down");
         drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame, wild.isSleepingBlocker, wildFacing);
         if (wild.isSleepingBlocker) {
           const sleepPhase = performance.now() / 620;
