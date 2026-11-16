@@ -731,97 +731,114 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
 }
 
 function drawFactionBorderTerrain(ctx, faction) {
-  const palettes = {
-    Demone: { base: "#321f28", ridge: "#6b3038", light: "#bd5944", glow: "#ff9b52" },
-    Robot: { base: "#26333d", ridge: "#52616d", light: "#899aa5", glow: "#76e0dc" },
-    Natura: { base: "#203b2d", ridge: "#315b3d", light: "#6e9d4c", glow: "#b5d96b" },
-    Nuvola: { base: "#9bb8ca", ridge: "#c4d8e5", light: "#eff7fb", glow: "#ffffff" },
-    Umano: { base: "#292b30", ridge: "#49464a", light: "#80776d", glow: "#d1b58b" },
-    Luce: { base: "#594b2d", ridge: "#9b8248", light: "#d6bd70", glow: "#fff0ae" },
-    Dolce: { base: "#5b3b30", ridge: "#9b674c", light: "#d4a36d", glow: "#ffe0a8" },
-    Marino: { base: "#173d50", ridge: "#28677a", light: "#4d9cab", glow: "#a9e8e7" },
-    Orso: { base: "#3b3025", ridge: "#67503a", light: "#9b7951", glow: "#d6b783" },
-    Mago: { base: "#302844", ridge: "#594775", light: "#8a76ad", glow: "#d9c7ff" },
-    Salato: { base: "#49343d", ridge: "#805b65", light: "#b88b91", glow: "#f2d7d7" },
+  const themes = {
+    Demone: ["#241b24","#4a2930","#783b3b","#bd5944","#ff9b52"],
+    Robot: ["#202c35","#394b57","#61727b","#94a3aa","#d2e0e2"],
+    Natura: ["#1c3428","#294a35","#426746","#719052","#a9bd75"],
+    Nuvola: ["#718fa7","#9fb8c9","#c7d9e4","#e7f0f4","#ffffff"],
+    Umano: ["#28282b","#424044","#625a51","#93816a","#c2aa84"],
+    Luce: ["#403724","#6d5835","#a58a4c","#d0b66d","#f5e6ad"],
+    Dolce: ["#49332f","#765044","#a87359","#d4a477","#f0d4a5"],
+    Marino: ["#183747","#24566a","#347e8c","#69aeb0","#b5e0d5"],
+    Orso: ["#30291f","#514333","#786044","#a4875b","#d0b98b"],
+    Mago: ["#28233b","#403657","#62577f","#9384b4","#d2c5e8"],
+    Salato: ["#3e3035","#685057","#98767a","#c3a0a0","#ead8ce"],
   };
-  const p = palettes[faction] || palettes.Natura;
-  ctx.fillStyle = p.base;
-  ctx.fillRect(-900, -900, WORLD.width + 1800, WORLD.height + 1800);
-  ctx.fillStyle = p.ridge;
-  ctx.fillRect(-900, -900, WORLD.width + 1800, 250);
-  ctx.fillRect(-900, WORLD.height - 20, WORLD.width + 1800, 270);
-  ctx.fillRect(-900, -900, 250, WORLD.height + 1800);
-  ctx.fillRect(WORLD.width - 20, -900, 270, WORLD.height + 1800);
-  for (let x = -760, index = 0; x < WORLD.width + 760; x += 260, index++) {
-    const peak = (x * 17 % 83 + 83) % 83;
-    ctx.save();
-    ctx.translate(x, 0);
-    ctx.fillStyle = p.light;
+  const p = themes[faction] || themes.Natura;
+  const seeded = (n) => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+  const fillRidge = (points, color, baseY, side) => {
+    ctx.fillStyle = color;
     ctx.beginPath();
-    if (faction === "Demone") {
-      ctx.moveTo(-105, -20); ctx.lineTo(-55, -175 - peak); ctx.lineTo(-5, -20); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = p.glow; ctx.beginPath(); ctx.moveTo(-72, -115 - peak / 2); ctx.lineTo(-55, -175 - peak); ctx.lineTo(-37, -115 - peak / 2); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = p.glow; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(-55, -35); ctx.lineTo(-55, -85); ctx.stroke();
-    } else if (faction === "Robot") {
-      ctx.fillRect(-100, -150 - peak, 90, 125); ctx.fillRect(-82, -180 - peak, 54, 30);
-      ctx.fillStyle = p.glow; ctx.fillRect(-78, -110 - peak, 16, 16); ctx.fillRect(-48, -110 - peak, 16, 16);
-    } else if (faction === "Natura") {
-      ctx.fillRect(-58, -170 - peak, 12, 145);
-      ctx.beginPath(); ctx.arc(-75, -125 - peak, 40, 0, Math.PI * 2); ctx.arc(-28, -145 - peak, 48, 0, Math.PI * 2); ctx.fill();
-    } else if (faction === "Nuvola") {
-      ctx.beginPath(); ctx.arc(-70, -100 - peak, 55, 0, Math.PI * 2); ctx.arc(-20, -115 - peak, 70, 0, Math.PI * 2); ctx.arc(28, -95 - peak, 48, 0, Math.PI * 2); ctx.fill();
-    } else if (faction === "Marino") {
-      ctx.strokeStyle = p.light; ctx.lineWidth = 22; ctx.beginPath(); ctx.moveTo(-120, -100 - peak); ctx.quadraticCurveTo(-55, -165 - peak, 10, -100 - peak); ctx.quadraticCurveTo(70, -35 - peak, 130, -100 - peak); ctx.stroke();
-    } else if (faction === "Luce") {
-      ctx.beginPath(); ctx.arc(-55, -115 - peak, 46, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = p.glow; ctx.lineWidth = 9; for (let ray = 0; ray < 8; ray++) { const a = ray * Math.PI / 4; ctx.beginPath(); ctx.moveTo(-55 + Math.cos(a) * 62, -115 - peak + Math.sin(a) * 62); ctx.lineTo(-55 + Math.cos(a) * 90, -115 - peak + Math.sin(a) * 90); ctx.stroke(); }
-    } else if (faction === "Dolce") {
-      ctx.fillRect(-78, -105 - peak, 88, 82); ctx.fillStyle = p.glow; ctx.beginPath(); ctx.arc(-35, -105 - peak, 42, Math.PI, 0); ctx.fill();
-    } else if (faction === "Orso") {
-      ctx.beginPath(); ctx.arc(-50, -105 - peak, 46, 0, Math.PI * 2); ctx.arc(-100, -145 - peak, 23, 0, Math.PI * 2); ctx.arc(0, -145 - peak, 23, 0, Math.PI * 2); ctx.fill();
-    } else if (faction === "Mago") {
-      ctx.beginPath(); ctx.moveTo(-100, -25); ctx.lineTo(-45, -190 - peak); ctx.lineTo(10, -25); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = p.glow; ctx.fillRect(-100, -28, 110, 18);
-    } else if (faction === "Salato") {
-      ctx.beginPath(); ctx.moveTo(-100, -25); ctx.lineTo(-80, -130 - peak); ctx.lineTo(-30, -180 - peak); ctx.lineTo(15, -95 - peak); ctx.lineTo(35, -25); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = p.glow; ctx.fillRect(-54, -100 - peak, 12, 12); ctx.fillRect(-20, -135 - peak, 10, 10);
+    if (side === "top") {
+      ctx.moveTo(-1100, -1050);
+      for (let x=-1100;x<=WORLD.width+1100;x+=95) ctx.lineTo(x, baseY + (seeded(x*.013+2)-.5)*230);
+      ctx.lineTo(WORLD.width+1100,-1050);
+    } else if (side === "bottom") {
+      ctx.moveTo(-1100,WORLD.height+1050);
+      for (let x=-1100;x<=WORLD.width+1100;x+=95) ctx.lineTo(x,WORLD.height-baseY+(seeded(x*.017+9)-.5)*230);
+      ctx.lineTo(WORLD.width+1100,WORLD.height+1050);
+    } else if (side === "left") {
+      ctx.moveTo(-1100,-1000);
+      for(let y=-1000;y<=WORLD.height+1000;y+=95) ctx.lineTo(-baseY+(seeded(y*.013+4)-.5)*230,y);
+      ctx.lineTo(-1100,WORLD.height+1000);
     } else {
-      ctx.fillRect(-90, -90 - peak, 100, 70);
-      ctx.fillStyle = p.glow; ctx.fillRect(-70, -115 - peak, 20, 20);
+      ctx.moveTo(WORLD.width+1100,-1000);
+      for(let y=-1000;y<=WORLD.height+1000;y+=95) ctx.lineTo(WORLD.width+baseY+(seeded(y*.017+8)-.5)*230,y);
+      ctx.lineTo(WORLD.width+1100,WORLD.height+1000);
+    }
+    ctx.closePath();ctx.fill();
+  };
+  const drawMountain = (x,y,s,volcanic=false) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(5,9,12,.3)";ctx.beginPath();ctx.ellipse(0,12,150,25,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=p[1];ctx.beginPath();ctx.moveTo(-150,20);ctx.lineTo(-105,-70);ctx.lineTo(-54,-120);ctx.lineTo(-12,-225);ctx.lineTo(38,-155);ctx.lineTo(86,-95);ctx.lineTo(150,20);ctx.closePath();ctx.fill();
+    ctx.fillStyle=p[2];ctx.beginPath();ctx.moveTo(-12,-225);ctx.lineTo(38,-155);ctx.lineTo(86,-95);ctx.lineTo(150,20);ctx.lineTo(8,20);ctx.closePath();ctx.fill();
+    ctx.fillStyle=p[3];ctx.beginPath();ctx.moveTo(-12,-225);ctx.lineTo(-42,-142);ctx.lineTo(-4,-160);ctx.lineTo(26,-125);ctx.lineTo(38,-155);ctx.closePath();ctx.fill();
+    if(volcanic){
+      ctx.fillStyle="#25191e";ctx.beginPath();ctx.ellipse(-12,-215,32,10,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=p[4];ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-18,-204);ctx.quadraticCurveTo(-46,-135,-70,-60);ctx.stroke();
+      ctx.strokeStyle="#ffcf72";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-18,-204);ctx.quadraticCurveTo(-46,-135,-70,-60);ctx.stroke();
+      ctx.fillStyle="rgba(74,76,78,.62)";
+      for(let k=0;k<4;k++){ctx.beginPath();ctx.arc(-12+k*20,-265-k*22,22+k*3,0,Math.PI*2);ctx.fill();}
     }
     ctx.restore();
-    // Seconda fascia di rilievi sul bordo meridionale, speculare a quella nord.
-    ctx.save();
-    ctx.translate(x, WORLD.height + 20);
-    ctx.fillStyle = p.light;
-    ctx.beginPath();
-    if (faction === "Demone" || faction === "Mago" || faction === "Salato") {
-      ctx.moveTo(-110, 0); ctx.lineTo(-55, 150 + peak); ctx.lineTo(5, 0); ctx.closePath(); ctx.fill();
-      if (faction === "Demone") {
-        ctx.strokeStyle = p.glow; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(-55, 25); ctx.lineTo(-55, 100 + peak / 2); ctx.stroke();
-      }
-    } else if (faction === "Natura" || faction === "Orso") {
-      ctx.arc(-55, 95 + peak, 52, Math.PI, 0); ctx.fill();
-      ctx.fillRect(-62, 95 + peak, 14, 65);
-    } else if (faction === "Robot") {
-      ctx.fillRect(-100, 0, 90, 125 + peak); ctx.fillStyle = p.glow; ctx.fillRect(-78, 38, 16, 16); ctx.fillRect(-48, 38, 16, 16);
-    } else if (faction === "Marino" || faction === "Nuvola") {
-      ctx.strokeStyle = p.light; ctx.lineWidth = 22; ctx.beginPath(); ctx.moveTo(-120, 75 + peak); ctx.quadraticCurveTo(-55, 5, 10, 75 + peak); ctx.quadraticCurveTo(70, 145 + peak, 130, 75 + peak); ctx.stroke();
-    } else {
-      ctx.arc(-55, 85 + peak, 46, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = p.glow; ctx.fillRect(-65, 20 + peak, 20, 12);
+  };
+  const drawTree = (x,y,s) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="#3a3027";ctx.fillRect(-9,-55,18,75);
+    for(const [dx,dy,r,col] of [[-27,-62,39,p[1]],[8,-93,48,p[2]],[40,-58,34,p[1]],[0,-38,42,p[2]]]){
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(dx,dy,r,0,Math.PI*2);ctx.fill();
     }
-    ctx.restore();
+    ctx.fillStyle=p[3];ctx.globalAlpha=.75;ctx.fillRect(-29,-85,13,6);ctx.fillRect(8,-116,15,7);ctx.globalAlpha=1;ctx.restore();
+  };
+  // Fondo atmosferico sfumato, senza cornici geometriche o fasce piatte.
+  const bg=ctx.createLinearGradient(-900,-900,WORLD.width+900,WORLD.height+900);
+  bg.addColorStop(0,p[0]);bg.addColorStop(.5,p[1]);bg.addColorStop(1,p[0]);
+  ctx.fillStyle=bg;ctx.fillRect(-1100,-1100,WORLD.width+2200,WORLD.height+2200);
+  // Profondità: tre profili irregolari sovrapposti, con foschia tra i piani.
+  for(const side of ["top","bottom","left","right"]){
+    fillRidge(null,p[1],side==="left"||side==="right"?520:470,side);
+    fillRidge(null,p[2],side==="left"||side==="right"?330:300,side);
+    fillRidge(null,p[0],side==="left"||side==="right"?150:135,side);
   }
-  // La fascia laterale ripete i rilievi: lo spazio oltre i confini esplorabili non resta mai nero.
-  ctx.fillStyle = p.ridge;
-  ctx.fillRect(-900, 0, 250, WORLD.height);
-  ctx.fillRect(WORLD.width - 20, 0, 270, WORLD.height);
-  for (let y = -500; y < WORLD.height + 500; y += 280) {
-    ctx.fillStyle = p.light;
-    ctx.beginPath(); ctx.moveTo(-900, y + 180); ctx.lineTo(-720, y - 80); ctx.lineTo(-540, y + 180); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(WORLD.width + 250, y + 180); ctx.lineTo(WORLD.width + 70, y - 80); ctx.lineTo(WORLD.width - 110, y + 180); ctx.fill();
+  // Catene montuose lontane e rilievi tematici sui quattro lati.
+  for(let i=0;i<8;i++){
+    const x= -450+i*650;
+    drawMountain(x,-310,0.9+(i%3)*.18,faction==="Demone");
+    drawMountain(x,WORLD.height+310,0.82+(i%4)*.13,faction==="Demone");
   }
+  for(let i=0;i<6;i++){
+    const y= -250+i*570;
+    ctx.save();ctx.translate(-320,y);ctx.rotate(-Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
+    ctx.save();ctx.translate(WORLD.width+320,y);ctx.rotate(Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
+  }
+  // Silhouette specifiche per fazione: foreste, torri, scogliere, nuvole o cristalli.
+  for(let i=0;i<24;i++){
+    const x=-650+i*215, y=-95-(seeded(i+4)*85);
+    if(faction==="Natura"||faction==="Orso") drawTree(x,y,.72+seeded(i+12)*.48);
+    else if(faction==="Robot"){
+      ctx.fillStyle=p[1];ctx.fillRect(x-32,y-155,64,155);ctx.fillStyle=p[3];ctx.fillRect(x-22,y-135,44,9);ctx.fillRect(x-22,y-95,44,7);ctx.fillStyle=p[4];ctx.fillRect(x-5,y-170,10,15);
+    } else if(faction==="Marino"){
+      ctx.strokeStyle=p[3];ctx.lineWidth=23;ctx.beginPath();ctx.moveTo(x-100,y-30);ctx.bezierCurveTo(x-45,y-100,x+25,y+10,x+105,y-55);ctx.stroke();
+    } else if(faction==="Nuvola"){
+      ctx.fillStyle=p[3];for(const [dx,dy,r] of [[-35,-30,45],[10,-55,62],[65,-25,42]]){ctx.beginPath();ctx.arc(x+dx,y+dy,r,0,Math.PI*2);ctx.fill();}
+    } else if(faction==="Mago"||faction==="Salato"){
+      ctx.fillStyle=p[2];ctx.beginPath();ctx.moveTo(x,y-190-seeded(i)*80);ctx.lineTo(x-62,y);ctx.lineTo(x+65,y);ctx.closePath();ctx.fill();ctx.fillStyle=p[3];ctx.fillRect(x-4,y-100,8,75);
+    } else if(faction==="Luce"){
+      ctx.fillStyle=p[3];ctx.beginPath();ctx.arc(x,y-55,24,0,Math.PI*2);ctx.fill();ctx.strokeStyle=p[4];ctx.lineWidth=5;for(let a=0;a<8;a++){const q=a*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(q)*34,y-55+Math.sin(q)*34);ctx.lineTo(x+Math.cos(q)*56,y-55+Math.sin(q)*56);ctx.stroke();}
+    } else if(faction==="Demone"){
+      // Piccoli coni vulcanici, con colate incandescenti e pennacchi.
+      drawMountain(x,y+30,.52+seeded(i)*.3,true);
+    } else {
+      ctx.fillStyle=p[2];ctx.beginPath();ctx.moveTo(x-48,y);ctx.lineTo(x-18,y-120-seeded(i)*70);ctx.lineTo(x+10,y-165-seeded(i)*55);ctx.lineTo(x+50,y);ctx.closePath();ctx.fill();
+      ctx.fillStyle=p[3];ctx.fillRect(x-4,y-80,9,45);
+    }
+  }
+  // Fascia di foschia e luce di rimbalzo lungo il confine del mondo giocabile.
+  const haze=ctx.createLinearGradient(0,-170,0,150);
+  haze.addColorStop(0,"rgba(0,0,0,0)");haze.addColorStop(.55,p[3]+"55");haze.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=haze;ctx.fillRect(-40,-170,WORLD.width+80,320);
+  ctx.save();ctx.translate(0,WORLD.height);ctx.scale(1,-1);ctx.fillStyle=haze;ctx.fillRect(-40,-170,WORLD.width+80,320);ctx.restore();
 }
 
 function circleRectCollision(
