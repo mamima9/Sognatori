@@ -300,6 +300,14 @@ arcade_best_streak: newBest,
     // Process switches
     const switchLogs = [];
     const entered = [];
+    const applySoulboundSwitchCost = (out) => {
+      if (!adventureMode || !out || out.abilityNullified || out.abilKey !== "torosucco_soulbound") return;
+      out.hp = Math.max(0, (Number.isFinite(out.hp) ? out.hp : 20) - 9);
+      if (out.hp === 0) out.fainted = true;
+      switchLogs.push(lang === "en"
+        ? `Soulbound: Torosucco loses 9 HP when withdrawn (${out.hp}/${out.hpMax || 20} HP).`
+        : `Soulbound: Torosucco perde 9 HP quando viene sostituito (${out.hp}/${out.hpMax || 20} HP).`);
+    };
 
     slots.forEach((i) => {
       const act = usedActions[i];
@@ -309,6 +317,7 @@ arcade_best_streak: newBest,
         const out = pActive[i];
 
         resetStatsOnBench(out);
+        applySoulboundSwitchCost(out);
         inc.protectedLastTurn = false;
 inc.protectedThisTurn = false;
 
@@ -331,6 +340,7 @@ inc.protectedThisTurn = false;
         const out = eActive[i];
 
         resetStatsOnBench(out);
+        applySoulboundSwitchCost(out);
 inc.protectedLastTurn = false;
 inc.protectedThisTurn = false;
         eActive[i] = inc;
