@@ -801,16 +801,95 @@ function drawFactionBorderTerrain(ctx, faction) {
     fillRidge(null,p[2],side==="left"||side==="right"?330:300,side);
     fillRidge(null,p[0],side==="left"||side==="right"?150:135,side);
   }
-  // Catene montuose lontane e rilievi tematici sui quattro lati.
-  for(let i=0;i<8;i++){
-    const x= -450+i*650;
-    drawMountain(x,-310,0.9+(i%3)*.18,faction==="Demone");
-    drawMountain(x,WORLD.height+310,0.82+(i%4)*.13,faction==="Demone");
+  // Paesaggi iconici dedicati: niente montagne generiche nelle cinque città speciali.
+  const customLandscape = ["Dolce","Nuvola","Marino","Mago","Robot"].includes(faction);
+  if (!customLandscape) {
+    for(let i=0;i<8;i++){
+      const x= -450+i*650;
+      drawMountain(x,-310,0.9+(i%3)*.18,faction==="Demone");
+      drawMountain(x,WORLD.height+310,0.82+(i%4)*.13,faction==="Demone");
+    }
+    for(let i=0;i<6;i++){
+      const y= -250+i*570;
+      ctx.save();ctx.translate(-320,y);ctx.rotate(-Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
+      ctx.save();ctx.translate(WORLD.width+320,y);ctx.rotate(Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
+    }
   }
-  for(let i=0;i<6;i++){
-    const y= -250+i*570;
-    ctx.save();ctx.translate(-320,y);ctx.rotate(-Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
-    ctx.save();ctx.translate(WORLD.width+320,y);ctx.rotate(Math.PI/2);drawMountain(0,0,.78+(i%3)*.16,faction==="Demone");ctx.restore();
+
+  const drawCandyHill = (x,y,s) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(24,12,20,.25)";ctx.beginPath();ctx.ellipse(0,12,155,25,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#9d557b";ctx.beginPath();ctx.moveTo(-160,20);ctx.bezierCurveTo(-145,-80,-70,-175,0,-185);ctx.bezierCurveTo(95,-175,150,-75,160,20);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#e8a2c0";ctx.beginPath();ctx.moveTo(-115,0);ctx.bezierCurveTo(-90,-85,-35,-145,10,-155);ctx.bezierCurveTo(80,-135,115,-70,130,0);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="#fff0d0";ctx.lineWidth=13;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-75,-80);ctx.bezierCurveTo(-20,-145,40,-145,90,-65);ctx.stroke();
+    ctx.strokeStyle="#f7d36e";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-75,-80);ctx.bezierCurveTo(-20,-145,40,-145,90,-65);ctx.stroke();
+    ctx.fillStyle="#ffe6a8";for(let k=0;k<9;k++){ctx.beginPath();ctx.arc(-85+k*21,-25-(k%3)*19,4,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  };
+  const drawCloudBank = (x,y,s) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(31,53,76,.18)";ctx.beginPath();ctx.ellipse(0,25,175,28,0,0,Math.PI*2);ctx.fill();
+    for(const [dx,dy,rx,ry,col] of [[-95,0,76,52,"#a9c5d8"],[-35,-45,88,72,"#edf6fb"],[55,-34,91,69,"#ffffff"],[125,5,66,48,"#c7dce9"],[0,18,145,48,"#e4eff6"]]){
+      ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(dx,dy,rx,ry,0,0,Math.PI*2);ctx.fill();
+    }
+    ctx.strokeStyle="rgba(255,255,255,.65)";ctx.lineWidth=5;ctx.beginPath();ctx.arc(-32,-52,53,3.5,5.7);ctx.stroke();
+    ctx.restore();
+  };
+  const drawPalmIsland = (x,y,s) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(5,20,28,.35)";ctx.beginPath();ctx.ellipse(0,30,150,30,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#236779";ctx.beginPath();ctx.ellipse(0,22,154,33,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#d9c28a";ctx.beginPath();ctx.ellipse(0,5,132,28,-.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#b4a06f";ctx.beginPath();ctx.ellipse(-8,11,100,15,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#805538";ctx.lineWidth=15;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(0,5);ctx.quadraticCurveTo(-12,-42,8,-92);ctx.stroke();
+    ctx.strokeStyle="#b98756";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-2,-8);ctx.quadraticCurveTo(-12,-48,8,-92);ctx.stroke();
+    for(let k=0;k<8;k++){const a=-Math.PI*.95+k*Math.PI*1.9/7;ctx.strokeStyle=k%2?"#367c48":"#4c9955";ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(8,-92);ctx.quadraticCurveTo(Math.cos(a)*52,-122+Math.sin(a)*15,Math.cos(a)*105,-91+Math.sin(a)*32);ctx.stroke();}
+    ctx.fillStyle="#8b5938";ctx.beginPath();ctx.arc(3,-91,12,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  };
+  const drawFloatingBook = (x,y,s,phase) => {
+    ctx.save();ctx.translate(x,y+Math.sin(phase)*12);ctx.rotate(Math.sin(phase*.7)*.12);ctx.scale(s,s);
+    ctx.fillStyle="rgba(7,5,16,.28)";ctx.beginPath();ctx.ellipse(0,28,42,9,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#392c55";ctx.beginPath();ctx.moveTo(-42,-20);ctx.quadraticCurveTo(-5,-33,0,-8);ctx.lineTo(0,28);ctx.quadraticCurveTo(-18,7,-42,15);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#684b91";ctx.beginPath();ctx.moveTo(0,-8);ctx.quadraticCurveTo(16,-32,42,-20);ctx.lineTo(42,15);ctx.quadraticCurveTo(15,8,0,28);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="#e5d5ad";ctx.lineWidth=2;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(-31,-8+k*9);ctx.lineTo(-7,-3+k*8);ctx.moveTo(8,-3+k*8);ctx.lineTo(31,-8+k*9);ctx.stroke();}
+    ctx.strokeStyle="#c7a9ed";ctx.lineWidth=2;ctx.strokeRect(-42,-20,84,40);ctx.restore();
+  };
+  const drawLibraryTower = (x,y,s) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(8,6,18,.3)";ctx.fillRect(-58,8,116,20);
+    ctx.fillStyle="#302641";ctx.fillRect(-48,-155,96,165);
+    ctx.fillStyle="#55436f";ctx.fillRect(-39,-145,78,150);
+    for(let floor=0;floor<4;floor++){ctx.fillStyle="#251e35";ctx.fillRect(-32,-130+floor*34,64,27);for(let n=0;n<5;n++){ctx.fillStyle=["#c18a55","#9b6eb4","#d7b86b"][n%3];ctx.fillRect(-27+n*13,-124+floor*34,9,19);}}
+    ctx.fillStyle="#cbb8e8";ctx.fillRect(-55,-160,110,8);ctx.beginPath();ctx.moveTo(-60,-160);ctx.lineTo(0,-195);ctx.lineTo(60,-160);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#e6cf83";ctx.fillRect(-5,-185,10,22);ctx.restore();
+  };
+  const drawBinaryMonument = (x,y,s,index) => {
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.fillStyle="rgba(4,12,16,.3)";ctx.fillRect(-62,12,124,16);
+    ctx.fillStyle="#263b47";ctx.fillRect(-53,-130,106,140);
+    ctx.fillStyle="#405b68";ctx.fillRect(-46,-123,92,126);
+    ctx.fillStyle="#8ee6db";ctx.font="bold 15px monospace";ctx.textAlign="center";
+    for(let row=0;row<7;row++){let bits="";for(let col=0;col<7;col++)bits+=((Math.floor(seeded(index*91+row*13+col)*2))?"1":"0");ctx.fillText(bits,0,-101+row*17);}
+    ctx.strokeStyle="#9de8e2";ctx.lineWidth=3;ctx.strokeRect(-53,-130,106,140);
+    ctx.fillStyle="#aebdc4";ctx.fillRect(-7,-150,14,20);ctx.restore();
+  };
+  if(faction==="Dolce"){
+    for(let i=0;i<9;i++){const x=-480+i*610;drawCandyHill(x,-310-(i%2)*30,.75+(i%3)*.13);drawCandyHill(x,WORLD.height+310,.7+(i%4)*.1);}
+    for(let i=0;i<5;i++){const y=-220+i*610;ctx.save();ctx.translate(-320,y);ctx.rotate(-Math.PI/2);drawCandyHill(0,0,.72+(i%3)*.12);ctx.restore();ctx.save();ctx.translate(WORLD.width+320,y);ctx.rotate(Math.PI/2);drawCandyHill(0,0,.72+(i%3)*.12);ctx.restore();}
+  } else if(faction==="Nuvola"){
+    for(let i=0;i<10;i++){const x=-420+i*500;drawCloudBank(x,-260-(i%3)*35,.8+(i%3)*.16);drawCloudBank(x,WORLD.height+260,.78+(i%4)*.1);}
+    for(let i=0;i<6;i++){const y=-200+i*520;ctx.save();ctx.translate(-300,y);ctx.rotate(-Math.PI/2);drawCloudBank(0,0,.8);ctx.restore();ctx.save();ctx.translate(WORLD.width+300,y);ctx.rotate(Math.PI/2);drawCloudBank(0,0,.8);ctx.restore();}
+  } else if(faction==="Marino"){
+    for(let i=0;i<8;i++){const x=-400+i*610;drawPalmIsland(x,-290-(i%3)*28,.8+(i%3)*.12);drawPalmIsland(x,WORLD.height+290,.75+(i%4)*.1);}
+    for(let i=0;i<5;i++){const y=-200+i*610;ctx.save();ctx.translate(-300,y);ctx.rotate(-Math.PI/2);drawPalmIsland(0,0,.8);ctx.restore();ctx.save();ctx.translate(WORLD.width+300,y);ctx.rotate(Math.PI/2);drawPalmIsland(0,0,.8);ctx.restore();}
+  } else if(faction==="Mago"){
+    for(let i=0;i<7;i++){const x=-400+i*680;drawLibraryTower(x,-300-(i%2)*30,.8+(i%3)*.12);drawLibraryTower(x,WORLD.height+300,.78+(i%4)*.1);}
+    for(let i=0;i<5;i++){const y=-220+i*610;ctx.save();ctx.translate(-300,y);ctx.rotate(-Math.PI/2);drawLibraryTower(0,0,.78);ctx.restore();ctx.save();ctx.translate(WORLD.width+300,y);ctx.rotate(Math.PI/2);drawLibraryTower(0,0,.78);ctx.restore();}
+    for(let i=0;i<24;i++){const x=-500+i*180,y=-120-(i%4)*35;drawFloatingBook(x,y,.45+(i%3)*.1,i*.8);drawFloatingBook(x,WORLD.height+120+(i%3)*24,.4+(i%4)*.08,i*1.2);}
+  } else if(faction==="Robot"){
+    for(let i=0;i<20;i++){const x=-500+i*230,y=-80-(i%3)*25;drawBinaryMonument(x,y,.7+(i%4)*.1,i);drawBinaryMonument(x,WORLD.height+80,.68+(i%3)*.1,i+30);}
+    for(let i=0;i<8;i++){const y=-200+i*390;ctx.save();ctx.translate(-260,y);ctx.rotate(-Math.PI/2);drawBinaryMonument(0,0,.7,i+60);ctx.restore();ctx.save();ctx.translate(WORLD.width+260,y);ctx.rotate(Math.PI/2);drawBinaryMonument(0,0,.7,i+80);ctx.restore();}
   }
   // Silhouette specifiche per fazione: foreste, torri, scogliere, nuvole o cristalli.
   for(let i=0;i<24;i++){
