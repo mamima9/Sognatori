@@ -3569,7 +3569,7 @@ function drawWildArea(ctx, area) {
 
 // Dettagli ambientali animati e punti d'interesse per tutte le città.
 function drawAdventureFactionCityLife(ctx, city) {
-  if (city.faction === "Natura") return; // Verdelume possiede già un renderer completo e animato.
+  if (city.faction === "Amaro" || city.faction === "Natura") return; // Verdelume possiede già un renderer completo e animato.
   const palette = {
     Demone:["#5b2938","#d85b4f","#ffb45f"], Robot:["#234b59","#66d7d0","#d8fff2"],
     Nuvola:["#647fa5","#b9d8f3","#f7fbff"], Umano:["#6a4935","#c28a55","#f4d7a0"],
@@ -3653,7 +3653,7 @@ function drawAdventureFactionCityLife(ctx, city) {
 }
 
 function drawCityLandmark(ctx, city) {
-  if (city.faction === "Natura") return; // Il Grande Seme è già integrato nel renderer di Verdelume.
+  if (city.faction === "Amaro" || city.faction === "Natura") return; // Il Grande Seme è già integrato nel renderer di Verdelume.
   const x = Math.round(city.x / 4) * 4;
   const y = Math.round((city.y - 66) / 4) * 4;
   const accent = city.color || "#e5c17f";
