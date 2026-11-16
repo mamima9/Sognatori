@@ -301,29 +301,69 @@ function getAdventureWildImage(src) {
     entry = { image, canvas: null };
     ADVENTURE_WILD_IMAGE_CACHE.set(src, entry);
     image.onload = () => {
-      const sourceWidth = image.naturalWidth || image.width;
-      const sourceHeight = image.naturalHeight || image.height;
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
       const source = document.createElement("canvas");
-      source.width = sourceWidth;
-      source.height = sourceHeight;
+      source.width = width;
+      source.height = height;
       const sourceCtx = source.getContext("2d", { willReadFrequently: true });
       if (!sourceCtx) return;
       sourceCtx.drawImage(image, 0, 0);
-      const pixels = sourceCtx.getImageData(0, 0, sourceWidth, sourceHeight);
-      let minX = sourceWidth, minY = sourceHeight, maxX = -1, maxY = -1;
-      for (let y = 0; y < sourceHeight; y++) {
-        for (let x = 0; x < sourceWidth; x++) {
-          const i = (y * sourceWidth + x) * 4;
-          const red = pixels.data[i], green = pixels.data[i + 1], blue = pixels.data[i + 2];
-          if (red < 24 && green < 24 && blue < 24) {
-            pixels.data[i + 3] = 0;
-          } else if (pixels.data[i + 3] > 0) {
-            minX = Math.min(minX, x); minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+      const pixels = sourceCtx.getImageData(0, 0, width, height);
+      const data = pixels.data;
+
+      // Rimuove soltanto il fondale nero collegato ai bordi:
+      // occhi, contorni e dettagli scuri interni di Chino restano intatti.
+      const visited = new Uint8Array(width * height);
+      const stack = new Int32Array(width * height);
+      let top = 0;
+      const pushIfBackground = (index) => {
+        if (index < 0 || index >= width * height || visited[index]) return;
+        const p = index * 4;
+        if (data[p + 3] === 0 || Math.max(data[p], data[p + 1], data[p + 2]) > 34) return;
+        visited[index] = 1;
+        stack[top++] = index;
+      };
+      for (let x = 0; x < width; x++) {
+        pushIfBackground(x);
+        pushIfBackground((height - 1) * width + x);
+      }
+      for (let y = 0; y < height; y++) {
+        pushIfBackground(y * width);
+        pushIfBackground(y * width + width - 1);
+      }
+      while (top > 0) {
+        const index = stack[--top];
+        const p = index * 4;
+        data[p + 3] = 0;
+        const x = index % width;
+        if (x > 0) pushIfBackground(index - 1);
+        if (x + 1 < width) pushIfBackground(index + 1);
+        if (index >= width) pushIfBackground(index - width);
+        if (index + width < width * height) pushIfBackground(index + width);
+      }
+
+      let minX = width, minY = height, maxX = -1, maxY = -1;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (data[(y * width + x) * 4 + 3] > 0) {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
           }
         }
       }
       if (maxX < minX || maxY < minY) return;
+
+      // Margine trasparente per non tagliare punte, antenne o pixel periferici.
+      const padX = Math.max(8, Math.round((maxX - minX + 1) * 0.06));
+      const padY = Math.max(8, Math.round((maxY - minY + 1) * 0.06));
+      minX = Math.max(0, minX - padX);
+      minY = Math.max(0, minY - padY);
+      maxX = Math.min(width - 1, maxX + padX);
+      maxY = Math.min(height - 1, maxY + padY);
+
       sourceCtx.putImageData(pixels, 0, 0);
       const cropped = document.createElement("canvas");
       cropped.width = maxX - minX + 1;
