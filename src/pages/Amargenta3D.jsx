@@ -44,6 +44,10 @@ export default function Amargenta3D({ onExit }) {
   const [toast, setToast] = useState("");
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
   const questCountRef = useRef(Number(savedProgress.questCount) || 0);
+  const questDoneRef = useRef(Boolean(savedProgress.questDone));
+  const recipeDoneRef = useRef(Boolean(savedProgress.recipeDone));
+  const waterDoneRef = useRef(Boolean(savedProgress.waterDone));
+  const secretUnlockedRef = useRef(Boolean(savedProgress.secretUnlocked));
   const recipeStartedRef = useRef(Boolean(savedProgress.recipeStarted));
   const recipePagesRef = useRef(Number(savedProgress.recipePages) || 0);
   const waterStartedRef = useRef(Boolean(savedProgress.waterStarted));
@@ -345,17 +349,17 @@ export default function Amargenta3D({ onExit }) {
       addInteraction("cafe-door","Caffè delle Tre Foglie","Entra nella caffetteria più antica di Amargenta.",-22,-1.5,()=>{player.position.set(-68,0,59.5);setZone("Caffè delle Tre Foglie");},6.4);
       addInteraction("cafe-exit","Uscita del Caffè delle Tre Foglie","Tornare alle terrazze della città?",-68,62,()=>{player.position.set(-22,1,-.5);setZone("Piazza del Chicco");},4.2);
       addInteraction("vault-door","Cripta delle Miscele","Una porta sigillata da tre prove.",-70,-43,()=>{
-        if(!(questDone&&recipeDone&&waterDone)){
+        if(!(questDoneRef.current&&recipeDoneRef.current&&waterDoneRef.current)){
           setDialogue({title:"Cripta delle Miscele · Sigillata",text:"Il sigillo richiede tre prove: le Fave d'Ambra, la Ricetta Perduta e le Condotte Riattivate."});
           return;
         }
-        setSecretUnlocked(true);
+        secretUnlockedRef.current=true;setSecretUnlocked(true);
         player.position.set(68,0,-59.5);setZone("Cripta delle Miscele");
         setToast("La Cripta delle Miscele è stata aperta");
       },4.8);
       addInteraction("vault-exit","Uscita della Cripta","Tornare ai giardini di Amargenta?",68,-62,()=>{player.position.set(-70,0,-39.5);setZone("Giardino del Retrogusto");},4.2);
       addInteraction("vault-chest","Scrigno delle Miscele","Un antico scrigno custodisce il cuore della città.",68,-68,()=>{
-        if(!secretUnlocked){setDialogue({title:"Scrigno sigillato",text:"Il sigillo della cripta non è ancora stato spezzato."});return;}
+        if(!secretUnlockedRef.current){setDialogue({title:"Scrigno sigillato",text:"Il sigillo della cripta non è ancora stato spezzato."});return;}
         if(vaultClaimedRef.current){setDialogue({title:"Scrigno delle Miscele",text:"Lo scrigno è vuoto. Hai già recuperato il Cuore del Retrogusto."});return;}
         vaultClaimedRef.current=true;setVaultClaimed(true);setInventory(old=>({...old,relics:old.relics+1}));
         setDialogue({title:"Cuore del Retrogusto",text:"Hai ottenuto una reliquia unica di Amargenta. Il suo aroma cambia con la luce."});
@@ -369,7 +373,7 @@ export default function Amargenta3D({ onExit }) {
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
-          if(!questDone){setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
+          if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
           setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
         } else if(!questActiveRef.current){
           questActiveRef.current=true;setQuestStarted(true);
@@ -379,7 +383,7 @@ export default function Amargenta3D({ onExit }) {
       const ormaInteraction=interactables.find(item=>item.id==="archivist");
       if(ormaInteraction)ormaInteraction.action=()=>{
         if(recipePagesRef.current>=4){
-          if(!recipeDone){setRecipeDone(true);setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));setToast("Missione completata · Ricetta Perduta");}
+          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));setToast("Missione completata · Ricetta Perduta");}
           setDialogue({title:"Orma · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
         } else if(!recipeStartedRef.current){
           recipeStartedRef.current=true;setRecipeStarted(true);
@@ -389,7 +393,7 @@ export default function Amargenta3D({ onExit }) {
       const brunoInteraction=interactables.find(item=>item.id==="guard");
       if(brunoInteraction)brunoInteraction.action=()=>{
         if(valvesRef.current>=3){
-          if(!waterDone){setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
+          if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
           setDialogue({title:"Bruno · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
         } else if(!waterStartedRef.current){
           waterStartedRef.current=true;setWaterStarted(true);
