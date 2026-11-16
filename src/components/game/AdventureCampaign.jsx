@@ -156,6 +156,10 @@ function FactionMedal({ faction }) {
       // Impronta marrone con quattro dita e cuscinetto.
       shape = <><ellipse cx="25" cy="34" rx="15" ry="12" {...medal("#80532f")}/><ellipse cx="10" cy="17" rx="6" ry="8" transform="rotate(-24 10 17)" {...medal("#80532f")}/><ellipse cx="22" cy="11" rx="6" ry="8" {...medal("#98663b")}/><ellipse cx="35" cy="13" rx="6" ry="8" transform="rotate(18 35 13)" {...medal("#80532f")}/><ellipse cx="45" cy="21" rx="5" ry="7" transform="rotate(28 45 21)" {...medal("#80532f")}/><path d="M25 28C18 28 14 34 17 39C20 44 30 44 34 39C38 34 32 28 25 28Z" fill="#c28b54"/></>;
       break;
+    case "Amaro":
+      // Chicco di caffè bruno con solco centrale.
+      shape = <><path d="M25 5C37 5 46 16 45 28C44 40 34 48 23 47C12 46 5 36 6 24C7 13 15 5 25 5Z" transform="rotate(28 25 26)" {...medal("#68402b")}/><path d="M13 39C20 31 22 24 22 15C22 11 25 8 28 8C32 8 34 12 32 17C29 25 25 34 17 42" fill="none" stroke="#d7a16a" strokeWidth="3.2" strokeLinecap="round"/><path d="M13 20C17 12 23 9 29 10" fill="none" stroke="#a8754b" strokeWidth="2" strokeLinecap="round"/></>;
+      break;
     case "Salato":
       // Cubetto di sale rosa dell'Himalaya.
       shape = <><path d="M8 17L25 7L43 17L42 39L25 48L8 39Z" {...medal("#d99a9c")}/><path d="M8 17L25 27L43 17M25 27V48" fill="none" stroke="#f7d8d4" strokeWidth="2.5"/><path d="M25 7L25 27L43 17" fill="#f0c2bd" stroke="#a96f77" strokeWidth="1.5"/><path d="M14 20L20 23M30 32L36 29" stroke="#fff0e9" strokeWidth="2" strokeLinecap="round"/></>;
