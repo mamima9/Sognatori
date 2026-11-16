@@ -268,6 +268,19 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     const orderedIds = [...starters, ...save.partyIds.filter((id) => !starters.includes(id))];
     return orderedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean);
   }, [save.partyIds, save.starterIds]);
+
+  const adventureFinished = ADVENTURE_CITIES.every((city) => (save.completedCities || []).includes(city.id));
+  const allAdventureBonds = ROSTER.every((s) => (save.ownedIds || []).includes(s.id));
+  const missionCards = [
+    { id: 5, title: "La casa della beatitudine", description: "Completa l'Avventura e conquista tutte le città delle fazioni.", reward: [
+      { name: "Fourmouri", lore: "Gran combattente, vuole raggiungere la casa della beatitudine, luogo sacro dei Luce." },
+      { name: "Pirimar", lore: "I pirimar vivono nell'oceano e sono la moneta di scambio tra umani e marini." },
+    ], complete: adventureFinished, progress: `${(save.completedCities || []).filter((id) => ADVENTURE_CITIES.some((city) => city.id === id)).length}/${ADVENTURE_CITIES.length} città` },
+    { id: 6, title: "Legami indissolubili", description: "Stringi un legame con ogni Sognatore presente nell'Avventura.", reward: [
+      { name: "Ginza", lore: "Ginza è una ballerina che girovaga per tutte le città, allestendo spettacoli anche con maschere e marionette." },
+      { name: "Pequeno", lore: "Pequeno è l'albero simbolo di un noto quartiere della fazione Natura. Un proprietario di un'azienda di Crocevia ha inciso un simbolo sulla sua corteccia." },
+    ], complete: allAdventureBonds, progress: `${(save.ownedIds || []).filter((id) => ROSTER.some((s) => s.id === id)).length}/${ROSTER.length} legami` },
+  ];
   const deposit = owned.filter((s) => !save.partyIds.includes(s.id));
   const expectedCityTeamSize = encounter?.faction === "Nuvola" ? 5 : 4;
   const cityTeam = useMemo(
@@ -472,6 +485,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 <p className="text-[10px] text-white/35">Sconfiggi un Capo fazione per ottenere la sua gemma.</p>
               )}
             </div>
+            <button onClick={() => { setPanel("missions"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-amber-100 hover:bg-white/10"><span>MISSIONI</span><span className="text-amber-200">{missionCards.filter((m) => m.complete).length}/2</span></button>
             <button onClick={() => { setPanel("party"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-emerald-100 hover:bg-white/10">
               <span>SQUADRA</span><span className="text-emerald-200">{party.length}/4</span>
             </button>
@@ -527,15 +541,24 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[.25em] text-emerald-200/60">Il tuo viaggio</div>
-                <h2 className="text-2xl font-black">{panel === "party" ? "La tua squadra" : "Box deposito"}</h2>
-                <p className="mt-1 text-xs text-white/50">{panel === "party" ? "Scegli 2 titolari: gli altri 2 saranno in panchina. Puoi cambiare scelta quando vuoi." : "I Sognatori che non porti con te restano al sicuro qui."}</p>
+                <h2 className="text-2xl font-black">{panel === "party" ? "La tua squadra" : panel === "box" ? "Box deposito" : "Missioni"}</h2>
+                <p className="mt-1 text-xs text-white/50">{panel === "party" ? "Scegli 2 titolari: gli altri 2 saranno in panchina. Puoi cambiare scelta quando vuoi." : panel === "box" ? "I Sognatori che non porti con te restano al sicuro qui." : "Completa gli obiettivi dell’Avventura per sbloccare nuove voci di Lore."}</p>
               </div>
               <button onClick={() => setPanel("")} className="rounded-lg bg-white/10 px-3 py-2 text-sm font-bold">Chiudi</button>
             </div>
-            <div className="mb-3 flex gap-2 text-[10px] font-black uppercase">
+            {panel !== "missions" && <div className="mb-3 flex gap-2 text-[10px] font-black uppercase">
               <button onClick={() => setPanel("party")} className={"rounded-lg px-3 py-2 " + (panel === "party" ? "bg-emerald-300 text-black" : "bg-white/10")}>Squadra ({party.length}/4)</button>
               <button onClick={() => setPanel("box")} className={"rounded-lg px-3 py-2 " + (panel === "box" ? "bg-violet-300 text-black" : "bg-white/10")}>Deposito ({deposit.length})</button>
-            </div>
+            </div>}
+            {panel === "missions" ? (
+              <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
+                {missionCards.map((mission) => <section key={mission.id} className={"rounded-2xl border p-4 " + (mission.complete ? "border-emerald-300/40 bg-emerald-300/10" : "border-white/10 bg-white/5")}>
+                  <div className="flex items-start justify-between gap-3"><div><div className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Missione {mission.id}</div><h3 className="mt-1 text-lg font-black">{mission.title}</h3></div><span className={"shrink-0 rounded-full px-3 py-1 text-[9px] font-black uppercase " + (mission.complete ? "bg-emerald-300 text-slate-950" : "bg-white/10 text-white/65")}>{mission.complete ? "Completata" : "In corso"}</span></div>
+                  <p className="mt-2 text-sm leading-6 text-white/75">{mission.description}</p><div className="mt-2 text-xs font-bold text-cyan-200">{mission.progress}</div>
+                  <div className="mt-4 border-t border-white/10 pt-3"><div className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200/80">Ricompensa · Lore</div><div className="mt-2 grid gap-2">{mission.reward.map((entry) => <div key={entry.name} className="rounded-xl bg-black/25 p-3"><div className="text-sm font-black text-white">{entry.name}</div><p className="mt-1 text-xs leading-5 text-white/65">{mission.complete ? entry.lore : "Voce di Lore bloccata: completa la missione per sbloccarla."}</p></div>)}</div></div>
+                </section>)}
+              </div>
+            ) : (
             <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
               {(panel === "party" ? party : deposit).map((s) => {
                 const isStarter = (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id);
@@ -560,6 +583,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               })}
               {(panel === "party" ? party : deposit).length === 0 && <div className="rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
             </div>
+            </div>)}
             <div className="mt-3 text-[10px] text-white/45">Posseduti: {owned.length} · In squadra: {party.length} · Nel deposito: {deposit.length}</div>
           </div>
         </div>
