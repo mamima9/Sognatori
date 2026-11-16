@@ -659,7 +659,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
         <div className="absolute inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
           <div className="w-full max-w-md rounded-3xl border border-emerald-200/20 bg-slate-950 p-6 text-center text-white">
             <div className="text-4xl">✧</div><h2 className="mt-2 text-2xl font-black">La città ti accoglie</h2>
-            <p className="mt-2 text-sm text-white/65">Hai sconfitto il Capo fazione di {encounter.city}. I Sognatori che hanno scelto di unirsi a te sono stati aggiunti alla squadra o al deposito.</p>
+            <p className="mt-2 text-sm text-white/65">Hai sconfitto il Capo fazione di {encounter.city}. La città riconosce il tuo valore e la tua vittoria.</p>
             <button onClick={() => { setPhase("idle"); onClose?.(); }} className="mt-5 w-full rounded-xl bg-emerald-300 py-3 font-black text-black">TORNA ALL'AVVENTURA</button>
           </div>
         </div>
