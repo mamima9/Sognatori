@@ -542,7 +542,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 return (
                   <div key={s.id} className={"flex w-full flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center " + (panel === "party" && isStarter ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <AdventureSognatoreSprite s={s} size={58} />
+                      <AdventureSognatoreSprite s={s} size={58} overworld />
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="break-words text-base font-black leading-tight">{s.nome}</div>
                         <div className="text-sm text-white/65"><span className="font-bold text-white/45">FAZIONE:</span> {s.tipo}</div>
