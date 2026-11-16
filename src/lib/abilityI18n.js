@@ -59,6 +59,7 @@ fierononno_naturale: {
   torosucco_soulbound: { name: "Soulbound", desc: "When withdrawn, loses 9 HP." },
   crunchypat_avalanche: { name: "Avalanche", desc: "When it Protects, gains +1 ATK, +1 DEF and +1 SPD." },
   talamos_palude_salata: { name: "Salt Marsh", desc: "On entry, inflicts the Thirsty condition on opposing Sognatori." },
+  pingcake_abbiocco: { name: "Drowsiness", desc: "When it attacks, the target becomes Drowsy." },
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };
