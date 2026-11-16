@@ -311,10 +311,17 @@ export default function Amargenta3D({ onExit }) {
     const makeInterior = (cx,cz,doorSide="north") => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
       box(14,.35,12,floor,scene,cx,.05,cz);
-      box(14,4,.35,wall,scene,cx,2,cz-6);
+      const doorWidth=3.2, sideLength=(14-doorWidth)/2, sideOffset=(14+doorWidth)/4;
+      if(doorSide==="north"){
+        box(sideLength,4,.35,wall,scene,cx-sideOffset,2,cz-6);
+        box(sideLength,4,.35,wall,scene,cx+sideOffset,2,cz-6);
+      } else box(14,4,.35,wall,scene,cx,2,cz-6);
       box(.35,4,12,wall,scene,cx-7,2,cz);
       box(.35,4,12,wall,scene,cx+7,2,cz);
-      box(14,4,.35,wall,scene,cx,2,cz+6);
+      if(doorSide==="south"){
+        box(sideLength,4,.35,wall,scene,cx-sideOffset,2,cz+6);
+        box(sideLength,4,.35,wall,scene,cx+sideOffset,2,cz+6);
+      } else box(14,4,.35,wall,scene,cx,2,cz+6);
       for(let x=-6;x<=6;x+=3){box(.22,4,.28,beam,scene,cx+x,2,cz-5.72);box(.22,4,.28,beam,scene,cx+x,2,cz+5.72);}
       for(let x=-5;x<=5;x+=5){box(.2,4,11,beam,scene,cx+x,2,cz);}
       for(let i=0;i<5;i++){box(1.8,.35,.55,beam,scene,cx-5.3+i*2.5,2.2,cz-4.8);for(let j=0;j<3;j++)box(.38,.48,.38,j%2?gold:wood,scene,cx-5+i*2.5,2.58,cz-4.8+j*.12);}
@@ -331,7 +338,10 @@ export default function Amargenta3D({ onExit }) {
     const makeCafeInterior = (cx,cz) => {
       const floor=mat("#826448"), plaster=mat("#d2b88e"), darkWood=mat("#4b3028"), redFabric=mat("#a64d38");
       box(15,.35,13,floor,scene,cx,.05,cz);
-      box(15,4,.35,plaster,scene,cx,2,cz-6.5);box(15,4,.35,plaster,scene,cx,2,cz+6.5);
+      const doorWidth=3.2, sideLength=(15-doorWidth)/2, sideOffset=(15+doorWidth)/4;
+      box(sideLength,4,.35,plaster,scene,cx-sideOffset,2,cz-6.5);
+      box(sideLength,4,.35,plaster,scene,cx+sideOffset,2,cz-6.5);
+      box(15,4,.35,plaster,scene,cx,2,cz+6.5);
       box(.35,4,13,plaster,scene,cx-7.5,2,cz);box(.35,4,13,plaster,scene,cx+7.5,2,cz);
       for(let i=0;i<3;i++){
         box(3,.18,1.7,darkWood,scene,cx-4+i*4,1.05,cz+1.8);
@@ -431,8 +441,14 @@ export default function Amargenta3D({ onExit }) {
       const vaultChest=box(1.8,1.15,1.1,wood,scene,68,.62,-68);
       box(1.9,.2,1.16,gold,scene,68,1.27,-68);
       const vaultGem=sphere(.28,mat("#d4b3ff",.2,{emissive:"#8d59d4",emissiveIntensity:.8}),scene,68,1.65,-68,2);
-      const interiorDoor=box(2.4,2.8,.2,wood,scene,68,1.45,62);
-      box(1.5,2.2,.08,gold,scene,68,1.4,61.86);
+      // Cornice aperta della porta della torrefazione: il passaggio è realmente libero.
+      box(.18,3,.25,gold,scene,66.4,1.5,62);
+      box(.18,3,.25,gold,scene,69.6,1.5,62);
+      box(3.4,.18,.25,gold,scene,68,3,62);
+      // Cornice della porta segreta sul lato sud della Cripta.
+      box(.18,3,.25,gold,scene,66.4,1.5,-62);
+      box(.18,3,.25,gold,scene,69.6,1.5,-62);
+      box(3.4,.18,.25,gold,scene,68,3,-62);
       addInteraction("roastery-door","Torrefazione di Amargenta","La porta conduce al laboratorio della torrefazione.",16,33,()=>{player.position.set(68,0,59.5);setZone("Interno della Torrefazione");},4.2);
       addInteraction("roastery-exit","Uscita della torrefazione","Tornare alla piazza del borgo?",68,62,()=>{player.position.set(16,0,33.5);setZone("Distretto della Torrefazione");},4.2);
       addInteraction("cafe-door","Caffè delle Tre Foglie","Entra nella caffetteria più antica di Amargenta.",-22,-1.5,()=>{player.position.set(-68,0,59.5);setZone("Caffè delle Tre Foglie");},6.4);
