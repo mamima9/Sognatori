@@ -3,7 +3,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 import AdventureBattleArena from "@/components/game/AdventureBattleArena";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
-import { getCityRewards, buildCityTeam } from "@/lib/adventureCampaignData";
+import { getCityRewards, buildCityTeam, ADVENTURE_CITIES } from "@/lib/adventureCampaignData";
 
 const ANSWERS = {
   Demone: "Non temo il tuo fuoco: voglio capire cosa protegge.",
@@ -83,9 +83,30 @@ function loadSave(key) {
   }
 }
 
-export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, onLeaderDefeated, menuContent }) {
+export default function AdventureCampaign({ userKey, player, facing = { x: 0, y: -1 }, walking = false, encounter, wildEncounter, onClose, onWildClose, onPauseChange, onRestart, onLeaderDefeated, menuContent, grantAllFactionGems = false }) {
   const storageKey = "sognatori-adventure-v1-" + (userKey || "guest");
   const [save, setSave] = useState(() => loadSave(storageKey));
+
+  // Account personale Bibito: sincronizza sia i capi sconfitti sia le gemme
+  // nel salvataggio effettivamente letto dal menu della campagna.
+  useEffect(() => {
+    if (!grantAllFactionGems) return;
+    setSave((old) => {
+      const conqueredLeaders = Array.from(new Set([
+        ...(old.conqueredLeaders || []),
+        ...ADVENTURE_CITIES.map((city) => city.id),
+      ]));
+      const factionGems = ADVENTURE_CITIES.map((city) => ({
+        leaderId: city.id,
+        faction: city.faction,
+        color: city.color,
+      }));
+      if (conqueredLeaders.length === (old.conqueredLeaders || []).length &&
+          factionGems.length === (old.factionGems || []).length &&
+          factionGems.every((gem) => (old.factionGems || []).some((owned) => owned.leaderId === gem.leaderId))) return old;
+      return { ...old, conqueredLeaders, factionGems };
+    });
+  }, [grantAllFactionGems]);
   const [panel, setPanel] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [phase, setPhase] = useState("idle");
