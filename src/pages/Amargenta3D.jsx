@@ -289,6 +289,7 @@ export default function Amargenta3D({ onExit }) {
       if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
       if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7});
+      addCollider(x,z,.42*scale);
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
       return g;
     };
@@ -353,6 +354,7 @@ export default function Amargenta3D({ onExit }) {
       camera=new THREE.PerspectiveCamera(62,host.clientWidth/host.clientHeight,.1,350);
       renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(host.clientWidth,host.clientHeight);
+      renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
       host.appendChild(renderer.domElement);
