@@ -1018,6 +1018,7 @@ export default function Avventura() {
     isPersonalTester ||
     isManguAccount;
   const personalAllDoorsUnlocked = isPersonalTester;
+  const canEnterAmargenta = isPersonalTester;
 
   /*
     ============================
@@ -1680,12 +1681,24 @@ const [message, setMessage] = useState("");
       // Portale di collegamento: ogni mappa conduce alla successiva.
       const currentLeaderDefeated = defeatedLeaders.has(activeMapId);
       const canUseCityDoors = personalAllDoorsUnlocked || currentLeaderDefeated;
-      drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
-        canUseCityDoors ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
-        0, !canUseCityDoors);
-      drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color,
-        personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId) : "BLOCCATA · " + previousCityName(activeMapId),
-        Math.PI, !personalAllDoorsUnlocked);
+      if (activeMapId !== "amaro") {
+        drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
+          canUseCityDoors ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
+          0, !canUseCityDoors);
+        drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color,
+          personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId) : "BLOCCATA · " + previousCityName(activeMapId),
+          Math.PI, !personalAllDoorsUnlocked);
+      }
+
+      // Porta segreta occidentale di Verdelume, visibile ma accessibile solo a Bibito.
+      if (activeMapId === "natura") {
+        drawAdventureDoor(ctx, 1500, 1200, "#a7c7b5",
+          canEnterAmargenta ? "AMARGENTA · BIBITO" : "SIGILLATA · AMARGENTA",
+          -Math.PI / 2, !canEnterAmargenta);
+      }
+      if (activeMapId === "amaro") {
+        drawAdventureDoor(ctx, 1500, 1200, "#a7c7b5", "USCITA · VERDELUME", -Math.PI / 2, false);
+      }
 
       /*        ROCCE
       */
@@ -1944,6 +1957,32 @@ const [message, setMessage] = useState("");
 
     const currentPosition = playerRef.current;
     const interactionRadius = 105;
+
+    // Porta segreta occidentale: accesso e ritorno sono gestiti prima delle altre interazioni.
+    const amargentaDoorDistance = Math.hypot(currentPosition.x - 1500, currentPosition.y - 1200);
+    if ((activeMapId === "natura" || activeMapId === "amaro") && amargentaDoorDistance < 136) {
+      if (activeMapId === "natura") {
+        if (!canEnterAmargenta) {
+          setMessage("Il sigillo riconosce soltanto Bibito. La porta resta chiusa.");
+          setTimeout(() => setMessage(""), 2600);
+          return;
+        }
+        setActiveMapId("amaro");
+        playerRef.current = { x: 1650, y: 1200 };
+        cameraRef.current = { x: 1650, y: 1200 };
+        setPlayer({ x: 1650, y: 1200 });
+        setMessage("Il sigillo si apre. Benvenuto ad Amargenta, Bibito.");
+        setTimeout(() => setMessage(""), 2600);
+        return;
+      }
+      setActiveMapId("natura");
+      playerRef.current = { x: 1650, y: 1200 };
+      cameraRef.current = { x: 1650, y: 1200 };
+      setPlayer({ x: 1650, y: 1200 });
+      setMessage("Sei tornato a Verdelume.");
+      setTimeout(() => setMessage(""), 2200);
+      return;
+    }
 
     // Le porte hanno priorità sugli NPC: un personaggio vicino non deve intercettare l'interazione.
     if (Math.hypot(currentPosition.x - MAP_DOOR.x, currentPosition.y - MAP_DOOR.y) < MAP_DOOR.radius + 42) {
