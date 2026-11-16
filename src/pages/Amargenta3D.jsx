@@ -9,16 +9,16 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
  */
 export default function Amargenta3D({ onExit }) {
   const hostRef = useRef(null);
-  const [hint, setHint] = useState("WASD per muoverti · trascina per ruotare la visuale · rotella per zoom");
+  const [hint, setHint] = useState("WASD per muoverti · Shift per correre · trascina per ruotare · M mappa · J diario · I borsa");
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
-  const [questStarted, setQuestStarted] = useState(false);
-  const [questCount, setQuestCount] = useState(0);
   const [savedProgress] = useState(() => {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
     catch { return {}; }
   });
+  const [questStarted, setQuestStarted] = useState(Boolean(savedProgress.questStarted));
+  const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
   const [inventory, setInventory] = useState(() => ({
     amberBeans: 0, recipeFragments: 0, waterCrystals: 0, citrus: 0, relics: 0,
@@ -32,6 +32,9 @@ export default function Amargenta3D({ onExit }) {
   const [waterDone, setWaterDone] = useState(Boolean(savedProgress.waterDone));
   const [secretUnlocked, setSecretUnlocked] = useState(Boolean(savedProgress.secretUnlocked));
   const [vaultClaimed, setVaultClaimed] = useState(Boolean(savedProgress.vaultClaimed));
+  const [citrusHarvested, setCitrusHarvested] = useState(Boolean(savedProgress.citrusHarvested));
+  const inventoryRef = useRef(inventory);
+  const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
   const [collectedPages, setCollectedPages] = useState(Array.isArray(savedProgress.collectedPages) ? savedProgress.collectedPages : []);
   const [activatedValves, setActivatedValves] = useState(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []);
@@ -51,18 +54,20 @@ export default function Amargenta3D({ onExit }) {
   const vaultClaimedRef = useRef(Boolean(savedProgress.vaultClaimed));
   const zoneRef = useRef("Ingresso di Amargenta");
 
+  useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
+
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:save:v2", JSON.stringify({
         questStarted, questCount, questDone, inventory,
         recipeStarted, recipePages, recipeDone,
-        waterStarted, valves, waterDone, secretUnlocked, vaultClaimed,
+        waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves
       }));
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, collectedAmber, collectedPages, activatedValves]);
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -78,7 +83,7 @@ export default function Amargenta3D({ onExit }) {
     const npcActors = [];
     const raycaster = new THREE.Raycaster();
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
-    let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0;
+    let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0, currentPeriod = -1;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
     const stone = mat("#9a8871"), stoneLight = mat("#c0ad91"), darkStone = mat("#655747");
     const roof = mat("#704638"), wood = mat("#65442f"), leaf = mat("#365d38"), leaf2 = mat("#587d43");
@@ -104,6 +109,7 @@ export default function Amargenta3D({ onExit }) {
       cylinder(.045,.07,.72,wood,g,0,.36,0,6);
       for(let i=0;i<7;i++){const a=i*2.4;const l=sphere(.38,i%2?leaf:leaf2,g,Math.cos(a)*.26,.55+(i%3)*.08,Math.sin(a)*.26,1);l.scale.set(1.35,.35,.72);}
       for(let i=0;i<5;i++){const a=i*2.4;sphere(.09,coffeeRed,g,Math.cos(a)*.34,.38+(i%3)*.13,Math.sin(a)*.34,1);}
+      return g;
     };
     const makeCitrusTree = (x,z,s=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
@@ -363,7 +369,7 @@ export default function Amargenta3D({ onExit }) {
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
-          if(!questDone){setQuestDone(true);setInventory(old=>({...old,amberBeans:old.amberBeans+3}));setToast("Missione completata · Fave d'Ambra");}
+          if(!questDone){setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
           setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
         } else if(!questActiveRef.current){
           questActiveRef.current=true;setQuestStarted(true);
@@ -445,11 +451,25 @@ export default function Amargenta3D({ onExit }) {
         },3.1);
       });
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
+      const roasterInteraction=interactables.find(item=>item.id==="roaster");
+      if(roasterInteraction)roasterInteraction.action=()=>{
+        if(inventoryRef.current.amberBeans<3){setDialogue({title:"Tostino · Banco di tostatura",text:"Per preparare una Miscela d'Autore servono tre Fave d'Ambra. Al momento non ne hai abbastanza."});return;}
+        setInventory(old=>({...old,amberBeans:old.amberBeans-3,coffeeBlend:old.coffeeBlend+1}));
+        setDialogue({title:"Miscela d'Autore",text:"Tostino ha tostato tre Fave d'Ambra e preparato una Miscela d'Autore. La miscela è stata aggiunta alla tua borsa."});
+      };
+      const nerioInteraction=interactables.find(item=>item.id==="merchant");
+      if(nerioInteraction)nerioInteraction.action=()=>{
+        if(inventoryRef.current.amberBeans<1||inventoryRef.current.citrus<1){setDialogue({title:"Nerio · Banco degli scambi",text:"Ti propongo uno scambio: una Fava d'Ambra e un agrume per una Tisana del Retrogusto."});return;}
+        setInventory(old=>({...old,amberBeans:old.amberBeans-1,citrus:old.citrus-1,herbalTea:old.herbalTea+1}));
+        setDialogue({title:"Tisana del Retrogusto",text:"Nerio ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
+      };
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
+        if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
+        citrusHarvestedRef.current=true;setCitrusHarvested(true);
         setInventory(old=>({...old,citrus:old.citrus+1}));
-        setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta."});
+        setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Nerio potrebbe scambiarlo con te."});
       },4.5);
       // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
       const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
@@ -541,7 +561,7 @@ export default function Amargenta3D({ onExit }) {
         if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
         const period=Math.floor((clock.elapsedTime%240)/60);
         const moments=["Mattina","Pomeriggio","Tramonto","Notte"];
-        if(moments[period]!==worldMoment)setWorldMoment(moments[period]);
+        if(period!==currentPeriod){currentPeriod=period;setWorldMoment(moments[period]);}
         const daylight=period===0?1:period===1?.82:period===2?.48:.22;
         sun.intensity=3.2*daylight;
         sun.position.set(Math.cos(clock.elapsedTime*.025)*38,22+daylight*34,Math.sin(clock.elapsedTime*.025)*32);
@@ -608,7 +628,7 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#e6c28b"}}>Segreto: {secretUnlocked?"Cripta aperta":"completa tutte e tre le missioni."}</div>
       </div>}
       {panel==="inventory"&&<div>
-        {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
+        {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
