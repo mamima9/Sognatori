@@ -14,7 +14,7 @@ function line(c,pts,col,width=2){c.strokeStyle=col;c.lineWidth=width;c.lineCap="
 function text(c,s,x,y,size=7,col=P.ivory){c.fillStyle=col;c.font="bold "+size+"px monospace";c.textAlign="center";c.fillText(s,x,y);}
 function glow(c,x,y,r,a,col=P.gold){c.save();c.globalAlpha=a;ellipse(c,x,y,r,r,col);c.restore();}
 function bean(c,x,y,s=1,rot=0){c.save();c.translate(x,y);c.rotate(rot);c.scale(s,s);ellipse(c,0,0,8,13,"#382321");ellipse(c,-1,-1,6,11,"#9b5b37");line(c,[[-1,-9],[2,-4],[-2,1],[1,8]],"#e0a36a",1.5);c.restore();}
-function crystal(c,x,y,s=1,col=P.gold){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,17,17,6,"rgba(0,0,0,.28)");c.fillStyle=P.shadow;c.beginPath();c.moveTo(0,-30);c.lineTo(14,-7);c.lineTo(9,15);c.lineTo(-9,15);c.lineTo(-14,-7);c.closePath();c.fill();c.fillStyle=col;c.beginPath();c.moveTo(0,-26);c.lineTo(9,-6);c.lineTo(6,11);c.lineTo(-6,11);c.lineTo(-9,-6);c.closePath();c.fill();line(c,[[0,-24],[0,9]],P.ivory,1.5);c.restore();}
+function coffeeRelic(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,17,18,6,"rgba(0,0,0,.3)");c.fillStyle="#2b1b1a";c.beginPath();c.ellipse(0,0,13,22,-.18,0,Math.PI*2);c.fill();c.fillStyle="#9b5938";c.beginPath();c.ellipse(-2,-2,10,18,-.18,0,Math.PI*2);c.fill();line(c,[[-1,-17],[3,-8],[-2,0],[2,9],[-1,16]],"#f0c17b",3);line(c,[[-7,-10],[-10,-3],[-7,5]],"#d28a55",1.5);c.restore();}
 function coffeeTree(c,x,y,s=1,phase=0){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,20,22,7,"rgba(0,0,0,.25)");rect(c,-4,-9,8,29,P.bark);ellipse(c,-13,-20,17,16,P.leaf);ellipse(c,5,-31,22,20,P.leaf2);ellipse(c,21,-17,16,15,P.leaf);ellipse(c,0,-9,22,15,P.leaf2);for(let i=0;i<5;i++){const a=i*2.4+phase;const bx=Math.cos(a)*13,by=-19+Math.sin(a)*11;ellipse(c,bx,by,3,5,i%2?"#b65b45":"#d07a4c");}line(c,[[-12,-28],[0,-38],[14,-30]],"#b7c57c",2);c.restore();}
 function lamp(c,x,y,t,i=0){rect(c,x-3,y-1,6,30,P.ink);rect(c,x-9,y-7,18,5,P.copper);rect(c,x-7,y-22,14,16,P.gold);rect(c,x-4,y-19,8,10,P.ivory);glow(c,x,y-13,23,.07+.04*Math.sin(t*2+i));}
 function roof(c,x,y,w,col=P.shadow){c.fillStyle=col;c.beginPath();c.moveTo(x-w/2-9,y);c.lineTo(x,y-30);c.lineTo(x+w/2+9,y);c.closePath();c.fill();line(c,[[x-w/2-7,y-2],[x,y-29],[x+w/2+7,y-2]],P.copper,3);}
@@ -23,10 +23,28 @@ function roastery(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,31,55,13,"rgba(
 function cupFountain(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,28,55,15,"rgba(0,0,0,.28)");ellipse(c,0,15,50,14,P.stone);ellipse(c,0,11,43,10,P.gold);rect(c,-30,-22,60,32,P.cream);rect(c,-26,-18,52,24,"#8e5338");rect(c,-21,-15,42,16,"#4a2926");c.strokeStyle=P.cream;c.lineWidth=7;c.beginPath();c.arc(31,-7,13,-Math.PI/2,Math.PI/2);c.stroke();ellipse(c,0,-23,30,7,"#e6c18d");ellipse(c,0,-25,23,5,"#4a2926");for(let i=0;i<5;i++){const a=t*1.7+i*1.25;ellipse(c,Math.cos(a)*34,-7+Math.sin(a)*3,2,3,P.ivory);}for(let i=0;i<3;i++){const p=t*1.3+i*2;line(c,[[Math.sin(p)*5,-33],[Math.sin(p+.5)*8,-45],[Math.sin(p+1)*3,-56]],"rgba(255,235,194,.65)",2);}c.restore();}
 function beanMonument(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,25,50,12,"rgba(0,0,0,.3)");rect(c,-38,9,76,13,P.stone);rect(c,-32,4,64,8,P.stoneLight);ellipse(c,0,-16,24,34,"#392321");ellipse(c,-3,-18,18,27,"#a35e39");line(c,[[0,-40],[5,-26],[-2,-12],[3,8]],"#f0bd79",4);for(let i=0;i<8;i++){const a=i*Math.PI/4+t*.12;glow(c,Math.cos(a)*37,-14+Math.sin(a)*37,3,.7);}c.restore();}
 function terrace(c,x,y,w,h){c.save();rect(c,x-w/2,y-h/2,w,h,"#654334");rect(c,x-w/2+4,y-h/2+4,w-8,h-8,"#9b6947");rect(c,x-w/2+9,y-h/2+9,w-18,5,"#c38a57");for(let i=0;i<5;i++){const xx=x-w/2+14+i*(w-28)/4;coffeeTree(c,xx,y+5,.42,i);}c.restore();}
+// Catena montuosa a livelli: terrazze di Coffea, muri di contenimento e sentieri.
+function drawCoffeeHighland(c,x,y,w,h,level,t,flip=1){
+  c.save();c.translate(x,y);c.scale(flip,1);
+  c.fillStyle="rgba(20,12,12,.42)";c.beginPath();c.moveTo(-w*.55,8);c.lineTo(-w*.36,-h*.58);c.lineTo(-w*.08,-h);c.lineTo(w*.16,-h*.72);c.lineTo(w*.43,-h*.9);c.lineTo(w*.58,8);c.closePath();c.fill();
+  c.fillStyle=["#48332c","#594033","#6c4934"][level%3];c.beginPath();c.moveTo(-w*.55,0);c.lineTo(-w*.36,-h*.58);c.lineTo(-w*.08,-h);c.lineTo(w*.16,-h*.72);c.lineTo(w*.43,-h*.9);c.lineTo(w*.58,0);c.closePath();c.fill();
+  c.fillStyle="#9a7049";c.beginPath();c.moveTo(-w*.42,-h*.25);c.lineTo(-w*.08,-h*.76);c.lineTo(w*.16,-h*.55);c.lineTo(w*.42,-h*.69);c.lineTo(w*.48,-h*.35);c.lineTo(-w*.34,-h*.04);c.closePath();c.fill();
+  for(let row=0;row<4;row++){const yy=-h*.18-row*h*.145,span=w*(.43-row*.055);c.fillStyle=row%2?"#4a342b":"#775039";c.beginPath();c.moveTo(-span,yy+10);c.lineTo(span,yy+10);c.lineTo(span*.9,yy+22);c.lineTo(-span*.9,yy+22);c.closePath();c.fill();c.strokeStyle="#c18a58";c.lineWidth=3;c.beginPath();c.moveTo(-span,yy+10);c.lineTo(span,yy+10);c.stroke();for(let n=0;n<7;n++){const tx=-span*.84+n*(span*1.68/6);coffeeTree(c,tx,yy+8,.27+(row%2)*.025,t+n+row);}}
+  c.fillStyle="#bd895b";for(let k=0;k<5;k++){const sx=-w*.48+k*8;c.fillRect(sx,-h*.12+k*7,8,5);}c.fillStyle="#d9b17a";c.fillRect(-w*.52,2,w*1.04,5);c.restore();
+}
+function drawCoffeeMountainChain(c,t){
+  drawCoffeeHighland(c,-305,-112,180,160,0,t,1);drawCoffeeHighland(c,-190,-225,150,145,1,t,1);
+  drawCoffeeHighland(c,305,-105,185,165,2,t,-1);drawCoffeeHighland(c,205,225,165,145,1,t,-1);
+  drawCoffeeHighland(c,-260,210,160,138,2,t,1);
+  line(c,[[-390,-65],[-350,-90],[-330,-65],[-294,-88],[-270,-58]],"#d6ae78",5);
+  line(c,[[265,150],[300,125],[326,145],[355,118]],"#d6ae78",5);
+}
 export function drawAdventureAmaroCity(ctx,city){
   const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
   // Fondovalle terrazzato e mura concentriche della città fortificata.
   ellipse(ctx,0,22,316,248,"rgba(0,0,0,.32)");ellipse(ctx,0,5,302,238,"#302126");ellipse(ctx,0,-3,287,226,"#654334");ellipse(ctx,0,-7,274,215,"#b17a50");ellipse(ctx,0,-8,259,202,"#51372f");ellipse(ctx,0,-8,244,189,"#c18a58");
+  // Skyline montano e piantagioni su più quote, nello stile delle mappe RPG 2.5D.
+  drawCoffeeMountainChain(ctx,t);
   // Mura merlate, contrafforti e torri con lanterne.
   for(let i=0;i<40;i++){const a=i*Math.PI*2/40,x=Math.cos(a)*251,y=-8+Math.sin(a)*193;ctx.save();ctx.translate(x,y);ctx.rotate(a);rect(ctx,-7,-10,14,22,"#50342d");rect(ctx,-5,-8,10,16,"#d09a63");rect(ctx,-8,-13,16,5,"#f0c17c");ctx.restore();}
   for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8,x=Math.cos(a)*235,y=-8+Math.sin(a)*177;ellipse(ctx,x,y+5,18,10,"rgba(0,0,0,.28)");rect(ctx,x-13,y-19,26,27,"#49302b");rect(ctx,x-9,y-16,18,20,"#b77c4e");ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(x-17,y-18);ctx.lineTo(x,y-43);ctx.lineTo(x+17,y-18);ctx.closePath();ctx.fill();rect(ctx,x-3,y-13,6,13,P.window);glow(ctx,x,y-29,16,.08);}
@@ -51,9 +69,9 @@ export function drawAdventureAmaroCity(ctx,city){
   // Pergolati, sacchi di juta, barili e tavolini esterni.
   for(const [x,y] of [[-190,34],[190,-35],[-38,-192],[40,192]]){rect(ctx,x-25,y-3,50,5,"#49302a");rect(ctx,x-22,y-21,4,20,P.bark);rect(ctx,x+18,y-21,4,20,P.bark);rect(ctx,x-27,y-24,54,4,P.gold);bean(ctx,x-12,y-11,.55);bean(ctx,5,y-11,.55);}
   for(const [x,y] of [[-47,105],[52,-108]]){ellipse(ctx,x,y+7,20,7,"rgba(0,0,0,.25)");rect(ctx,x-18,y-4,36,5,P.bark);rect(ctx,x-15,y-8,30,4,P.copper);rect(ctx,x-13,y-20,26,12,"#76503a");ellipse(ctx,x,y-20,13,4,"#bd8758");}
-  // Lampioni caldi, cristalli decorativi e insegne direzionali.
+  // Lampioni caldi, monumenti a chicco e insegne direzionali.
   for(const [x,y,i] of [[-198,-72,0],[198,4,1],[-123,151,2],[125,151,3],[8,-190,4],[-12,190,5]])lamp(ctx,x,y,t,i);
-  crystal(ctx,108,5,.5,"#e9bc79");crystal(ctx,-190,111,.38,"#d89b61");crystal(ctx,185,-107,.38,"#e7c58d");
+  coffeeRelic(ctx,108,5,.5,"#e9bc79");coffeeRelic(ctx,-190,111,.38,"#d89b61");coffeeRelic(ctx,185,-107,.38,"#e7c58d");
   // Vapore delle torrefazioni, lucciole e chicchi che fluttuano nella piazza.
   for(let i=0;i<18;i++){const p=t*(.35+(i%5)*.08)+i*1.31,x=Math.sin(p)*(150+(i%4)*20),y=Math.cos(p*.82)*(100+(i%3)*15);ctx.globalAlpha=.2+(Math.sin(p*2)+1)*.2;if(i%3===0)bean(ctx,x,y,.28,p);else ellipse(ctx,x,y,2,3,i%2?P.gold:P.ivory);}ctx.globalAlpha=1;
   // Targhe e identità forte della città: nessuna confusione con una generica città fantasy.
