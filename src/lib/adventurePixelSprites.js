@@ -482,6 +482,9 @@ const WILD_SPECIES_DESIGNS = {
   eriiro: { shape:"oni-demon", colors:["#4b2038","#a83d50","#e66c61","#ffd08a"] },
   chino: { shape:"caterpillar", colors:["#4d465d","#e5b96f","#342d43","#ffe0a0"] },
   riwi: { shape:"hedgehog", colors:["#7d572f","#d6a15a","#3e2b24","#f8e2a5"] },
+  ponte: { shape:"turtle", colors:["#20536a","#3e9bb0","#9ad9dc","#e2f4e9"] },
+  roccota: { shape:"stone-golem", colors:["#443b4c","#827b83","#c7b8a4","#f4d38d"] },
+  slurpo: { shape:"bear-slime", colors:["#513b2d","#8a603c","#c18c53","#f4d38d"] },
 };
 
 export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
@@ -679,6 +682,25 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-7,-4+bob,5,7,dark);px(ctx,3,-4+bob,5,7,dark);
       px(ctx,-6,-26+bob,4,3,shine);px(ctx,3,-26+bob,4,3,shine);
       px(ctx,-3,-17+bob,6,3,shine);break;
+    case "turtle":
+      // Ponte: tartaruga marina con guscio bombato e quattro pinne.
+      px(ctx,-15,-16+bob,30,16,dark);px(ctx,-12,-23+bob,24,13,main);
+      px(ctx,-9,-29+bob,18,10,light);px(ctx,-5,-25+bob,10,5,shine);
+      px(ctx,10,-19+bob,10,8,light);px(ctx,17,-18+bob,4,3,shine);
+      px(ctx,-17,-12+bob,7,8,main);px(ctx,10,-12+bob,7,8,main);
+      px(ctx,-12,-3+bob,7,6,dark);px(ctx,6,-3+bob,7,6,dark);break;
+    case "stone-golem":
+      // Roccotà: piccolo golem di roccia con rune e spalle squadrate.
+      px(ctx,-14,-17+bob,28,17,dark);px(ctx,-12,-25+bob,24,15,main);
+      px(ctx,-9,-33+bob,18,12,light);px(ctx,-18,-24+bob,8,13,dark);px(ctx,10,-24+bob,8,13,dark);
+      px(ctx,-7,-21+bob,5,4,shine);px(ctx,3,-21+bob,5,4,shine);
+      px(ctx,-4,-13+bob,8,4,shine);px(ctx,-7,-5+bob,6,6,dark);px(ctx,2,-5+bob,6,6,dark);break;
+    case "bear-slime":
+      // Slurpo: orsetto morbido con orecchie tonde e goccia di miele.
+      px(ctx,-13,-16+bob,26,16,dark);px(ctx,-11,-23+bob,22,14,main);
+      px(ctx,-12,-31+bob,8,9,light);px(ctx,4,-31+bob,8,9,light);
+      px(ctx,-8,-29+bob,16,10,light);px(ctx,-5,-21+bob,4,3,shine);px(ctx,3,-21+bob,4,3,shine);
+      px(ctx,-4,-13+bob,8,4,shine);px(ctx,-7,-5+bob,6,6,dark);px(ctx,2,-5+bob,6,6,dark);break;
     default:
       px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-22+bob,16,10,light);
       px(ctx,-4,-30+bob,8,8,shine);break;
