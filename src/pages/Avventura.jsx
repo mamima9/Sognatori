@@ -2126,64 +2126,45 @@ const [message, setMessage] = useState("");
         </div>
       </div>
 
-      <div className="h-36 w-full overflow-hidden rounded-xl border border-white/15 bg-black/60 shadow-lg backdrop-blur-md">
-        <div className="relative h-full w-full">
-          {ZONES.map((z) => (
-            <div
-              key={z.name}
-              className="absolute"
-              style={{
-                left: `${
-                  (z.x /
-                    WORLD.width) *
-                  100
-                }%`,
-
-                top: `${
-                  (z.y /
-                    WORLD.height) *
-                  100
-                }%`,
-
-                width: `${
-                  (z.w /
-                    WORLD.width) *
-                  100
-                }%`,
-
-                height: `${
-                  (z.h /
-                    WORLD.height) *
-                  100
-                }%`,
-
-                background:
-                  z.color,
-
-                opacity: 0.8,
-              }}
-            />
-          ))}
-          <div title={activeCity.city + " · " + activeCity.faction} className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white" style={{ left: "50%", top: "50%", background: activeCity.color }} />
-          <div title={"Porta per " + nextCityName(activeMapId)} className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white" style={{ left: "50%", top: (MAP_DOOR.y / WORLD.height * 100) + "%", background: "#f8df91" }} />
-          <div title={"Porta per " + previousCityName(activeMapId)} className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white" style={{ left: "50%", top: (MAP_NORTH_DOOR.y / WORLD.height * 100) + "%", background: "#9edbff" }} />
-
-          <div
-            className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]"
-            style={{
-              left: `${
-                (player.x /
-                  WORLD.width) *
-                100
-              }%`,
-
-              top: `${
-                (player.y /                  WORLD.height) *
-                100
-              }%`,
-            }}
-          />
+      <div className="overflow-hidden rounded-2xl border border-emerald-100/20 bg-[#17251e] shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/10 bg-black/20 px-3 py-2">
+          <div><div className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-100">Mappa del mondo</div><div className="text-[9px] text-white/45">Overworld · 3600 × 2400</div></div>
+          <div className="rounded-full border border-emerald-200/25 bg-emerald-300/10 px-2 py-1 text-[9px] font-bold text-emerald-100">● {activeCity.city}</div>
         </div>
+        <svg viewBox="0 0 3600 2400" role="img" aria-label="Mappa dell'overworld con città, biomi, sentieri e posizione del giocatore" className="block h-auto max-h-[270px] w-full">
+          <defs>
+            <linearGradient id="worldMapBase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#527d4d"/><stop offset=".48" stopColor="#355f49"/><stop offset="1" stopColor="#263f3a"/></linearGradient>
+            <pattern id="worldMapForest" width="110" height="100" patternUnits="userSpaceOnUse"><path d="M18 66 L38 20 L58 66 Z M55 80 L74 37 L93 80 Z" fill="#173f32" opacity=".55"/></pattern>
+            <pattern id="worldMapRock" width="130" height="100" patternUnits="userSpaceOnUse"><path d="M10 70l22-35 35 5 18 34z M82 28l17-16 22 25-12 25z" fill="#a7a49a" opacity=".28"/></pattern>
+            <pattern id="worldMapSand" width="140" height="90" patternUnits="userSpaceOnUse"><path d="M0 55q35-25 70 0t70 0 M-10 78q35-25 70 0t70 0" fill="none" stroke="#f1d18a" strokeWidth="7" opacity=".25"/></pattern>
+          </defs>
+          <rect width="3600" height="2400" fill="url(#worldMapBase)"/>
+          <path d="M0 0H1800V1200H0Z" fill="#729b55" opacity=".72"/>
+          <path d="M0 1200H1600V2400H0Z" fill="#315b43" opacity=".82"/>
+          <path d="M1800 1200H3600V2400H1800Z" fill="#77766b" opacity=".72"/>
+          <path d="M1800 0H3600V1200H1800Z" fill="#a18a51" opacity=".72"/>
+          <path d="M0 0H1800V1200H0Z M0 1200H1600V2400H0Z" fill="url(#worldMapForest)"/>
+          <path d="M1800 1200H3600V2400H1800Z" fill="url(#worldMapRock)"/>
+          <path d="M1800 0H3600V1200H1800Z" fill="url(#worldMapSand)"/>
+          <path d="M-80 940 C500 760 690 1080 1120 950 S1760 650 2050 880 S2780 1260 3680 880" fill="none" stroke="#244f68" strokeWidth="145" opacity=".75"/>
+          <path d="M-80 940 C500 760 690 1080 1120 950 S1760 650 2050 880 S2780 1260 3680 880" fill="none" stroke="#5b9aaf" strokeWidth="92" opacity=".8"/>
+          <path d={ADVENTURE_CITIES.map((city,index)=>index===0 ? "M"+city.x+" "+city.y : "L"+city.x+" "+city.y).join(" ")} fill="none" stroke="#594d37" strokeWidth="34" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 28" opacity=".95"/>
+          {ADVENTURE_CITIES.map((city)=>(
+            <g key={city.id}>
+              <circle cx={city.x} cy={city.y} r="72" fill="#14251f" opacity=".55"/>
+              <circle cx={city.x} cy={city.y} r="48" fill={city.color} stroke="#fff0c7" strokeWidth="13"/>
+              <circle cx={city.x} cy={city.y} r="17" fill="#fff7df"/>
+              <text x={city.x} y={city.y+112} textAnchor="middle" fontSize="62" fontWeight="800" fill="#fff7df" stroke="#1b3028" strokeWidth="12" paintOrder="stroke">{city.city}</text>
+            </g>
+          ))}
+          <g transform={"translate("+player.x+" "+player.y+")"}>
+            <circle r="100" fill="#fff3a3" opacity=".22"/><circle r="62" fill="#fff3a3" stroke="#17251e" strokeWidth="16"/><circle r="24" fill="#17251e"/><path d="M0-115l-34 52h68z" fill="#fff3a3" stroke="#17251e" strokeWidth="12"/>
+          </g>
+          <g transform="translate(120 120)"><rect width="390" height="116" rx="28" fill="#12251e" opacity=".85"/><text x="32" y="76" fontSize="54" fontWeight="900" fill="#f6e8bd">N ↑</text></g>
+          <rect x="12" y="12" width="3576" height="2376" rx="36" fill="none" stroke="#d8d0a8" strokeWidth="24" opacity=".65"/>
+        </svg>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/10 px-3 py-2 text-[9px] text-white/65"><span><b className="text-amber-200">●</b> Città e capi fazione</span><span><b className="text-white">◉</b> Tu sei qui</span><span><b className="text-sky-200">━</b> Fiume</span><span><b className="text-yellow-100">┄</b> Sentieri</span></div>
+        <div className="border-t border-white/10 bg-black/15 px-3 py-2 text-[10px] text-emerald-50/80">Posizione: {Math.round(player.x)} · {Math.round(player.y)} — {activeCity.faction}</div>
       </div>
           <GlobalMusicPlayer insideAdventureMenu />
           <AdventureWorldSystems saveKey={adventureSaveKey} activeCity={activeCity} time={time} defeatedLeaders={defeatedLeaders} discoveredWildClues={discoveredWildClues} completedWildTasks={completedWildTasks} recruitedIds={recruitedAdventureIds} />
