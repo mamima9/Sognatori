@@ -896,7 +896,12 @@ const [message, setMessage] = useState("");
   const [time, setTime] = useState(9);
   const [defeatedLeaders, setDefeatedLeaders] = useState(() => {
     const saved = readAdventureSave();
-    return new Set(Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : []);
+    const conquered = Array.isArray(saved?.conqueredLeaders) ? saved.conqueredLeaders : [];
+    // Bibito ha già completato la campagna: tutte le gemme dei capofazione
+    // risultano conquistate sul suo account, senza alterare i progressi altrui.
+    return new Set(isPersonalTester
+      ? [...conquered, ...ADVENTURE_CITIES.map((city) => city.id)]
+      : conquered);
   });
   const [recruitedAdventureIds, setRecruitedAdventureIds] = useState(() => {
     const saved = readAdventureSave();
