@@ -1364,22 +1364,27 @@ const [message, setMessage] = useState("");
         };
 
         let blocked = false;
+        // Corsia principale sempre libera tra porta sud e porta nord.
+        // Vale per tutte le città della campagna; Amargenta mantiene le sue rampe e collisioni dedicate.
+        const inMainCityPassage = activeMapId !== "amaro" &&
+          Math.abs(next.x - WORLD.width / 2) <= 112;
 
         /*
           ALBERI
         */
-
-        for (const tree of WORLD_OBJECTS.trees) {
-          if (
-            Math.hypot(
-              next.x - tree.x,
-              next.y - tree.y
-            ) <
-            tree.r +
-              PLAYER.size * 0.45
-          ) {
-            blocked = true;
-            break;
+        if (!inMainCityPassage) {
+          for (const tree of WORLD_OBJECTS.trees) {
+            if (
+              Math.hypot(
+                next.x - tree.x,
+                next.y - tree.y
+              ) <
+              tree.r +
+                PLAYER.size * 0.45
+            ) {
+              blocked = true;
+              break;
+            }
           }
         }
 
@@ -1387,7 +1392,7 @@ const [message, setMessage] = useState("");
           ROCCE
         */
 
-        if (!blocked) {
+        if (!blocked && !inMainCityPassage) {
           for (const rock of WORLD_OBJECTS.rocks) {
             if (
               Math.hypot(
@@ -1405,7 +1410,7 @@ const [message, setMessage] = useState("");
 
         // I Sognatori sono creature fisiche: il primo dorme sul sentiero come un
         // guardiano vivente. Non si attraversa il suo corpo: bisogna avvicinarsi e interagire.
-        if (!blocked) {
+        if (!blocked && !inMainCityPassage) {
           for (const wild of wildRef.current) {
             const bodyRadius = wild.isSleepingBlocker ? 78 : 34;
             if (Math.hypot(next.x - wild.x, next.y - wild.y) < bodyRadius + PLAYER.size * 0.45) {
@@ -1419,7 +1424,8 @@ const [message, setMessage] = useState("");
           EDIFICI DELLE UNDICI CITTÀ
         */
 
-        if (!blocked && collidesWithCityBuildings(next.x, next.y, PLAYER.size * 0.45, activeCity)) {
+        if (!blocked && !inMainCityPassage &&
+          collidesWithCityBuildings(next.x, next.y, PLAYER.size * 0.45, activeCity)) {
           blocked = true;
         }
 
