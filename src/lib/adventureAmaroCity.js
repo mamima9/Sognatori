@@ -167,3 +167,30 @@ export function drawAdventureAmaroCity(ctx,city){
   rect(ctx,-123,211,246,34,"rgba(25,17,18,.96)");rect(ctx,-123,211,6,34,P.gold);text(ctx,"AMARGENTA",0,226,13,P.ivory);text(ctx,"CAPITALE DEL CAFFE'  •  FAZIONE AMARO",0,238,6,P.gold);
   ctx.restore();
 }
+
+// Ridisegna gli edifici che si trovano davanti al protagonista per creare occlusione Y-sort.
+export function drawAdventureAmaroOccluders(ctx,city,playerGroundY){
+  const buildings=[
+    {x:-137,y:-91,kind:1,anchor:-49},
+    {x:139,y:-91,kind:0,anchor:-53},
+    {x:-139,y:94,kind:0,anchor:132},
+    {x:139,y:94,kind:0,anchor:132},
+    {x:0,y:166,kind:0,anchor:204},
+  ];
+  ctx.save();
+  ctx.translate(city.x,city.y);
+  ctx.scale(1.55,1.55);
+  for(const b of buildings){
+    if(city.y+b.anchor*1.55>playerGroundY) cafe(ctx,b.x,b.y,b.kind===1?"CAFFE' REGALE":"",b.kind);
+  }
+  if(city.y+57*1.55>playerGroundY) roastery(ctx,0,-163,performance.now()/1000);
+  if(city.y+62*1.55>playerGroundY){
+    rect(ctx,-65,-43,130,100,"#382426");
+    rect(ctx,-58,-37,116,89,"#80513b");
+    rect(ctx,-50,-30,100,79,"#b47a4c");
+    rect(ctx,-28,-62,56,77,"#49302b");
+    rect(ctx,-13,-42,26,45,"#392426");
+    rect(ctx,-9,-38,18,37,P.window);
+  }
+  ctx.restore();
+}
