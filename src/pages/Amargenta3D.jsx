@@ -502,7 +502,7 @@ export default function Amargenta3D({ onExit }) {
         },2.8);
       });
       // Quattro pagine della ricetta originale, ciascuna custodita in un punto diverso.
-      [[-35,-16],[28,-30],[-61,62],[76,79]].forEach((p,i)=>{
+      [[-35,-16],[28,-30],[-61,62],[48,45]].forEach((p,i)=>{
         const page=new THREE.Group();scene.add(page);page.position.set(p[0],.9,p[1]);
         const parchment=box(.55,.08,.72,mat("#e9d3a7"),page,0,0,0);parchment.rotation.y=.25;
         box(.38,.025,.04,mat("#9d7048"),page,0,.055,-.15);
@@ -639,7 +639,7 @@ export default function Amargenta3D({ onExit }) {
         if(controlsLockedRef.current) keys.clear();
         const activeForward=controlsLockedRef.current?0:forward;
         const activeSide=controlsLockedRef.current?0:side;
-        if(activeForward||activeSide){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(activeForward).add(right.multiplyScalar(activeSide)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-82,82),nz=THREE.MathUtils.clamp(player.position.z+move.z,-82,82);
+        if(activeForward||activeSide){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(activeForward).add(right.multiplyScalar(activeSide)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-72,72),nz=THREE.MathUtils.clamp(player.position.z+move.z,-72,72);
           // Collisione separata sugli assi: il personaggio scivola lungo gli ostacoli invece di bloccarsi in diagonale.
           if(!isBlockedAt(nx,player.position.z)) player.position.x=nx;
           if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
@@ -735,7 +735,7 @@ export default function Amargenta3D({ onExit }) {
           <div style={{position:"absolute",left:"48%",top:0,width:10,height:"100%",background:"#397f83",opacity:.8}}/>
           <div style={{position:"absolute",left:"14%",top:"45%",width:"72%",height:12,background:"#b79a71",transform:"rotate(-12deg)"}}/>
           {[[50,50],[22,27],[78,72],[28,75],[70,20]].map(([x,y],i)=><div key={i} style={{position:"absolute",left:x+"%",top:y+"%",width:8,height:8,borderRadius:8,background:i===0?"#f1d18b":"#e5b66b",border:"1px solid #33271f"}}/>)}
-          <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+82)/164*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+82)/164*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff"}}/>
+          <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff"}}/>
         </div>
         <div style={{marginTop:8,color:"#d7c5a5"}}>Piazza del Chicco · Terrazze · Torrefazione · Caffè delle Tre Foglie · Cripta segreta</div>
       </div>}
