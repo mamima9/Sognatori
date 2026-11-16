@@ -682,6 +682,14 @@ export default function Amargenta3D({ onExit }) {
     return ()=>{disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
   }, []);
 
+  const activeObjective = !questDone
+    ? (questCount >= 3 ? "Torna da Lina per concludere le Fave d'Ambra" : questStarted ? "Raccogli le tre Fave d'Ambra sulle terrazze" : "Parla con Lina nell'agrumeto")
+    : !recipeDone
+      ? (recipePages >= 4 ? "Torna da Orma per ricomporre la Ricetta Perduta" : recipeStarted ? "Recupera le quattro pagine della ricetta" : "Parla con Orma nell'archivio")
+      : !waterDone
+        ? (valves >= 3 ? "Torna da Bruno per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Bruno vicino al ponte")
+        : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
+
   return <div style={{position:"fixed",inset:0,background:"#18221e",color:"#f4ead8",fontFamily:"Inter,system-ui,sans-serif",overflow:"hidden"}}>
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
     <div style={{position:"absolute",top:18,left:18,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
