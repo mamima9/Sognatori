@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -10,6 +11,7 @@ export default function Amargenta3D() {
   const hostRef = useRef(null);
   const [hint, setHint] = useState("WASD per muoverti · trascina per ruotare la visuale · rotella per zoom");
   const [zone, setZone] = useState("Ingresso di Amargenta");
+  const zoneRef = useRef("Ingresso di Amargenta");
 
   useEffect(() => {
     const host = hostRef.current;
@@ -160,6 +162,21 @@ export default function Amargenta3D() {
       sphere(.34,mat("#d7b18b"),player,0,1.95,0,2);
       box(.5,.12,.22,wood,player,0,1.65,.34);
       scene.add(player);player.position.set(-44,0,2);
+
+      // I modelli GLB sostituiscono gradualmente i moduli procedurali quando vengono aggiunti.
+      const gltfLoader = new GLTFLoader();
+      [
+        { url: "/assets/3d/amargenta/house-stone.glb", position: [-22, 0, -5] },
+        { url: "/assets/3d/amargenta/roastery.glb", position: [16, 0, 28] },
+        { url: "/assets/3d/amargenta/coffee-fountain.glb", position: [0, 0, .5] },
+        { url: "/assets/3d/amargenta/stone-bridge.glb", position: [26, 0, 0] },
+        { url: "/assets/3d/amargenta/coffee-tree.glb", position: [-30, 0, -36] }
+      ].forEach(asset => gltfLoader.load(asset.url, gltf => {
+        if (disposed) return;
+        gltf.scene.position.set(...asset.position);
+        gltf.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(gltf.scene);
+      }, undefined, () => {}));
       const groundRay=new THREE.Raycaster();
       const onKeyDown=e=>{if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)){keys.add(e.code);e.preventDefault();}};
       const onKeyUp=e=>keys.delete(e.code);
@@ -190,7 +207,9 @@ export default function Amargenta3D() {
         camera.position.lerp(cp,.12);camera.lookAt(target);
         scene.traverse(o=>{if(o.userData.smoke){o.position.y+=dt*.45;if(o.position.y>13)o.position.y=10;}});
         const p=player.position;
-        setZone(p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta");
+
+        const nextZone=p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
       };
       animate();
