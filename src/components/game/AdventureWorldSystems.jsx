@@ -105,42 +105,9 @@ export default function AdventureWorldSystems({ saveKey, activeCity, time, defea
     {eventNotice && <div className="w-full rounded-2xl border border-amber-200/30 bg-[#17140f]/95 p-3 text-white">
       <div className="flex items-center justify-between gap-2"><b className="text-xs uppercase tracking-wider text-amber-200">✦ Evento · {eventNotice.title}</b><button onClick={() => setEventNotice(null)} className="text-white/60">✕</button></div>
       <p className="mt-1 text-xs leading-5 text-white/80">{eventNotice.text}</p>
-      <button onClick={() => { setSaved((old) => ({ ...old, eventDiscoveries: [...new Set([...(old.eventDiscoveries || []), eventNotice.id + ":" + eventNotice.cityId])] })); setEventNotice(null); setPanel("secrets"); }} className="mt-2 rounded-lg bg-amber-200 px-3 py-1.5 text-[10px] font-black text-black">ESPLORA L'EVENTO</button>
+      <button onClick={() => { setSaved((old) => ({ ...old, eventDiscoveries: [...new Set([...(old.eventDiscoveries || []), eventNotice.id + ":" + eventNotice.cityId])] })); setEventNotice(null); }} className="mt-2 rounded-lg bg-amber-200 px-3 py-1.5 text-[10px] font-black text-black">ESPLORA L'EVENTO</button>
     </div>}
     {secretNotice && <div className="rounded-xl border border-violet-300/30 bg-violet-950/95 px-3 py-2 text-xs text-violet-100">{secretNotice}<button onClick={() => setSecretNotice("")} className="ml-3 font-black">✕</button></div>}
-    <div className="flex flex-col gap-2">
-      <button onClick={() => setPanel(panel === "quest" ? "" : "quest")} className="w-full rounded-xl border border-amber-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-amber-100 hover:bg-white/10">📜 DIARIO · {completedQuestCount}/11</button>
-      <button onClick={() => setPanel(panel === "dex" ? "" : "dex")} className="w-full rounded-xl border border-emerald-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-emerald-100 hover:bg-white/10">📖 BESTIARIO</button>
-      <button onClick={() => setPanel(panel === "secrets" ? "" : "secrets")} className="w-full rounded-xl border border-violet-200/30 bg-white/5 px-3 py-3 text-left text-xs font-black text-violet-100 hover:bg-white/10">✧ SEGRETI</button>
-    </div>
-    {panel && <section className="max-h-[min(48vh,460px)] w-full overflow-y-auto rounded-2xl border border-white/15 bg-[#101713] p-4 text-white">
-      <header className="mb-3 flex items-center justify-between"><b className="text-sm font-black uppercase tracking-wider">{panel === "quest" ? "Diario delle missioni" : panel === "dex" ? "Enciclopedia Sognatori" : "Segreti del mondo"}</b><button onClick={() => setPanel("")} className="rounded-lg bg-white/10 px-2 py-1 text-xs">CHIUDI</button></header>
-      {panel === "quest" && <>
-        <div className="mb-3 text-[11px] text-white/55">Missioni secondarie · le scelte restano salvate e modificano il legame con la fazione.</div>
-        {QUESTS.map((item) => <article key={item[0]} className="mb-2 rounded-xl border border-white/10 bg-white/5 p-3">
-          <div className="flex items-center justify-between gap-2"><b className="text-xs">{item[1]}</b><span className="text-[9px] uppercase text-white/45">{item[0] === activeCity?.id ? "QUI" : item[0]}</span></div>
-          <p className="mt-1 text-[11px] leading-4 text-white/65">{item[2]}</p>
-          {saved.quests?.[item[0]] ? <p className="mt-2 text-[10px] font-bold text-emerald-300">✓ Completata · {item[3 + saved.quests[item[0]].choice]}</p> : item[0] === activeCity?.id ? <div className="mt-2 flex flex-wrap gap-2"><button onClick={() => completeQuest(0)} className="rounded-lg bg-emerald-300 px-2 py-1.5 text-[10px] font-black text-black">{item[3]}</button><button onClick={() => completeQuest(1)} className="rounded-lg bg-white/15 px-2 py-1.5 text-[10px] font-bold">{item[4]}</button></div> : <p className="mt-2 text-[10px] text-white/35">Raggiungi {item[0]} per affrontarla</p>}
-        </article>)}
-        {selectedQuest && <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/40 p-3"><b className="text-xs text-emerald-200">{selectedQuest.title}</b><p className="mt-1 text-[11px]">{selectedQuest.choice}. {selectedQuest.consequence}</p><button onClick={() => setSelectedQuest(null)} className="mt-2 text-[10px] underline">Ok</button></div>}
-      </>}
-      {panel === "dex" && <>
-        <div className="mb-3 text-[11px] text-white/55">{species.filter((item) => item.seen || item.recruited).length}/{species.length} specie incontrate o arruolate · {species.filter((item) => item.recruited).length} nella collezione.</div>
-        <div className="grid grid-cols-2 gap-2">{species.map((item) => <div key={item.id} className="rounded-lg border border-white/10 bg-white/5 p-2">
-          <div className="text-[10px] font-black">{item.seen || item.recruited ? item.nome : "??? · Sognatore sconosciuto"}</div>
-          <div className="mt-1 text-[9px] text-white/45">{item.seen || item.recruited ? (item.tipo || item.fazione) : "Esplora gli habitat"}</div>
-          <div className="mt-1 text-[9px] font-bold text-emerald-300">{item.recruited ? "ARRUOLATO" : item.seen ? "AVVISTATO" : "NON SCOPERTO"}</div>
-        </div>)}</div>
-      </>}
-      {panel === "secrets" && <>
-        <p className="mb-3 text-[11px] leading-5 text-white/55">Indizi raccolti durante eventi e missioni. I passaggi segreti sono legati alle città e si conservano nel salvataggio.</p>
-        {QUESTS.map((item, index) => <article key={item[0]} className="mb-2 rounded-xl border border-white/10 bg-white/5 p-3">
-          <div className="flex items-center justify-between"><b className="text-xs">{activeCity?.id === item[0] ? activeCity.city : item[0].toUpperCase()}</b><span className="text-[9px] text-violet-200">{saved.secrets?.[item[0]] ? "SCOPERTO" : "SIGILLATO"}</span></div>
-          <p className="mt-1 text-[10px] leading-4 text-white/60">{saved.secrets?.[item[0]] ? "Il passaggio è stato aperto e il frammento di lore è nel diario." : SECRET_HINTS[index]}</p>
-          {item[0] === activeCity?.id && !saved.secrets?.[item[0]] && (saved.quests?.[item[0]] || defeatedLeaders.includes?.(item[0]) || defeatedLeaders.has?.(item[0])) && <button onClick={() => discoverSecret(item[0])} className="mt-2 rounded-lg bg-violet-300 px-2 py-1.5 text-[10px] font-black text-black">ESAMINA IL PASSAGGIO</button>}
-        </article>)}
-        <div className="mt-2 text-[10px] text-white/45">Città raggiungibili nella campagna: {unlockedCities}/11.</div>
-      </>}
-    </section>}
+
   </div>;
 }
