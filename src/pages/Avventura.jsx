@@ -120,7 +120,7 @@ const SOGNATORE_HABITATS = {
   ginza:"guardian-courtyard", dragociocco:"cocoa-grove", tinia:"pink-cloud-garden", uesditti:"rune-library",
   fierononno:"old-watchtower", long:"railway-yard", pepe:"ember-swamp", cillymbu:"bamboo-grove",
   pequeno:"seedling-hollow", cenere:"volcanic-crater", icepadel:"frozen-arena", pirimar:"coral-current",
-  spinoff:"expansion-grove", toasty:"salt-kiln", crunchypat:"salt-kiln", shoboshi:"shadow-altar", elmas:"crystal-plateau",
+  spinoff:"expansion-grove", toasty:"salt-kiln", crunchypat:"salt-kiln", talamos:"salt-kiln", shoboshi:"shadow-altar", elmas:"crystal-plateau",
   "ring-ape":"ancient-ring", slurpo:"ancient-ring"
 };
 
