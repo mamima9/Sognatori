@@ -369,7 +369,7 @@ export default function Amargenta3D({ onExit }) {
       // Fiume e gola orientati da nord a sud, a est del borgo
       const river=addMesh(new THREE.PlaneGeometry(12,100,1,1),water,scene,28,.05,2);river.rotation.x=-Math.PI/2;river.rotation.z=.08;
       for(let i=0;i<7;i++){sphere(1.2,stoneLight,scene,22+Math.sin(i*2)*3,.2,-35+i*11,1);}
-      makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,11);
+      makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,15);
       // Ingresso ovest e strada principale
       const road=addMesh(new THREE.PlaneGeometry(13,75),pathMat,scene,-28,.04,4);road.rotation.x=-Math.PI/2;road.rotation.z=Math.PI/2;
       makeWall(-38,-8,15,2.2,Math.PI/2);makeWall(-38,12,15,2.2,Math.PI/2);
@@ -451,7 +451,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("barista","Mira","Barista",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
       makeNpc("merchant","Nerio","Mercante di fave",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
       makeNpc("archivist","Orma","Archivista", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
-      makeNpc("guard","Bruno","Guardiano del ponte",23,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
+      makeNpc("guard","Bruno","Guardiano del ponte",18,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
       makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
@@ -521,7 +521,7 @@ export default function Amargenta3D({ onExit }) {
         },2.8);
       });
       // Tre valvole interattive lungo le condotte: ogni attivazione cambia davvero lo stato.
-      [[29,-18],[33,18],[13,38]].forEach((p,i)=>{
+      [[19,-18],[37,18],[13,38]].forEach((p,i)=>{
         const valve=new THREE.Group();scene.add(valve);valve.position.set(p[0],0,p[1]);
         cylinder(.18,.22,1.25,darkStone,valve,0,.62,0,8);
         const wheel=addMesh(new THREE.TorusGeometry(.52,.09,8,16),gold,valve,0,1.3,0);wheel.rotation.x=Math.PI/2;
