@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import AdventureCampaign from "@/components/game/AdventureCampaign";
+import Amargenta3D from "@/pages/Amargenta3D";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
 import AdventureHouseInterior from "@/components/game/AdventureHouseInterior";
 import AdventureWorldSystems from "@/components/game/AdventureWorldSystems";
@@ -2364,6 +2365,13 @@ const [message, setMessage] = useState("");
         replace
       />
     );
+  }
+
+  /*
+    Amargenta usa il renderer 3D dedicato. Il vecchio Canvas resta per le altre città.
+  */
+  if (canEnterAmargenta && activeMapId === "amaro") {
+    return <Amargenta3D onExit={() => setActiveMapId("natura")} />;
   }
 
   /*
