@@ -56,6 +56,7 @@ fierononno_naturale: {
   name: "Natural",
   desc: "Just arrived, it still cannot control its full powers.",
 },
+  torosucco_soulbound: { name: "Soulbound", desc: "When withdrawn, loses 9 HP." },
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };
