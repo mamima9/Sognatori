@@ -121,7 +121,7 @@ const SOGNATORE_HABITATS = {
   fierononno:"old-watchtower", long:"railway-yard", pepe:"ember-swamp", cillymbu:"bamboo-grove",
   pequeno:"seedling-hollow", cenere:"volcanic-crater", icepadel:"frozen-arena", pirimar:"coral-current",
   spinoff:"expansion-grove", toasty:"salt-kiln", shoboshi:"shadow-altar", elmas:"crystal-plateau",
-  "ring-ape":"ancient-ring"
+  "ring-ape":"ancient-ring", slurpo:"bear-tavern"
 };
 
 function drawSognatoreHabitat(ctx, rosterId, faction, x, y, label, cornerIndex = 0) {
