@@ -75,7 +75,8 @@ const FACTION_LORE_SITES = {
 
 function buildMapWildStarts(city) {
   const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
-  const offsets = [[-38, -26], [38, -26], [-38, 26], [38, 26]];
+  // Un solo incontro per specie in ogni città: niente copie duplicate dello stesso Sognatore.
+  const offsets = [[0, 0]];
   return residents.flatMap((sognatore, index) => {
     // Il gruppo iniziale è spostato a lato del corridoio nord:
     // lascia libero l'asse centrale tra portale e città.
@@ -100,7 +101,7 @@ function buildMapWildStarts(city) {
       name: sognatore.nome,
       img: sognatore.img,
       tipo: sognatore.tipo || sognatore.fazione,
-      recruitable: copy === 0,
+      recruitable: true,
       speciesIndex: index,
       cornerIndex: index % WILD_CORNER_ANCHORS.length,
       siteX: centerX + directionX * 145,
@@ -2217,12 +2218,86 @@ const [message, setMessage] = useState("");
   ============================================
 */
 
-// Sprite nativo: il personaggio viene composto pixel per pixel sul canvas
-// dell'overworld. Nessun PNG viene caricato o disegnato come creatura in mappa.
+// Gli incontri selvatici usano direttamente l'artwork ufficiale del roster.
+// Il ritaglio rimuove solo lo sfondo scuro collegato ai bordi, preservando i dettagli interni.
+const OVERWORLD_ART_CACHE = new Map();
+
+function loadOverworldArtwork(src) {
+  if (!src) return null;
+  const cached = OVERWORLD_ART_CACHE.get(src);
+  if (cached) return cached;
+  const entry = { canvas: null, loading: true };
+  OVERWORLD_ART_CACHE.set(src, entry);
+  const image = new Image();
+  image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const c = canvas.getContext("2d", { willReadFrequently: true });
+    if (!c) { entry.loading = false; return; }
+    c.drawImage(image, 0, 0);
+    try {
+      const frame = c.getImageData(0, 0, canvas.width, canvas.height);
+      const data = frame.data;
+      const seen = new Uint8Array(canvas.width * canvas.height);
+      const queue = new Int32Array(canvas.width * canvas.height);
+      let head = 0, tail = 0;
+      const add = (x, y) => {
+        const index = y * canvas.width + x;
+        if (seen[index]) return;
+        const p = index * 4;
+        if (data[p] > 24 || data[p + 1] > 24 || data[p + 2] > 24) return;
+        seen[index] = 1;
+        queue[tail++] = index;
+      };
+      for (let x = 0; x < canvas.width; x++) { add(x, 0); add(x, canvas.height - 1); }
+      for (let y = 1; y < canvas.height - 1; y++) { add(0, y); add(canvas.width - 1, y); }
+      while (head < tail) {
+        const index = queue[head++];
+        const x = index % canvas.width, y = (index / canvas.width) | 0;
+        data[index * 4 + 3] = 0;
+        if (x > 0) add(x - 1, y);
+        if (x + 1 < canvas.width) add(x + 1, y);
+        if (y > 0) add(x, y - 1);
+        if (y + 1 < canvas.height) add(x, y + 1);
+      }
+      c.putImageData(frame, 0, 0);
+      entry.canvas = canvas;
+    } catch {
+      entry.canvas = image;
+    }
+    entry.loading = false;
+  };
+  image.onerror = () => { entry.loading = false; entry.failed = true; };
+  image.src = src;
+  return entry;
+}
+
 function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false) {
-  // Creature overworld grandi e leggibili: il guardiano addormentato ha
-  // una presenza da ostacolo narrativo, non l'ingombro di un'icona o di una carta.
-  drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
+  const entry = loadOverworldArtwork(s?.img);
+  if (!entry?.canvas) {
+    if (!entry?.failed) {
+      drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
+      return;
+    }
+    drawAdventureWildSognatore(ctx, s, x, y - (frame ? 2 : 0), frame, sleepingBlocker ? 4.05 : 3.05);
+    return;
+  }
+  const artwork = entry.canvas;
+  const maxWidth = sleepingBlocker ? 112 : 82;
+  const maxHeight = sleepingBlocker ? 112 : 82;
+  const scale = Math.min(maxWidth / artwork.width, maxHeight / artwork.height);
+  const width = artwork.width * scale;
+  const height = artwork.height * scale;
+  const bob = frame ? 2 : 0;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "rgba(0,0,0,.28)";
+  ctx.beginPath();
+  ctx.ellipse(x, y - 2, Math.max(15, width * .34), 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.drawImage(artwork, x - width / 2, y - height - bob, width, height);
+  ctx.restore();
 }
 
 function nextCityName(cityId) {
