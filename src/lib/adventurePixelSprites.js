@@ -701,6 +701,19 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
       px(ctx,-12,-31+bob,8,9,light);px(ctx,4,-31+bob,8,9,light);
       px(ctx,-8,-29+bob,16,10,light);px(ctx,-5,-21+bob,4,3,shine);px(ctx,3,-21+bob,4,3,shine);
       px(ctx,-4,-13+bob,8,4,shine);px(ctx,-7,-5+bob,6,6,dark);px(ctx,2,-5+bob,6,6,dark);break;
+    case "caterpillar":
+      // Chino: bruco segmentato, con dorso ad anelli e antenne corte.
+      px(ctx,-15,-15+bob,30,15,dark);
+      for(let i=0;i<4;i++){px(ctx,-14+i*7,-20+bob,9,12,i%2?main:light);px(ctx,-12+i*7,-23+bob,5,4,shine);}
+      px(ctx,-8,-28+bob,5,8,dark);px(ctx,4,-28+bob,5,8,dark);
+      px(ctx,-7,-19+bob,3,3,"#171b2b");px(ctx,3,-19+bob,3,3,"#171b2b");
+      px(ctx,-13,-3+bob,7,4,dark);px(ctx,7,-3+bob,7,4,dark);break;
+    case "hedgehog":
+      // Riwi: riccio corazzato con aculei a ventaglio e muso chiaro.
+      px(ctx,-13,-15+bob,26,15,dark);px(ctx,-10,-21+bob,20,13,main);
+      for(let i=0;i<7;i++){px(ctx,-12+i*4,-32-(i%2)*3+bob,4,13,dark);px(ctx,-11+i*4,-31-(i%2)*3+bob,2,8,shine);}
+      px(ctx,-7,-20+bob,14,8,light);px(ctx,5,-17+bob,8,5,shine);
+      px(ctx,-5,-5+bob,6,5,dark);px(ctx,4,-5+bob,6,5,dark);break;
     default:
       px(ctx,-10,-15+bob,20,15,main);px(ctx,-8,-22+bob,16,10,light);
       px(ctx,-4,-30+bob,8,8,shine);break;
