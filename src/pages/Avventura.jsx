@@ -2322,7 +2322,8 @@ function loadOverworldArtwork(src) {
 }
 
 function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false, direction = "down") {
-  // Artwork originale del roster, con sfondo ritagliato e dettagli preservati.
+  // Artwork originale ritagliato: orientamento orizzontale a destra/sinistra.
+  // Due pose alternate danno un leggero passo senza sostituire o deformare l'artwork.
   const artwork = loadOverworldArtwork(s?.img);
   if (!artwork || artwork.loading || artwork.failed || !artwork.canvas) return;
   const image = artwork.canvas;
@@ -2330,11 +2331,15 @@ function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false
   const ratio = Math.min(maxHeight / image.height, 1.25);
   const width = Math.max(1, Math.round(image.width * ratio));
   const height = Math.max(1, Math.round(image.height * ratio));
+  const facingLeft = direction === "left";
+  const step = sleepingBlocker ? 0 : (Math.floor(frame / 2) % 2 === 0 ? 0 : 2);
   ctx.save();
+  ctx.translate(Math.round(x), Math.round(y - height + step));
+  if (facingLeft) ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = true;
   ctx.shadowColor = "rgba(0,0,0,.28)";
   ctx.shadowBlur = 5;
-  ctx.drawImage(image, Math.round(x - width / 2), Math.round(y - height), width, height);
+  ctx.drawImage(image, -Math.round(width / 2), 0, width, height);
   ctx.restore();
 }
 
