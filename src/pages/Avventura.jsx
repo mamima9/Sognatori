@@ -2317,19 +2317,20 @@ function loadOverworldArtwork(src) {
 }
 
 function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false, direction = "down") {
-  // Tutte le 35 specie usano il renderer pixel-art direzionale:
-  // 4 direzioni x 4 frame, con silhouette e palette legate al roster.
-  // Le illustrazioni originali restano nelle schede e nel bestiario.
-  const scale = sleepingBlocker ? 1.72 : 1.28;
-  drawAdventureWildSognatoreDirectional(
-    ctx,
-    s,
-    x,
-    y,
-    frame,
-    scale,
-    direction || "down"
-  );
+  // Artwork originale del roster, con sfondo ritagliato e dettagli preservati.
+  const artwork = loadOverworldArtwork(s?.img);
+  if (!artwork || artwork.loading || artwork.failed || !artwork.canvas) return;
+  const image = artwork.canvas;
+  const maxHeight = sleepingBlocker ? 112 : 88;
+  const ratio = Math.min(maxHeight / image.height, 1.25);
+  const width = Math.max(1, Math.round(image.width * ratio));
+  const height = Math.max(1, Math.round(image.height * ratio));
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.shadowColor = "rgba(0,0,0,.28)";
+  ctx.shadowBlur = 5;
+  ctx.drawImage(image, Math.round(x - width / 2), Math.round(y - height), width, height);
+  ctx.restore();
 }
 
 function nextCityName(cityId) {
@@ -3520,80 +3521,40 @@ function drawCityLandmark(ctx, city) {
   // Ogni città ha un landmark astratto diverso dalla propria fazione.
   switch (city.faction) {
     case "Demone":
-      ctx.fillStyle = "#4c2838"; ctx.fillRect(-27, -17, 54, 32);
-      ctx.fillStyle = "#b94e5d"; ctx.fillRect(-22, -25, 44, 12);
-      ctx.fillStyle = "#e98b69";
-      ctx.beginPath(); ctx.moveTo(-25, -22); ctx.lineTo(-40, -48); ctx.lineTo(-12, -31); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(25, -22); ctx.lineTo(40, -48); ctx.lineTo(12, -31); ctx.fill();
-      ctx.fillStyle = "#f3c477"; ctx.fillRect(-4, -12, 8, 18); break;
+      ctx.fillStyle="#6f1724";ctx.fillRect(-25,-15,50,31);ctx.fillStyle="#ff3b24";
+      ctx.beginPath();ctx.moveTo(-12,-12);ctx.lineTo(-37,-54);ctx.lineTo(-29,-13);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(12,-12);ctx.lineTo(37,-54);ctx.lineTo(29,-13);ctx.lineTo(8,0);ctx.closePath();ctx.fill();ctx.fillStyle="#ffb13b";ctx.fillRect(-31,-48,5,15);ctx.fillRect(26,-48,5,15);break;
     case "Robot":
-      ctx.fillStyle = "#344d62"; ctx.fillRect(-27, -25, 54, 42);
-      ctx.fillStyle = "#65c3c6"; ctx.fillRect(-18, -17, 36, 23);
-      ctx.fillStyle = "#c8e6d9"; ctx.fillRect(-4, -42, 8, 17);
-      ctx.fillRect(-35, -7, 8, 20); ctx.fillRect(27, -7, 8, 20);
-      ctx.fillStyle = "#193444"; ctx.fillRect(-11, -10, 7, 6); ctx.fillRect(4, -10, 7, 6); break;
+      ctx.fillStyle="#4f5b65";ctx.fillRect(-29,-33,58,49);ctx.fillStyle="#8b969f";ctx.fillRect(-23,-27,46,36);
+      ctx.fillStyle="#d4d9de";ctx.fillRect(-16,-20,9,9);ctx.fillRect(7,-20,9,9);ctx.fillStyle="#4f5b65";ctx.fillRect(-10,-5,20,5);
+      ctx.fillStyle="#d4d9de";ctx.fillRect(-5,-42,10,9);ctx.fillRect(-36,-15,7,22);ctx.fillRect(29,-15,7,22);break;
     case "Natura":
-      ctx.fillStyle = "#5a4930"; ctx.fillRect(-8, -25, 16, 42);
-      ctx.fillStyle = "#38734b";
-      ctx.beginPath(); ctx.moveTo(0, -58); ctx.lineTo(-31, -13); ctx.lineTo(31, -13); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(0, -44); ctx.lineTo(-38, 0); ctx.lineTo(38, 0); ctx.fill();
-      ctx.fillStyle = "#b7d77d"; ctx.fillRect(-3, -38, 6, 8); break;
+      ctx.fillStyle="#254c32";ctx.fillRect(-6,-12,12,29);ctx.fillStyle="#2f7b3f";
+      ctx.beginPath();ctx.moveTo(0,-57);ctx.quadraticCurveTo(-31,-44,-21,-16);ctx.quadraticCurveTo(-5,-15,0,-31);ctx.quadraticCurveTo(5,-15,21,-16);ctx.quadraticCurveTo(31,-44,0,-57);ctx.fill();
+      ctx.fillStyle="#79bd58";ctx.fillRect(-2,-43,4,31);ctx.fillRect(-17,-28,16,4);ctx.fillRect(1,-35,16,4);break;
     case "Nuvola":
-      ctx.fillStyle = "#6b82ad"; ctx.fillRect(-6, -20, 12, 37);
-      ctx.fillStyle = "#c6d8f2";
-      ctx.beginPath(); ctx.arc(-14, -24, 16, 0, Math.PI * 2); ctx.arc(8, -31, 22, 0, Math.PI * 2); ctx.arc(25, -20, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#8bbbe3"; ctx.fillRect(-3, -14, 6, 25); break;
+      ctx.fillStyle="#cbd9e4";ctx.beginPath();ctx.arc(-17,-19,17,0,Math.PI*2);ctx.arc(2,-32,23,0,Math.PI*2);ctx.arc(23,-18,17,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.fillRect(-25,-20,48,16);ctx.fillRect(-8,-43,20,13);ctx.fillStyle="#aabac8";ctx.fillRect(-18,-8,36,5);break;
     case "Umano":
-      ctx.fillStyle = "#73513d"; ctx.fillRect(-31, -19, 62, 36);
-      ctx.fillStyle = "#d5a36c"; ctx.fillRect(-24, -12, 48, 26);
-      ctx.fillStyle = "#483b3a"; ctx.fillRect(-7, -34, 14, 51);
-      ctx.fillStyle = "#f0d5a1"; ctx.fillRect(-3, -27, 6, 8); break;
+      ctx.fillStyle="#292c31";ctx.fillRect(-34,-12,68,29);ctx.fillStyle="#55585d";ctx.beginPath();ctx.moveTo(-28,-15);ctx.lineTo(-22,-35);ctx.lineTo(-8,-24);ctx.lineTo(0,-49);ctx.lineTo(8,-24);ctx.lineTo(22,-35);ctx.lineTo(28,-15);ctx.closePath();ctx.fill();ctx.fillStyle="#858b91";ctx.fillRect(-20,-10,40,5);break;
     case "Luce":
-      ctx.fillStyle = "#a47e36"; ctx.fillRect(-8, -18, 16, 35);
-      ctx.fillStyle = "#f3df9a";
-      for (let n = 0; n < 8; n++) { const a = n * Math.PI / 4; ctx.fillRect(Math.cos(a) * 27 - 3, -34 + Math.sin(a) * 27, 6, 13); }
-      ctx.fillStyle = "#fff0bc"; ctx.beginPath(); ctx.arc(0, -34, 17, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#e2b94f"; ctx.beginPath(); ctx.arc(0, -34, 8, 0, Math.PI * 2); ctx.fill(); break;
+      ctx.fillStyle="#a47e36";ctx.beginPath();ctx.moveTo(-24,-37);ctx.lineTo(-9,-27);ctx.lineTo(0,-9);ctx.lineTo(9,-27);ctx.lineTo(24,-37);ctx.lineTo(13,-7);ctx.lineTo(0,5);ctx.lineTo(-13,-7);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#f3df9a";ctx.fillRect(-5,-24,10,27);ctx.fillRect(-22,-38,12,6);ctx.fillRect(10,-38,12,6);break;
     case "Dolce":
-      ctx.fillStyle = "#a45d92"; ctx.fillRect(-26, -16, 52, 33);
-      ctx.fillStyle = "#f0b2d4"; ctx.fillRect(-20, -28, 40, 12);
-      ctx.fillStyle = "#fff0df"; ctx.fillRect(-13, -9, 26, 21);
-      ctx.fillStyle = "#e48bbb"; ctx.fillRect(-4, -23, 8, 7); break;
+      ctx.fillStyle="#815333";ctx.fillRect(-25,-25,22,22);ctx.fillRect(4,-29,23,23);ctx.fillRect(-17,2,24,18);ctx.fillStyle="#c89a62";ctx.fillRect(-21,-21,14,14);ctx.fillRect(8,-25,15,15);ctx.fillRect(-13,6,16,10);ctx.fillStyle="#e5c18a";ctx.fillRect(-17,-18,4,4);ctx.fillRect(13,-21,4,4);ctx.fillRect(-7,8,4,4);break;
     case "Marino":
-      ctx.fillStyle = "#286d83"; ctx.fillRect(-27, -15, 54, 32);
-      ctx.fillStyle = "#65c8d2";
-      ctx.beginPath(); ctx.moveTo(-28, -16); ctx.lineTo(-42, -42); ctx.lineTo(-8, -24); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(28, -16); ctx.lineTo(42, -42); ctx.lineTo(8, -24); ctx.fill();
-      ctx.fillStyle = "#d2eff0"; ctx.fillRect(-5, -34, 10, 40);
-      ctx.fillStyle = "#1e526d"; ctx.fillRect(-17, -5, 34, 5); break;
+      ctx.fillStyle="#124f78";ctx.beginPath();ctx.moveTo(-39,-5);ctx.quadraticCurveTo(-21,-42,0,-18);ctx.quadraticCurveTo(20,7,39,-30);ctx.lineTo(39,5);ctx.quadraticCurveTo(18,35,0,9);ctx.quadraticCurveTo(-20,-15,-39,24);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="#45b9e8";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-35,-8);ctx.quadraticCurveTo(-18,-33,0,-12);ctx.quadraticCurveTo(20,12,35,-24);ctx.stroke();break;
     case "Orso":
-      ctx.fillStyle = "#684a32"; ctx.fillRect(-29, -15, 58, 32);
-      ctx.fillStyle = "#b78b56";
-      ctx.beginPath(); ctx.moveTo(-29, -14); ctx.lineTo(-38, -43); ctx.lineTo(-9, -24); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(29, -14); ctx.lineTo(38, -43); ctx.lineTo(9, -24); ctx.fill();
-      ctx.fillStyle = "#e3c18a"; ctx.fillRect(-15, -7, 30, 18);
-      ctx.fillStyle = "#513b2e"; ctx.fillRect(-5, -2, 10, 6); break;
+      ctx.fillStyle="#6b482d";ctx.beginPath();ctx.arc(0,-13,18,0,Math.PI*2);ctx.fill();for(const [px,py] of [[-20,-43],[-7,-51],[8,-51],[21,-43]]){ctx.beginPath();ctx.ellipse(px,py,8,12,0,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#b58a57";ctx.beginPath();ctx.arc(0,-13,9,0,Math.PI*2);ctx.fill();break;
     case "Mago":
-      ctx.fillStyle = "#59447e"; ctx.fillRect(-26, -18, 52, 35);
-      ctx.fillStyle = "#b19ae7";
-      ctx.beginPath(); ctx.moveTo(0, -62); ctx.lineTo(-30, -14); ctx.lineTo(30, -14); ctx.fill();
-      ctx.fillStyle = "#f2d68a"; ctx.fillRect(-4, -35, 8, 8);
-      ctx.fillStyle = "#d4c3f4"; ctx.fillRect(-2, -10, 4, 22); break;
+      ctx.fillStyle="#554078";ctx.beginPath();ctx.moveTo(0,-58);ctx.lineTo(-29,-5);ctx.lineTo(29,-5);ctx.closePath();ctx.fill();ctx.fillStyle="#e6c44f";ctx.fillRect(-31,-7,62,9);ctx.fillStyle="#f2d66f";ctx.fillRect(-4,-39,8,8);ctx.fillRect(12,-24,6,6);break;
     case "Salato":
-      ctx.fillStyle = "#60696a"; ctx.fillRect(-27, -17, 54, 34);
-      ctx.fillStyle = "#c7c6b8";
-      ctx.beginPath(); ctx.moveTo(0, -61); ctx.lineTo(-23, -16); ctx.lineTo(0, -25); ctx.lineTo(23, -16); ctx.fill();
-      ctx.fillStyle = "#e8d8b1"; ctx.fillRect(-5, -12, 10, 22); break;
+      ctx.fillStyle="#80565d";ctx.beginPath();ctx.moveTo(-27,-10);ctx.lineTo(-22,-39);ctx.lineTo(2,-55);ctx.lineTo(28,-34);ctx.lineTo(24,-5);ctx.lineTo(0,13);ctx.closePath();ctx.fill();ctx.fillStyle="#c98e91";ctx.beginPath();ctx.moveTo(-17,-12);ctx.lineTo(-14,-34);ctx.lineTo(2,-45);ctx.lineTo(19,-30);ctx.lineTo(16,-7);ctx.lineTo(0,5);ctx.closePath();ctx.fill();ctx.fillStyle="#f1d8d5";ctx.fillRect(-8,-28,7,7);break;
     default:
       ctx.fillStyle = accent; ctx.fillRect(-20, -22, 40, 39);
   }
-
-  // Gemma luminosa centrale e piccoli pixel di riflesso.
-  ctx.fillStyle = "#fff0bd";
-  ctx.fillRect(-2, 2, 4, 4);
-  ctx.fillStyle = "rgba(255,255,255,.48)";
-  ctx.fillRect(-30, 20, 12, 2);
-  ctx.fillRect(18, 20, 12, 2);
 
   // Insegna della città: nome e fazione sono visibili anche senza aprire il menu.
   ctx.fillStyle = "rgba(7,13,18,.9)";
