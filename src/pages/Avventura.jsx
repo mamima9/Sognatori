@@ -1548,7 +1548,10 @@ const [message, setMessage] = useState("");
         }
         const creature = ROSTER.find((entry) => entry.id === wild.rosterId);
         if (!creature) continue;
-        drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame, wild.isSleepingBlocker);
+        const playerDx = playerRef.current.x - wild.x;
+        const playerDy = playerRef.current.y - wild.y;
+        const wildFacing = Math.abs(playerDx) > Math.abs(playerDy) && playerDx < 0 ? "left" : "down";
+        drawOverworldSognatore(ctx, creature, wild.x, wild.y, spriteFrame, wild.isSleepingBlocker, wildFacing);
         if (wild.isSleepingBlocker) {
           const sleepPhase = performance.now() / 620;
           ctx.save();
@@ -2259,7 +2262,31 @@ function loadOverworldArtwork(src) {
         if (y + 1 < canvas.height) add(x, y + 1);
       }
       c.putImageData(frame, 0, 0);
-      entry.canvas = canvas;
+
+      // Ritaglia il margine trasparente dell'artwork: ogni specie occupa
+      // un ingombro coerente senza perdere corna, antenne, code o altri dettagli.
+      let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
+      for (let py = 0; py < canvas.height; py++) {
+        for (let px = 0; px < canvas.width; px++) {
+          if (data[(py * canvas.width + px) * 4 + 3] > 0) {
+            minX = Math.min(minX, px); minY = Math.min(minY, py);
+            maxX = Math.max(maxX, px); maxY = Math.max(maxY, py);
+          }
+        }
+      }
+      if (maxX >= minX && maxY >= minY) {
+        const padX = Math.max(3, Math.round((maxX - minX + 1) * 0.045));
+        const padY = Math.max(3, Math.round((maxY - minY + 1) * 0.045));
+        minX = Math.max(0, minX - padX); minY = Math.max(0, minY - padY);
+        maxX = Math.min(canvas.width - 1, maxX + padX);
+        maxY = Math.min(canvas.height - 1, maxY + padY);
+        const cropped = document.createElement("canvas");
+        cropped.width = maxX - minX + 1; cropped.height = maxY - minY + 1;
+        cropped.getContext("2d")?.drawImage(canvas, minX, minY, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
+        entry.canvas = cropped;
+      } else {
+        entry.canvas = canvas;
+      }
     } catch {
       entry.canvas = image;
     }
@@ -2270,7 +2297,7 @@ function loadOverworldArtwork(src) {
   return entry;
 }
 
-function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false) {
+function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false, direction = "down") {
   const entry = loadOverworldArtwork(s?.img);
   if (!entry?.canvas) {
     if (!entry?.failed) {
@@ -2286,14 +2313,21 @@ function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false
   const scale = Math.min(maxWidth / artwork.width, maxHeight / artwork.height);
   const width = artwork.width * scale;
   const height = artwork.height * scale;
-  const bob = frame ? 2 : 0;
+  const motion = ((frame % 4) + 4) % 4;
+  const bob = motion === 1 ? 2 : motion === 3 ? 1 : 0;
+  const squash = motion === 1 ? 0.985 : motion === 3 ? 1.01 : 1;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
+  ctx.translate(x, y - bob);
+  // L'artwork ufficiale fornisce il fronte; il profilo laterale si specchia
+  // sull'asse orizzontale senza deformare la creatura.
+  if (direction === "left") ctx.scale(-1, 1);
+  ctx.scale(1, squash);
   ctx.fillStyle = "rgba(0,0,0,.28)";
   ctx.beginPath();
-  ctx.ellipse(x, y - 2, Math.max(15, width * .34), 6, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -2 + bob, Math.max(15, width * .34), 6, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.drawImage(artwork, x - width / 2, y - height - bob, width, height);
+  ctx.drawImage(artwork, -width / 2, -height, width, height);
   ctx.restore();
 }
 
