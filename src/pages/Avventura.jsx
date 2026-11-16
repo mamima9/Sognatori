@@ -2190,6 +2190,7 @@ const [message, setMessage] = useState("");
       </div>
         )}
         userKey={user?.id || user?.email}
+        grantAllFactionGems={isPersonalTester}
         onLeaderDefeated={(leaderId) => setDefeatedLeaders((old) => new Set([...old, leaderId]))}
         player={player}
         facing={playerFacingRef.current}
