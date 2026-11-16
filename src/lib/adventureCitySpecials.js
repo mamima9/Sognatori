@@ -77,7 +77,7 @@ if(type==="forge"){block(-34,-2,68,12,"#49363a");block(-25,-17,50,16,"#82545a");
       block(-4,-40,8,60,"#5d4b83");for(let i=0;i<4;i++){ctx.strokeStyle="#d5c3ff";ctx.lineWidth=3;ctx.strokeRect(-24+i*12,-30+i*8,14,14);}sparkle(0,-42);
     }
     // Piccola icona di interazione, senza coprire l'oggetto.
-    ctx.fillStyle="rgba(5,12,18,.8)";ctx.fillRect(-24,31,48,14);ctx.fillStyle="#fff4df";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("E · "+item.name.toUpperCase().slice(0,10),0,41,46);
+    ctx.fillStyle="rgba(5,12,18,.9)";ctx.fillRect(-88,29,176,22);ctx.fillStyle="#fff4df";ctx.font="bold 9px monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("E · "+item.name.toUpperCase(),0,40,168);
     ctx.restore();
   }
 }
