@@ -255,7 +255,8 @@ export default function Home() {
               {(() => {
                 const adventureUnlocked =
                   user?.user_metadata?.sognatori_arcade_completed === true ||
-                  user?.email?.toLowerCase() === "bibitoeuro@gmail.com";
+                  user?.email?.toLowerCase() === "bibitoeuro@gmail.com" ||
+                  user?.user_metadata?.username?.toLowerCase() === "mangu";
                 return (
                   <div className="flex flex-col items-center gap-1">
                     {adventureUnlocked ? (
