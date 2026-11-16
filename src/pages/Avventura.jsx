@@ -11,6 +11,7 @@ import GlobalMusicPlayer from "@/components/game/GlobalMusicPlayer";
 import { ADVENTURE_CITIES, ADVENTURE_WILD_AREAS, ADVENTURE_FACTION_LORE, buildCityTeam } from "@/lib/adventureCampaignData";
 import { drawAdventureTraveler, drawAdventureWildSognatoreDirectional } from "@/lib/adventurePixelSprites";
 import { drawAdventureNaturaCity } from "@/lib/adventureNaturaCity";
+import { drawAdventureAmaroCity } from "@/lib/adventureAmaroCity";
 import { drawAdventureFactionCity } from "@/lib/adventureFactionCity";
 import { drawAdventureCitySpecials, ADVENTURE_CITY_SPECIALS } from "@/lib/adventureCitySpecials";
 
@@ -363,6 +364,9 @@ function drawFactionLoreSite(ctx, faction, x, y, label, cornerIndex = 0) {
 
 const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
 const MAP_NORTH_DOOR = { x: 1800, y: 150, radius: 94 };
+// Porta segreta sul margine occidentale di Verdelume/Amargenta.
+const AMARGENTA_DOOR = { x: 145, y: 1200, radius: 94 };
+const AMARGENTA_SPAWN = { x: 320, y: 1200 };
 const MAP_SPAWN = { x: 1800, y: 320 };
 const MAP_SOUTH_SPAWN = { x: 1800, y: 2080 };
 
@@ -450,6 +454,7 @@ function buildWorld() {
       Math.hypot(x - MAP_SOUTH_SPAWN.x, y - MAP_SOUTH_SPAWN.y) < 145 ||
       Math.hypot(x - MAP_NORTH_DOOR.x, y - MAP_NORTH_DOOR.y) < 165 ||
       Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
+      Math.hypot(x - AMARGENTA_DOOR.x, y - AMARGENTA_DOOR.y) < 190 ||
       WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 470)
     ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 250)) continue;
@@ -478,6 +483,7 @@ function buildWorld() {
       Math.hypot(x - MAP_SOUTH_SPAWN.x, y - MAP_SOUTH_SPAWN.y) < 145 ||
       Math.hypot(x - MAP_NORTH_DOOR.x, y - MAP_NORTH_DOOR.y) < 165 ||
       Math.hypot(x - MAP_DOOR.x, y - MAP_DOOR.y) < 165 ||
+      Math.hypot(x - AMARGENTA_DOOR.x, y - AMARGENTA_DOOR.y) < 190 ||
       WILD_CORNER_ANCHORS.some((anchor) => Math.hypot(x - anchor.x, y - anchor.y) < 470)
     ) continue;
     if (ADVENTURE_CITIES.some((city) => Math.hypot(x - city.x, y - city.y) < 220)) continue;
@@ -1019,6 +1025,8 @@ export default function Avventura() {
     isManguAccount;
   const personalAllDoorsUnlocked = isPersonalTester;
   const canEnterAmargenta = isPersonalTester;
+  // Amargenta non entra nella progressione standard: è una mappa laboratorio privata.
+  const availableCities = canEnterAmargenta ? ADVENTURE_CITIES : ADVENTURE_CITIES.filter((city) => city.id !== "amaro");
 
   /*
     ============================
@@ -1142,7 +1150,7 @@ const [message, setMessage] = useState("");
     }
   }, [adventureSaveKey, defeatedLeaders, recruitedAdventureIds, discoveredWildClues, completedWildTasks]);
   const [activeMapId, setActiveMapId] = useState("natura");
-  const activeCityBase = ADVENTURE_CITIES.find((city) => city.id === activeMapId) || ADVENTURE_CITIES[0];
+  const activeCityBase = availableCities.find((city) => city.id === activeMapId) || availableCities.find((city) => city.id === "natura") || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
   const activeCity = { ...activeCityBase, ...activeLore, x: 1800, y: 1200 };
   const cityNpcCharacters = buildOutdoorNPCs(activeCityBase, activeLore, time);
@@ -1664,7 +1672,9 @@ const [message, setMessage] = useState("");
       if (activeCity.faction !== "Nuvola") {
         drawCityDistrict(ctx, activeCity);
       }
-      if (activeCity.faction !== "Natura") {
+      if (activeCity.faction === "Amaro") {
+        drawAdventureAmaroCity(ctx, activeCity);
+      } else if (activeCity.faction !== "Natura") {
         drawAdventureFactionCity(ctx, activeCity);
       }
       drawCityLandmark(ctx, activeCity);
@@ -1683,21 +1693,21 @@ const [message, setMessage] = useState("");
       const canUseCityDoors = personalAllDoorsUnlocked || currentLeaderDefeated;
       if (activeMapId !== "amaro") {
         drawAdventureDoor(ctx, MAP_DOOR.x, MAP_DOOR.y, activeCity.color,
-          canUseCityDoors ? "PORTA · " + nextCityName(activeMapId) : "BLOCCATA · " + nextCityName(activeMapId),
+          canUseCityDoors ? "PORTA · " + nextCityName(activeMapId, availableCities) : "BLOCCATA · " + nextCityName(activeMapId, availableCities),
           0, !canUseCityDoors);
         drawAdventureDoor(ctx, MAP_NORTH_DOOR.x, MAP_NORTH_DOOR.y, activeCity.color,
-          personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId) : "BLOCCATA · " + previousCityName(activeMapId),
+          personalAllDoorsUnlocked ? "PORTA · " + previousCityName(activeMapId, availableCities) : "BLOCCATA · " + previousCityName(activeMapId, availableCities),
           Math.PI, !personalAllDoorsUnlocked);
       }
 
       // Porta segreta occidentale di Verdelume, visibile ma accessibile solo a Bibito.
       if (activeMapId === "natura") {
-        drawAdventureDoor(ctx, 1500, 1200, "#a7c7b5",
+        drawAdventureDoor(ctx, AMARGENTA_DOOR.x, AMARGENTA_DOOR.y, "#a7c7b5",
           canEnterAmargenta ? "AMARGENTA · BIBITO" : "SIGILLATA · AMARGENTA",
           -Math.PI / 2, !canEnterAmargenta);
       }
       if (activeMapId === "amaro") {
-        drawAdventureDoor(ctx, 1500, 1200, "#a7c7b5", "USCITA · VERDELUME", -Math.PI / 2, false);
+        drawAdventureDoor(ctx, AMARGENTA_DOOR.x, AMARGENTA_DOOR.y, "#a7c7b5", "USCITA · VERDELUME", -Math.PI / 2, false);
       }
 
       /*        ROCCE
@@ -1959,7 +1969,7 @@ const [message, setMessage] = useState("");
     const interactionRadius = 105;
 
     // Porta segreta occidentale: accesso e ritorno sono gestiti prima delle altre interazioni.
-    const amargentaDoorDistance = Math.hypot(currentPosition.x - 1500, currentPosition.y - 1200);
+    const amargentaDoorDistance = Math.hypot(currentPosition.x - AMARGENTA_DOOR.x, currentPosition.y - AMARGENTA_DOOR.y);
     if ((activeMapId === "natura" || activeMapId === "amaro") && amargentaDoorDistance < 136) {
       if (activeMapId === "natura") {
         if (!canEnterAmargenta) {
@@ -1968,17 +1978,17 @@ const [message, setMessage] = useState("");
           return;
         }
         setActiveMapId("amaro");
-        playerRef.current = { x: 1650, y: 1200 };
-        cameraRef.current = { x: 1650, y: 1200 };
-        setPlayer({ x: 1650, y: 1200 });
+        playerRef.current = { ...AMARGENTA_SPAWN };
+        cameraRef.current = { ...AMARGENTA_SPAWN };
+        setPlayer({ ...AMARGENTA_SPAWN });
         setMessage("Il sigillo si apre. Benvenuto ad Amargenta, Bibito.");
         setTimeout(() => setMessage(""), 2600);
         return;
       }
       setActiveMapId("natura");
-      playerRef.current = { x: 1650, y: 1200 };
-      cameraRef.current = { x: 1650, y: 1200 };
-      setPlayer({ x: 1650, y: 1200 });
+      playerRef.current = { ...AMARGENTA_SPAWN };
+      cameraRef.current = { ...AMARGENTA_SPAWN };
+      setPlayer({ ...AMARGENTA_SPAWN });
       setMessage("Sei tornato a Verdelume.");
       setTimeout(() => setMessage(""), 2200);
       return;
@@ -1992,8 +2002,8 @@ const [message, setMessage] = useState("");
         setTimeout(() => setMessage(""), 2600);
         return;
       }
-      const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
-      const nextCity = ADVENTURE_CITIES[(currentIndex + 1) % ADVENTURE_CITIES.length];
+      const currentIndex = availableCities.findIndex((city) => city.id === activeMapId);
+      const nextCity = availableCities[(currentIndex + 1) % availableCities.length];
       setCityEntryDirection("north");
       setActiveMapId(nextCity.id);
       playerRef.current = { ...MAP_SPAWN };
@@ -2006,8 +2016,8 @@ const [message, setMessage] = useState("");
 
     if (Math.hypot(currentPosition.x - MAP_NORTH_DOOR.x, currentPosition.y - MAP_NORTH_DOOR.y) < MAP_NORTH_DOOR.radius + 42) {
       if (personalAllDoorsUnlocked) {
-        const currentIndex = ADVENTURE_CITIES.findIndex((city) => city.id === activeMapId);
-        const previousCity = ADVENTURE_CITIES[(currentIndex - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length];
+        const currentIndex = availableCities.findIndex((city) => city.id === activeMapId);
+        const previousCity = availableCities[(currentIndex - 1 + availableCities.length) % availableCities.length];
         setCityEntryDirection("south");
         setActiveMapId(previousCity.id);
         playerRef.current = { ...MAP_SOUTH_SPAWN };
@@ -2474,14 +2484,14 @@ function drawOverworldSognatore(ctx, s, x, y, frame = 0, sleepingBlocker = false
   ctx.restore();
 }
 
-function nextCityName(cityId) {
-  const index = ADVENTURE_CITIES.findIndex((city) => city.id === cityId);
-  return ADVENTURE_CITIES[(index + 1) % ADVENTURE_CITIES.length].city;
+function nextCityName(cityId, cities = ADVENTURE_CITIES) {
+  const index = cities.findIndex((city) => city.id === cityId);
+  return cities[(index + 1) % cities.length].city;
 }
 
-function previousCityName(cityId) {
-  const index = ADVENTURE_CITIES.findIndex((city) => city.id === cityId);
-  return ADVENTURE_CITIES[(index - 1 + ADVENTURE_CITIES.length) % ADVENTURE_CITIES.length].city;
+function previousCityName(cityId, cities = ADVENTURE_CITIES) {
+  const index = cities.findIndex((city) => city.id === cityId);
+  return cities[(index - 1 + cities.length) % cities.length].city;
 }
 
 function drawAdventureDoor(ctx, x, y, color, label, rotation = 0, locked = false) {
@@ -3123,6 +3133,10 @@ function drawFactionDistrictDetails(ctx, city) {
 function drawCityDistrict(ctx, city) {
   if (city.faction === "Natura") {
     drawAdventureNaturaCity(ctx, city);
+    return;
+  }
+  if (city.faction === "Amaro") {
+    drawAdventureAmaroCity(ctx, city);
     return;
   }
   const x = Math.round(city.x / 4) * 4;
