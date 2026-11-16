@@ -449,8 +449,13 @@ export function drawAdventureWildSognatore(ctx, s, x, y, frame=0, scale=1){
   if ((id === "chino" || id === "riwi") && s?.img) {
     const sprite = getAdventureWildImage(s.img);
     if (sprite) {
-      const height = 36;
-      const width = height * sprite.width / sprite.height;
+      // Ogni frame dello spritesheet overworld è largo 24px:
+      // il PNG va contenuto nel frame, senza fuoriuscire e venire tagliato.
+      const maxWidth = 22;
+      const maxHeight = 30;
+      const ratio = Math.min(maxWidth / sprite.width, maxHeight / sprite.height);
+      const width = sprite.width * ratio;
+      const height = sprite.height * ratio;
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(sprite, -width / 2, -height, width, height);
       ctx.restore();
