@@ -103,7 +103,6 @@ export default function Amargenta3D({ onExit }) {
     const walkableRamps = [];
     const interactables = [];
     const npcActors = [];
-    const raycaster = new THREE.Raycaster();
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
     let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0, currentPeriod = -1;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
@@ -441,9 +440,9 @@ export default function Amargenta3D({ onExit }) {
       box(3.1,3,.3,gold,vaultArch,0,1.5,.42);
       box(2.2,2.5,.22,wood,vaultArch,0,1.3,.62);
       for(let i=0;i<5;i++)sphere(.12,gold,vaultArch,-1.35+i*.68,3.2,.45,1);
-      const vaultChest=box(1.8,1.15,1.1,wood,scene,68,.62,-68);
+      box(1.8,1.15,1.1,wood,scene,68,.62,-68);
       box(1.9,.2,1.16,gold,scene,68,1.27,-68);
-      const vaultGem=sphere(.28,mat("#d4b3ff",.2,{emissive:"#8d59d4",emissiveIntensity:.8}),scene,68,1.65,-68,2);
+      sphere(.28,mat("#d4b3ff",.2,{emissive:"#8d59d4",emissiveIntensity:.8}),scene,68,1.65,-68,2);
       // Cornice aperta della porta della torrefazione: il passaggio è realmente libero.
       box(.18,3,.25,gold,scene,66.4,1.5,62);
       box(.18,3,.25,gold,scene,69.6,1.5,62);
@@ -508,13 +507,12 @@ export default function Amargenta3D({ onExit }) {
           setDialogue({title:"Bruno · Le Condotte Antiche",text:"Tre valvole sono bloccate lungo il fiume. Riattivale per riportare acqua ai giardini e alle cascate."});
         } else setDialogue({title:"Bruno · Guardiano del ponte",text:"Condotte riattivate: "+valvesRef.current+"/3. Cerca le valvole vicino ai ponti e alla torrefazione."});
       };
-      const amberPickups=[];
       [[-34,-37],[-12,-45],[-4,-28]].forEach((p,i)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(p[0],.8,p[1]);
         if(collectedAmberRef.current.has(i))g.visible=false;
         const core=sphere(.34,gold,g,0,0,0,2);core.scale.set(.78,1.25,.78);
         const ring=addMesh(new THREE.TorusGeometry(.56,.045,6,20),mat("#f4d28d",.3,{emissive:"#c58a42",emissiveIntensity:.7}),g,0,0,0);ring.rotation.x=Math.PI/2;
-        amberPickups.push(g);g.userData.amberPickup=true;
+        g.userData.amberPickup=true;
         addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
           if(g.userData.collected||collectedAmberRef.current.has(i))return;
@@ -615,7 +613,6 @@ export default function Amargenta3D({ onExit }) {
       scene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
-      const groundRay=new THREE.Raycaster();
       const onKeyDown=e=>{
         if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
           if(!controlsLockedRef.current){keys.add(e.code);e.preventDefault();}
