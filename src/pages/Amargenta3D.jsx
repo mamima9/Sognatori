@@ -378,11 +378,12 @@ export default function Amargenta3D({ onExit }) {
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",2.0));
       const sun=new THREE.DirectionalLight("#fff0d6",3.2);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;scene.add(sun);
-      // Valle montana e terreno ondulato
+      // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
+      // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
       const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
       const pos=terrainGeo.attributes.position;
-      for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i);pos.setY(i,Math.sin(x*.075)*.7+Math.cos(z*.06)*.55+Math.sin((x+z)*.035)*.45);}
-      terrainGeo.computeVertexNormals();addMesh(terrainGeo,groundMat,scene,0,-.4,0);
+      for(let i=0;i<pos.count;i++)pos.setY(i,0);
+      terrainGeo.computeVertexNormals();addMesh(terrainGeo,groundMat,scene,0,0,0);
       for(let i=0;i<12;i++) makeMountain(-65+(i%4)*42,-68-Math.floor(i/4)*12,12+(i%3)*5,26+(i%4)*9,i);
       // Fiume e gola orientati da nord a sud, a est del borgo
       const river=addMesh(new THREE.PlaneGeometry(12,100,1,1),water,scene,28,.05,2);river.rotation.x=-Math.PI/2;river.rotation.z=.08;
