@@ -315,7 +315,7 @@ export default function Lore() {
   const icepadelLoreUnlocked = Boolean(user?.user_metadata?.icepadel_lore_unlocked);
   const taomarcoLoreUnlocked = Boolean(user?.user_metadata?.taomarco_lore_unlocked);
   const isDeveloper = user?.email?.trim().toLowerCase() === "bibitoeuro@gmail.com";
-  const [showAllLore, setShowAllLore] = useState(false);
+  const [showAllLore, setShowAllLore] = useState(isDeveloper);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
 
   const selectedLore = selectedSognatore
