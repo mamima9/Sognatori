@@ -611,6 +611,7 @@ export default function Amargenta3D({ onExit }) {
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
       };
       const onKeyUp=e=>keys.delete(e.code);
+      const onWindowBlur=()=>keys.clear();
       const onPointerDown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
       const onPointerUp=()=>dragging=false;
       const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.005;pitch=Math.max(.12,Math.min(.9,pitch+dy*.004));};
@@ -620,7 +621,7 @@ export default function Amargenta3D({ onExit }) {
       renderer.domElement.addEventListener("pointercancel",onPointerUp);
       renderer.domElement.addEventListener("pointermove",onPointerMove);
       renderer.domElement.addEventListener("wheel",onWheel,{passive:true});
-      window.addEventListener("keydown",onKeyDown);window.addEventListener("keyup",onKeyUp);
+      window.addEventListener("keydown",onKeyDown);window.addEventListener("keyup",onKeyUp);window.addEventListener("blur",onWindowBlur);
       const resize=()=>{if(!host.clientWidth||!host.clientHeight)return;camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();renderer.setSize(host.clientWidth,host.clientHeight);};
       observer=new ResizeObserver(resize);observer.observe(host);
       const animate=()=>{
@@ -666,7 +667,7 @@ export default function Amargenta3D({ onExit }) {
         renderer.render(scene,camera);
       };
       animate();
-      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();scene.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
+      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();scene.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
       setHint("Il browser non ha inizializzato WebGL. Prova ad aggiornare il browser o attivare l'accelerazione hardware.");
