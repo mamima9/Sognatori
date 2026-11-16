@@ -691,8 +691,18 @@ export default function Amargenta3D({ onExit }) {
         : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
 
   return <div style={{position:"fixed",inset:0,background:"#18221e",color:"#f4ead8",fontFamily:"Inter,system-ui,sans-serif",overflow:"hidden"}}>
+    <style>{`
+      @media (max-width: 720px) {
+        .amargenta-title { top: 10px !important; left: 12px !important; }
+        .amargenta-title strong { font-size: 23px !important; }
+        .amargenta-toolbar { top: 66px !important; left: 12px !important; right: 12px !important; transform: none !important; justify-content: flex-start !important; flex-wrap: wrap; }
+        .amargenta-hud { top: 112px !important; right: 12px !important; width: min(205px, calc(100vw - 24px)) !important; }
+        .amargenta-hint { left: 12px !important; right: 12px !important; bottom: 12px !important; max-width: none !important; }
+        .amargenta-controls { right: 12px !important; bottom: 88px !important; }
+      }
+    `}</style>
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
-    <div style={{position:"absolute",top:18,left:18,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
+    <div className="amargenta-title" style={{position:"absolute",top:18,left:18,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
       <div style={{fontSize:11,letterSpacing:4,color:"#e2bd85",fontWeight:800}}>S O G N A T O R I · AVVENTURA 3D</div>
       <div style={{fontSize:30,fontWeight:900,lineHeight:1.15}}>AMARGENTA</div>
       <div style={{fontSize:12,opacity:.8}}>La città segreta del caffè</div>
@@ -700,7 +710,7 @@ export default function Amargenta3D({ onExit }) {
     <div style={{position:"absolute",top:20,right:20,padding:"10px 14px",border:"1px solid #d8c19a66",borderRadius:12,background:"#18221eaa",backdropFilter:"blur(8px)",fontSize:12}}>
       <div style={{fontSize:9,letterSpacing:2,color:"#d9b37c"}}>ZONA · {worldMoment.toUpperCase()}</div><strong>{zone}</strong>
     </div>
-    <div style={{position:"absolute",top:92,right:20,width:238,padding:13,border:"1px solid #d8b77d88",borderRadius:12,background:"#18221edb",fontSize:11,lineHeight:1.5}}>
+    <div className="amargenta-hud" style={{position:"absolute",top:92,right:20,width:238,padding:13,border:"1px solid #d8b77d88",borderRadius:12,background:"#18221edb",fontSize:11,lineHeight:1.5}}>
       <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>DIARIO DI AMARGENTA</div>
       <div style={{marginTop:5,display:"flex",justifyContent:"space-between"}}><strong>Fave d'Ambra</strong><span>{questDone?"✓":questCount+"/3"}</span></div>
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(questCount/3*100)+"%",background:"#e1ae5e"}}/></div>
@@ -708,9 +718,13 @@ export default function Amargenta3D({ onExit }) {
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(recipePages/4*100)+"%",background:"#c7a5df"}}/></div>
       <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Condotte Antiche</strong><span>{waterDone?"✓":valves+"/3"}</span></div>
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(valves/3*100)+"%",background:"#78b6c1"}}/></div>
-      <div style={{marginTop:9,color:"#d9bd91",fontSize:10}}>Z {playerCoords.x} · X {playerCoords.z}</div>
+      <div style={{marginTop:9,paddingTop:8,borderTop:"1px solid #ffffff20"}}>
+        <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>OBIETTIVO ATTUALE</div>
+        <div style={{marginTop:4,color:"#f4e5cb",fontSize:10,lineHeight:1.45}}>{activeObjective}</div>
+      </div>
+      <div style={{marginTop:8,color:"#d9bd91",fontSize:10}}>X {playerCoords.x} · Z {playerCoords.z}</div>
     </div>
-    <div style={{position:"absolute",top:18,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6,pointerEvents:"auto"}}>
+    <div className="amargenta-toolbar" style={{position:"absolute",top:18,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6,pointerEvents:"auto"}}>
       {[["map","M","Mappa"],["journal","J","Diario"],["inventory","I","Borsa"]].map(([id,key,label])=><button key={id} onClick={()=>setPanel(old=>old===id?null:id)} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#18221edb",color:"#f6ead5",padding:"8px 11px",fontSize:11,fontWeight:800,cursor:"pointer"}}>{key} · {label}</button>)}
     </div>
     {toast&&<div style={{position:"absolute",top:66,left:"50%",transform:"translateX(-50%)",padding:"9px 16px",borderRadius:10,background:"#26382bee",border:"1px solid #e0c18b",color:"#f6e8cf",fontSize:12,fontWeight:800}}>{toast}</div>}
@@ -734,7 +748,7 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
-    <div style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
+    <div className="amargenta-hint" style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
       <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Amargenta · esplorazione, missioni, crafting e segreti</span>
     </div>
     {nearby&&!dialogue&&<button onClick={()=>{if(nearby.action)nearby.action();else setDialogue({title:nearby.title,text:nearby.text});}} style={{position:"absolute",left:"50%",bottom:30,transform:"translateX(-50%)",padding:"10px 16px",borderRadius:12,background:"#18221eef",border:"1px solid #e1c28d",fontSize:13,boxShadow:"0 8px 30px #0008",whiteSpace:"nowrap",color:"#f5ead7",cursor:"pointer"}}><strong style={{color:"#f0c98d"}}>E · INTERAGISCI</strong><span style={{marginLeft:10}}>{nearby.title}</span></button>}
@@ -744,7 +758,7 @@ export default function Amargenta3D({ onExit }) {
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
       <button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
     </div>}
-    <div aria-label="Comandi touch" style={{position:"absolute",right:22,bottom:86,display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,touchAction:"none"}}>
+    <div className="amargenta-controls" aria-label="Comandi touch" style={{position:"absolute",right:22,bottom:86,display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,touchAction:"none"}}>
       {[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}
     </div>
     <button onClick={()=>onExit ? onExit() : window.location.assign("/avventura")} style={{position:"absolute",right:20,bottom:20,border:"1px solid #e1c28d",borderRadius:10,background:"#2d3b31dd",color:"#f8ecd8",padding:"11px 16px",fontWeight:700,cursor:"pointer"}}>← Torna ad Avventura</button>
