@@ -1774,18 +1774,6 @@ const [message, setMessage] = useState("");
           ctx.fillStyle = "#ffe58a"; ctx.shadowColor = "#ffbf45"; ctx.shadowBlur = 12;
           ctx.fillText("✦", wild.x, wild.y - 105); ctx.restore();
         }
-        if (wild.recruitable && !completedWildTasks[wildKey]) {
-          ctx.save();
-          ctx.translate(wild.habitatX + 42, wild.habitatY + 58);
-          ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 14;
-          ctx.fillStyle = "rgba(48,32,8,.94)";
-          ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 2; ctx.stroke();
-          ctx.shadowBlur = 0; ctx.font = "bold 18px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.fillStyle = "#fde68a"; ctx.fillText("!", 0, 1);
-          ctx.font = "bold 9px monospace"; ctx.fillText("AZIONE", 0, 31);
-          ctx.restore();
-        }
         if (!labeledWildNames.has(wild.rosterId) && Math.hypot(playerRef.current.x - wild.x, playerRef.current.y - wild.y) < 190) {
           labeledWildNames.add(wild.rosterId);
           ctx.save();
