@@ -28,7 +28,7 @@ export default function Home() {
   const [missionNotification, setMissionNotification] = useState(null);
   const [arcadeHumanOnlyRun, setArcadeHumanOnlyRun] = useState(true);
   const [arcadeHumanStagesCompleted, setArcadeHumanStagesCompleted] = useState(0);
-  const [adventureSave, setAdventureSave] = useState({ ownedIds: [], completedCities: [] });
+  const [adventureSave, setAdventureSave] = useState({ ownedIds: [], completedCities: [], conqueredLeaders: [] });
 
   useEffect(() => {
     if (screen !== "missions") return;
@@ -38,9 +38,10 @@ export default function Home() {
       setAdventureSave({
         ownedIds: Array.isArray(saved.ownedIds) ? saved.ownedIds : [],
         completedCities: Array.isArray(saved.completedCities) ? saved.completedCities : [],
+        conqueredLeaders: Array.isArray(saved.conqueredLeaders) ? saved.conqueredLeaders : [],
       });
     } catch {
-      setAdventureSave({ ownedIds: [], completedCities: [] });
+      setAdventureSave({ ownedIds: [], completedCities: [], conqueredLeaders: [] });
     }
   }, [screen, user?.id, user?.email]);
 
@@ -50,7 +51,8 @@ export default function Home() {
   const adventureBondCount = adventureSave.ownedIds.filter((id) =>
     ROSTER.some((s) => s.id === id)
   ).length;
-  const mission5Complete = ADVENTURE_CITIES.length > 0 && adventureCityCount === ADVENTURE_CITIES.length;
+  const adventureDefeatedLeaderCount = adventureSave.conqueredLeaders.filter((id) => ADVENTURE_CITIES.some((city) => city.id === id)).length;
+  const mission5Complete = ADVENTURE_CITIES.length > 0 && (isDev || adventureDefeatedLeaderCount === ADVENTURE_CITIES.length);
   const mission6Complete = ROSTER.length > 0 && adventureBondCount === ROSTER.length;
 
   const groupedLog = (entries) => {
@@ -625,10 +627,10 @@ export default function Home() {
                 <span className="text-xs font-black tracking-widest text-emerald-300 uppercase">{lang === "en" ? "MISSION 5" : "MISSIONE 5"}</span>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${mission5Complete ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>{mission5Complete ? (lang === "en" ? "COMPLETED" : "COMPLETATA") : (lang === "en" ? "IN PROGRESS" : "IN CORSO")}</span>
               </div>
-              <h2 className="text-xl font-black text-white">{lang === "en" ? "The House of Bliss" : "La casa della beatitudine"}</h2>
-              <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Complete Adventure mode and conquer all faction cities." : "Completa l'Avventura e conquista tutte le città delle fazioni."}</p>
-              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Cities conquered" : "Città conquistate"}</span><span className="text-amber-300">{adventureCityCount}/{ADVENTURE_CITIES.length}</span></div>
-              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style={{ width: `${ADVENTURE_CITIES.length ? adventureCityCount / ADVENTURE_CITIES.length * 100 : 0}%` }} /></div>
+              <h2 className="text-xl font-black text-white">{lang === "en" ? "Battle Champion" : "Campione di battaglie"}</h2>
+              <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Open every door and defeat every Faction Leader." : "Apri tutte le porte e sconfiggi ogni Capo fazione."}</p>
+              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Faction Leaders defeated" : "Capi fazione sconfitti"}</span><span className="text-amber-300">{isDev ? ADVENTURE_CITIES.length : adventureDefeatedLeaderCount}/{ADVENTURE_CITIES.length}</span></div>
+              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style={{ width: `${ADVENTURE_CITIES.length ? (isDev ? 100 : adventureDefeatedLeaderCount / ADVENTURE_CITIES.length * 100) : 0}%` }} /></div>
               <div className="mt-4 border-t border-white/10 pt-3 space-y-2">
                 <div className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">{lang === "en" ? "Lore rewards" : "Ricompensa · Lore"}</div>
                 <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Fourmouri</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission5Complete ? "Gran combattente, vuole raggiungere la casa della beatitudine, luogo sacro dei Luce." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
