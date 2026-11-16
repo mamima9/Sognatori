@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FACTIONS, FACTION_COLORS } from "@/lib/typeChart";
 import { ROSTER } from "@/lib/sognatoriData";
+import { ADVENTURE_CITIES } from "@/lib/adventureCampaignData";
 import { FactionBadge } from "@/components/game/HealthBar";
 import { useLanguage } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
@@ -283,6 +284,26 @@ He is a champion of a particular water sport. He sends the Pirimar to trade with
     en: `Elmas is an ancient samurai of the clouds. He operates mostly at night, but he is also a technology expert.\n\nHe keeps everything others consider useless, convinced that sooner or later it will become invaluable. He never wastes his resources and always waits for the perfect moment to act.`,
   },
 
+  fourmori: {
+    it: `Fourmori è un grande combattente della fazione Luce. Il suo sogno è raggiungere la Casa della Beatitudine, un luogo sacro per i Luce.`,
+    en: `Fourmori is a great fighter of the Light faction. His dream is to reach the House of Bliss, a sacred place for the Light Dreamers.`,
+  },
+
+  pirimar: {
+    it: `I Pirimar vivono nell'oceano e sono la moneta di scambio tra gli umani e i Marini.`,
+    en: `The Pirimar live in the ocean and serve as the currency of exchange between humans and the Marine faction.`,
+  },
+
+  ginza: {
+    it: `Ginza è una ballerina che gira per tutte le città, organizzando spettacoli con maschere e marionette.`,
+    en: `Ginza is a dancer who travels from city to city, putting on shows with masks and puppets.`,
+  },
+
+  pequeno: {
+    it: `Pequeno è l'albero simbolo di un noto quartiere della fazione Natura. Un proprietario di un'azienda di Crocevia ha inciso un simbolo sulla sua corteccia.`,
+    en: `Pequeno is the symbolic tree of a well-known neighborhood in the Nature faction. A business owner from Crossroads carved a symbol into its bark.`,
+  },
+
   "ring-ape": {
     it: `Ring-Ape vive in una foresta dove il miele scorre come un fiume e ogni albero custodisce un piccolo tesoro dorato.
 
@@ -317,6 +338,27 @@ export default function Lore() {
   const isDeveloper = user?.email?.trim().toLowerCase() === "bibitoeuro@gmail.com";
   const [showAllLore, setShowAllLore] = useState(isDeveloper);
   const [selectedSognatore, setSelectedSognatore] = useState(null);
+  const [adventureSave, setAdventureSave] = useState({ ownedIds: [], conqueredLeaders: [] });
+
+  useEffect(() => {
+    try {
+      const adventureKey = "sognatori-adventure-v1-" + (user?.id || user?.email || "guest");
+      const saved = JSON.parse(window.localStorage.getItem(adventureKey) || "{}");
+      setAdventureSave({
+        ownedIds: Array.isArray(saved.ownedIds) ? saved.ownedIds : [],
+        conqueredLeaders: Array.isArray(saved.conqueredLeaders) ? saved.conqueredLeaders : [],
+      });
+    } catch {
+      setAdventureSave({ ownedIds: [], conqueredLeaders: [] });
+    }
+  }, [user?.id, user?.email]);
+
+  const mission5LoreUnlocked = isDeveloper || (
+    ADVENTURE_CITIES.length > 0 &&
+    ADVENTURE_CITIES.every((city) => adventureSave.conqueredLeaders.includes(city.id))
+  );
+  const mission6LoreUnlocked = ROSTER.length > 0 &&
+    ROSTER.every((dreamer) => adventureSave.ownedIds.includes(dreamer.id));
 
   const selectedLore = selectedSognatore
     ? SOGNATORI_LORE[selectedSognatore.id]
@@ -415,7 +457,15 @@ export default function Lore() {
           <div className="grid sm:grid-cols-2 gap-3">
 
             {orderedRoster.map((s, i) => {
-              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (showAllLore || ((s.id !== "pepe" || pepeLoreUnlocked) && (s.id !== "riwupido" || riwupidoLoreUnlocked) && (s.id !== "icepadel" || icepadelLoreUnlocked) && (s.id !== "taomarco" || taomarcoLoreUnlocked)));
+              const hasLore = Boolean(SOGNATORI_LORE[s.id]) && (showAllLore ||
+                ((s.id !== "pepe" || pepeLoreUnlocked) &&
+                (s.id !== "riwupido" || riwupidoLoreUnlocked) &&
+                (s.id !== "icepadel" || icepadelLoreUnlocked) &&
+                (s.id !== "taomarco" || taomarcoLoreUnlocked) &&
+                (s.id !== "fourmori" || mission5LoreUnlocked) &&
+                (s.id !== "pirimar" || mission5LoreUnlocked) &&
+                (s.id !== "ginza" || mission6LoreUnlocked) &&
+                (s.id !== "pequeno" || mission6LoreUnlocked)));
 
               return (
                 <motion.button
