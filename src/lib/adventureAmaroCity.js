@@ -128,6 +128,49 @@ function drawCoffeeRamp(c,a,b,width) {
   }
 }
 
+
+function drawAmaroMountainBackdrop(c){
+  const ridge=(pts,color)=>{c.fillStyle=color;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();};
+  ridge([[-390,-220],[-350,-270],[-318,-238],[-276,-302],[-230,-245],[-185,-286],[-132,-232],[-75,-286],[-20,-230],[40,-282],[95,-232],[150,-276],[205,-226],[265,-282],[320,-230],[390,-270],[390,-185],[-390,-185]],"#354a3a");
+  ridge([[-390,-205],[-345,-246],[-308,-216],[-270,-278],[-228,-222],[-184,-260],[-140,-215],[-80,-263],[-28,-210],[28,-258],[78,-208],[128,-250],[178,-207],[230,-257],[280,-205],[330,-244],[390,-200],[390,-160],[-390,-160]],"#526648");
+  for(let i=0;i<13;i++){const x=-365+i*61,y=-230-(i%3)*18;line(c,[[x-18,y+15],[x,y-20-(i%2)*9],[x+20,y+15]],i%2?"#a6a27b":"#c4b18a",2);}
+  c.save();c.globalAlpha=.18;for(let i=0;i<6;i++)ellipse(c,-180+i*73,-176+(i%2)*18,48,10,"#f1e5c9");c.restore();
+}
+function drawAmaroBridge(c,x,y,s=1){
+  c.save();c.translate(x,y);c.scale(s,s);ellipse(c,0,15,34,12,"rgba(0,0,0,.28)");
+  face(c,[[-39,-4],[-29,-13],[29,-13],[39,-4],[31,5],[-31,5]],"#49352d");
+  face(c,[[-34,-7],[-24,-16],[24,-16],[34,-7],[27,-1],[-27,-1]],"#b18a62");
+  c.fillStyle="#315f59";c.beginPath();c.ellipse(0,2,16,9,0,0,Math.PI*2);c.fill();
+  c.strokeStyle="#d3b18a";c.lineWidth=7;c.beginPath();c.moveTo(-35,-8);c.quadraticCurveTo(0,-34,35,-8);c.stroke();
+  line(c,[[-35,-8],[35,-8]],"#e3c69c",2);for(let i=0;i<7;i++)rect(c,-27+i*9,-16,3,8,"#78543d");c.restore();
+}
+function drawAmaroRiver(c,t){
+  const pts=[[-337,-244],[-310,-198],[-292,-158],[-318,-116],[-300,-76],[-276,-34],[-294,8],[-270,52],[-286,96],[-260,143],[-244,205],[-218,252]];
+  line(c,pts,"#263f38",39);line(c,pts,"#356b68",30);line(c,pts,"#76b5a0",13);
+  line(c,pts.map(([x,y],i)=>[x+(i%2?5:-4),y]),"rgba(214,241,207,.55)",3);
+  for(let i=0;i<9;i++){const y=-190+i*48,x=-303+Math.sin(t*1.4+i)*8;line(c,[[x-7,y],[x+7,y+5],[x+15,y+2]],"rgba(210,242,218,.75)",2);}
+  for(const [x,y] of [[-304,-118],[-279,44],[-258,139]]){line(c,[[x-7,y-5],[x-2,y+10],[x+4,y+17]],"#a7d7bd",4);line(c,[[x+4,y-3],[x+9,y+12],[x+13,y+17]],"#d4e8c9",2);}
+  drawAmaroBridge(c,-295,-76,.9);drawAmaroBridge(c,-280,96,1);
+}
+function drawAmaroBellTower(c,x,y){
+  c.save();c.translate(x,y);ellipse(c,3,66,39,12,"rgba(0,0,0,.3)");
+  face(c,[[-30,5],[0,-8],[30,5],[30,63],[-30,63]],"#604333");
+  face(c,[[-30,5],[0,-8],[0,54],[-30,63]],"#a77851");face(c,[[0,-8],[30,5],[30,63],[0,54]],"#80563c");
+  rect(c,-24,-43,48,51,"#b17d53");face(c,[[-29,-43],[0,-70],[29,-43]],"#493027");
+  line(c,[[-29,-43],[0,-70],[29,-43]],"#d6a36a",3);rect(c,-17,-36,34,5,"#684632");rect(c,-13,-27,26,20,"#382b28");
+  ellipse(c,0,-17,7,9,"#d8b477");line(c,[[0,-8],[0,-1]],"#e7c88e",2);rect(c,-6,19,12,28,"#392722");rect(c,-3,23,6,20,"#d5a06a");
+  for(const x0 of [-20,20])rect(c,x0-3,8,6,12,"#e6bb7e");c.restore();
+}
+function drawAmaroRoasteryAnnex(c,x,y,t){
+  c.save();c.translate(x,y);ellipse(c,4,42,58,13,"rgba(0,0,0,.3)");
+  face(c,[[-48,-12],[42,-12],[57,-25],[-33,-25]],"#54372c");face(c,[[42,-12],[42,35],[57,22],[57,-25]],"#382721");
+  rect(c,-48,-12,90,47,"#8b5b3d");rect(c,-39,-5,72,37,"#b47b4e");
+  face(c,[[-54,-12],[-5,-47],[48,-12],[60,-25],[8,-60],[-38,-25]],"#493027");line(c,[[-54,-12],[-5,-47],[48,-12]],"#d0a06a",3);
+  rect(c,17,-53,12,31,"#624335");rect(c,20,-67,6,17,"#352622");
+  for(let i=0;i<4;i++){const p=t*.8+i*1.3;ellipse(c,23+Math.sin(p)*4,-76-i*10,4+i,3+i,"rgba(239,226,200,"+(.34-i*.06)+")");}
+  rect(c,-29,-2,20,26,"#392823");rect(c,-25,2,12,18,"#f0bd70");rect(c,1,-2,22,26,"#392823");rect(c,5,2,14,18,"#d9a66a");rect(c,-5,18,14,17,"#4a2b24");bean(c,-1,5,.5);c.restore();
+}
+
 export function drawAdventureAmaroCity(ctx,city){
   const t=performance.now()/1000;
   ctx.save();
@@ -135,7 +178,9 @@ export function drawAdventureAmaroCity(ctx,city){
   ctx.scale(1.55,1.55);
   ctx.imageSmoothingEnabled=false;
 
-  // AMARGENTA: quartiere RPG top-down, organico e leggibile.
+  // AMARGENTA: borgo montano terrazzato, ricco di dettagli e percorsi.
+  drawAmaroMountainBackdrop(ctx);
+  drawAmaroRiver(ctx,t);
   // Niente piattaforma circolare vuota: terreno continuo, sentieri, terrazze e case.
   ellipse(ctx,0,24,390,292,"rgba(0,0,0,.28)");
   ctx.fillStyle="#24452e";
@@ -187,6 +232,10 @@ export function drawAdventureAmaroCity(ctx,city){
     const x=-300+((i*83)%600), y=-180+((i*47)%360);
     if(i%3===0){ellipse(ctx,x,y,3+(i%3),2,"#b99468");}
   }
+
+  // Torre campanaria sul terrazzo alto e torrefazione sul margine orientale.
+  drawAmaroBellTower(ctx,-320,-175);
+  drawAmaroRoasteryAnnex(ctx,278,-174,t);
 
   // Cinque piantagioni terrazzate rialzate, con filari ordinati di Coffea.
   plantationTier(ctx,-286,-125,184,112,2,t);
