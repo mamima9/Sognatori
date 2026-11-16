@@ -180,7 +180,6 @@ export function drawAdventureAmaroCity(ctx,city){
 
   // AMARGENTA: borgo montano terrazzato, ricco di dettagli e percorsi.
   drawAmaroMountainBackdrop(ctx);
-  drawAmaroRiver(ctx,t);
   // Niente piattaforma circolare vuota: terreno continuo, sentieri, terrazze e case.
   ellipse(ctx,0,24,390,292,"rgba(0,0,0,.28)");
   ctx.fillStyle="#24452e";
@@ -213,6 +212,9 @@ export function drawAdventureAmaroCity(ctx,city){
     }
     ellipse(ctx,x,y+3,3,2,"#e8c66c");
   }
+
+  // Torrente, cascate e ponti in pietra sul lato occidentale del borgo.
+  drawAmaroRiver(ctx,t);
 
   // Sentieri di terra chiara con bordi in pietra: collegano ingressi,
   // piazza, botteghe e terrazze senza creare un anello geometrico.
