@@ -13,6 +13,11 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
+  const [questStarted, setQuestStarted] = useState(false);
+  const [questCount, setQuestCount] = useState(0);
+  const [questDone, setQuestDone] = useState(false);
+  const questActiveRef = useRef(false);
+  const questCountRef = useRef(0);
   const zoneRef = useRef("Ingresso di Amargenta");
 
   useEffect(() => {
@@ -254,6 +259,26 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("archivist","Orma","Archivista", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
       makeNpc("guard","Bruno","Guardiano del ponte",23,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
       makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
+      const linaInteraction=interactables.find(item=>item.id==="farmer");
+      if(linaInteraction)linaInteraction.action=()=>{
+        if(questCountRef.current>=3){setQuestDone(true);setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! La terrazza ti riconosce come raccoglitore esperto."});}
+        else if(!questActiveRef.current){questActiveRef.current=true;setQuestStarted(true);setDialogue({title:"Lina · La raccolta delle Fave d'Ambra",text:"Tre fave speciali sono cadute tra le terrazze. Le riconosci dal bagliore dorato. Raccoglile e torna da me."});}
+        else setDialogue({title:"Lina · Coltivatrice",text:"Te ne mancano ancora "+(3-questCountRef.current)+". Cerca tra i filari delle terrazze."});
+      };
+      const amberPickups=[];
+      [[-34,-37],[-12,-45],[-4,-28]].forEach((p,i)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(p[0],.8,p[1]);
+        const core=sphere(.34,gold,g,0,0,0,2);core.scale.set(.78,1.25,.78);
+        const ring=addMesh(new THREE.TorusGeometry(.56,.045,6,20),mat("#f4d28d",.3,{emissive:"#c58a42",emissiveIntensity:.7}),g,0,0,0);ring.rotation.x=Math.PI/2;
+        amberPickups.push(g);g.userData.amberPickup=true;
+        addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
+          if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
+          if(g.userData.collected)return;
+          g.userData.collected=true;g.visible=false;questCountRef.current+=1;setQuestCount(questCountRef.current);
+          if(questCountRef.current===3)setDialogue({title:"Raccolta completata",text:"Hai trovato tutte e tre le Fave d'Ambra. Torna da Lina per concludere la missione."});
+          else setDialogue({title:"Fava d'Ambra raccolta",text:"Fave trovate: "+questCountRef.current+"/3."});
+        },2.8);
+      });
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
@@ -318,6 +343,7 @@ export default function Amargenta3D({ onExit }) {
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;actor.group.rotation.y=Math.sin(clock.elapsedTime*.45+actor.phase)*.08;});
+        scene.traverse(o=>{if(o.userData.amberPickup){o.rotation.y+=dt*.65;}});
         const nextZone=p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
@@ -341,6 +367,14 @@ export default function Amargenta3D({ onExit }) {
     <div style={{position:"absolute",top:20,right:20,padding:"10px 14px",border:"1px solid #d8c19a66",borderRadius:12,background:"#18221eaa",backdropFilter:"blur(8px)",fontSize:12}}>
       <div style={{fontSize:9,letterSpacing:2,color:"#d9b37c"}}>ZONA</div><strong>{zone}</strong>
     </div>
+    {questStarted&&!questDone&&<div style={{position:"absolute",top:100,right:20,width:230,padding:13,border:"1px solid #d8b77d88",borderRadius:12,background:"#18221edb",fontSize:12,lineHeight:1.55}}>
+      <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>MISSIONE · AMARGENTA</div>
+      <strong>Le Fave d'Ambra</strong>
+      <div style={{marginTop:5,color:"#f0dfc2"}}>Raccogli le fave rare sulle terrazze.</div>
+      <div style={{marginTop:8,fontWeight:900,color:"#eac27f"}}>{questCount} / 3 raccolte</div>
+      <div style={{height:5,marginTop:5,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(questCount/3*100)+"%",background:"#e1ae5e",transition:"width .2s"}}/></div>
+    </div>}
+    {questDone&&<div style={{position:"absolute",top:100,right:20,padding:"10px 14px",border:"1px solid #d8b77d",borderRadius:12,background:"#26382beF",fontSize:12}}>✓ Missione completata · Fave d'Ambra</div>}
     <div style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
       <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Prototipo 3D isolato · modelli GLB Scenario da integrare</span>
     </div>
