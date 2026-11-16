@@ -88,7 +88,7 @@ function buildResonanceTrial(seedValue) {
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], introDone: false };
+    if (!raw) return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], failedWildIds: [], introDone: false };
     const parsed = JSON.parse(raw);
     return {
       ownedIds: Array.isArray(parsed.ownedIds) ? parsed.ownedIds : [],
@@ -99,10 +99,11 @@ function loadSave(key) {
       completedCities: Array.isArray(parsed.completedCities) ? parsed.completedCities : [],
       conqueredLeaders: Array.isArray(parsed.conqueredLeaders) ? parsed.conqueredLeaders : [],
       factionGems: Array.isArray(parsed.factionGems) ? parsed.factionGems : [],
+      failedWildIds: Array.isArray(parsed.failedWildIds) ? parsed.failedWildIds : [],
       introDone: !!parsed.introDone,
     };
   } catch {
-    return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], introDone: false };
+    return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], failedWildIds: [], introDone: false };
   }
 }
 
@@ -190,7 +191,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
   const currentReward = rewardQueue[rewardIndex];
   const wildSognatore = wildEncounter ? ROSTER.find((s) => s.id === wildEncounter.rosterId) || ROSTER.find((s) => s.nome?.toLowerCase() === wildEncounter.name?.toLowerCase()) : null;
   const wildAlreadyOwned = !!wildSognatore && save.ownedIds.some((id) => ROSTER.find((ownedSognatore) => ownedSognatore.id === id)?.nome === wildSognatore.nome);
-  const wildCanRecruit = wildEncounter?.recruitable !== false && !wildAlreadyOwned;
+  const wildFailedThisRun = !!wildSognatore && (save.failedWildIds || []).includes(wildSognatore.id);
+  const wildCanRecruit = wildEncounter?.recruitable !== false && !wildAlreadyOwned && !wildFailedThisRun;
   const activeTrialKey = phase === "wildTalk" ? (wildEncounter?.rosterId || wildEncounter?.id) : phase === "reward" ? currentReward?.id : "idle";
   const trialSequences = useMemo(() => buildResonanceTrial(activeTrialKey), [activeTrialKey]);
   const baseTrialSequence = trialSequences[trialRound] || [];
@@ -579,6 +581,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-cyan-100/60">{wildSognatore.tipo || wildSognatore.fazione}</div>
               {wildAlreadyOwned ? (
                 <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">Hai già stretto un legame con {wildSognatore.nome}. Gli altri esemplari della stessa specie restano liberi nel loro habitat, ma non possono essere arruolati una seconda volta.</div>
+              ) : wildFailedThisRun ? (
+                <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-950/35 p-4 text-sm leading-6 text-rose-100">Questa occasione è ormai perduta. Non hai compreso {wildSognatore.nome} e non potrai convincerlo a unirsi a te in questa partita. Potrai incontrare gli altri Sognatori, ma lui non ti darà una seconda possibilità.</div>
               ) : !wildCanRecruit ? (
                 <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">Questo esemplare vive in branco e non è arruolabile. Cerca il suo simile contrassegnato dalla stella dorata ✦: uno solo per specie può stringere il legame con te.</div>
               ) : (() => {
@@ -600,7 +604,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                               setWildQuestFeedback("Hai trovato la soluzione giusta. Il Sognatore si fida un po' di più di te.");
                               setWildQuestStep(2);
                             } else {
-                              setWildQuestFeedback("Non è la scelta migliore. Osserva gli indizi e prova un approccio diverso.");
+                              setSave((old) => ({ ...old, failedWildIds: Array.from(new Set([...(old.failedWildIds || []), wildSognatore.id])) }));
+                              setWildQuestFeedback("Hai risposto nel modo sbagliato. " + wildSognatore.nome + " perde fiducia e decide di allontanarsi. Non potrai più convincerlo in questa partita.");
                             }
                           }} className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-bold text-white transition hover:border-cyan-200/40 hover:bg-cyan-300/10">
                             {choice}
