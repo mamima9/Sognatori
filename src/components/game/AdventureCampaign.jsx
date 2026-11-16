@@ -545,14 +545,14 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
                 const quest = getWildRecruitQuest(wildSognatore);
                 return (
                   <div className="mt-4 rounded-2xl border border-cyan-200/15 bg-cyan-950/25 p-4 text-left">
-                    <div className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-200">Percorso di sintonia · {wildQuestStep + 1}/3</div>
+                    <div className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-200">Conosciamoci · {wildQuestStep + 1}/3</div>
                     {wildQuestStep === 0 ? <>
                       <p className="mt-3 text-sm leading-6 text-white/80">{quest.clue}</p>
-                      <p className="mt-2 text-xs text-cyan-100/55">Osserva l'habitat e scopri cosa è successo prima di avvicinarti.</p>
-                      <button onClick={() => setWildQuestStep(1)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">SEGUI GLI INDIZI</button>
+                      <p className="mt-2 text-xs text-cyan-100/55">Sei nel suo habitat. Parlagli direttamente e scopri cosa lo rende unico.</p>
+                      <button onClick={() => setWildQuestStep(1)} className="mt-4 w-full rounded-xl bg-cyan-300 py-3 text-sm font-black text-slate-950">PARLA CON {wildSognatore.nome.toUpperCase()}</button>
                     </> : wildQuestStep === 1 ? <>
                       <p className="mt-3 text-sm leading-6 text-white/80">{quest.task}</p>
-                      <p className="mt-2 text-xs text-cyan-100/55">Scegli come affrontare la situazione. La soluzione giusta dipende dalla personalità del Sognatore.</p>
+                      <p className="mt-2 text-xs text-cyan-100/55">Ogni Sognatore ha un modo tutto suo per fidarsi. Ascolta e scegli come rispondergli.</p>
                       <div className="mt-4 grid gap-2">
                         {quest.choices.map((choice, index) => (
                           <button key={choice} onClick={() => {
