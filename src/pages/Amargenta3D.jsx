@@ -444,6 +444,7 @@ export default function Amargenta3D({ onExit }) {
       box(1.8,1.15,1.1,wood,scene,68,.62,-68);
       box(1.9,.2,1.16,gold,scene,68,1.27,-68);
       sphere(.28,mat("#d4b3ff",.2,{emissive:"#8d59d4",emissiveIntensity:.8}),scene,68,1.65,-68,2);
+      addCollider(68,-68,1.2);
       // Cornice aperta della porta della torrefazione: il passaggio è realmente libero.
       box(.18,3,.25,gold,scene,66.4,1.5,62);
       box(.18,3,.25,gold,scene,69.6,1.5,62);
@@ -550,6 +551,7 @@ export default function Amargenta3D({ onExit }) {
         cylinder(.18,.22,1.25,darkStone,valve,0,.62,0,8);
         const wheel=addMesh(new THREE.TorusGeometry(.52,.09,8,16),gold,valve,0,1.3,0);wheel.rotation.x=Math.PI/2;
         const handle=box(.12,1.1,.12,wood,valve,0,1.3,0);
+        addCollider(p[0],p[1],.38);
         if(activatedValvesRef.current.has(i)){wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");}
         addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
           if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Bruno al ponte dovrebbe sapere come riattivare le condotte."});return;}
