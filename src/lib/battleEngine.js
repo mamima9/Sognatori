@@ -339,6 +339,17 @@ export function onEntry(
       break;
     }
 
+    case "talamos_palude_salata":
+      enemies.forEach(enemy => {
+        if (!enemy || enemy.fainted) return;
+        enemy.statusEffect = "assetato";
+        enemy.statusTurns = Math.max(enemy.statusTurns || 0, 2);
+        log.push(lang === "en"
+          ? "Palude Salata: " + enemy.nome + " becomes Thirsty."
+          : "Palude Salata: " + enemy.nome + " diventa Assetato.");
+      });
+      break;
+
     case "sparkly_debuff":
       enemies.forEach(e => {
         if (
@@ -1357,6 +1368,16 @@ export function applyEndOfTurn(
 
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
+
+    if (s.statusEffect === "assetato" && s.statusTurns > 0) {
+      s.statusTurns -= 1;
+      if (s.statusTurns <= 0) {
+        s.statusEffect = null;
+        log.push(lang === "en"
+          ? `${s.nome} is no longer Thirsty.`
+          : `${s.nome} non è più Assetato.`);
+      }
+    }
 
     if (s.statusEffect === "inzuppato" && s.statusTurns > 0) {
       s.statusTurns -= 1;
