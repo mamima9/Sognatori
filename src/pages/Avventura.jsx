@@ -1026,7 +1026,7 @@ export default function Avventura() {
   const personalAllDoorsUnlocked = isPersonalTester;
   const canEnterAmargenta = isPersonalTester;
   // Amargenta non entra nella progressione standard: è una mappa laboratorio privata.
-  const availableCities = canEnterAmargenta ? ADVENTURE_CITIES : ADVENTURE_CITIES.filter((city) => city.id !== "amaro");
+  const availableCities = ADVENTURE_CITIES.filter((city) => city.id !== "amaro");
 
   /*
     ============================
@@ -1150,7 +1150,7 @@ const [message, setMessage] = useState("");
     }
   }, [adventureSaveKey, defeatedLeaders, recruitedAdventureIds, discoveredWildClues, completedWildTasks]);
   const [activeMapId, setActiveMapId] = useState("natura");
-  const activeCityBase = availableCities.find((city) => city.id === activeMapId) || availableCities.find((city) => city.id === "natura") || ADVENTURE_CITIES[0];
+  const activeCityBase = (canEnterAmargenta && activeMapId === "amaro" ? ADVENTURE_CITIES.find((city) => city.id === "amaro") : availableCities.find((city) => city.id === activeMapId)) || availableCities.find((city) => city.id === "natura") || ADVENTURE_CITIES[0];
   const activeLore = ADVENTURE_FACTION_LORE[activeMapId] || {};
   const activeCity = { ...activeCityBase, ...activeLore, x: 1800, y: 1200 };
   const cityNpcCharacters = buildOutdoorNPCs(activeCityBase, activeLore, time);
@@ -1672,9 +1672,7 @@ const [message, setMessage] = useState("");
       if (activeCity.faction !== "Nuvola") {
         drawCityDistrict(ctx, activeCity);
       }
-      if (activeCity.faction === "Amaro") {
-        drawAdventureAmaroCity(ctx, activeCity);
-      } else if (activeCity.faction !== "Natura") {
+      if (activeCity.faction !== "Natura") {
         drawAdventureFactionCity(ctx, activeCity);
       }
       drawCityLandmark(ctx, activeCity);
