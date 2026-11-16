@@ -268,7 +268,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
       addBoxCollider(x,z,4,2.3);
     };
-    const makeInterior = (cx,cz) => {
+    const makeInterior = (cx,cz,doorSide="north") => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
       box(14,.35,12,floor,scene,cx,.05,cz);
       box(14,4,.35,wall,scene,cx,2,cz-6);
@@ -284,7 +284,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<4;i++){const pipe=cylinder(.09,.09,3,brass,scene,cx-4+i*1.1,2.7,cz+2,8);pipe.rotation.z=Math.PI/2;}
       for(let i=0;i<4;i++){const sack=sphere(.58,mat("#a88a61"),scene,cx-4+i*1.25,.55,cz+4,1);sack.scale.set(.8,1.1,.8);}
       makeLamp(cx-3,cz-2);makeLamp(cx+4,cz-3);
-      addInteriorWallColliders(cx,cz,14,12,"north");
+      addInteriorWallColliders(cx,cz,14,12,doorSide);
     };
 
 
@@ -371,7 +371,7 @@ export default function Amargenta3D({ onExit }) {
       // Interni accessibili: laboratorio della torrefazione e caffetteria storica.
       makeInterior(68,68);
       makeCafeInterior(-68,68);
-      makeInterior(68,-68);
+      makeInterior(68,-68,"south");
       // Le condotte sono invalicabili fuori dai due ponti in pietra.
       addBoxCollider(28,-42,12,12);
       addBoxCollider(28,-16,12,27);
@@ -426,7 +426,7 @@ export default function Amargenta3D({ onExit }) {
       const ormaInteraction=interactables.find(item=>item.id==="archivist");
       if(ormaInteraction)ormaInteraction.action=()=>{
         if(recipePagesRef.current>=4){
-          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));setToast("Missione completata · Ricetta Perduta");}
+          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setToast("Missione completata · Ricetta Perduta");}
           setDialogue({title:"Orma · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
         } else if(!recipeStartedRef.current){
           recipeStartedRef.current=true;setRecipeStarted(true);
@@ -597,7 +597,9 @@ export default function Amargenta3D({ onExit }) {
         const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0);
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
         if(controlsLockedRef.current) keys.clear();
-        if(forward||side){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(forward).add(right.multiplyScalar(side)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-82,82),nz=THREE.MathUtils.clamp(player.position.z+move.z,-82,82);
+        const activeForward=controlsLockedRef.current?0:forward;
+        const activeSide=controlsLockedRef.current?0:side;
+        if(activeForward||activeSide){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(activeForward).add(right.multiplyScalar(activeSide)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-82,82),nz=THREE.MathUtils.clamp(player.position.z+move.z,-82,82);
           // Collisione separata sugli assi: il personaggio scivola lungo gli ostacoli invece di bloccarsi in diagonale.
           if(!isBlockedAt(nx,player.position.z)) player.position.x=nx;
           if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
