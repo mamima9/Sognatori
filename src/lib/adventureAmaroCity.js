@@ -69,11 +69,11 @@ function drawCoffeeMountainChain(c,t){
   plantationTier(c,190,218,166,108,1,t);
   plantationTier(c,-270,218,170,106,1,t);
   // Rampe fisiche leggibili tra il fondovalle e le terrazze rialzate.
-  drawCoffeeRamp(ctx,[-390,-40],[-286,-69],19);
-  drawCoffeeRamp(ctx,[390,-40],[286,-68],19);
-  drawCoffeeRamp(ctx,[-390,125],[-270,165],18);
-  drawCoffeeRamp(ctx,[390,120],[190,164],18);
-  drawCoffeeRamp(ctx,[-286,-181],[-180,-191],15);
+  drawCoffeeRamp(c,[-390,-40],[-286,-69],19);
+  drawCoffeeRamp(c,[390,-40],[286,-68],19);
+  drawCoffeeRamp(c,[-390,125],[-270,165],18);
+  drawCoffeeRamp(c,[390,120],[190,164],18);
+  drawCoffeeRamp(c,[-286,-181],[-180,-191],15);
   // Sentieri di collegamento che salgono a tornanti tra le quote.
   line(c,[[-388,-65],[-358,-78],[-340,-52],[-315,-66],[-292,-40]],"#d5ae7c",7);
   line(c,[[270,145],[298,125],[320,145],[350,124]],"#d5ae7c",7);
