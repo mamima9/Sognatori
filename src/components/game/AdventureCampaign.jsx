@@ -550,39 +550,59 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
               <button onClick={() => setPanel("party")} className={"rounded-lg px-3 py-2 " + (panel === "party" ? "bg-emerald-300 text-black" : "bg-white/10")}>Squadra ({party.length}/4)</button>
               <button onClick={() => setPanel("box")} className={"rounded-lg px-3 py-2 " + (panel === "box" ? "bg-violet-300 text-black" : "bg-white/10")}>Deposito ({deposit.length})</button>
             </div>}
-            {panel === "missions" ? (
+            {panel === "missions" && (
               <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
-                {missionCards.map((mission) => <section key={mission.id} className={"rounded-2xl border p-4 " + (mission.complete ? "border-emerald-300/40 bg-emerald-300/10" : "border-white/10 bg-white/5")}>
-                  <div className="flex items-start justify-between gap-3"><div><div className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Missione {mission.id}</div><h3 className="mt-1 text-lg font-black">{mission.title}</h3></div><span className={"shrink-0 rounded-full px-3 py-1 text-[9px] font-black uppercase " + (mission.complete ? "bg-emerald-300 text-slate-950" : "bg-white/10 text-white/65")}>{mission.complete ? "Completata" : "In corso"}</span></div>
-                  <p className="mt-2 text-sm leading-6 text-white/75">{mission.description}</p><div className="mt-2 text-xs font-bold text-cyan-200">{mission.progress}</div>
-                  <div className="mt-4 border-t border-white/10 pt-3"><div className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200/80">Ricompensa · Lore</div><div className="mt-2 grid gap-2">{mission.reward.map((entry) => <div key={entry.name} className="rounded-xl bg-black/25 p-3"><div className="text-sm font-black text-white">{entry.name}</div><p className="mt-1 text-xs leading-5 text-white/65">{mission.complete ? entry.lore : "Voce di Lore bloccata: completa la missione per sbloccarla."}</p></div>)}</div></div>
-                </section>)}
-              </div>
-            ) : (
-            <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
-              {(panel === "party" ? party : deposit).map((s) => {
-                const isStarter = (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id);
-                return (
-                  <div key={s.id} className={"flex w-full flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center " + (panel === "party" && isStarter ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <AdventureSognatoreSprite s={s} size={58} overworld />
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="break-words text-base font-black leading-tight">{s.nome}</div>
-                        <div className="text-sm text-white/65"><span className="font-bold text-white/45">FAZIONE:</span> {s.tipo}</div>
-                        {panel === "party" && <div className={"text-sm font-black uppercase tracking-wider " + (isStarter ? "text-amber-200" : "text-sky-200")}>{isStarter ? "TITOLARE" : "PANCHINA"}</div>}
+                {missionCards.map((mission) => (
+                  <section key={mission.id} className={"rounded-2xl border p-4 " + (mission.complete ? "border-emerald-300/40 bg-emerald-300/10" : "border-white/10 bg-white/5")}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">Missione {mission.id}</div>
+                        <h3 className="mt-1 text-lg font-black">{mission.title}</h3>
+                      </div>
+                      <span className={"shrink-0 rounded-full px-3 py-1 text-[9px] font-black uppercase " + (mission.complete ? "bg-emerald-300 text-slate-950" : "bg-white/10 text-white/65")}>{mission.complete ? "Completata" : "In corso"}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-white/75">{mission.description}</p>
+                    <div className="mt-2 text-xs font-bold text-cyan-200">{mission.progress}</div>
+                    <div className="mt-4 border-t border-white/10 pt-3">
+                      <div className="text-[10px] font-black uppercase tracking-[.18em] text-amber-200/80">Ricompensa · Lore</div>
+                      <div className="mt-2 grid gap-2">
+                        {mission.reward.map((entry) => (
+                          <div key={entry.name} className="rounded-xl bg-black/25 p-3">
+                            <div className="text-sm font-black text-white">{entry.name}</div>
+                            <p className="mt-1 text-xs leading-5 text-white/65">{mission.complete ? entry.lore : "Voce di Lore bloccata: completa la missione per sbloccarla."}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    {panel === "party" ? (
-                      <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
-                        <button onClick={() => toggleStarter(s.id)} className="rounded-lg border border-amber-200/20 bg-amber-200/10 px-4 py-2 text-xs font-black text-amber-100">{isStarter ? "METTI IN PANCHINA" : "RENDI TITOLARE"}</button>
-                        <button onClick={() => toggleParty(s.id)} className="rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-xs font-black">SPOSTA NEL BOX</button>
+                  </section>
+                ))}
+              </div>
+            )}
+            {panel !== "missions" && (
+              <div className="flex max-h-[68vh] flex-col gap-3 overflow-y-auto pr-1">
+                {(panel === "party" ? party : deposit).map((s) => {
+                  const isStarter = (save.starterIds || save.partyIds.slice(0, 2)).includes(s.id);
+                  return (
+                    <div key={s.id} className={"flex w-full flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center " + (panel === "party" && isStarter ? "border-amber-200/40 bg-amber-300/10" : "border-white/10 bg-white/5")}>
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <AdventureSognatoreSprite s={s} size={58} overworld />
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="break-words text-base font-black leading-tight">{s.nome}</div>
+                          <div className="text-sm text-white/65"><span className="font-bold text-white/45">FAZIONE:</span> {s.tipo}</div>
+                          {panel === "party" && <div className={"text-sm font-black uppercase tracking-wider " + (isStarter ? "text-amber-200" : "text-sky-200")}>{isStarter ? "TITOLARE" : "PANCHINA"}</div>}
+                        </div>
                       </div>
-                    ) : <button onClick={() => toggleParty(s.id)} className="shrink-0 rounded-lg bg-white/10 px-4 py-3 text-xs font-black">AGGIUNGI ALLA SQUADRA</button>}
-                  </div>
-                );
-              })}
-              {(panel === "party" ? party : deposit).length === 0 && <div className="rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
-            </div>
+                      {panel === "party" ? (
+                        <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
+                          <button onClick={() => toggleStarter(s.id)} className="rounded-lg border border-amber-200/20 bg-amber-200/10 px-4 py-2 text-xs font-black text-amber-100">{isStarter ? "METTI IN PANCHINA" : "RENDI TITOLARE"}</button>
+                          <button onClick={() => toggleParty(s.id)} className="rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-xs font-black">SPOSTA NEL BOX</button>
+                        </div>
+                      ) : <button onClick={() => toggleParty(s.id)} className="shrink-0 rounded-lg bg-white/10 px-4 py-3 text-xs font-black">AGGIUNGI ALLA SQUADRA</button>}
+                    </div>
+                  );
+                })}
+                {(panel === "party" ? party : deposit).length === 0 && <div className="rounded-xl bg-white/5 p-6 text-center text-sm text-white/50">{panel === "party" ? "La squadra è vuota." : "Il deposito è vuoto."}</div>}
+              </div>
             )}
             <div className="mt-3 text-[10px] text-white/45">Posseduti: {owned.length} · In squadra: {party.length} · Nel deposito: {deposit.length}</div>
           </div>
