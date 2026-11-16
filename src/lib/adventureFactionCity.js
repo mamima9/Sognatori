@@ -3,8 +3,8 @@
 const P={
 Demone:["#4d303a","#2d202b","#b95754","#ffb36a","#7e4249"],
 Robot:["#8b969f","#4f5b65","#d4d9de","#f6f8fa","#aeb8c1"],
-Nuvola:["#819cbd","#536d8d","#cce4f5","#fff9ef","#a9c9e7"],
-Umano:["#94734e","#60462f","#d8b17a","#f5e2b6","#b98b5c"],
+Nuvola:["#e3edf4","#aabac8","#f4f9fd","#ffffff","#d3e2ec"],
+Umano:["#55585d","#292c31","#858b91","#d5d9dd","#41454b"],
 Luce:["#b89a53","#79602f","#f2d77e","#fff5c4","#d6b85f"],
 Dolce:["#c89a62","#815333","#e5c18a","#fff0d0","#b77b45"],
 Marino:["#397b8b","#214f65","#80d5d6","#d9fff1","#58a9b4"],
