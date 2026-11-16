@@ -18,26 +18,61 @@ function coffeeRelic(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);ellipse(c
 function coffeeTree(c,x,y,s=1,phase=0){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,20,22,7,"rgba(0,0,0,.25)");rect(c,-4,-9,8,29,P.bark);ellipse(c,-13,-20,17,16,P.leaf);ellipse(c,5,-31,22,20,P.leaf2);ellipse(c,21,-17,16,15,P.leaf);ellipse(c,0,-9,22,15,P.leaf2);for(let i=0;i<5;i++){const a=i*2.4+phase;const bx=Math.cos(a)*13,by=-19+Math.sin(a)*11;ellipse(c,bx,by,3,5,i%2?"#b65b45":"#d07a4c");}line(c,[[-12,-28],[0,-38],[14,-30]],"#b7c57c",2);c.restore();}
 function lamp(c,x,y,t,i=0){rect(c,x-3,y-1,6,30,P.ink);rect(c,x-9,y-7,18,5,P.copper);rect(c,x-7,y-22,14,16,P.gold);rect(c,x-4,y-19,8,10,P.ivory);glow(c,x,y-13,23,.07+.04*Math.sin(t*2+i));}
 function roof(c,x,y,w,col=P.shadow){c.fillStyle=col;c.beginPath();c.moveTo(x-w/2-9,y);c.lineTo(x,y-30);c.lineTo(x+w/2+9,y);c.closePath();c.fill();line(c,[[x-w/2-7,y-2],[x,y-29],[x+w/2+7,y-2]],P.copper,3);}
-function cafe(c,x,y,name,kind=0){c.save();c.translate(x,y);const w=kind===1?88:72,h=kind===1?65:56;ellipse(c,4,h/2+9,w*.7,10,"rgba(0,0,0,.3)");rect(c,-w/2-5,-h/2+10,w+10,h,P.ink);rect(c,-w/2,-h/2+14,w,h-5,kind%2?"#936044":"#80503a");rect(c,-w/2+5,-h/2+18,w-10,h-13,"#b17b50");roof(c,0,-h/2+17,w,kind===1?"#382426":"#49302a");for(const wx of [-w/2+13,w/2-27]){rect(c,wx,-h/2+25,17,20,P.shadow);rect(c,wx+3,-h/2+28,11,14,P.window);rect(c,wx+8,-h/2+28,2,14,P.copper);}rect(c,-10,h/2-25,20,26,P.shadow);rect(c,-7,h/2-22,14,23,"#bd8758");rect(c,-w/2+7,h/2-39,w-14,10,"#302126");rect(c,-w/2+10,h/2-37,w-20,6,P.gold);text(c,name,0,h/2-30,5,P.ink);if(kind===1){rect(c,-w/2-4,-h/2+4,w+8,5,P.gold);bean(c,0,-h/2-6,1.2);}c.restore();}
-function roastery(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,31,55,13,"rgba(0,0,0,.3)");rect(c,-48,-26,96,58,"#49302a");rect(c,-42,-20,84,48,"#a36c46");roof(c,0,-20,84,"#302126");rect(c,-31,-8,26,28,"#392426");rect(c,-27,-4,18,20,"#d08b51");rect(c,8,-8,25,28,"#392426");rect(c,12,-4,17,20,"#e2ae69");rect(c,-7,-40,14,21,"#5a3a32");rect(c,-4,-54,8,16,"#302126");for(let i=0;i<3;i++){const p=t*0.7+i*1.7;ellipse(c,Math.sin(p)*5,-62-i*13,5+i,4+i,"rgba(238,222,194,"+(.35-i*.08)+")");}text(c,"TORREFAZIONE",0,24,6,P.ivory);c.restore();}
+function cafe(c,x,y,name,kind=0){c.save();c.translate(x,y);const w=kind===1?88:72,h=kind===1?65:56,depth=13;ellipse(c,5,h/2+depth+5,w*.72,11,"rgba(0,0,0,.34)");face(c,[[-w/2,-h/2+12],[w/2,-h/2+12],[w/2+depth,-h/2+2],[depth-w/2,-h/2+2]],"#4a3029");face(c,[[w/2,-h/2+12],[w/2,h/2+8],[w/2+depth,h/2-depth+8],[w/2+depth,-h/2+2]],"#493027");rect(c,-w/2,-h/2+12,w,h-4,kind%2?"#936044":"#80503a");rect(c,-w/2+5,-h/2+17,w-10,h-14,"#b17b50");face(c,[[-w/2-9,-h/2+14],[0,-h/2-19],[w/2+9,-h/2+14],[w/2+depth,-h/2+3],[depth,-h/2-29],[-w/2+depth,-h/2+3]],"#302126");face(c,[[-w/2-6,-h/2+12],[0,-h/2-21],[w/2+7,-h/2+12]],kind===1?"#604034":"#49302a");line(c,[[-w/2-6,-h/2+12],[0,-h/2-21],[w/2+7,-h/2+12]],P.copper,3);for(const wx of [-w/2+13,w/2-27]){rect(c,wx,-h/2+25,17,20,P.shadow);rect(c,wx+3,-h/2+28,11,14,P.window);rect(c,wx+8,-h/2+28,2,14,P.copper);}rect(c,-10,h/2-25,20,26,P.shadow);rect(c,-7,h/2-22,14,23,"#bd8758");rect(c,-w/2+7,h/2-39,w-14,10,"#302126");rect(c,-w/2+10,h/2-37,w-20,6,P.gold);text(c,name,0,h/2-30,5,P.ink);if(kind===1){rect(c,-w/2-4,-h/2+4,w+8,5,P.gold);bean(c,0,-h/2-6,1.2);}c.restore();}
+function roastery(c,x,y,t){c.save();c.translate(x,y);ellipse(c,6,39,61,14,"rgba(0,0,0,.34)");face(c,[[-48,-18],[48,-18],[62,-31],[-34,-31]],"#49302a");face(c,[[48,-18],[48,32],[62,19],[62,-31]],"#382722");rect(c,-48,-18,96,50,"#49302a");rect(c,-42,-13,84,45,"#a36c46");face(c,[[-48,-18],[0,-53],[48,-18],[62,-31],[14,-66],[-34,-31]],"#302126");face(c,[[-48,-18],[0,-53],[48,-18]],"#654332");line(c,[[-48,-18],[0,-53],[48,-18]],P.copper,3);rect(c,-31,-8,26,28,"#392426");rect(c,-27,-4,18,20,"#d08b51");rect(c,8,-8,25,28,"#392426");rect(c,12,-4,17,20,"#e2ae69");rect(c,-7,-40,14,21,"#5a3a32");rect(c,-4,-54,8,16,"#302126");for(let i=0;i<3;i++){const p=t*.7+i*1.7;ellipse(c,Math.sin(p)*5,-62-i*13,5+i,4+i,"rgba(238,222,194,"+(.35-i*.08)+")");}text(c,"TORREFAZIONE",0,24,6,P.ivory);c.restore();}
 function cupFountain(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,28,55,15,"rgba(0,0,0,.28)");ellipse(c,0,15,50,14,P.stone);ellipse(c,0,11,43,10,P.gold);rect(c,-30,-22,60,32,P.cream);rect(c,-26,-18,52,24,"#8e5338");rect(c,-21,-15,42,16,"#4a2926");c.strokeStyle=P.cream;c.lineWidth=7;c.beginPath();c.arc(31,-7,13,-Math.PI/2,Math.PI/2);c.stroke();ellipse(c,0,-23,30,7,"#e6c18d");ellipse(c,0,-25,23,5,"#4a2926");for(let i=0;i<5;i++){const a=t*1.7+i*1.25;ellipse(c,Math.cos(a)*34,-7+Math.sin(a)*3,2,3,P.ivory);}for(let i=0;i<3;i++){const p=t*1.3+i*2;line(c,[[Math.sin(p)*5,-33],[Math.sin(p+.5)*8,-45],[Math.sin(p+1)*3,-56]],"rgba(255,235,194,.65)",2);}c.restore();}
 function beanMonument(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,25,50,12,"rgba(0,0,0,.3)");rect(c,-38,9,76,13,P.stone);rect(c,-32,4,64,8,P.stoneLight);ellipse(c,0,-16,24,34,"#392321");ellipse(c,-3,-18,18,27,"#a35e39");line(c,[[0,-40],[5,-26],[-2,-12],[3,8]],"#f0bd79",4);for(let i=0;i<8;i++){const a=i*Math.PI/4+t*.12;glow(c,Math.cos(a)*37,-14+Math.sin(a)*37,3,.7);}c.restore();}
 function terrace(c,x,y,w,h){c.save();rect(c,x-w/2,y-h/2,w,h,"#654334");rect(c,x-w/2+4,y-h/2+4,w-8,h-8,"#9b6947");rect(c,x-w/2+9,y-h/2+9,w-18,5,"#c38a57");for(let i=0;i<5;i++){const xx=x-w/2+14+i*(w-28)/4;coffeeTree(c,xx,y+5,.42,i);}c.restore();}
-// Catena montuosa a livelli: terrazze di Coffea, muri di contenimento e sentieri.
-function drawCoffeeHighland(c,x,y,w,h,level,t,flip=1){
-  c.save();c.translate(x,y);c.scale(flip,1);
-  c.fillStyle="rgba(20,12,12,.42)";c.beginPath();c.moveTo(-w*.55,8);c.lineTo(-w*.36,-h*.58);c.lineTo(-w*.08,-h);c.lineTo(w*.16,-h*.72);c.lineTo(w*.43,-h*.9);c.lineTo(w*.58,8);c.closePath();c.fill();
-  c.fillStyle=["#48332c","#594033","#6c4934"][level%3];c.beginPath();c.moveTo(-w*.55,0);c.lineTo(-w*.36,-h*.58);c.lineTo(-w*.08,-h);c.lineTo(w*.16,-h*.72);c.lineTo(w*.43,-h*.9);c.lineTo(w*.58,0);c.closePath();c.fill();
-  c.fillStyle="#9a7049";c.beginPath();c.moveTo(-w*.42,-h*.25);c.lineTo(-w*.08,-h*.76);c.lineTo(w*.16,-h*.55);c.lineTo(w*.42,-h*.69);c.lineTo(w*.48,-h*.35);c.lineTo(-w*.34,-h*.04);c.closePath();c.fill();
-  for(let row=0;row<4;row++){const yy=-h*.18-row*h*.145,span=w*(.43-row*.055);c.fillStyle=row%2?"#4a342b":"#775039";c.beginPath();c.moveTo(-span,yy+10);c.lineTo(span,yy+10);c.lineTo(span*.9,yy+22);c.lineTo(-span*.9,yy+22);c.closePath();c.fill();c.strokeStyle="#c18a58";c.lineWidth=3;c.beginPath();c.moveTo(-span,yy+10);c.lineTo(span,yy+10);c.stroke();for(let n=0;n<7;n++){const tx=-span*.84+n*(span*1.68/6);coffeeTree(c,tx,yy+8,.27+(row%2)*.025,t+n+row);}}
-  c.fillStyle="#bd895b";for(let k=0;k<5;k++){const sx=-w*.48+k*8;c.fillRect(sx,-h*.12+k*7,8,5);}c.fillStyle="#d9b17a";c.fillRect(-w*.52,2,w*1.04,5);c.restore();
+// Geometria dimetrica 2.5D: piattaforme con top, pareti laterali e quote reali.
+function face(c,pts,color){c.fillStyle=color;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();}
+function raisedPlot(c,x,y,w,d,h,top,front,side){
+  const a=[x,y-d/2],b=[x+w/2,y],cc=[x,y+d/2],dd=[x-w/2,y];
+  const drop=[0,h];
+  face(c,[dd,cc,[cc[0],cc[1]+h],[dd[0],dd[1]+h]],front);
+  face(c,[cc,b,[b[0],b[1]+h],[cc[0],cc[1]+h]],side);
+  face(c,[a,b,cc,dd],top);
+  face(c,[a,[a[0],a[1]+2], [b[0],b[1]+2],b],"rgba(255,220,164,.22)");
+}
+function coffeeTreeVolume(c,x,y,s=1,phase=0){
+  // Albero a volume: tronco, chioma a strati e bacche leggibili.
+  c.save();c.translate(x,y);c.scale(s,s);
+  ellipse(c,4,12,15,5,"rgba(12,10,9,.32)");
+  face(c,[[-3,-3],[3,-3],[5,13],[-5,13]],"#503126");
+  face(c,[[-4,-3],[0,-8],[4,-3],[0,0]],"#8b5938");
+  ellipse(c,-7,-13,12,10,"#36583a");ellipse(c,5,-20,15,13,"#527b45");
+  ellipse(c,17,-12,11,10,"#3f683d");ellipse(c,0,-8,15,10,"#6c914e");
+  line(c,[[-10,-22],[-1,-29],[10,-24]],"#b5c47a",2);
+  for(let i=0;i<6;i++){const a=i*2.4+phase;ellipse(c,Math.cos(a)*10, -15+Math.sin(a)*8,2.3,3.5,i%2?"#b94e3e":"#dc8050");}
+  c.restore();
+}
+function plantationTier(c,x,y,w,d,level,t){
+  const h=18+level*3;
+  raisedPlot(c,x,y,w,d,h,level===2?"#8c6844":level===1?"#79553a":"#674632",
+    "#493027","#382722");
+  // Filari ordinati sulla superficie superiore; la scala varia con la profondità.
+  for(let row=0;row<3;row++){
+    const yy=y-d*.27+row*d*.27;
+    for(let col=0;col<7;col++){
+      const xx=x-w*.39+col*w*.13+(row%2)*w*.025;
+      coffeeTreeVolume(c,xx,yy-h*.12,.34+row*.055,t+row+col);
+    }
+  }
+  // Muretti di contenimento e piccoli gradini di accesso.
+  line(c,[[x-w*.48,y],[x,y+d*.48],[x+w*.48,y]],"#c18a58",3);
+  for(let k=0;k<4;k++){const sx=x-w*.48+k*8;c.fillStyle="#d4a06b";c.fillRect(sx,y+5+k*2,7,3);}
 }
 function drawCoffeeMountainChain(c,t){
-  drawCoffeeHighland(c,-305,-112,180,160,0,t,1);drawCoffeeHighland(c,-190,-225,150,145,1,t,1);
-  drawCoffeeHighland(c,305,-105,185,165,2,t,-1);drawCoffeeHighland(c,205,225,165,145,1,t,-1);
-  drawCoffeeHighland(c,-260,210,160,138,2,t,1);
-  line(c,[[-390,-65],[-350,-90],[-330,-65],[-294,-88],[-270,-58]],"#d6ae78",5);
-  line(c,[[265,150],[300,125],[326,145],[355,118]],"#d6ae78",5);
+  // La montagna è una successione di terrazze agricole rialzate, non una sagoma piatta.
+  plantationTier(c,-286,-125,184,112,2,t);
+  plantationTier(c,-180,-238,142,94,1,t);
+  plantationTier(c,286,-126,190,116,2,t);
+  plantationTier(c,190,218,166,108,1,t);
+  plantationTier(c,-270,218,170,106,1,t);
+  // Sentieri di collegamento che salgono a tornanti tra le quote.
+  line(c,[[-388,-65],[-358,-78],[-340,-52],[-315,-66],[-292,-40]],"#d5ae7c",7);
+  line(c,[[270,145],[298,125],[320,145],[350,124]],"#d5ae7c",7);
+  line(c,[[-180,-175],[-155,-158],[-174,-139],[-147,-120]],"#e1bd8c",4);
+  line(c,[[185,164],[210,145],[194,127],[222,110]],"#e1bd8c",4);
 }
 export function drawAdventureAmaroCity(ctx,city){
   const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
