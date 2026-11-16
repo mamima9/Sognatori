@@ -1572,14 +1572,20 @@ const [message, setMessage] = useState("");
         cameraRef.current;
 
       const scale = Math.min(w / 1100, h / 825);
+      // Amargenta adotta una proiezione obliqua dimetrica; le altre mappe
+      // mantengono esattamente la camera ortogonale precedente.
+      const amaroProjection = activeMapId === "amaro"
+        ? { xx: 1, xy: 0.18, yx: 0.48, yy: 0.82 }
+        : null;
+      const projectedCameraX = amaroProjection
+        ? amaroProjection.xx * cam.x + amaroProjection.yx * cam.y
+        : cam.x;
+      const projectedCameraY = amaroProjection
+        ? amaroProjection.xy * cam.x + amaroProjection.yy * cam.y
+        : cam.y;
 
-      const offsetX =
-        w / 2 -
-        cam.x * scale;
-
-      const offsetY =
-        h / 2 -
-        cam.y * scale;
+      const offsetX = w / 2 - projectedCameraX * scale;
+      const offsetY = h / 2 - projectedCameraY * scale;
 
       ctx.save();
 
@@ -1592,6 +1598,16 @@ const [message, setMessage] = useState("");
         scale,
         scale
       );
+      if (amaroProjection) {
+        ctx.transform(
+          amaroProjection.xx,
+          amaroProjection.xy,
+          amaroProjection.yx,
+          amaroProjection.yy,
+          0,
+          0
+        );
+      }
 
       /*
         MONDO
@@ -1683,14 +1699,10 @@ const [message, setMessage] = useState("");
         ALBERI
       */
 
-      for (const tree of WORLD_OBJECTS.trees) {
-        drawTree(
-          ctx,
-          tree.x,
-          tree.y,
-          tree.r,
-          activeCity.faction
-        );
+      if (activeMapId !== "amaro") {
+        for (const tree of WORLD_OBJECTS.trees) {
+          drawTree(ctx, tree.x, tree.y, tree.r, activeCity.faction);
+        }
       }
 
       // Dodici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
@@ -1736,53 +1748,186 @@ const [message, setMessage] = useState("");
       /*        ROCCE
       */
 
-      const rockPalettes = {
-        Demone: ["#452d38", "#8d4650", "#d06a54"],
-        Robot: ["#4f5b65", "#8b969f", "#d4d9de"],
-        Natura: ["#3e4548", "#727b7b", "#9da09a"],
-        Nuvola: ["#aabac8", "#e3edf4", "#ffffff"],
-        Umano: ["#292c31", "#55585d", "#858b91"],
-        Luce: ["#796039", "#c09a4c", "#f4d887"],
-        Dolce: ["#815333", "#c89a62", "#e5c18a"],
-        Marino: ["#294d60", "#4b8795", "#9bd1d0"],
-        Orso: ["#49372b", "#806044", "#b9915c"],
-        Mago: ["#3d3655", "#776b9d", "#c1b2e8"],
-        Salato: ["#80565d", "#c98e91", "#e8c5c2"],
-      };
-      const [rockShadow, rockMid, rockLight] = rockPalettes[activeCity.faction] || rockPalettes.Natura;
-      for (const rock of WORLD_OBJECTS.rocks) {
-        ctx.save();
-        ctx.translate(Math.round(rock.x / 3) * 3, Math.round(rock.y / 3) * 3);
-        ctx.fillStyle = "rgba(9,15,18,.28)";
-        ctx.beginPath(); ctx.ellipse(3, rock.r * .62, rock.r * 1.25, rock.r * .42, 0, 0, Math.PI * 2); ctx.fill();
-
-        ctx.fillStyle = rockShadow;
-        ctx.beginPath();
-        ctx.moveTo(-rock.r * 1.1, rock.r * .35);
-        ctx.lineTo(-rock.r * .8, -rock.r * .35);
-        ctx.lineTo(-rock.r * .18, -rock.r);
-        ctx.lineTo(rock.r * .52, -rock.r * .72);
-        ctx.lineTo(rock.r * 1.12, rock.r * .2);
-        ctx.lineTo(rock.r * .72, rock.r * .7);
-        ctx.closePath(); ctx.fill();
-
-        ctx.fillStyle = rockMid;
-        ctx.beginPath();
-        ctx.moveTo(-rock.r * .8, -rock.r * .35);
-        ctx.lineTo(-rock.r * .18, -rock.r);
-        ctx.lineTo(rock.r * .1, -rock.r * .16);
-        ctx.lineTo(-rock.r * .2, rock.r * .12);
-        ctx.closePath(); ctx.fill();
-
-        ctx.fillStyle = rockLight;
-        ctx.fillRect(-rock.r * .16, -rock.r * .82, Math.max(3, rock.r * .22), Math.max(3, rock.r * .16));
-        ctx.fillStyle = rockShadow;
-        ctx.fillRect(rock.r * .48, -rock.r * .35, Math.max(3, rock.r * .18), Math.max(3, rock.r * .28));
-        ctx.fillStyle = "rgba(255,255,255,.28)";
-        ctx.fillRect(-rock.r * .58, rock.r * .08, Math.max(3, rock.r * .2), 3);
-        ctx.restore();
+      if (activeMapId !== "amaro") {
+        const rockPalettes = {
+          Demone: ["#452d38", "#8d4650", "#d06a54"],
+          Robot: ["#4f5b65", "#8b969f", "#d4d9de"],
+          Natura: ["#3e4548", "#727b7b", "#9da09a"],
+          Nuvola: ["#aabac8", "#e3edf4", "#ffffff"],
+          Umano: ["#292c31", "#55585d", "#858b91"],
+          Luce: ["#796039", "#c09a4c", "#f4d887"],
+          Dolce: ["#815333", "#c89a62", "#e5c18a"],
+          Marino: ["#294d60", "#4b8795", "#9bd1d0"],
+          Orso: ["#49372b", "#806044", "#b9915c"],
+          Mago: ["#3d3655", "#776b9d", "#c1b2e8"],
+          Salato: ["#80565d", "#c98e91", "#e8c5c2"],
+        };
+        const [rockShadow, rockMid, rockLight] = rockPalettes[activeCity.faction] || rockPalettes.Natura;
+        for (const rock of WORLD_OBJECTS.rocks) {
+          ctx.save();
+          ctx.translate(Math.round(rock.x / 3) * 3, Math.round(rock.y / 3) * 3);
+          ctx.fillStyle = "rgba(9,15,18,.28)";
+          ctx.beginPath(); ctx.ellipse(3, rock.r * .62, rock.r * 1.25, rock.r * .42, 0, 0, Math.PI * 2); ctx.fill();
+  
+          ctx.fillStyle = rockShadow;
+          ctx.beginPath();
+          ctx.moveTo(-rock.r * 1.1, rock.r * .35);
+          ctx.lineTo(-rock.r * .8, -rock.r * .35);
+          ctx.lineTo(-rock.r * .18, -rock.r);
+          ctx.lineTo(rock.r * .52, -rock.r * .72);
+          ctx.lineTo(rock.r * 1.12, rock.r * .2);
+          ctx.lineTo(rock.r * .72, rock.r * .7);
+          ctx.closePath(); ctx.fill();
+  
+          ctx.fillStyle = rockMid;
+          ctx.beginPath();
+          ctx.moveTo(-rock.r * .8, -rock.r * .35);
+          ctx.lineTo(-rock.r * .18, -rock.r);
+          ctx.lineTo(rock.r * .1, -rock.r * .16);
+          ctx.lineTo(-rock.r * .2, rock.r * .12);
+          ctx.closePath(); ctx.fill();
+  
+          ctx.fillStyle = rockLight;
+          ctx.fillRect(-rock.r * .16, -rock.r * .82, Math.max(3, rock.r * .22), Math.max(3, rock.r * .16));
+          ctx.fillStyle = rockShadow;
+          ctx.fillRect(rock.r * .48, -rock.r * .35, Math.max(3, rock.r * .18), Math.max(3, rock.r * .28));
+          ctx.fillStyle = "rgba(255,255,255,.28)";
+          ctx.fillRect(-rock.r * .58, rock.r * .08, Math.max(3, rock.r * .2), 3);
+          ctx.restore();
+        }
+  
       }
+      if (activeMapId === "amaro") {
+        // Inversa della matrice dimetrica: gli sprite restano verticali
+        // mentre il terreno e l'architettura seguono la camera obliqua.
+        const inv = { a:1.117, b:-0.245, c:-0.654, d:1.363 };
+        const drawUprightAt = (x,y,draw) => {
+          ctx.save();
+          ctx.translate(x,y);
+          ctx.transform(inv.a,inv.b,inv.c,inv.d,0,0);
+          draw();
+          ctx.restore();
+        };
+        const depthOf = (x,y) => 0.18*x + 0.82*y;
+        const depthQueue = [];
+        const enqueue = (x,y,draw) => depthQueue.push({ depth:depthOf(x,y), draw });
 
+        // Alberi e rocce partecipano allo stesso ordinamento degli attori:
+        // il protagonista può passare dietro o davanti a ogni elemento.
+        for (const tree of WORLD_OBJECTS.trees) {
+          enqueue(tree.x,tree.y,()=>drawUprightAt(tree.x,tree.y,()=>drawTree(ctx,0,0,tree.r,activeCity.faction)));
+        }
+        const rockPalettes = {
+          Demone:["#452d38","#8d4650","#d06a54"], Robot:["#4f5b65","#8b969f","#d4d9de"],
+          Natura:["#3e4548","#727b7b","#9da09a"], Nuvola:["#aabac8","#e3edf4","#ffffff"],
+          Umano:["#292c31","#55585d","#858b91"], Luce:["#796039","#c09a4c","#f4d887"],
+          Dolce:["#815333","#c89a62","#e5c18a"], Marino:["#294d60","#4b8795","#9bd1d0"],
+          Orso:["#49372b","#806044","#b9915c"], Mago:["#3d3655","#776b9d","#c1b2e8"],
+          Salato:["#80565d","#c98e91","#e8c5c2"],
+        };
+        const [rockShadow,rockMid,rockLight]=rockPalettes[activeCity.faction]||rockPalettes.Natura;
+        for (const rock of WORLD_OBJECTS.rocks) {
+          enqueue(rock.x,rock.y,()=>drawUprightAt(rock.x,rock.y,()=>{
+            ctx.save();
+            ctx.translate(Math.round(rock.x/3)*3-rock.x,Math.round(rock.y/3)*3-rock.y);
+            ctx.fillStyle="rgba(9,15,18,.28)";
+            ctx.beginPath();ctx.ellipse(3,rock.r*.62,rock.r*1.25,rock.r*.42,0,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle=rockShadow;ctx.beginPath();
+            ctx.moveTo(-rock.r*1.1,rock.r*.35);ctx.lineTo(-rock.r*.8,-rock.r*.35);
+            ctx.lineTo(-rock.r*.18,-rock.r);ctx.lineTo(rock.r*.52,-rock.r*.72);
+            ctx.lineTo(rock.r*1.12,rock.r*.2);ctx.lineTo(rock.r*.72,rock.r*.7);ctx.closePath();ctx.fill();
+            ctx.fillStyle=rockMid;ctx.beginPath();
+            ctx.moveTo(-rock.r*.8,-rock.r*.35);ctx.lineTo(-rock.r*.18,-rock.r);
+            ctx.lineTo(rock.r*.1,-rock.r*.16);ctx.lineTo(-rock.r*.2,rock.r*.12);ctx.closePath();ctx.fill();
+            ctx.fillStyle=rockLight;ctx.fillRect(-rock.r*.16,-rock.r*.82,Math.max(3,rock.r*.22),Math.max(3,rock.r*.16));
+            ctx.fillStyle=rockShadow;ctx.fillRect(rock.r*.48,-rock.r*.35,Math.max(3,rock.r*.18),Math.max(3,rock.r*.28));
+            ctx.fillStyle="rgba(255,255,255,.28)";ctx.fillRect(-rock.r*.58,rock.r*.08,Math.max(3,rock.r*.2),3);
+            ctx.restore();
+          }));
+        }
+
+        const spriteFrame=Math.floor(performance.now()/250)%4;
+        const drawnLoreSites=new Set();
+        for (const wild of wildRef.current) {
+          if (!drawnLoreSites.has(wild.rosterId)) {
+            drawnLoreSites.add(wild.rosterId);
+            drawSognatoreHabitat(ctx,wild.rosterId,activeCity.faction,wild.habitatX,wild.habitatY,wild.loreSite,wild.cornerIndex);
+          }
+          const creature=ROSTER.find(entry=>entry.id===wild.rosterId);
+          if (!creature) continue;
+          const playerDx=playerRef.current.x-wild.x,playerDy=playerRef.current.y-wild.y;
+          const wildFacing=Math.abs(playerDx)>Math.abs(playerDy)
+            ? (playerDx<0?"left":"right") : (playerDy<0?"up":"down");
+          enqueue(wild.x,wild.y,()=>drawUprightAt(wild.x,wild.y,()=>{
+            drawOverworldSognatore(ctx,creature,0,0,spriteFrame,wild.isSleepingBlocker,wildFacing);
+            if(wild.isSleepingBlocker){
+              const phase=performance.now()/620;
+              ctx.save();ctx.globalAlpha=.72+Math.sin(phase)*.18;
+              ctx.font="bold 24px monospace";ctx.textAlign="center";ctx.fillStyle="#e9f1ff";
+              ctx.shadowColor="#9cc8ff";ctx.shadowBlur=10;
+              ctx.fillText("Z",42,-118-Math.sin(phase)*4);
+              ctx.font="bold 15px monospace";ctx.fillText("Z",61,-140-Math.sin(phase+1)*4);
+              ctx.restore();
+            }
+            if(wild.recruitable){
+              ctx.save();ctx.font="bold 22px monospace";ctx.textAlign="center";
+              ctx.fillStyle="#ffe58a";ctx.shadowColor="#ffbf45";ctx.shadowBlur=12;
+              ctx.fillText("✦",0,-105);ctx.restore();
+            }
+            if(Math.hypot(playerRef.current.x-wild.x,playerRef.current.y-wild.y)<190){
+              ctx.save();ctx.font="bold 15px monospace";ctx.textAlign="center";
+              const labelWidth=ctx.measureText(wild.name).width+26;
+              ctx.fillStyle="rgba(8,16,13,.9)";ctx.fillRect(-labelWidth/2,-94,labelWidth,27);
+              ctx.fillStyle="#fff5dc";ctx.fillText(wild.name,0,-75);ctx.restore();
+            }
+          }));
+        }
+
+        for (const travelerData of CHALLENGERS.filter(item=>item.id===activeMapId)) {
+          const traveler={...travelerData,x:1800,y:1900};
+          const frame=Math.floor(performance.now()/270)%4;
+          const faceX=playerRef.current.x-traveler.x,faceY=playerRef.current.y-traveler.y;
+          const facing=Math.abs(faceX)>Math.abs(faceY)?(faceX<0?"left":"right"):(faceY<0?"up":"down");
+          enqueue(traveler.x,traveler.y,()=>drawUprightAt(traveler.x,traveler.y,()=>{
+            drawAdventureTraveler(ctx,traveler.traveler||traveler.name,traveler.faction,0,0,frame,1,facing);
+            if(Math.hypot(playerRef.current.x-traveler.x,playerRef.current.y-traveler.y)<220){
+              ctx.save();ctx.font="bold 14px monospace";ctx.textAlign="center";
+              const labelWidth=ctx.measureText(traveler.traveler||traveler.name).width+24;
+              ctx.fillStyle="rgba(8,16,13,.9)";ctx.fillRect(-labelWidth/2,-108,labelWidth,25);
+              ctx.fillStyle="#fff0c8";ctx.fillText(traveler.traveler||traveler.name,0,-90);ctx.restore();
+            }
+          }));
+        }
+
+        for (const npc of cityNpcCharacters) {
+          enqueue(npc.x,npc.y,()=>drawUprightAt(npc.x,npc.y,()=>drawNpc(ctx,{...npc,x:0,y:0})));
+        }
+
+        const playerIsWalking=!!(
+          keysRef.current.w||keysRef.current.a||keysRef.current.s||keysRef.current.d||
+          keysRef.current.arrowup||keysRef.current.arrowdown||keysRef.current.arrowleft||keysRef.current.arrowright
+        );
+        const playerElevation=getAmaroElevationAt(playerRef.current.x,playerRef.current.y);
+        enqueue(playerRef.current.x,playerRef.current.y,()=>drawUprightAt(playerRef.current.x,playerRef.current.y,()=>{
+          ctx.translate(0,-playerElevation);
+          drawPlayer(ctx,{x:0,y:0},playerFacingRef.current,Math.floor(performance.now()/135)%4,playerIsWalking);
+        }));
+
+        depthQueue.sort((a,b)=>a.depth-b.depth);
+        for(const item of depthQueue) item.draw();
+
+        // Le facciate anteriori vengono ridisegnate per occludere gli attori
+        // che si trovano fisicamente dietro agli edifici.
+        drawAdventureAmaroOccluders(ctx,activeCity,playerRef.current.y);
+
+        // Etichetta di zona leggibile, non inclinata dalla proiezione.
+        drawUprightAt(playerRef.current.x,playerRef.current.y,()=>{
+          ctx.fillStyle="rgba(0,0,0,.35)";
+          ctx.beginPath();ctx.roundRect(-180,-120,360,50,20);ctx.fill();
+          ctx.fillStyle="#fff";ctx.font="700 27px system-ui";ctx.textAlign="center";
+          ctx.fillText(zone.name,0,-88);
+        });
+      } else {
       /*
         SOGNATORI NPC
         Gli artwork ufficiali vengono disegnati nel mondo, non in un layer HTML
@@ -1887,6 +2032,9 @@ const [message, setMessage] = useState("");
       );
       if (activeMapId === "amaro") {
         drawAdventureAmaroOccluders(ctx, activeCity, playerRef.current.y);
+      }
+
+
       }
 
       /*
