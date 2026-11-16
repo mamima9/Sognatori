@@ -377,7 +377,7 @@ inc.protectedThisTurn = false;
         !pActive[i].protectedLastTurn
       ) {
         pActive[i].protectedThisTurn = true;
-        if (adventureMode && !pActive[i].abilityNullified && pActive[i].abilKey === "crunchypat_avalanche") {
+        if (!pActive[i].abilityNullified && pActive[i].abilKey === "crunchypat_avalanche") {
           pActive[i].statMods.att = (pActive[i].statMods.att || 0) + 1;
           pActive[i].statMods.dif = (pActive[i].statMods.dif || 0) + 1;
           pActive[i].statMods.vel = (pActive[i].statMods.vel || 0) + 1;
@@ -397,7 +397,7 @@ inc.protectedThisTurn = false;
         !eActive[i].protectedLastTurn
       ) {
         eActive[i].protectedThisTurn = true;
-        if (adventureMode && !eActive[i].abilityNullified && eActive[i].abilKey === "crunchypat_avalanche") {
+        if (!eActive[i].abilityNullified && eActive[i].abilKey === "crunchypat_avalanche") {
           eActive[i].statMods.att = (eActive[i].statMods.att || 0) + 1;
           eActive[i].statMods.dif = (eActive[i].statMods.dif || 0) + 1;
           eActive[i].statMods.vel = (eActive[i].statMods.vel || 0) + 1;
