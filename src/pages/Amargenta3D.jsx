@@ -322,8 +322,11 @@ export default function Amargenta3D({ onExit }) {
         box(sideLength,4,.35,wall,scene,cx-sideOffset,2,cz+6);
         box(sideLength,4,.35,wall,scene,cx+sideOffset,2,cz+6);
       } else box(14,4,.35,wall,scene,cx,2,cz+6);
-      for(let x=-6;x<=6;x+=3){box(.22,4,.28,beam,scene,cx+x,2,cz-5.72);box(.22,4,.28,beam,scene,cx+x,2,cz+5.72);}
-      for(let x=-5;x<=5;x+=5){box(.2,4,11,beam,scene,cx+x,2,cz);}
+      for(let x=-6;x<=6;x+=3){
+        if(!(doorSide==="north"&&x===0))box(.22,4,.28,beam,scene,cx+x,2,cz-5.72);
+        if(!(doorSide==="south"&&x===0))box(.22,4,.28,beam,scene,cx+x,2,cz+5.72);
+      }
+      for(let x=-5;x<=5;x+=5){if(x!==0)box(.2,4,11,beam,scene,cx+x,2,cz);}
       for(let i=0;i<5;i++){box(1.8,.35,.55,beam,scene,cx-5.3+i*2.5,2.2,cz-4.8);for(let j=0;j<3;j++)box(.38,.48,.38,j%2?gold:wood,scene,cx-5+i*2.5,2.58,cz-4.8+j*.12);}
       box(3,.25,2.2,wood,scene,cx+2,.95,cz+1);
       cylinder(.72,.85,1.6,brass,scene,cx+2,1.85,cz+1,16);
