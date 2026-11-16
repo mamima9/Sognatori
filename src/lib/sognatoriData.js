@@ -527,6 +527,6 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     abilDesc: "Quando protegge, aumenta di 1 ATT, DIF e VEL.",
     costo: 1,
     theme: "Avalanche",
-    img: "/images/Crunchypat.png",
+    img: "/images/Crunchypat.webp",
   },
 ]; 
