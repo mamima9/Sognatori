@@ -1,46 +1,62 @@
-// Amargenta — città segreta della fazione Amaro.
-// Renderer Canvas dedicato: architettura cacao/ambra, pixel art RPG moderna e dettagli animati.
+// AMARGENTA — capitale segreta degli Amaro, la Città del Caffè.
+// Scena Canvas ad alta densità: pixel-art RPG moderna, architettura stratificata,
+// piantagioni di Coffea, torrefazioni, piazze, insegne, vapore e luci animate.
 const P = {
-  dark:"#211b20", deep:"#39252a", bark:"#56352f", cocoa:"#765044",
-  roast:"#9b6848", caramel:"#c18a50", amber:"#e5b66b",
-  cream:"#f2dfb6", pale:"#fff1d2", teal:"#527b70", leaf:"#66865b"
+  ink:"#21191b", shadow:"#302126", stone:"#594039", stoneLight:"#92705a",
+  soil:"#4a3028", bark:"#65402f", cocoa:"#80513a", roast:"#a66a43",
+  copper:"#c1844e", gold:"#e7b66b", cream:"#f4dfb8", ivory:"#fff1d4",
+  leaf:"#456b45", leaf2:"#6f914f", leaf3:"#9eaa62", water:"#315e5a",
+  waterLight:"#78b6a0", window:"#ffcf7b"
 };
-function box(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
-function oval(c,x,y,rx,ry,color){c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
-function stroke(c,pts,color,width){c.strokeStyle=color;c.lineWidth=width||2;c.lineCap="round";c.lineJoin="round";c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke();}
-function crystal(c,x,y,s,t){c.save();c.translate(x,y);c.scale(s,s);oval(c,2,18,20,7,"rgba(8,10,12,.3)");c.fillStyle=P.deep;c.beginPath();c.moveTo(0,-34);c.lineTo(17,-8);c.lineTo(11,18);c.lineTo(-11,18);c.lineTo(-17,-8);c.closePath();c.fill();c.fillStyle=t||P.amber;c.beginPath();c.moveTo(0,-29);c.lineTo(11,-7);c.lineTo(7,13);c.lineTo(-7,13);c.lineTo(-11,-7);c.closePath();c.fill();stroke(c,[[0,-27],[0,11]],P.pale,2);c.restore();}
-function tree(c,x,y,s,i){c.save();c.translate(x,y);c.scale(s,s);oval(c,3,20,24,7,"rgba(8,10,12,.25)");box(c,-5,-10,10,32,P.deep);oval(c,-15,-19,18,17,i%2?"#49302d":"#654034");oval(c,4,-35,23,21,"#76503a");oval(c,21,-17,17,16,"#8a5b3e");oval(c,0,-8,24,17,"#704936");oval(c,6,-39,4,3,P.amber);oval(c,-16,-20,4,3,"#d99a5b");c.restore();}
-function lamp(c,x,y,t,i){box(c,x-3,y-2,6,35,P.deep);box(c,x-10,y-6,20,5,P.roast);box(c,x-8,y-22,16,17,P.caramel);box(c,x-4,y-19,8,11,P.pale);c.globalAlpha=.12+(.5+.5*Math.sin(t*2+i))*.13;oval(c,x,y-13,20,20,P.amber);c.globalAlpha=1;}
-function house(c,x,y,title,i,t){c.save();c.translate(x,y);const w=i===1?78:66,h=i===1?72:58;oval(c,5,h/2+8,w*.72,12,"rgba(8,10,12,.32)");box(c,-w/2-5,-h/2+13,w+10,h,"#30262a");box(c,-w/2,-h/2+17,w,h-5,i%2?"#986449":"#87583f");box(c,-w/2+5,-h/2+21,w-10,h-13,"#a36d49");c.fillStyle=i===1?"#38252a":"#49302d";c.beginPath();c.moveTo(-w/2-10,-h/2+19);c.lineTo(0,-h/2-28-(i===1?10:0));c.lineTo(w/2+10,-h/2+19);c.closePath();c.fill();stroke(c,[[-w/2-7,-h/2+17],[0,-h/2-25],[w/2+7,-h/2+17]],P.caramel,4);for(const wx of [-w/2+13,w/2-25]){box(c,wx-3,-h/2+29,19,22,P.deep);box(c,wx,-h/2+32,13,16,i===2?"#f6cb79":"#f2d59b");box(c,wx+5,-h/2+32,3,16,"#9a6747");box(c,wx,-h/2+39,13,2,"#9a6747");}box(c,-10,h/2-24,20,26,P.deep);box(c,-7,h/2-21,14,23,"#a16c49");box(c,3,h/2-11,2,3,P.amber);box(c,-w/2+5,h/2-39,w-10,11,"#2b2225");box(c,-w/2+7,h/2-37,w-14,7,"#d3a06a");c.fillStyle="#38272a";c.font="bold 5px monospace";c.textAlign="center";c.fillText(title,0,h/2-31,w-15);c.restore();}
-function drawCore(c,t){oval(c,0,12,126,91,"rgba(10,12,15,.28)");oval(c,0,0,120,84,"#503b39");oval(c,0,-5,111,76,"#b0835d");oval(c,0,-7,99,66,"#d0a16a");oval(c,0,-9,83,54,"#e0bd88");c.strokeStyle="rgba(77,48,39,.34)";c.lineWidth=2;for(let r=-3;r<=3;r++){let y=r*15,h=91*Math.sqrt(Math.max(.1,1-y*y/5000));c.beginPath();c.moveTo(-h,y-8);c.lineTo(h,y-8);c.stroke();}oval(c,0,-7,48,39,"#6d4438");oval(c,0,-11,40,32,"#bd8452");c.save();c.translate(0,-15);c.rotate(-.2);c.fillStyle="#4b302d";c.beginPath();c.ellipse(0,0,17,27,0,0,Math.PI*2);c.fill();c.fillStyle="#a66a43";c.beginPath();c.ellipse(-3,-2,11,21,0,0,Math.PI*2);c.fill();stroke(c,[[0,-20],[4,-8],[0,2],[4,15]],"#e6b36e",3);c.restore();for(let i=0;i<8;i++){let a=i*Math.PI/4+t*.08;box(c,Math.cos(a)*56-2,-11+Math.sin(a)*43-2,4,4,i%2?P.cream:P.amber);}}
-function drawPalace(c,t){oval(c,4,55,72,17,"rgba(8,10,12,.32)");box(c,-60,-40,120,90,"#39272b");box(c,-53,-35,106,83,"#81543f");box(c,-46,-29,92,76,"#a36d49");box(c,-38,-22,76,10,"#d3a06a");for(const s of [-1,1]){box(c,s*48-14,-65,28,75,"#694337");box(c,s*48-18,-72,36,12,"#39272b");c.fillStyle="#4a2e2d";c.beginPath();c.moveTo(s*48-21,-72);c.lineTo(s*48,-105);c.lineTo(s*48+21,-72);c.closePath();c.fill();box(c,s*48-3,-55,6,24,"#f0c47d");}box(c,-26,-58,52,106,"#4b302e");box(c,-21,-53,42,96,"#b17b50");c.fillStyle="#49302d";c.beginPath();c.moveTo(-31,-53);c.quadraticCurveTo(-25,-103,0,-111);c.quadraticCurveTo(25,-103,31,-53);c.closePath();c.fill();c.fillStyle="#d9a363";c.beginPath();c.moveTo(-23,-54);c.quadraticCurveTo(-18,-91,0,-98);c.quadraticCurveTo(18,-91,23,-54);c.closePath();c.fill();box(c,-3,-127,6,27,"#56352f");crystal(c,0,-132,.46,"#f7d28a");box(c,-13,-42,26,42,"#4c302d");box(c,-9,-38,18,34,"#f2c77d");for(let i=0;i<5;i++)box(c,-37-i*5,47+i*4,74+i*10,4,i%2?"#986949":"#d0a16b");c.globalAlpha=.72+Math.sin(t*2)*.12;box(c,-44,-15,8,17,"#ffe1a0");box(c,36,-15,8,17,"#ffe1a0");c.globalAlpha=1;}
-export function drawAdventureAmaroCity(ctx,city){const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
-  // Isola urbana, terrapieno e mura concentriche.
-  oval(ctx,0,18,306,245,"rgba(5,8,12,.3)");oval(ctx,0,3,295,237,"#30242a");oval(ctx,0,-4,282,225,"#694538");oval(ctx,0,-7,269,213,"#a06d4b");oval(ctx,0,-8,254,199,"#6e4a3d");oval(ctx,0,-8,239,185,"#b08056");
-  // 32 merli e otto torri di guardia.
-  for(let i=0;i<32;i++){let a=i*Math.PI*2/32,x=Math.cos(a)*247,y=-8+Math.sin(a)*187;ctx.save();ctx.translate(x,y);ctx.rotate(a);box(ctx,-8,-10,16,23,"#4c302e");box(ctx,-6,-8,12,17,"#bd8959");box(ctx,-9,-13,18,5,"#e0b276");ctx.restore();}
-  for(let i=0;i<8;i++){let a=i*Math.PI/4+Math.PI/8,x=Math.cos(a)*235,y=-8+Math.sin(a)*175;oval(ctx,x,y+4,17,10,"rgba(8,10,12,.3)");box(ctx,x-12,y-17,24,24,"#56352f");box(ctx,x-9,y-14,18,19,"#b47a4f");ctx.fillStyle="#402a2b";ctx.beginPath();ctx.moveTo(x-15,y-16);ctx.lineTo(x,y-37);ctx.lineTo(x+15,y-16);ctx.closePath();ctx.fill();crystal(ctx,x,y-27,.35,"#f4c978");}
-  // Anello stradale e vie radiali.
-  ctx.strokeStyle="#51362f";ctx.lineWidth=32;ctx.beginPath();ctx.ellipse(0,-4,192,151,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#c79a68";ctx.lineWidth=23;ctx.beginPath();ctx.ellipse(0,-5,190,149,0,0,Math.PI*2);ctx.stroke();
-  const homes=[[-132,-88,"TORRE DELLE SPEZIE",0],[0,-158,"PALAZZO DEL CACAO",1],[132,-88,"FONDERIA D'AMBRA",2],[-132,88,"LOCANDA AMARA",3],[132,88,"BOTTEGA DELLE ERBE",4],[0,158,"ARCHIVIO DEI SAPORI",5]];
-  for(const h of homes){stroke(ctx,[[0,0],[h[0]*.78,h[1]*.78]],"#5b3b32",29);stroke(ctx,[[0,-2],[h[0]*.78,h[1]*.78]],"#c89a68",19);}
-  // Canale ambrato e ponticello.
-  ctx.save();ctx.translate(-158,8);ctx.rotate(-.48);oval(ctx,0,0,53,24,"#4c302e");oval(ctx,0,-4,48,18,"#9c643e");oval(ctx,0,-7,41,12,"#d49a51");for(let i=0;i<4;i++){let o=(t*16+i*19)%70-35;ctx.strokeStyle="rgba(255,225,157,.7)";ctx.beginPath();ctx.ellipse(o,-8+(i%2)*4,7,2,0,0,Math.PI*2);ctx.stroke();}box(ctx,-42,-8,84,17,"#39272b");box(ctx,-38,-7,76,11,"#b27c50");for(let i=-30;i<=30;i+=12)box(ctx,i,-6,4,9,"#e0b27a");ctx.restore();
-  // Giardini aromatici e alberi di cacao.
-  for(const q of [[-191,-72], [190,72],[-86,143],[87,-140]]){oval(ctx,q[0],q[1]+7,32,13,"rgba(8,10,12,.3)");box(ctx,q[0]-29,q[1]-8,58,21,"#49302d");for(let i=0;i<6;i++){let px=q[0]-20+i*8;box(ctx,px,q[1]-4,4,11,i%2?"#688b5b":"#86a26a");box(ctx,px-2,q[1]-10-(i%2)*3,7,6,"#d68d66");}}
-  for(let i=0;i<22;i++){let a=i*2.399,x=Math.cos(a)*(205+(i%3)*7),y=Math.sin(a)*(151+(i%4)*6);tree(ctx,x,y,.66+(i%3)*.08,i);}
-  // Sei edifici diversi, piazza e palazzo centrale.
-  for(let i=0;i<3;i++)house(ctx,homes[i][0],homes[i][1],homes[i][2],homes[i][3],t);drawCore(ctx,t);drawPalace(ctx,t);
-  // Fontana, cristalli e illuminazione.
-  oval(ctx,-93,27,31,13,"#49302d");oval(ctx,-93,23,27,10,"#bd8957");oval(ctx,-93,20,19,6,"#e7c18a");for(let i=0;i<5;i++)stroke(ctx,[[-108+i*7,20],[-108+i*7+Math.sin(t*2+i)*3,10-(i%2)*4],[-106+i*7,18]],"#f4d28d",2);
-  crystal(ctx,104,20,.55,"#e7b56e");crystal(ctx,183,-96,.45,"#d99a5b");crystal(ctx,-184,102,.42,"#e7c68c");
-  for(const q of [[-193,-74,0],[190,-5,1],[-125,145,2],[126,145,3],[8,-185,4],[-18,184,5]])lamp(ctx,q[0],q[1],t,q[2]);
-  for(let i=0;i<3;i++)house(ctx,homes[i+3][0],homes[i+3][1],homes[i+3][2],homes[i+3][3],t);
-  // Bacheca, panchine e contenitori di fave di cacao.
-  box(ctx,143,96,50,8,"#49302d");box(ctx,147,87,42,13,"#d4a36e");box(ctx,151,90,34,7,"#f1dfba");ctx.fillStyle="#4b302d";ctx.font="bold 5px monospace";ctx.textAlign="center";ctx.fillText("BACHECA",168,96,33);
-  for(const q of [[-48,105],[54,-105]]){box(ctx,q[0]-18,q[1],36,5,"#4a302d");box(ctx,q[0]-15,q[1]-4,30,4,"#bd8957");}
-  for(let i=0;i<26;i++){let p=t*(.42+(i%5)*.07)+i*1.73,x=Math.sin(p)*(145+(i%4)*23),y=Math.cos(p*.83)*(93+(i%3)*17);ctx.globalAlpha=.25+(Math.sin(p*2)+1)*.22;if(i%3===0)oval(ctx,x,y,3,3,"#f7d99a");else box(ctx,x,y,i%2?3:4,i%2?5:2,i%2?"#e4b16a":"#f4dfb6");}ctx.globalAlpha=1;
-  // Targa monumentale.
-  box(ctx,-110,213,220,30,"rgba(22,17,20,.94)");box(ctx,-110,213,6,30,"#e2b16e");ctx.fillStyle="#fff0d2";ctx.font="bold 12px monospace";ctx.textAlign="center";ctx.fillText("AMARGENTA",0,228,195);ctx.fillStyle="#e7b875";ctx.font="bold 7px monospace";ctx.fillText("CITTA' DELLA FAZIONE AMARO",0,239,195);
+const rect=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));};
+const ellipse=(c,x,y,rx,ry,col)=>{c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
+function line(c,pts,col,width=2){c.strokeStyle=col;c.lineWidth=width;c.lineCap="round";c.lineJoin="round";c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke();}
+function text(c,s,x,y,size=7,col=P.ivory){c.fillStyle=col;c.font="bold "+size+"px monospace";c.textAlign="center";c.fillText(s,x,y);}
+function glow(c,x,y,r,a,col=P.gold){c.save();c.globalAlpha=a;ellipse(c,x,y,r,r,col);c.restore();}
+function bean(c,x,y,s=1,rot=0){c.save();c.translate(x,y);c.rotate(rot);c.scale(s,s);ellipse(c,0,0,8,13,"#382321");ellipse(c,-1,-1,6,11,"#9b5b37");line(c,[[-1,-9],[2,-4],[-2,1],[1,8]],"#e0a36a",1.5);c.restore();}
+function crystal(c,x,y,s=1,col=P.gold){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,17,17,6,"rgba(0,0,0,.28)");c.fillStyle=P.shadow;c.beginPath();c.moveTo(0,-30);c.lineTo(14,-7);c.lineTo(9,15);c.lineTo(-9,15);c.lineTo(-14,-7);c.closePath();c.fill();c.fillStyle=col;c.beginPath();c.moveTo(0,-26);c.lineTo(9,-6);c.lineTo(6,11);c.lineTo(-6,11);c.lineTo(-9,-6);c.closePath();c.fill();line(c,[[0,-24],[0,9]],P.ivory,1.5);c.restore();}
+function coffeeTree(c,x,y,s=1,phase=0){c.save();c.translate(x,y);c.scale(s,s);ellipse(c,2,20,22,7,"rgba(0,0,0,.25)");rect(c,-4,-9,8,29,P.bark);ellipse(c,-13,-20,17,16,P.leaf);ellipse(c,5,-31,22,20,P.leaf2);ellipse(c,21,-17,16,15,P.leaf);ellipse(c,0,-9,22,15,P.leaf2);for(let i=0;i<5;i++){const a=i*2.4+phase;const bx=Math.cos(a)*13,by=-19+Math.sin(a)*11;ellipse(c,bx,by,3,5,i%2?"#b65b45":"#d07a4c");}line(c,[[-12,-28],[0,-38],[14,-30]],"#b7c57c",2);c.restore();}
+function lamp(c,x,y,t,i=0){rect(c,x-3,y-1,6,30,P.ink);rect(c,x-9,y-7,18,5,P.copper);rect(c,x-7,y-22,14,16,P.gold);rect(c,x-4,y-19,8,10,P.ivory);glow(c,x,y-13,23,.07+.04*Math.sin(t*2+i));}
+function roof(c,x,y,w,col=P.shadow){c.fillStyle=col;c.beginPath();c.moveTo(x-w/2-9,y);c.lineTo(x,y-30);c.lineTo(x+w/2+9,y);c.closePath();c.fill();line(c,[[x-w/2-7,y-2],[x,y-29],[x+w/2+7,y-2]],P.copper,3);}
+function cafe(c,x,y,name,kind=0){c.save();c.translate(x,y);const w=kind===1?88:72,h=kind===1?65:56;ellipse(c,4,h/2+9,w*.7,10,"rgba(0,0,0,.3)");rect(c,-w/2-5,-h/2+10,w+10,h,P.ink);rect(c,-w/2,-h/2+14,w,h-5,kind%2?"#936044":"#80503a");rect(c,-w/2+5,-h/2+18,w-10,h-13,"#b17b50");roof(c,0,-h/2+17,w,kind===1?"#382426":"#49302a");for(const wx of [-w/2+13,w/2-27]){rect(c,wx,-h/2+25,17,20,P.shadow);rect(c,wx+3,-h/2+28,11,14,P.window);rect(c,wx+8,-h/2+28,2,14,P.copper);}rect(c,-10,h/2-25,20,26,P.shadow);rect(c,-7,h/2-22,14,23,"#bd8758");rect(c,-w/2+7,h/2-39,w-14,10,"#302126");rect(c,-w/2+10,h/2-37,w-20,6,P.gold);text(c,name,0,h/2-30,5,P.ink);if(kind===1){rect(c,-w/2-4,-h/2+4,w+8,5,P.gold);bean(c,0,-h/2-6,1.2);}c.restore();}
+function roastery(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,31,55,13,"rgba(0,0,0,.3)");rect(c,-48,-26,96,58,"#49302a");rect(c,-42,-20,84,48,"#a36c46");roof(c,0,-20,84,"#302126");rect(c,-31,-8,26,28,"#392426");rect(c,-27,-4,18,20,"#d08b51");rect(c,8,-8,25,28,"#392426");rect(c,12,-4,17,20,"#e2ae69");rect(c,-7,-40,14,21,"#5a3a32");rect(c,-4,-54,8,16,"#302126");for(let i=0;i<3;i++){const p=t*0.7+i*1.7;ellipse(c,Math.sin(p)*5,-62-i*13,5+i,4+i,"rgba(238,222,194,"+(.35-i*.08)+")");}text(c,"TORREFAZIONE",0,24,6,P.ivory);c.restore();}
+function cupFountain(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,28,55,15,"rgba(0,0,0,.28)");ellipse(c,0,15,50,14,P.stone);ellipse(c,0,11,43,10,P.gold);rect(c,-30,-22,60,32,P.cream);rect(c,-26,-18,52,24,"#8e5338");rect(c,-21,-15,42,16,"#4a2926");c.strokeStyle=P.cream;c.lineWidth=7;c.beginPath();c.arc(31,-7,13,-Math.PI/2,Math.PI/2);c.stroke();ellipse(c,0,-23,30,7,"#e6c18d");ellipse(c,0,-25,23,5,"#4a2926");for(let i=0;i<5;i++){const a=t*1.7+i*1.25;ellipse(c,Math.cos(a)*34,-7+Math.sin(a)*3,2,3,P.ivory);}for(let i=0;i<3;i++){const p=t*1.3+i*2;line(c,[[Math.sin(p)*5,-33],[Math.sin(p+.5)*8,-45],[Math.sin(p+1)*3,-56]],"rgba(255,235,194,.65)",2);}c.restore();}
+function beanMonument(c,x,y,t){c.save();c.translate(x,y);ellipse(c,0,25,50,12,"rgba(0,0,0,.3)");rect(c,-38,9,76,13,P.stone);rect(c,-32,4,64,8,P.stoneLight);ellipse(c,0,-16,24,34,"#392321");ellipse(c,-3,-18,18,27,"#a35e39");line(c,[[0,-40],[5,-26],[-2,-12],[3,8]],"#f0bd79",4);for(let i=0;i<8;i++){const a=i*Math.PI/4+t*.12;glow(c,Math.cos(a)*37,-14+Math.sin(a)*37,3,.7);}c.restore();}
+function terrace(c,x,y,w,h){c.save();rect(c,x-w/2,y-h/2,w,h,"#654334");rect(c,x-w/2+4,y-h/2+4,w-8,h-8,"#9b6947");rect(c,x-w/2+9,y-h/2+9,w-18,5,"#c38a57");for(let i=0;i<5;i++){const xx=x-w/2+14+i*(w-28)/4;coffeeTree(c,xx,y+5,.42,i);}c.restore();}
+export function drawAdventureAmaroCity(ctx,city){
+  const t=performance.now()/1000;ctx.save();ctx.translate(Math.round(city.x/4)*4,Math.round(city.y/4)*4);ctx.scale(1.55,1.55);ctx.imageSmoothingEnabled=false;
+  // Fondovalle terrazzato e mura concentriche della città fortificata.
+  ellipse(ctx,0,22,316,248,"rgba(0,0,0,.32)");ellipse(ctx,0,5,302,238,"#302126");ellipse(ctx,0,-3,287,226,"#654334");ellipse(ctx,0,-7,274,215,"#b17a50");ellipse(ctx,0,-8,259,202,"#51372f");ellipse(ctx,0,-8,244,189,"#c18a58");
+  // Mura merlate, contrafforti e torri con lanterne.
+  for(let i=0;i<40;i++){const a=i*Math.PI*2/40,x=Math.cos(a)*251,y=-8+Math.sin(a)*193;ctx.save();ctx.translate(x,y);ctx.rotate(a);rect(ctx,-7,-10,14,22,"#50342d");rect(ctx,-5,-8,10,16,"#d09a63");rect(ctx,-8,-13,16,5,"#f0c17c");ctx.restore();}
+  for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8,x=Math.cos(a)*235,y=-8+Math.sin(a)*177;ellipse(ctx,x,y+5,18,10,"rgba(0,0,0,.28)");rect(ctx,x-13,y-19,26,27,"#49302b");rect(ctx,x-9,y-16,18,20,"#b77c4e");ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(x-17,y-18);ctx.lineTo(x,y-43);ctx.lineTo(x+17,y-18);ctx.closePath();ctx.fill();rect(ctx,x-3,y-13,6,13,P.window);glow(ctx,x,y-29,16,.08);}
+  // Strade radiali in pietra e canali di drenaggio.
+  ctx.strokeStyle="#52372e";ctx.lineWidth=35;ctx.beginPath();ctx.ellipse(0,-5,194,151,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#d0a071";ctx.lineWidth=25;ctx.beginPath();ctx.ellipse(0,-5,192,149,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#f0d0a0";ctx.lineWidth=2;ctx.setLineDash([7,10]);ctx.beginPath();ctx.ellipse(0,-5,192,149,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  const blocks=[[-139,-93],[0,-164],[139,-93],[-139,93],[139,93],[0,164]];
+  for(const [x,y] of blocks){line(ctx,[[0,0],[x*.82,y*.82]],"#604033",31);line(ctx,[[0,-2],[x*.82,y*.82]],"#d2a16e",21);line(ctx,[[0,-2],[x*.82,y*.82]],"#f0d0a0",1);}
+  // Quartiere delle piantagioni: aiuole a terrazza con alberi di Coffea e bacche rosse.
+  terrace(ctx,-185,-86,67,47);terrace(ctx,185,86,67,47);terrace(ctx,-90,151,66,43);terrace(ctx,91,-151,66,43);
+  for(let i=0;i<26;i++){const a=i*2.399,x=Math.cos(a)*(205+(i%3)*8),y=Math.sin(a)*(151+(i%4)*7);coffeeTree(ctx,x,y,.62+(i%3)*.08,i);}
+  // Canale di acqua ambrata e ponti in pietra.
+  ctx.save();ctx.translate(-164,8);ctx.rotate(-.48);ellipse(ctx,0,0,57,25,"#3b2928");ellipse(ctx,0,-4,51,19,P.water);ellipse(ctx,0,-7,43,13,P.waterLight);for(let i=0;i<5;i++){const xx=(t*15+i*18)%76-38;line(ctx,[[xx,-8],[xx+8,-7]],"#d5e6bd",1.5);}rect(ctx,-44,-9,88,18,"#49302a");rect(ctx,-40,-7,80,11,"#c18a58");for(let i=-32;i<=32;i+=12)rect(ctx,i,-6,4,9,P.gold);ctx.restore();
+  // Sei edifici unici: caffè storico, mercato, archivio, locanda, erboristeria e torrefazione.
+  cafe(ctx,-137,-91,"CAFFE' REGALE",1);cafe(ctx,139,-91,"MERCATO DELLE FAVE",0);cafe(ctx,-139,94,"LOCANDA CREMA",0);cafe(ctx,139,94,"SPEZIE & AROMI",0);cafe(ctx,0,166,"ARCHIVIO DEL GUSTO",0);roastery(ctx,0,-163,t);
+  // Piazza centrale: fontana-tazzina e monumento del chicco.
+  cupFountain(ctx,-83,22,t);beanMonument(ctx,91,22,t);
+  // Palazzo della Corporazione del Caffè, con cupola e vetrate.
+  ellipse(ctx,4,64,83,18,"rgba(0,0,0,.3)");rect(ctx,-65,-43,130,100,"#382426");rect(ctx,-58,-37,116,89,"#80513b");rect(ctx,-50,-30,100,79,"#b47a4c");rect(ctx,-43,-24,86,9,"#e0b176");
+  for(const s of [-1,1]){rect(ctx,s*49-15,-70,30,78,"#58382e");rect(ctx,s*49-11,-65,22,67,"#c18a58");rect(ctx,s*49-4,-54,8,26,P.window);ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(s*49-20,-70);ctx.lineTo(s*49,-102);ctx.lineTo(s*49+20,-70);ctx.closePath();ctx.fill();}
+  rect(ctx,-28,-62,56,77,"#49302b");ctx.fillStyle="#392426";ctx.beginPath();ctx.moveTo(-34,-62);ctx.quadraticCurveTo(-30,-111,0,-119);ctx.quadraticCurveTo(30,-111,34,-62);ctx.closePath();ctx.fill();ctx.fillStyle="#d29a5e";ctx.beginPath();ctx.moveTo(-26,-62);ctx.quadraticCurveTo(-22,-101,0,-108);ctx.quadraticCurveTo(22,-101,26,-62);ctx.closePath();ctx.fill();rect(ctx,-3,-137,6,24,P.bark);bean(ctx,0,-146,1.5);
+  rect(ctx,-13,-42,26,45,"#392426");rect(ctx,-9,-38,18,37,P.window);for(let i=0;i<5;i++)rect(ctx,-42-i*5,57+i*4,84+i*10,4,i%2?"#9b6948":"#d4a16b");
+  // Pergolati, sacchi di juta, barili e tavolini esterni.
+  for(const [x,y] of [[-190,34],[190,-35],[-38,-192],[40,192]]){rect(ctx,x-25,y-3,50,5,"#49302a");rect(ctx,x-22,y-21,4,20,P.bark);rect(ctx,x+18,y-21,4,20,P.bark);rect(ctx,x-27,y-24,54,4,P.gold);bean(ctx,x-12,y-11,.55);bean(ctx,5,y-11,.55);}
+  for(const [x,y] of [[-47,105],[52,-108]]){ellipse(ctx,x,y+7,20,7,"rgba(0,0,0,.25)");rect(ctx,x-18,y-4,36,5,P.bark);rect(ctx,x-15,y-8,30,4,P.copper);rect(ctx,x-13,y-20,26,12,"#76503a");ellipse(ctx,x,y-20,13,4,"#bd8758");}
+  // Lampioni caldi, cristalli decorativi e insegne direzionali.
+  for(const [x,y,i] of [[-198,-72,0],[198,4,1],[-123,151,2],[125,151,3],[8,-190,4],[-12,190,5]])lamp(ctx,x,y,t,i);
+  crystal(ctx,108,5,.5,"#e9bc79");crystal(ctx,-190,111,.38,"#d89b61");crystal(ctx,185,-107,.38,"#e7c58d");
+  // Vapore delle torrefazioni, lucciole e chicchi che fluttuano nella piazza.
+  for(let i=0;i<18;i++){const p=t*(.35+(i%5)*.08)+i*1.31,x=Math.sin(p)*(150+(i%4)*20),y=Math.cos(p*.82)*(100+(i%3)*15);ctx.globalAlpha=.2+(Math.sin(p*2)+1)*.2;if(i%3===0)bean(ctx,x,y,.28,p);else ellipse(ctx,x,y,2,3,i%2?P.gold:P.ivory);}ctx.globalAlpha=1;
+  // Targhe e identità forte della città: nessuna confusione con una generica città fantasy.
+  rect(ctx,-123,211,246,34,"rgba(25,17,18,.96)");rect(ctx,-123,211,6,34,P.gold);text(ctx,"AMARGENTA",0,226,13,P.ivory);text(ctx,"CAPITALE DEL CAFFE'  •  FAZIONE AMARO",0,238,6,P.gold);
   ctx.restore();
 }
