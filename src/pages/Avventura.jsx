@@ -366,7 +366,8 @@ const MAP_DOOR = { x: 1800, y: 2220, radius: 94 };
 const MAP_NORTH_DOOR = { x: 1800, y: 150, radius: 94 };
 // Porta segreta sul margine occidentale di Verdelume/Amargenta.
 const AMARGENTA_DOOR = { x: 145, y: 1200, radius: 94 };
-const AMARGENTA_SPAWN = { x: 320, y: 1200 };
+const AMARGENTA_SPAWN = { x: 320, y: 1200 }; // punto di ritorno sul lato Natura
+const AMARGENTA_CITY_SPAWN = { x: 1190, y: 1200 }; // ingresso ovest della città, dentro la scena
 const MAP_SPAWN = { x: 1800, y: 320 };
 const MAP_SOUTH_SPAWN = { x: 1800, y: 2080 };
 
@@ -1709,19 +1710,20 @@ const [message, setMessage] = useState("");
       if (activeCity.faction !== "Nuvola") {
         drawCityDistrict(ctx, activeCity);
       }
-      if (activeCity.faction !== "Natura") {
+      if (activeCity.faction !== "Natura" && activeMapId !== "amaro") {
         drawAdventureFactionCity(ctx, activeCity);
       }
-      drawCityLandmark(ctx, activeCity);
-      drawAdventureFactionCityLife(ctx, activeCity);
-      // Elementi ambientali distintivi: bambù, querce, cascate, caramelle e monumenti di fazione.
-      ctx.save();
-      ctx.translate(1800, 1200);
-      drawAdventureCitySpecials(ctx, activeCity.faction, time);
-      ctx.restore();
-
-      // Soltanto il bioma della fazione attualmente caricata.
-      drawWildArea(ctx, activeWildArea);
+      // Amargenta ha uno scenario completo dedicato: niente landmark generici
+      // o overlay di fazione che coprano la sua architettura personalizzata.
+      if (activeMapId !== "amaro") {
+        drawCityLandmark(ctx, activeCity);
+        drawAdventureFactionCityLife(ctx, activeCity);
+        ctx.save();
+        ctx.translate(1800, 1200);
+        drawAdventureCitySpecials(ctx, activeCity.faction, time);
+        ctx.restore();
+        drawWildArea(ctx, activeWildArea);
+      }
 
       // Portale di collegamento: ogni mappa conduce alla successiva.
       const currentLeaderDefeated = defeatedLeaders.has(activeMapId);
@@ -2155,9 +2157,9 @@ const [message, setMessage] = useState("");
           return;
         }
         setActiveMapId("amaro");
-        playerRef.current = { ...AMARGENTA_SPAWN };
-        cameraRef.current = { ...AMARGENTA_SPAWN };
-        setPlayer({ ...AMARGENTA_SPAWN });
+        playerRef.current = { ...AMARGENTA_CITY_SPAWN };
+        cameraRef.current = { ...AMARGENTA_CITY_SPAWN };
+        setPlayer({ ...AMARGENTA_CITY_SPAWN });
         setMessage("Il sigillo si apre. Benvenuto ad Amargenta, Bibito.");
         setTimeout(() => setMessage(""), 2600);
         return;
