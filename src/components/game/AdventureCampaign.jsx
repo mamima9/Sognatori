@@ -65,7 +65,7 @@ function buildResonanceTrial(seedValue) {
 function loadSave(key) {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+    if (!raw) return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], introDone: false };
     const parsed = JSON.parse(raw);
     return {
       ownedIds: Array.isArray(parsed.ownedIds) ? parsed.ownedIds : [],
@@ -75,10 +75,11 @@ function loadSave(key) {
         : (Array.isArray(parsed.partyIds) ? parsed.partyIds.slice(0, 2) : []),
       completedCities: Array.isArray(parsed.completedCities) ? parsed.completedCities : [],
       conqueredLeaders: Array.isArray(parsed.conqueredLeaders) ? parsed.conqueredLeaders : [],
+      factionGems: Array.isArray(parsed.factionGems) ? parsed.factionGems : [],
       introDone: !!parsed.introDone,
     };
   } catch {
-    return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+    return { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], introDone: false };
   }
 }
 
@@ -247,16 +248,28 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
 
   const handleBattleFinish = (outcome) => {
     if (outcome === "win") {
-      setRewardIndex(0);
-      setRewardQueue(rewards);
-      if (!rewards.length) {
-        const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
-        setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
-        onLeaderDefeated?.(encounter.id);
-        setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
-      } else {
-        setPhase("reward");
-      }
+      // Ogni Capo fazione sconfitto consegna una sola gemma del colore
+      // della propria fazione: nessun Sognatore viene assegnato come premio.
+      const alreadyDefeated = (save.conqueredLeaders || []).includes(encounter.id);
+      const completedCount = new Set([...(save.conqueredLeaders || []), encounter.id]).size;
+      setSave((old) => {
+        const conqueredLeaders = Array.from(new Set([...(old.conqueredLeaders || []), encounter.id]));
+        const factionGems = (old.factionGems || []).some((gem) => gem.leaderId === encounter.id)
+          ? (old.factionGems || [])
+          : [...(old.factionGems || []), {
+              leaderId: encounter.id,
+              faction: encounter.faction,
+              color: encounter.color || "#d8c7ff",
+            }];
+        return {
+          ...old,
+          completedCities: Array.from(new Set([...(old.completedCities || []), encounter.id])),
+          conqueredLeaders,
+          factionGems,
+        };
+      });
+      if (!alreadyDefeated) onLeaderDefeated?.(encounter.id);
+      setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
     } else if (outcome === "escape") {
       setPhase("idle");
       onClose?.();
@@ -275,10 +288,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     });
     if (rewardIndex + 1 < rewardQueue.length) setRewardIndex((n) => n + 1);
     else {
-      const completedCount = new Set([...save.conqueredLeaders, encounter.id]).size;
-      setSave((old) => ({ ...old, completedCities: Array.from(new Set([...old.completedCities, encounter.id])), conqueredLeaders: Array.from(new Set([...(old.conqueredLeaders || []), encounter.id])) }));
-      onLeaderDefeated?.(encounter.id);
-      setPhase(completedCount >= 11 ? "campaignWon" : "rewardDone");
+      setPhase("rewardDone");
     }
   };
 
@@ -340,6 +350,23 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
               CAPI FAZIONE SCONFITTI · {(save.conqueredLeaders || []).length}/11
             </div>
+            <div className="mx-3 mb-2 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+              <div className="mb-3 text-[10px] font-black uppercase tracking-[.18em] text-white/55">
+                GEMME INTRISE DI POTERE
+              </div>
+              {(save.factionGems || []).length ? (
+                <div className="flex flex-wrap gap-3">
+                  {(save.factionGems || []).map((gem) => (
+                    <div key={gem.leaderId} className="flex min-w-[3.5rem] flex-col items-center gap-1" title={gem.faction + " · Gemma di potere"}>
+                      <div className="relative h-7 w-7 rotate-45 rounded-[5px] border-2 border-white/70 shadow-[0_0_13px_var(--gem-color)]" style={{ "--gem-color": gem.color, background: "linear-gradient(135deg, #ffffff 0%, " + gem.color + " 38%, #252033 100%)", boxShadow: "0 0 12px " + gem.color }} />
+                      <span className="text-[8px] font-black uppercase text-white/70">{gem.faction}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-white/35">Sconfiggi un Capo fazione per ottenere la sua gemma.</p>
+              )}
+            </div>
             <button onClick={() => { setPanel("party"); setMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-black text-emerald-100 hover:bg-white/10">
               <span>SQUADRA</span><span className="text-emerald-200">{party.length}/4</span>
             </button>
@@ -374,7 +401,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mt-5 grid grid-cols-2 gap-2">
               <button onClick={() => setConfirmRestart(false)} className="rounded-xl bg-white/10 py-3 text-sm font-bold">ANNULLA</button>
               <button onClick={() => {
-                const freshSave = { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], introDone: false };
+                const freshSave = { ownedIds: [], partyIds: [], starterIds: [], completedCities: [], conqueredLeaders: [], factionGems: [], introDone: false };
                 setSave(freshSave);
                 try { localStorage.removeItem(storageKey); } catch {}
                 setConfirmRestart(false);
