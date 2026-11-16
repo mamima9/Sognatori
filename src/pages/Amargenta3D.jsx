@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -589,20 +588,7 @@ export default function Amargenta3D({ onExit }) {
       for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
       scene.add(player);player.position.set(-44,0,2);
 
-      // I modelli GLB sostituiscono gradualmente i moduli procedurali quando vengono aggiunti.
-      const gltfLoader = new GLTFLoader();
-      [
-        { url: "/assets/3d/amargenta/house-stone.glb", position: [-22, 0, -5] },
-        { url: "/assets/3d/amargenta/roastery.glb", position: [16, 0, 28] },
-        { url: "/assets/3d/amargenta/coffee-fountain.glb", position: [0, 0, .5] },
-        { url: "/assets/3d/amargenta/stone-bridge.glb", position: [26, 0, 0] },
-        { url: "/assets/3d/amargenta/coffee-tree.glb", position: [-30, 0, -36] }
-      ].forEach(asset => gltfLoader.load(asset.url, gltf => {
-        if (disposed) return;
-        gltf.scene.position.set(...asset.position);
-        gltf.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-        scene.add(gltf.scene);
-      }, undefined, () => {}));
+      // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       const groundRay=new THREE.Raycaster();
       const onKeyDown=e=>{
         if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
