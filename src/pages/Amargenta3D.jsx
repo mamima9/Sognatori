@@ -19,12 +19,18 @@ export default function Amargenta3D({ onExit }) {
   const [questStarted, setQuestStarted] = useState(Boolean(savedProgress.questStarted));
   const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
-  const [inventory, setInventory] = useState(() => ({
-    amberBeans: 0, recipeFragments: 0, waterCrystals: 0, citrus: 0, relics: 0, coffeeBlend: 0, herbalTea: 0,
-    ...(savedProgress.inventory || {}),
-    coffeeBlend: Number(savedProgress.inventory?.coffeeBlend) || 0,
-    herbalTea: Number(savedProgress.inventory?.herbalTea) || 0
-  }));
+  const [inventory, setInventory] = useState(() => {
+    const savedInventory = savedProgress.inventory || {};
+    return {
+      amberBeans: Number(savedInventory.amberBeans) || 0,
+      recipeFragments: Number(savedInventory.recipeFragments) || 0,
+      waterCrystals: Number(savedInventory.waterCrystals) || 0,
+      citrus: Number(savedInventory.citrus) || 0,
+      relics: Number(savedInventory.relics) || 0,
+      coffeeBlend: Number(savedInventory.coffeeBlend) || 0,
+      herbalTea: Number(savedInventory.herbalTea) || 0
+    };
+  });
   const [recipeStarted, setRecipeStarted] = useState(Boolean(savedProgress.recipeStarted));
   const [recipePages, setRecipePages] = useState(Number(savedProgress.recipePages) || 0);
   const [recipeDone, setRecipeDone] = useState(Boolean(savedProgress.recipeDone));
