@@ -790,6 +790,28 @@ function drawFactionBorderTerrain(ctx, faction) {
       ctx.fillStyle = p.glow; ctx.fillRect(-70, -115 - peak, 20, 20);
     }
     ctx.restore();
+    // Seconda fascia di rilievi sul bordo meridionale, speculare a quella nord.
+    ctx.save();
+    ctx.translate(x, WORLD.height + 20);
+    ctx.fillStyle = p.light;
+    ctx.beginPath();
+    if (faction === "Demone" || faction === "Mago" || faction === "Salato") {
+      ctx.moveTo(-110, 0); ctx.lineTo(-55, 150 + peak); ctx.lineTo(5, 0); ctx.closePath(); ctx.fill();
+      if (faction === "Demone") {
+        ctx.strokeStyle = p.glow; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(-55, 25); ctx.lineTo(-55, 100 + peak / 2); ctx.stroke();
+      }
+    } else if (faction === "Natura" || faction === "Orso") {
+      ctx.arc(-55, 95 + peak, 52, Math.PI, 0); ctx.fill();
+      ctx.fillRect(-62, 95 + peak, 14, 65);
+    } else if (faction === "Robot") {
+      ctx.fillRect(-100, 0, 90, 125 + peak); ctx.fillStyle = p.glow; ctx.fillRect(-78, 38, 16, 16); ctx.fillRect(-48, 38, 16, 16);
+    } else if (faction === "Marino" || faction === "Nuvola") {
+      ctx.strokeStyle = p.light; ctx.lineWidth = 22; ctx.beginPath(); ctx.moveTo(-120, 75 + peak); ctx.quadraticCurveTo(-55, 5, 10, 75 + peak); ctx.quadraticCurveTo(70, 145 + peak, 130, 75 + peak); ctx.stroke();
+    } else {
+      ctx.arc(-55, 85 + peak, 46, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = p.glow; ctx.fillRect(-65, 20 + peak, 20, 12);
+    }
+    ctx.restore();
   }
   // La fascia laterale ripete i rilievi: lo spazio oltre i confini esplorabili non resta mai nero.
   ctx.fillStyle = p.ridge;
