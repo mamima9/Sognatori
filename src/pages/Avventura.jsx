@@ -629,10 +629,11 @@ function drawGroundTiles(ctx, camera, viewWidth, viewHeight, scale, faction = "N
     Orso: ["#766044", "#92734d", "#aa875a", "#624e3c", "#c09b69"],
     Mago: ["#62517f", "#79649a", "#907ab0", "#51436e", "#b09ad0"],
     Salato: ["#a96f77", "#c98e91", "#d9a5a5", "#98676d", "#e8c5c2"],
+    Amaro: ["#39252a", "#56352f", "#765044", "#9b6848", "#c18a50"],
   };
   const factionPalette = factionPalettes[faction] || palettes["Prato dei Sogni"];
   const detailColors = {
-    Robot: "#d4d9de", Nuvola: "#ffffff", Umano: "#858b91",
+    Amaro: "#e5b66b", Robot: "#d4d9de", Nuvola: "#ffffff", Umano: "#858b91",
     Dolce: "#e5c18a", Salato: "#e8c5c2",
   };
   const detailColor = detailColors[faction] || "#83b365";
@@ -1668,7 +1669,7 @@ const [message, setMessage] = useState("");
         );
       }
 
-      // Undici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
+      // Dodici distretti abitati: piazza centrale, mura, strade e architetture di fazione.
       if (activeCity.faction !== "Nuvola") {
         drawCityDistrict(ctx, activeCity);
       }
