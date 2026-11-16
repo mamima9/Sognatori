@@ -107,42 +107,56 @@ function loadSave(key) {
   }
 }
 
-function FactionMedal({ faction, color }) {
-  const common = { fill: color || "#d8c7ff", stroke: "#241d24", strokeWidth: 3, strokeLinejoin: "round" };
+function FactionMedal({ faction }) {
+  const outline = "#25212a";
+  const medal = (fill, extra = {}) => ({ fill, stroke: outline, strokeWidth: 2.6, strokeLinejoin: "round", ...extra });
   let shape = null;
   switch (faction) {
     case "Demone":
-      shape = <><path d="M8 42C2 28 3 12 8 5C18 11 23 20 24 31C27 18 34 8 44 4C49 20 47 34 38 43L31 35L24 43Z" {...common}/><path d="M9 9L18 29M43 8L31 29" stroke="#ff9b52" strokeWidth="4" fill="none"/></>;
+      // Due corna gemelle rosso fuoco.
+      shape = <><path d="M8 43C2 30 3 13 8 5C18 10 22 20 24 33C26 20 32 9 43 5C48 17 48 31 40 43L32 35L24 45L16 35Z" {...medal("#e34232")}/><path d="M8 7C13 17 15 25 16 34M43 7C37 17 34 25 32 34" fill="none" stroke="#ffb04b" strokeWidth="4" strokeLinecap="round"/></>;
       break;
     case "Marino":
-      shape = <path d="M25 3C19 14 8 24 8 34a17 17 0 0 0 34 0C42 24 31 14 25 3Z" {...common}/>;
+      // Onda blu oceano, non una goccia.
+      shape = <><path d="M4 34C12 34 13 23 21 23C29 23 29 34 37 34C42 34 45 30 47 26V39C42 45 35 47 28 42C21 37 18 37 12 43L4 39Z" {...medal("#087da9")}/><path d="M5 24C13 24 14 13 23 13C31 13 32 24 41 24C44 24 46 22 48 19" fill="none" stroke="#65d9f2" strokeWidth="5" strokeLinecap="round"/><path d="M10 31C16 31 17 23 23 23" fill="none" stroke="#b5f2ff" strokeWidth="2.5" strokeLinecap="round"/></>;
       break;
     case "Dolce":
-      shape = <><path d="M25 4L31 13L42 10L40 22L48 29L38 36L36 47L25 42L14 47L12 36L2 29L10 22L8 10L19 13Z" {...common}/><circle cx="25" cy="27" r="11" fill="#f5d48b" stroke="#6d4537" strokeWidth="3"/></>;
+      // Due cookies dorati con gocce di cioccolato.
+      shape = <><circle cx="19" cy="28" r="15" {...medal("#dca653")}/><circle cx="34" cy="22" r="13" {...medal("#f0c879")}/><g fill="#75432e" stroke="#75432e"><circle cx="13" cy="21" r="2"/><circle cx="22" cy="31" r="2.2"/><circle cx="13" cy="34" r="1.8"/><circle cx="34" cy="15" r="2"/><circle cx="40" cy="25" r="2"/><circle cx="30" cy="27" r="1.8"/></g></>;
       break;
     case "Natura":
-      shape = <><path d="M25 45C6 37 3 17 9 7C24 8 34 16 37 29C39 15 45 9 50 7C54 26 45 42 25 45Z" {...common}/><path d="M12 42L40 15M25 31L20 19M31 25L40 27" stroke="#315a32" strokeWidth="3" fill="none"/></>;
+      // Piantina verde foresta con due foglie e germoglio.
+      shape = <><path d="M25 45V25" stroke="#5b3d27" strokeWidth="4" strokeLinecap="round"/><path d="M24 31C8 31 5 20 8 9C21 8 29 16 27 28Z" {...medal("#367b3d")}/><path d="M26 27C25 12 35 5 47 7C49 20 41 30 27 32Z" {...medal("#559b48")}/><path d="M11 13L24 27M43 11L27 28" stroke="#a6d66a" strokeWidth="2.4" fill="none"/></>;
       break;
     case "Robot":
-      shape = <><rect x="8" y="13" width="34" height="29" rx="7" {...common}/><path d="M25 13V5M20 5H30M8 22H3M42 22H47" stroke="#dbe8ee" strokeWidth="4"/><circle cx="18" cy="27" r="4" fill="#d9fbff"/><circle cx="32" cy="27" r="4" fill="#d9fbff"/><path d="M17 36H33" stroke="#26343a" strokeWidth="3"/></>;
+      // Testa robot argento.
+      shape = <><path d="M25 5V11M21 5H29" stroke="#dce3e8" strokeWidth="3" strokeLinecap="round"/><rect x="7" y="12" width="36" height="33" rx="8" {...medal("#aeb8c2")}/><path d="M7 22H3M43 22H47" stroke="#dce3e8" strokeWidth="4" strokeLinecap="round"/><rect x="13" y="21" width="9" height="8" rx="2" fill="#536b79"/><rect x="28" y="21" width="9" height="8" rx="2" fill="#536b79"/><path d="M16 36H34" stroke="#596773" strokeWidth="3.5" strokeLinecap="round"/><path d="M12 15H38" stroke="#f4f7f9" strokeWidth="2" opacity=".9"/></>;
       break;
     case "Nuvola":
-      shape = <path d="M13 40a11 11 0 0 1-1-22a14 14 0 0 1 27-2a12 12 0 0 1 3 24Z" {...common}/>;
+      shape = <path d="M13 40a11 11 0 0 1-1-22a14 14 0 0 1 27-2a12 12 0 0 1 3 24Z" {...medal("#e9f4fb")}/>;
       break;
     case "Umano":
-      shape = <path d="M5 42V18L15 24L25 5L35 24L45 18V42Z" {...common}/>;
+      // Corona nera.
+      shape = <><path d="M5 40L8 16L19 26L25 7L32 26L44 15L46 40Z" {...medal("#171719")}/><path d="M8 44H44" stroke="#050506" strokeWidth="5" strokeLinecap="round"/><circle cx="8" cy="14" r="3" fill="#080809"/><circle cx="25" cy="5" r="3" fill="#080809"/><circle cx="45" cy="13" r="3" fill="#080809"/></>;
       break;
     case "Luce":
-      shape = <><path d="M25 5C15 15 12 24 18 29L25 22L32 29C38 24 35 15 25 5Z" {...common}/><path d="M8 29L25 45L42 29M14 35L25 45L36 35" stroke="#fff0b0" strokeWidth="4" fill="none"/></>;
+      // Mani giunte color oro.
+      shape = <><path d="M25 6C19 13 15 19 17 26L25 34L33 26C35 19 31 13 25 6Z" {...medal("#e4bd45")}/><path d="M7 25L23 43L25 34L27 43L43 25L36 22L27 31L25 27L23 31L14 22Z" {...medal("#d9a92e")}/><path d="M18 17L25 26L32 17M25 34V45" fill="none" stroke="#fff0a3" strokeWidth="2.5" strokeLinecap="round"/></>;
       break;
     case "Mago":
-      shape = <><path d="M5 39L18 9L27 25L35 5L46 39Z" {...common}/><path d="M7 40H45" stroke="#f6e4a4" strokeWidth="5"/><circle cx="25" cy="16" r="3" fill="#fff3b0"/></>;
+      // Cappello da mago viola con fascia gialla e stella.
+      shape = <><path d="M7 40L19 9L27 25L36 5L45 40Z" {...medal("#7044a5")}/><path d="M11 34H43L46 42H6Z" {...medal("#f1cf45")}/><path d="M25 14L27 19L32 20L28 23L29 28L25 25L21 28L22 23L18 20L23 19Z" fill="#ffeb78" stroke="#f7dc63" strokeWidth="1"/></>;
       break;
     case "Orso":
-      shape = <><circle cx="25" cy="31" r="14" {...common}/><circle cx="10" cy="17" r="7" {...common}/><circle cx="22" cy="11" r="7" {...common}/><circle cx="36" cy="14" r="7" {...common}/><circle cx="44" cy="25" r="6" {...common}/></>;
+      // Impronta marrone con quattro dita e cuscinetto.
+      shape = <><ellipse cx="25" cy="34" rx="15" ry="12" {...medal("#80532f")}/><ellipse cx="10" cy="17" rx="6" ry="8" transform="rotate(-24 10 17)" {...medal("#80532f")}/><ellipse cx="22" cy="11" rx="6" ry="8" {...medal("#98663b")}/><ellipse cx="35" cy="13" rx="6" ry="8" transform="rotate(18 35 13)" {...medal("#80532f")}/><ellipse cx="45" cy="21" rx="5" ry="7" transform="rotate(28 45 21)" {...medal("#80532f")}/><path d="M25 28C18 28 14 34 17 39C20 44 30 44 34 39C38 34 32 28 25 28Z" fill="#c28b54"/></>;
+      break;
+    case "Salato":
+      // Cubetto di sale rosa dell'Himalaya.
+      shape = <><path d="M8 17L25 7L43 17L42 39L25 48L8 39Z" {...medal("#d99a9c")}/><path d="M8 17L25 27L43 17M25 27V48" fill="none" stroke="#f7d8d4" strokeWidth="2.5"/><path d="M25 7L25 27L43 17" fill="#f0c2bd" stroke="#a96f77" strokeWidth="1.5"/><path d="M14 20L20 23M30 32L36 29" stroke="#fff0e9" strokeWidth="2" strokeLinecap="round"/></>;
       break;
     default:
-      shape = <><path d="M25 4L44 15L40 39L25 48L10 39L6 15Z" {...common}/><path d="M25 4V48M6 15L44 39M44 15L6 39" stroke="#fff4d5" strokeWidth="2" opacity=".7" fill="none"/></>;
+      shape = <path d="M13 40a11 11 0 0 1-1-22a14 14 0 0 1 27-2a12 12 0 0 1 3 24Z" {...medal("#e9f4fb")}/>;
   }
   return <svg viewBox="0 0 50 52" role="img" aria-label={"Medaglia " + faction} className="h-10 w-10 drop-shadow-[0_2px_5px_rgba(0,0,0,.55)]">{shape}</svg>;
 }
