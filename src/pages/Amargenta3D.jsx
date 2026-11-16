@@ -94,6 +94,8 @@ export default function Amargenta3D({ onExit }) {
     const player = new THREE.Group();
     const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null };
     const colliders = [];
+    const walkablePlatforms = [];
+    const walkableRamps = [];
     const interactables = [];
     const npcActors = [];
     const raycaster = new THREE.Raycaster();
@@ -193,17 +195,48 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeBridge = (x,z,length=12) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
-      box(length,.65,3.3,stone,g,0,2,0);
-      for(let i=0;i<Math.floor(length/.8);i++){box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,2.55,-1.65);box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,2.55,1.65);}
-      const arch=addMesh(new THREE.TorusGeometry(length*.32,.34,8,32,Math.PI),darkStone,g,0,.7,0);arch.rotation.z=Math.PI;
-      // Il ponte deve restare attraversabile: la collisione dell'acqua viene gestita ai suoi lati.
+      box(length,.24,3.3,stone,g,0,.12,0);
+      for(let i=0;i<Math.floor(length/.8);i++){box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,.62,-1.65);box(.7,.8,.35,stoneLight,g,-length/2+.4+i*.8,.62,1.65);}
+      const arch=addMesh(new THREE.TorusGeometry(length*.32,.34,8,32,Math.PI),darkStone,g,0,-.35,0);arch.rotation.z=Math.PI;
+      walkablePlatforms.push({x,z,w:length,d:3.3,height:.24});
+      // Il ponte resta attraversabile e la sua quota viene applicata al personaggio.
     };
     const makeTerrace = (x,z,w,depth,level) => {
       const y=level*1.45;
       const top=addMesh(new THREE.BoxGeometry(w,.35,depth),groundMat,scene,x,y,z);
+      walkablePlatforms.push({x,z,w,d:depth,height:y+.175});
       box(w,.95,.55,stone,scene,x,y-.58,z+depth/2);
-      for(let i=0;i<Math.floor(w/2.2);i++) for(let j=0;j<2;j++) makeCoffeePlant(x-w/2+1+i*2.1,z-depth/2+1+j*2.2,.8);
+      for(let i=0;i<Math.floor(w/2.2);i++) for(let j=0;j<2;j++) {
+        const plant=makeCoffeePlant(x-w/2+1+i*2.1,z-depth/2+1+j*2.2,.8);
+        plant.position.y=y+.2;
+      }
       return top;
+    };
+    const makeWalkRamp = (a,b,width,fromY,toY) => {
+      const dx=b[0]-a[0], dz=b[1]-a[1], length=Math.hypot(dx,dz);
+      const px=-dz/length*width/2, pz=dx/length*width/2;
+      const geometry=new THREE.BufferGeometry();
+      const vertices=new Float32Array([
+        a[0]+px,fromY,a[1]+pz, a[0]-px,fromY,a[1]-pz,
+        b[0]-px,toY,b[1]-pz, b[0]+px,toY,b[1]+pz
+      ]);
+      geometry.setAttribute("position",new THREE.BufferAttribute(vertices,3));
+      geometry.setIndex([0,1,2,0,2,3]);geometry.computeVertexNormals();
+      const rampMaterial=mat("#b58b5d");rampMaterial.side=THREE.DoubleSide;
+      const ramp=new THREE.Mesh(geometry,rampMaterial);ramp.receiveShadow=true;ramp.castShadow=true;scene.add(ramp);
+      walkableRamps.push({a,b,width,fromY,toY});
+    };
+    const getWalkHeight = (x,z) => {
+      for(const ramp of walkableRamps){
+        const dx=ramp.b[0]-ramp.a[0],dz=ramp.b[1]-ramp.a[1],length2=dx*dx+dz*dz;
+        const t=THREE.MathUtils.clamp(((x-ramp.a[0])*dx+(z-ramp.a[1])*dz)/length2,0,1);
+        const px=ramp.a[0]+dx*t,pz=ramp.a[1]+dz*t;
+        if(Math.hypot(x-px,z-pz)<=ramp.width/2) return ramp.fromY+(ramp.toY-ramp.fromY)*t;
+      }
+      for(const platform of walkablePlatforms){
+        if(Math.abs(x-platform.x)<=platform.w/2 && Math.abs(z-platform.z)<=platform.d/2) return platform.height;
+      }
+      return 0;
     };
     const makeMountain = (x,z,r,h,seed=0) => {
       const geo=new THREE.ConeGeometry(r,h,7,3);const m=addMesh(geo,mat(seed%2?"#65736b":"#7e887f"),scene,x,h/2-1,z);m.rotation.y=seed*1.7;
@@ -341,6 +374,11 @@ export default function Amargenta3D({ onExit }) {
       const gate=addMesh(new THREE.TorusGeometry(2.5,.48,8,24,Math.PI),stoneLight,scene,-38,3,2);gate.rotation.z=Math.PI;
       // Terrazze a gradoni sul lato nord e sud
       for(let l=0;l<3;l++){makeTerrace(-22,-36-l*12,25,9,l);makeTerrace(-18,39+l*10,28,9,l);}
+      // Rampe percorribili che collegano fisicamente i tre livelli delle terrazze.
+      makeWalkRamp([-22,-40.5],[-22,-48],6,.175,1.625);
+      makeWalkRamp([-22,-52.5],[-22,-60],6,1.625,3.075);
+      makeWalkRamp([-18,43.5],[-18,49],6,.175,1.625);
+      makeWalkRamp([-18,53.5],[-18,59],6,1.625,3.075);
       // Borgo superiore: torre, case, vicoli e piazzetta alta
       makeHouse(-22,-5,7,6,4,0);makeHouse(-12,-13,6,5,3.5,1);makeHouse(-18,13,6,5,3.5,0);
       cylinder(1.7,2,13,stone,scene,-8,6.5,-25,12);const towerRoof=addMesh(new THREE.ConeGeometry(2.2,2.2,4),roof,scene,-8,14,-25);towerRoof.rotation.y=Math.PI/4;
@@ -603,9 +641,10 @@ export default function Amargenta3D({ onExit }) {
           // Collisione separata sugli assi: il personaggio scivola lungo gli ostacoli invece di bloccarsi in diagonale.
           if(!isBlockedAt(nx,player.position.z)) player.position.x=nx;
           if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
+          player.position.y=getWalkHeight(player.position.x,player.position.z);
           player.rotation.y=Math.atan2(move.x,move.z);
           const stride=clock.elapsedTime*10;playerMotion.leftArm.rotation.x=Math.sin(stride)*.38;playerMotion.rightArm.rotation.x=-Math.sin(stride)*.38;playerMotion.leftLeg.rotation.x=-Math.sin(stride)*.42;playerMotion.rightLeg.rotation.x=Math.sin(stride)*.42;
-        } else {playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
+        } else {player.position.y=getWalkHeight(player.position.x,player.position.z);playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
         const target=new THREE.Vector3(player.position.x,1.5,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         camera.position.lerp(cp,.12);camera.lookAt(target);
