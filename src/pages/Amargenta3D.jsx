@@ -527,6 +527,23 @@ export default function Amargenta3D({ onExit }) {
       for(const px of [-1.25,1.25]){const wheel=addMesh(new THREE.TorusGeometry(.48,.11,8,18),darkStone,g,px,.58,0);wheel.rotation.y=Math.PI/2;cylinder(.12,.12,.28,gold,g,px,.58,0,10).rotation.z=Math.PI/2;}
       addCollider(x,z,1.35);
     };
+    const makeStoneSteps = (x,z,count=5,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      for(let i=0;i<count;i++){box(3.2,.22,.9,stoneLight,g,0,.11+i*.25,i*.88);box(3.35,.1,.12,darkStone,g,0,.25+i*.25,i*.88-.38);}
+    };
+    const makeWoodPergola = (x,z,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      for(const px of [-2.4,2.4])for(const pz of [-1.8,1.8])box(.22,3.5,.22,wood,g,px,1.75,pz);
+      for(let i=0;i<7;i++)box(.18,.2,4.2,wood,g,-2.4+i*.8,3.45,0);
+      box(5,.2,.22,wood,g,0,3.48,-1.8);box(5,.2,.22,wood,g,0,3.48,1.8);
+      for(let i=0;i<12;i++){const a=i*2.399;const vine=sphere(.18,leaf,g,Math.cos(a)*2.1,2.8+(i%3)*.18,Math.sin(a)*1.5,1);vine.scale.set(1.5,.7,1);}
+      addCollider(x,z,2.1);
+    };
+    const makeRockGarden = (x,z,seed=0) => {
+      for(let i=0;i<9;i++){const a=i*2.399+seed,r=1.1+(i%3)*.7;const rock=sphere(.35+(i%3)*.12,i%2?stone:stoneLight,scene,x+Math.cos(a)*r,.18,z+Math.sin(a)*r,1);rock.scale.set(1.5,.7,1.1);}
+      const shrub=sphere(.75,leaf,scene,x,.5,z,1);shrub.scale.set(1.4,.7,1);
+      addCollider(x,z,1.5);
+    };
 
     const makeInterior = (cx,cz,doorSide="north") => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
@@ -670,6 +687,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeStoneLantern(Math.cos(a)*10,Math.sin(a)*7.5);}
       makeWell(-8,7);makeBench(-10,-5,Math.PI/2);makeBench(10,-5,-Math.PI/2);
       makeFlowerBed(-12,0,Math.PI/2);makeFlowerBed(12,0,Math.PI/2);
+      makeWoodPergola(0,13,0);makeRockGarden(-15,-16,1);makeRockGarden(16,17,2);
       makeBanner(-13,-12,"#a64c36",Math.PI/2);makeBanner(13,12,"#526d58",Math.PI/2);
       // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
       makeHouse(-1,-23,10,7,4.6,1);
@@ -702,17 +720,21 @@ export default function Amargenta3D({ onExit }) {
       makeVillageSign(-31,29,"Terrazze",Math.PI/2);
       // Distretto produttivo e magazzini a sud-est
       makeRoastery(16,28);makeHouse(7,39,6,5,3.3,0);makeHouse(25,42,5,5,3,1);
-      // Muretti, scale e terrazzamenti di collegamento
+      // Muretti, scale e terrazzamenti di collegamento.
       for(let i=0;i<5;i++){makeWall(-12+i*5,22+i*3,9,.9,-.45);for(let s=0;s<4;s++)box(2.1,.32,1.3,stoneLight,scene,-18+i*4+s*1.1,1.1+s*.35,24+i*3);}
+      makeStoneSteps(-18,35,7,-.1);makeStoneSteps(-22,-31,6,Math.PI);
       // Giardini agrumati e serre della corporazione del caffè.
       for(let i=0;i<9;i++)makeCitrusTree(-48+(i%3)*7,18+Math.floor(i/3)*7,.85+(i%2)*.12);
       makeGreenhouse(-52,-16);
+      makeWoodPergola(-49,4,Math.PI/2);makeFlowerBed(-57,10,.4);makeFlowerBed(-39,10,-.4);
       // Sentiero panoramico, rocce e vegetazione: alternanza di pini e alberi in fiore.
       for(let i=0;i<48;i++){const a=i*2.399,rr=38+(i%5)*4;makeTree(Math.cos(a)*rr,Math.sin(a)*rr,.7+(i%3)*.18,i%4===0);}
       for(let i=0;i<12;i++){
         const a=i*Math.PI/6,rr=31+(i%3)*2;
         makeCherryTree(Math.cos(a)*rr,Math.sin(a)*rr,.72+(i%2)*.16);
       }
+      // Piccolo bosco sacro ai margini del villaggio: rocce, cespugli e pietre votive.
+      makeRockGarden(-42,-26,3);makeRockGarden(43,27,5);makeRockGarden(-43,39,7);
       for(let i=0;i<24;i++){const x=-35+(i%6)*8,z=-4+Math.floor(i/6)*9;sphere(1.2,stoneLight,scene,x,.25,z,1);addCollider(x,z,.62);}
       // Arredi, carri, sacchi e casse: area di carico della corporazione.
       makeWoodCart(22,22,-.15);makeWoodCart(-19,22,.25);
