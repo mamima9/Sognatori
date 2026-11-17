@@ -272,6 +272,10 @@ export default function Amargenta3D({ onExit }) {
     const addInteraction = (id, title, text, x, z, action=null, radius=3.2) => {
       interactables.push({id,title,text,x,z,action,radius});
     };
+    const removeInteraction = (id) => {
+      const index = interactables.findIndex(item => item.id === id);
+      if (index >= 0) interactables.splice(index, 1);
+    };
     const makeNpc = (id,name,job,x,z,shirt,lines,scale=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
       const skin=mat("#d9ad83"), dark=mat("#302a2a"), trousers=mat("#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
@@ -525,7 +529,7 @@ export default function Amargenta3D({ onExit }) {
         addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
           if(g.userData.collected||collectedAmberRef.current.has(i))return;
-          g.userData.collected=true;g.visible=false;collectedAmberRef.current.add(i);
+          g.userData.collected=true;g.visible=false;removeInteraction("amber-bean-"+i);collectedAmberRef.current.add(i);
           const nextCollected=[...collectedAmberRef.current];setCollectedAmber(nextCollected);
           questCountRef.current+=1;setQuestCount(questCountRef.current);
           setInventory(old=>({...old,amberBeans:old.amberBeans+1}));
@@ -544,7 +548,7 @@ export default function Amargenta3D({ onExit }) {
         addInteraction("recipe-page-"+i,"Pagina della Ricetta Perduta","Una pagina antica della Ricetta delle Sette Tostature.",p[0],p[1],()=>{
           if(!recipeStartedRef.current){setDialogue({title:"Pagina della Ricetta",text:"Una pagina preziosa. Orma saprà cosa farne."});return;}
           if(collectedPagesRef.current.has(i))return;
-          collectedPagesRef.current.add(i);setCollectedPages([...collectedPagesRef.current]);
+          collectedPagesRef.current.add(i);removeInteraction("recipe-page-"+i);setCollectedPages([...collectedPagesRef.current]);
           recipePagesRef.current+=1;setRecipePages(recipePagesRef.current);
           setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));
           page.visible=false;
@@ -563,7 +567,7 @@ export default function Amargenta3D({ onExit }) {
         addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
           if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Bruno al ponte dovrebbe sapere come riattivare le condotte."});return;}
           if(activatedValvesRef.current.has(i))return;
-          activatedValvesRef.current.add(i);setActivatedValves([...activatedValvesRef.current]);
+          activatedValvesRef.current.add(i);removeInteraction("water-valve-"+i);setActivatedValves([...activatedValvesRef.current]);
           valvesRef.current+=1;setValves(valvesRef.current);
           wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");
           setDialogue({title:"Condotta riattivata",text:"Valvole attivate: "+valvesRef.current+"/3."});
@@ -587,7 +591,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
         if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
-        citrusHarvestedRef.current=true;setCitrusHarvested(true);
+        citrusHarvestedRef.current=true;removeInteraction("citrus-harvest");setCitrusHarvested(true);
         setInventory(old=>({...old,citrus:old.citrus+1}));
         setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Nerio potrebbe scambiarlo con te."});
       },4.5);
@@ -788,7 +792,7 @@ export default function Amargenta3D({ onExit }) {
       <button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
     </div>}
     <div className="amargenta-controls" aria-label="Comandi touch" style={{position:"absolute",right:22,bottom:86,display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,touchAction:"none"}}>
-      {[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}
+      {[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}
     </div>
     <button onClick={()=>onExit ? onExit() : window.location.assign("/avventura")} style={{position:"absolute",right:20,bottom:20,border:"1px solid #e1c28d",borderRadius:10,background:"#2d3b31dd",color:"#f8ecd8",padding:"11px 16px",fontWeight:700,cursor:"pointer"}}>← Torna ad Avventura</button>
   </div>;
