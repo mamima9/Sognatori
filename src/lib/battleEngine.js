@@ -182,6 +182,13 @@ function triggerZibelleBitterness(target, attacker, msg) {
     : " · Aroma di caffè: " + attacker.nome + " è in Amarezza!");
 }
 
+function triggerMuccanzaPumpDump(attacker) {
+  if (!attacker || attacker.abilityNullified || attacker.abilKey !== "muccanza_pump_dump") return false;
+  attacker.hp = Math.max(0, attacker.hp - 1);
+  if (attacker.hp === 0) attacker.fainted = true;
+  return true;
+}
+
 function triggerElmasHodl(target) {
   if (
     !target ||
@@ -1034,6 +1041,7 @@ export function processAction(
   const forkRedirect = triggerShoboshiFork(act);
 
   if (act.target.protectedThisTurn) {
+    if (triggerMuccanzaPumpDump(act.attacker)) msg += " · Pump and Dump: -1 HP";
     events.push({
       targetId: act.target.id,
       efficacy: "protected",
@@ -1073,6 +1081,7 @@ export function processAction(
   }
 
   if (antislurpo) {
+    if (triggerMuccanzaPumpDump(act.attacker)) msg += " · Pump and Dump: -1 HP";
     events.push({
       targetId: act.target.id,
       efficacy: "immune",
@@ -1109,6 +1118,7 @@ export function processAction(
   }
 
   if (immune) {
+    if (triggerMuccanzaPumpDump(act.attacker)) msg += " · Pump and Dump: -1 HP";
     events.push({
       targetId: act.target.id,
       efficacy: "immune",
@@ -1372,6 +1382,8 @@ case "taomarco_defeat_buff":
         ` · ${m.explode(act.target.nome)}`;
     }
   }
+
+  if (triggerMuccanzaPumpDump(act.attacker)) msg += " · Pump and Dump: -1 HP";
 
   if (act.target.hp === 0) {
     act.target.fainted = true;
@@ -1898,6 +1910,10 @@ export function processActionDual(
   }
 
   if (antislurpo) {
+    if (triggerMuccanzaPumpDump(act.attacker)) {
+      msgIt += " · Pump and Dump: -1 HP";
+      msgEn += " · Pump and Dump: -1 HP";
+    }
     events.push({
       targetId: act.target.id,
       efficacy: "immune",
@@ -1922,6 +1938,10 @@ export function processActionDual(
   if (
   act.target.protectedThisTurn
 ) {
+  if (triggerMuccanzaPumpDump(act.attacker)) {
+    msgIt += " · Pump and Dump: -1 HP";
+    msgEn += " · Pump and Dump: -1 HP";
+  }
   events.push({
     targetId: act.target.id,
     efficacy: "protected",
@@ -1944,6 +1964,10 @@ export function processActionDual(
 }
 
   if (immune) {
+    if (triggerMuccanzaPumpDump(act.attacker)) {
+      msgIt += " · Pump and Dump: -1 HP";
+      msgEn += " · Pump and Dump: -1 HP";
+    }
     events.push({
       targetId: act.target.id,
       efficacy: "immune",
@@ -2255,6 +2279,11 @@ case "taomarco_defeat_buff":
       }
 
       break;
+  }
+
+  if (triggerMuccanzaPumpDump(act.attacker)) {
+    msgIt += " · Pump and Dump: -1 HP";
+    msgEn += " · Pump and Dump: -1 HP";
   }
 
   /*
