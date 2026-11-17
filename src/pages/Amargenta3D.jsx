@@ -342,6 +342,39 @@ export default function Amargenta3D({ onExit }) {
       npcActors.push({group:g,phase:2.4,wild:true,legs,tailPivot,headPivot,ears,bodyPivot,aroma,interaction,homeX:-48,homeZ:30,roamRadius:2.4,walkSpeed:.48});
       return g;
     };
+    // Creature RPG 3D per i Sognatori 36–39, con silhouette e animazione dedicate.
+    const makeRecruitableCreature = (id,name,x,z,colors,kind="round") => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      const main=mat(colors[0]),light=mat(colors[1]),dark=mat(colors[2]),accent=mat(colors[3]||"#e8c98c");
+      const body=sphere(kind==="bull"?.62:.58,main,g,0,.72,0,2);body.scale.set(kind==="bull"?1.35:1.05,kind==="tall"?1.28:.9,kind==="rabbit"?.78:.92);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.28,.38);
+      sphere(kind==="rabbit"?.42:.43,light,headPivot,0,.12,.12,2);
+      sphere(.22,accent,headPivot,0,-.08,.48,2).scale.set(1.15,.72,.65);
+      for(const side of [-1,1]){sphere(.065,dark,headPivot,side*.17,.18,.47,1);sphere(.025,mat("#fff8e8"),headPivot,side*.18,.2,.49,1);}
+      const ears=[];
+      if(kind==="rabbit"||kind==="bull")for(const side of [-1,1]){
+        const ear=new THREE.Group();headPivot.add(ear);ear.position.set(side*.25,.42,0);ear.rotation.z=side*(kind==="bull"?.48:.12);
+        const e=sphere(kind==="bull"?.13:.16,main,ear,0,.27,0,1);e.scale.set(.8,kind==="bull"?1.7:2.1,.55);
+        sphere(.07,light,ear,0,.27,.07,1).scale.set(.8,1.7,.25);ears.push(ear);
+      }
+      const legs=[];
+      for(const side of [-1,1])for(const fore of [true,false]){
+        const pivot=new THREE.Group();g.add(pivot);pivot.position.set(side*.34,.42,fore?.32:-.34);
+        const limb=sphere(.14,kind==="bull"?main:dark,pivot,0,-.16,0,1);limb.scale.set(.9,1.25,1);
+        sphere(.16,accent,pivot,0,-.3,.035,1);legs.push({pivot,side,fore});
+      }
+      const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(0,.8,-.55);
+      sphere(.11,light,tailPivot,0,-.1,-.24,1).scale.set(1,1,1.8);
+      const aroma=new THREE.Group();g.add(aroma);
+      for(let i=0;i<3;i++){const puff=sphere(kind==="swamp"?.1:.075,accent,aroma,(i-1)*.22,1.75+i*.15,-.25,1);puff.userData.phase=i*.8;}
+      const interaction={id:"recruit-"+id,title:name,text:name+" ti osserva. Sembra curioso, ma deve ancora decidere se fidarsi di te.",x,z,radius:4.1,action:()=>{
+        if(ownedAmargentaIdsRef.current.includes(id)){setDialogue({title:name,text:name+" è già nella tua collezione. Nessun doppione ad Amargenta."});return;}
+        setDialogue({title:"Incontro · "+name,text:"Hai incontrato "+name+". Parlagli e convincilo a unirsi alla tua avventura.",confirm:()=>{recruitAmargenta(id);setDialogue(null);}});
+      }};
+      interactables.push(interaction);
+      npcActors.push({group:g,phase:x*.13+z*.07,wild:true,legs,tailPivot,headPivot,ears,bodyPivot:{position:{y:0}},aroma,interaction,homeX:x,homeZ:z,roamRadius:1.8,walkSpeed:.32});
+      return g;
+    };
     // Flame #45: creatura ardente che diffonde nell'aria il profumo pungente del peperoncino.
     const makeFlame = () => {
       const g=new THREE.Group();scene.add(g);g.position.set(32,0,-28);
@@ -1280,6 +1313,11 @@ export default function Amargenta3D({ onExit }) {
         }};
         interactables.push(interaction);
       }
+      // I Sognatori 36–39: incontri esplorabili, modellati in 3D e reclutabili una sola volta.
+      makeRecruitableCreature("torosucco","Torosucco",-47,-5,["#e8a43d","#f7d47b","#9d4c2c","#f5e7b5"],"bull");
+      makeRecruitableCreature("crunchypat","Crunchypat",-30,48,["#8e7562","#c5a98d","#55463d","#e8d6b9"],"round");
+      makeRecruitableCreature("talamos","Talamos",53,-48,["#496c62","#83a58c","#29453f","#d4c58b"],"swamp");
+      makeRecruitableCreature("pingcake","Pingcake",48,48,["#d88d9d","#f4c6d0","#8c4b61","#fff0bd"],"rabbit");
       [[-53,-48],[-43,-54],[-34,-43],[-57,-31],[-28,-55],[34,34],[48,20],[53,-24],[28,52]].forEach(([x,z],i)=>makeZibelle(x,z,i));
       makeUmami();
       makeFlame();
