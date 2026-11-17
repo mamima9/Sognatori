@@ -3,6 +3,14 @@ import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER } from "@/lib/sognatoriData";
 
+// Roster locale di Amargenta: separato dal resto dell'Avventura.
+const AMARGENTA_SOGNATORE_IDS = new Set([
+  "torosucco", "crunchypat", "talamos", "pingcake",
+  "zibelle", "lattelo", "muccanza", "cardinero", "umami", "flame"
+]);
+const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String(s.id)));
+
+
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
  * La scena è isolata dal renderer Canvas di Avventura: non modifica Arcade/Multiplayer.
@@ -14,10 +22,23 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
+  const [amargentaBoxIds, setAmargentaBoxIds] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
+      return Array.isArray(saved.boxIds) ? saved.boxIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id))) : AMARGENTA_ROSTER.map((s) => s.id);
+    } catch { return AMARGENTA_ROSTER.map((s) => s.id); }
+  });
   const [savedProgress] = useState(() => {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
     catch { return {}; }
   });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("sognatori:amargenta:roster:v1", JSON.stringify({
+        boxIds: amargentaBoxIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id)))
+      }));
+    } catch (error) { console.warn("Impossibile salvare il box di Amargenta:", error); }
+  }, [amargentaBoxIds]);
   const [questStarted, setQuestStarted] = useState(Boolean(savedProgress.questStarted));
   const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
@@ -1755,7 +1776,7 @@ export default function Amargenta3D({ onExit }) {
     {muccanzaBattleOpen&&<AdventureBattle
       opponentName={muccanzaOpponentName}
       isWild={false}
-      playerRoster={ROSTER}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
       enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setMuccanzaBattleOpen(false);
@@ -1766,7 +1787,7 @@ export default function Amargenta3D({ onExit }) {
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
       isWild
-      playerRoster={ROSTER}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
       enemyTeam={[{...ROSTER.find(s=>s.id==="lattelo"),hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setLatteloBattleOpen(false);
@@ -1777,7 +1798,7 @@ export default function Amargenta3D({ onExit }) {
     {zibelleBattleOpen&&<AdventureBattle
       opponentName="Zibelle selvatica"
       isWild
-      playerRoster={ROSTER}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
       enemyTeam={[{...ROSTER.find(s=>s.id==="zibelle"),hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setZibelleBattleOpen(false);
@@ -1788,7 +1809,7 @@ export default function Amargenta3D({ onExit }) {
     {dungeonBattleOpen&&<AdventureBattle
       opponentName="Guardiano del Retrogusto"
       isWild
-      playerRoster={ROSTER}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
       enemyTeam={[{
         id:"guardian-retrogusto",
         nome:"Guardiano del Retrogusto",
