@@ -103,6 +103,8 @@ export default function Amargenta3D({ onExit }) {
     const walkableRamps = [];
     const interactables = [];
     const npcActors = [];
+    const smokePuffs = [];
+    const amberPickups = [];
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
     let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0, currentPeriod = -1;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
@@ -266,7 +268,7 @@ export default function Amargenta3D({ onExit }) {
       cylinder(.7,.85,2.4,gold,scene,x,1.35,z+4.25,16);
       cylinder(.48,.58,1.5,wood,scene,x,1.3,z+4.4,16);
       box(1.1,6.5,1.1,darkStone,scene,x+3.7,7,z-2.2);
-      for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);puff.userData.smoke=true;}
+      for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);smokePuffs.push(puff);}
     };
 
     const addInteraction = (id, title, text, x, z, action=null, radius=3.2) => {
@@ -379,13 +381,14 @@ export default function Amargenta3D({ onExit }) {
       scene=new THREE.Scene();scene.background=new THREE.Color("#a9c4d1");scene.fog=new THREE.Fog("#a9c4d1",65,190);
       camera=new THREE.PerspectiveCamera(62,host.clientWidth/host.clientHeight,.1,350);
       renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(host.clientWidth,host.clientHeight);
+      const compactDevice=window.matchMedia("(max-width: 720px)").matches;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1.2:1.7));renderer.setSize(host.clientWidth,host.clientHeight);
       renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",2.0));
-      const sun=new THREE.DirectionalLight("#fff0d6",3.2);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;scene.add(sun);
+      const sun=new THREE.DirectionalLight("#fff0d6",3.2);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;scene.add(sun);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
       // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
       const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
@@ -526,6 +529,7 @@ export default function Amargenta3D({ onExit }) {
         const core=sphere(.34,gold,g,0,0,0,2);core.scale.set(.78,1.25,.78);
         const ring=addMesh(new THREE.TorusGeometry(.56,.045,6,20),mat("#f4d28d",.3,{emissive:"#c58a42",emissiveIntensity:.7}),g,0,0,0);ring.rotation.x=Math.PI/2;
         g.userData.amberPickup=true;
+        amberPickups.push(g);
         if(!collectedAmberRef.current.has(i)) addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
           if(g.userData.collected||collectedAmberRef.current.has(i))return;
@@ -676,7 +680,7 @@ export default function Amargenta3D({ onExit }) {
         const target=new THREE.Vector3(player.position.x,player.position.y+1.5,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         camera.position.lerp(cp,.12);camera.lookAt(target);
-        scene.traverse(o=>{if(o.userData.smoke){o.position.y+=dt*.45;if(o.position.y>13)o.position.y=10;}});
+        smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
         if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
         const period=Math.floor((clock.elapsedTime%240)/60);
@@ -694,7 +698,7 @@ export default function Amargenta3D({ onExit }) {
           const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
           actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
         });
-        scene.traverse(o=>{if(o.userData.amberPickup){o.rotation.y+=dt*.65;}});
+        amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
         const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
