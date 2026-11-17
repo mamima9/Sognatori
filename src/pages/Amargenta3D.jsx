@@ -31,6 +31,7 @@ export default function Amargenta3D({ onExit }) {
       return [];
     } catch { return []; }
   });
+  const ownedAmargentaIdsRef = useRef(ownedAmargentaIds);
   const [amargentaPartyIds, setAmargentaPartyIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
@@ -46,8 +47,9 @@ export default function Amargenta3D({ onExit }) {
     } catch { return []; }
   });
   const recruitAmargenta = (id) => {
-    if (!AMARGENTA_SOGNATORE_IDS.has(String(id)) || ownedAmargentaIds.includes(id)) return false;
-    setOwnedAmargentaIds((ids) => ids.includes(id) ? ids : [...ids, id]);
+    if (!AMARGENTA_SOGNATORE_IDS.has(String(id)) || ownedAmargentaIdsRef.current.includes(id)) return false;
+    ownedAmargentaIdsRef.current = [...ownedAmargentaIdsRef.current, id];
+    setOwnedAmargentaIds(ownedAmargentaIdsRef.current);
     setAmargentaBoxIds((ids) => ids.includes(id) ? ids : [...ids, id]);
     setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
     return true;
@@ -1257,7 +1259,7 @@ export default function Amargenta3D({ onExit }) {
         const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
         const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,6,16,Math.PI),metal);handle.position.set(-.58,.52,.22);g.add(handle);
         const interaction={id:"wild-lattelo-41",title:"Lattelo · Natura",text:"Un Lattelo selvatico ti osserva tra i filari.",x:42,z:38,radius:4.2,action:()=>{
-          if(ownedAmargentaIds.includes("lattelo")){setDialogue({title:"Lattelo",text:"Lattelo è già parte della tua collezione. Nessun doppione."});return;}
+          if(ownedAmargentaIdsRef.current.includes("lattelo")){setDialogue({title:"Lattelo",text:"Lattelo è già parte della tua collezione. Nessun doppione."});return;}
           setDialogue({title:"Un incontro speciale · Lattelo",text:"Il piccolo Sognatore sembra incuriosito, ma non si fida ancora. Avvicinati con calma e fagli capire che vuoi viaggiare insieme.",confirm:()=>{recruitAmargenta("lattelo");setDialogue(null);}});
         }};
         interactables.push(interaction);
