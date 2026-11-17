@@ -1748,7 +1748,7 @@ export default function Amargenta3D({ onExit }) {
       }
       @media (max-width: 390px){.amargenta-title{gap:6px!important}.amargenta-title .amargenta-brand{font-size:12px!important}.amargenta-title .amargenta-city{font-size:18px!important}.amargenta-menu-button{padding:7px 8px!important}}
     `}</style>
-    <div ref={hostRef} style={{position:"absolute",inset:0}} />
+    <div ref={hostRef} style={{position:"absolute",inset:0,background:"linear-gradient(180deg,#b7cbd0 0%,#d5d0b0 48%,#66764b 100%)"}} />
     
     <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d",zIndex:20}}>
       <div className="amargenta-brand" style={{fontSize:22,letterSpacing:3,color:"#f2c94c",fontWeight:1000}}>SOGNATORI</div>
@@ -1757,7 +1757,7 @@ export default function Amargenta3D({ onExit }) {
     </div>
     <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span></div>
     {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
-    {toast&&<div className="amargenta-toast">{toast}</div>}
+    {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · AMARGENTA</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
@@ -1818,7 +1818,7 @@ export default function Amargenta3D({ onExit }) {
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
       isWild
-      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaPartyIds.includes(s.id))}
       enemyTeam={[{...ROSTER.find(s=>s.id==="lattelo"),hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setLatteloBattleOpen(false);
