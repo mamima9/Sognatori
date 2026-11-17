@@ -136,6 +136,10 @@ export default function Amargenta3D({ onExit }) {
     const fireflies = [];
     const bellActors = [];
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
+    const movementVelocity = new THREE.Vector3();
+    const desiredMovement = new THREE.Vector3();
+    const cameraLookTarget = new THREE.Vector3();
+    let cameraReady = false;
     let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0, currentPeriod = -1;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
     const stone = mat("#9a8871"), stoneLight = mat("#c0ad91"), darkStone = mat("#655747");
@@ -1180,8 +1184,8 @@ export default function Amargenta3D({ onExit }) {
       const onWindowBlur=()=>keys.clear();
       const onPointerDown=e=>{if(e.button!==0)return;dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
       const onPointerUp=()=>{dragging=false;};
-      const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.005;pitch=Math.max(.12,Math.min(.9,pitch+dy*.004));};
-      const onWheel=e=>{distance=Math.max(6,Math.min(22,distance+e.deltaY*.012));};
+      const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.0038;pitch=Math.max(.16,Math.min(.82,pitch+dy*.0032));};
+      const onWheel=e=>{distance=THREE.MathUtils.clamp(distance+e.deltaY*.009,7,20);};
       renderer.domElement.addEventListener("pointerdown",onPointerDown);
       renderer.domElement.addEventListener("pointerup",onPointerUp);
       renderer.domElement.addEventListener("pointercancel",onPointerUp);
@@ -1198,22 +1202,51 @@ export default function Amargenta3D({ onExit }) {
         if(controlsLockedRef.current) keys.clear();
         const activeForward=controlsLockedRef.current?0:forward;
         const activeSide=controlsLockedRef.current?0:side;
-        if(activeForward||activeSide){const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const sprint=keys.has("ShiftLeft")||keys.has("ShiftRight");const move=dir.multiplyScalar(activeForward).add(right.multiplyScalar(activeSide)).normalize().multiplyScalar((sprint?12:8)*dt);const nx=THREE.MathUtils.clamp(player.position.x+move.x,-72,72),nz=THREE.MathUtils.clamp(player.position.z+move.z,-72,72);
-          // Collisione separata sugli assi: il personaggio scivola lungo gli ostacoli invece di bloccarsi in diagonale.
-          if(!isBlockedAt(nx,player.position.z)) player.position.x=nx;
-          if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
-          player.position.y=getWalkHeight(player.position.x,player.position.z);
-          player.rotation.y=Math.atan2(move.x,move.z);
-          // Auto-follow: la camera si riallinea dietro la direzione reale di marcia.
-          // Il trascinamento manuale resta disponibile quando il personaggio e fermo.
+        const inputLength=Math.hypot(activeForward,activeSide);
+        const sprint=(keys.has("ShiftLeft")||keys.has("ShiftRight"))&&inputLength>.05;
+        desiredMovement.set(0,0,0);
+        if(inputLength>.05){
+          const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+          const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+          desiredMovement.copy(dir).multiplyScalar(activeForward).addScaledVector(right,activeSide).normalize().multiplyScalar(sprint?11.5:7.2);
+        }
+        // Accelerazione e frenata progressive: niente scatti quando si preme o rilascia il movimento.
+        const acceleration= inputLength>.05 ? 8.5 : 11;
+        movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
+        const move=movementVelocity.clone().multiplyScalar(dt);
+        const nx=THREE.MathUtils.clamp(player.position.x+move.x,-72,72);
+        const nz=THREE.MathUtils.clamp(player.position.z+move.z,-72,72);
+        if(Math.abs(move.x)>.0001&&!isBlockedAt(nx,player.position.z))player.position.x=nx;
+        else if(isBlockedAt(nx,player.position.z))movementVelocity.x=0;
+        if(Math.abs(move.z)>.0001&&!isBlockedAt(player.position.x,nz))player.position.z=nz;
+        else if(isBlockedAt(player.position.x,nz))movementVelocity.z=0;
+        player.position.y=getWalkHeight(player.position.x,player.position.z);
+        const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
+        if(horizontalSpeed>.18){
+          const desiredFacing=Math.atan2(movementVelocity.x,movementVelocity.z);
+          const angleDelta=Math.atan2(Math.sin(desiredFacing-player.rotation.y),Math.cos(desiredFacing-player.rotation.y));
+          player.rotation.y+=angleDelta*(1-Math.exp(-13*dt));
+          // La camera segue gradualmente la direzione di marcia, senza strappi.
           const followYaw=player.rotation.y+Math.PI;
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
-          yaw+=yawDelta*Math.min(1,dt*2.8);
-          const stride=clock.elapsedTime*10;playerMotion.leftArm.rotation.x=Math.sin(stride)*.38;playerMotion.rightArm.rotation.x=-Math.sin(stride)*.38;playerMotion.leftLeg.rotation.x=-Math.sin(stride)*.42;playerMotion.rightLeg.rotation.x=Math.sin(stride)*.42;
-        } else {player.position.y=getWalkHeight(player.position.x,player.position.z);playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
-        const target=new THREE.Vector3(player.position.x,player.position.y+1.5,player.position.z);
+          yaw+=yawDelta*(1-Math.exp(-2.1*dt));
+        }
+        // Ciclo passi proporzionale alla velocità, con ampiezza che sfuma durante la frenata.
+        const gait=clock.elapsedTime*10.5;
+        const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/5.2,0,1);
+        const armSwing=Math.sin(gait)*.42*walkBlend;
+        const legSwing=Math.sin(gait)*.48*walkBlend;
+        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,14,dt);
+        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,14,dt);
+        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,14,dt);
+        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,14,dt);
+        const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
-        camera.position.lerp(cp,.12);camera.lookAt(target);
+        if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
+        const cameraEase=1-Math.exp(-7.5*dt);
+        camera.position.lerp(cp,cameraEase);
+        cameraLookTarget.lerp(target,1-Math.exp(-9*dt));
+        camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
         if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
