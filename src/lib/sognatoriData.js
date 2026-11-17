@@ -513,7 +513,6 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     costo: 1,
     theme: "Succo, bolle zuccherine",
     img: "/images/36 - Torosucco.png",
-    adventureOnly: true,
   },
   {
     id: "crunchypat",
