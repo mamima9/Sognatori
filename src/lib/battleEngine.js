@@ -355,6 +355,19 @@ export function onEntry(
       break;
     }
 
+    case "lattelo_latte": {
+      const ally = allies.find(a => a && !a.fainted && a.id !== s.id);
+      if (ally) {
+        const before = ally.hp;
+        ally.hp = Math.min(ally.hpMax, ally.hp + 5);
+        const restored = ally.hp - before;
+        log.push(lang === "en"
+          ? "Latte: " + ally.nome + " recovers " + restored + " HP."
+          : "Latte: " + ally.nome + " recupera " + restored + " HP.");
+      }
+      break;
+    }
+
     case "talamos_palude_salata":
       enemies.forEach(enemy => {
         if (!enemy || enemy.fainted) return;
