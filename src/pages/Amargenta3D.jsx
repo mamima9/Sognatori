@@ -517,7 +517,7 @@ export default function Amargenta3D({ onExit }) {
           rune.material=mat("#8ac6a0",.22,{emissive:"#397d58",emissiveIntensity:1.1});
           halo.material=mat("#9bd9ad",.25,{emissive:"#397d58",emissiveIntensity:.7});
         }
-        addInteraction("dungeon-seal-"+index,"Sigillo antico "+(index+1),"Una runa incisa nella pietra. L'ordine corretto è suggerito dalle tre incisioni all'ingresso.",x,z,()=>{
+        addInteraction("dungeon-seal-"+index,"Sigillo antico "+(index+1),"Le incisioni indicano la sequenza: est, ovest, nord. Attiva le rune in quest'ordine.",x,z,()=>{
           if(dungeonBossDefeatedRef.current)return;
           if(dungeonSigilsRef.current.includes(index))return;
           const sequence=[1,0,2];
@@ -538,7 +538,7 @@ export default function Amargenta3D({ onExit }) {
           rune.material=mat("#8ac6a0",.22,{emissive:"#397d58",emissiveIntensity:1.1});
           halo.material=mat("#9bd9ad",.25,{emissive:"#397d58",emissiveIntensity:.7});
           setToast("Sigillo risvegliato · "+next.length+"/3");
-          if(next.length===3)setDialogue({title:"I tre sigilli sono attivi",text:"Le rune si sono accese. Qualcosa si sta risvegliando nel cuore della Cripta…"});
+          if(next.length===3){dungeonGuardian.visible=true;setDialogue({title:"I tre sigilli sono attivi",text:"Le rune si sono accese. Qualcosa si sta risvegliando nel cuore della Cripta…"});}
         },3.2);
       });
       // Il Guardiano emerge soltanto dopo la soluzione del puzzle.
