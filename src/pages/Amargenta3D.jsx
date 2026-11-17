@@ -1018,9 +1018,8 @@ export default function Amargenta3D({ onExit }) {
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
     
     <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
-      <div style={{fontSize:11,letterSpacing:4,color:"#e2bd85",fontWeight:800}}>S O G N A T O R I · AVVENTURA 3D</div>
-      <div style={{fontSize:30,fontWeight:900,lineHeight:1.15}}>AMARGENTA</div>
-      <div style={{fontSize:12,opacity:.8}}>La città segreta del caffè</div>
+      <div style={{fontSize:22,letterSpacing:3,color:"#f2c94c",fontWeight:1000}}>SOGNATORI</div>
+      <div style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
       <button onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",border:"1px solid #e1c28d",borderRadius:10,background:"#18221eef",color:"#f8ecd8",padding:"11px 16px",fontWeight:900,cursor:"pointer",whiteSpace:"nowrap",boxShadow:"0 5px 18px #0007"}}>☰ MENU</button>
     </div>
     {toast&&<div style={{position:"absolute",top:66,left:"50%",transform:"translateX(-50%)",padding:"9px 16px",borderRadius:10,background:"#26382bee",border:"1px solid #e0c18b",color:"#f6e8cf",fontSize:12,fontWeight:800}}>{toast}</div>}
