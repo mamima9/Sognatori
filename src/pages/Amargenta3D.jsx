@@ -619,7 +619,7 @@ export default function Amargenta3D({ onExit }) {
       box(.22,.53,.22,trousers,g,.14,.38,0);
       box(.27,.15,.36,boot,g,-.14,.1,.08);
       box(.24,.13,.34,boot,g,.14,.12,.08);
-(.09,gold,g,0,1.12,.3,1);
+const badge=sphere(.09,gold,g,0,1.12,.3,1);
       badge.scale.set(1,.8,.3);
       if(id==="barista"||id==="roaster"){
         box(.34,.46,.055,mat("#e8d7bd"),g,0,1.12,.405);
