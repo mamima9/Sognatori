@@ -716,6 +716,38 @@ export default function Amargenta3D({ onExit }) {
         ? (valves >= 3 ? "Torna da Bruno per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Bruno vicino al ponte")
         : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
 
+  const nearestWaypoint = (points) => points
+    .filter(point => !point.done)
+    .map(point => ({ ...point, distance: Math.hypot(point.x-playerCoords.x, point.z-playerCoords.z) }))
+    .sort((a,b) => a.distance-b.distance)[0] || null;
+  let objectiveWaypoint = null;
+  if (!questDone) {
+    objectiveWaypoint = questCount >= 3
+      ? { name:"Lina", x:-24, z:-31 }
+      : questStarted
+        ? nearestWaypoint([[-34,-37],[-12,-45],[-4,-28]].map(([x,z],i)=>({name:"Fava d'Ambra",x,z,done:collectedAmber.includes(i)})))
+        : { name:"Lina", x:-24, z:-31 };
+  } else if (!recipeDone) {
+    objectiveWaypoint = recipePages >= 4
+      ? { name:"Orma", x:-10, z:-19 }
+      : recipeStarted
+        ? nearestWaypoint([[-35,-16],[28,-30],[-61,62],[48,45]].map(([x,z],i)=>({name:"Pagina della ricetta",x,z,done:collectedPages.includes(i)})))
+        : { name:"Orma", x:-10, z:-19 };
+  } else if (!waterDone) {
+    objectiveWaypoint = valves >= 3
+      ? { name:"Bruno", x:18, z:-7 }
+      : waterStarted
+        ? nearestWaypoint([[19,-18],[37,18],[13,38]].map(([x,z],i)=>({name:"Valvola",x,z,done:activatedValves.includes(i)})))
+        : { name:"Bruno", x:18, z:-7 };
+  } else if (!secretUnlocked) objectiveWaypoint = { name:"Porta della Cripta", x:-70, z:-43 };
+  else if (!vaultClaimed) objectiveWaypoint = { name:"Scrigno delle Miscele", x:68, z:-68 };
+  const waypointDirection = objectiveWaypoint
+    ? ["N","NE","E","SE","S","SW","W","NW"][((Math.round(Math.atan2(objectiveWaypoint.x-playerCoords.x, -(objectiveWaypoint.z-playerCoords.z))/(Math.PI/4))+8)%8)]
+    : null;
+  const waypointDistance = objectiveWaypoint
+    ? Math.round(Math.hypot(objectiveWaypoint.x-playerCoords.x, objectiveWaypoint.z-playerCoords.z))
+    : null;
+
   return <div style={{position:"fixed",inset:0,background:"#18221e",color:"#f4ead8",fontFamily:"Inter,system-ui,sans-serif",overflow:"hidden"}}>
     <style>{`
       @media (max-width: 720px) {
@@ -748,6 +780,9 @@ export default function Amargenta3D({ onExit }) {
       <div style={{marginTop:9,paddingTop:8,borderTop:"1px solid #ffffff20"}}>
         <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>OBIETTIVO ATTUALE</div>
         <div style={{marginTop:4,color:"#f4e5cb",fontSize:10,lineHeight:1.45}}>{activeObjective}</div>
+        {objectiveWaypoint&&<div style={{marginTop:7,padding:"6px 8px",borderRadius:7,background:"#ffffff0b",color:"#e9c58d",fontSize:10,fontWeight:800,display:"flex",justifyContent:"space-between",gap:8}}>
+          <span>◎ {objectiveWaypoint.name}</span><span>{waypointDirection} · {waypointDistance} unità</span>
+        </div>}
       </div>
       <div style={{marginTop:8,color:"#d9bd91",fontSize:10}}>X {playerCoords.x} · Z {playerCoords.z}</div>
     </div>
