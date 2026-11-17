@@ -44,6 +44,8 @@ export default function Amargenta3D({ onExit }) {
   const [bellCount, setBellCount] = useState(Number(savedProgress.bellCount) || 0);
   const [bellsDone, setBellsDone] = useState(Boolean(savedProgress.bellsDone));
   const [activatedBells, setActivatedBells] = useState(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []);
+  const [blendStarted, setBlendStarted] = useState(Boolean(savedProgress.blendStarted));
+  const [blendDone, setBlendDone] = useState(Boolean(savedProgress.blendDone));
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -71,6 +73,8 @@ export default function Amargenta3D({ onExit }) {
   const bellCountRef = useRef(Number(savedProgress.bellCount) || 0);
   const bellsDoneRef = useRef(Boolean(savedProgress.bellsDone));
   const activatedBellsRef = useRef(new Set(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []));
+  const blendStartedRef = useRef(Boolean(savedProgress.blendStarted));
+  const blendDoneRef = useRef(Boolean(savedProgress.blendDone));
   const zoneRef = useRef("Ingresso di Amargenta");
   const controlsLockedRef = useRef(false);
 
@@ -91,12 +95,13 @@ export default function Amargenta3D({ onExit }) {
         recipeStarted, recipePages, recipeDone,
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves,
-        bellsStarted, bellCount, bellsDone, activatedBells
+        bellsStarted, bellCount, bellsDone, activatedBells,
+        blendStarted, blendDone
       }));
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells]);
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -605,6 +610,24 @@ export default function Amargenta3D({ onExit }) {
         setDialogue({title:"Tisana del Retrogusto",text:"Nerio ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
       };
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
+      const adaInteraction=interactables.find(item=>item.id==="keeper");
+      if(adaInteraction)adaInteraction.action=()=>{
+        if(blendDoneRef.current){setDialogue({title:"Ada · Custode delle ricette",text:"La Miscela delle Tre Foglie è custodita nella memoria di Amargenta. Hai dimostrato di saper rispettare ogni ingrediente."});return;}
+        const blends=inventoryRef.current.coffeeBlend, teas=inventoryRef.current.herbalTea;
+        if(!blendStartedRef.current){
+          blendStartedRef.current=true;setBlendStarted(true);
+          setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Vorrei ricreare la miscela cerimoniale della città. Portami una Miscela d'Autore preparata da Tostino e una Tisana del Retrogusto preparata da Nerio. Solo unendo tostatura e infusione si rivela il suo aroma."});
+          return;
+        }
+        if(blends<1||teas<1){
+          setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Ci siamo quasi. Servono 1 Miscela d'Autore e 1 Tisana del Retrogusto. Nella tua borsa: "+blends+" miscele e "+teas+" tisane. Tostino usa 3 Fave d'Ambra; Nerio usa 1 Fava e 1 agrume."});
+          return;
+        }
+        setInventory(old=>({...old,coffeeBlend:old.coffeeBlend-1,herbalTea:old.herbalTea-1,relics:old.relics+1}));
+        blendDoneRef.current=true;setBlendDone(true);
+        setToast("Ricetta segreta completata · Reliquia ottenuta");
+        setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Ada ti affida una Reliquia delle Tre Foglie."});
+      };
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       const eliaInteraction=interactables.find(item=>item.id==="cafe-host");
       if(eliaInteraction)eliaInteraction.action=()=>{
@@ -788,6 +811,7 @@ export default function Amargenta3D({ onExit }) {
       : !waterDone
         ? (valves >= 3 ? "Torna da Bruno per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Bruno vicino al ponte")
         : bellsStarted && !bellsDone ? (bellCount >= 3 ? "Torna da Elia per ricevere la ricompensa" : "Risveglia le tre campane del borgo")
+          : blendStarted && !blendDone ? "Completa la Miscela delle Tre Foglie da Ada"
           : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
 
   const nearestWaypoint = (points) => points
@@ -817,6 +841,8 @@ export default function Amargenta3D({ onExit }) {
     objectiveWaypoint = bellCount >= 3
       ? { name:"Elia", x:-68, z:66 }
       : nearestWaypoint([[-30,4],[-2,18],[16,-2]].map(([x,z],i)=>({name:"Campana",x,z,done:activatedBells.includes(i)})));
+  } else if (blendStarted && !blendDone) {
+    objectiveWaypoint = { name:"Ada", x:72, z:72 };
   } else if (!secretUnlocked) objectiveWaypoint = { name:"Porta della Cripta", x:-70, z:-43 };
   else if (!vaultClaimed) objectiveWaypoint = { name:"Scrigno delle Miscele", x:68, z:-68 };
   const waypointDirection = objectiveWaypoint
@@ -855,6 +881,7 @@ export default function Amargenta3D({ onExit }) {
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(recipePages/4*100)+"%",background:"#c7a5df"}}/></div>
       <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Condotte Antiche</strong><span>{waterDone?"✓":valves+"/3"}</span></div>
       <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Campane del borgo</strong><span>{bellsDone?"✓":bellsStarted?bellCount+"/3":"—"}</span></div>
+      <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Miscela delle Tre Foglie</strong><span>{blendDone?"✓":blendStarted?"IN CORSO":"—"}</span></div>
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(valves/3*100)+"%",background:"#78b6c1"}}/></div>
       <div style={{marginTop:9,paddingTop:8,borderTop:"1px solid #ffffff20"}}>
         <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>OBIETTIVO ATTUALE</div>
@@ -889,7 +916,7 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:8,color:"#d7c5a5"}}>Punti dorati: ingresso e piazza · Simboli: personaggi, botteghe e Cripta · Punto bianco: tu</div>
       </div>}
       {panel==="journal"&&<div>
-        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Elia al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
+        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Elia al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."],["La Miscela delle Tre Foglie",blendStarted,blendDone?1:0,1,blendDone,"Parla con Ada, porta una Miscela d'Autore e una Tisana del Retrogusto, poi ricevi la reliquia."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
         <div style={{marginTop:10,color:"#e6c28b"}}>Segreto: {secretUnlocked?"Cripta aperta":"completa tutte e tre le missioni."}</div>
       </div>}
       {panel==="inventory"&&<div>
