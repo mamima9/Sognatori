@@ -53,6 +53,7 @@ export default function Amargenta3D({ onExit }) {
   const [dungeonBossDefeated, setDungeonBossDefeated] = useState(Boolean(savedProgress.dungeonBossDefeated));
   const [dungeonBattleOpen, setDungeonBattleOpen] = useState(false);
   const [zibelleBattleOpen, setZibelleBattleOpen] = useState(false);
+  const [latteloBattleOpen, setLatteloBattleOpen] = useState(false);
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -1006,6 +1007,28 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
+      // Lattelo #41: incontro selvatico Natura presso i filari orientali.
+      {
+        const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
+        const coat=mat("#ffd92e"), blue=mat("#087df0"), cream=mat("#f5d8a1"), muzzle=mat("#f5b99a"), hoof=mat("#75452b"), dark=mat("#171717"), metal=mat("#c8d4df",.35,{metalness:.55});
+        const body=sphere(.72,coat,g,0,.86,0,2);body.scale.set(1.05,1.08,.82);
+        sphere(.58,coat,g,0,1.72,.12,2);
+        sphere(.34,muzzle,g,0,1.53,.62,2).scale.set(1.2,.72,.55);
+        sphere(.09,dark,g,-.22,1.83,.61,1);sphere(.09,dark,g,.22,1.83,.61,1);
+        sphere(.23,blue,g,0,2.19,.08,2).scale.set(1.1,.48,.75);
+        for(const side of [-1,1]){
+          const horn=sphere(.18,cream,g,side*.32,2.35,.02,2);horn.scale.set(.65,1.25,.65);
+          const ear=sphere(.25,coat,g,side*.58,1.95,0,2);ear.scale.set(1.2,.48,.5);
+          sphere(.17,blue,g,side*.35,.48,0,1);
+          const leg=sphere(.19,coat,g,side*.34,.25,.05,1);leg.scale.set(.9,1.2,.9);
+          sphere(.2,hoof,g,side*.34,.08,.12,1);
+        }
+        sphere(.18,blue,g,.62,.76,-.4,2);
+        const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
+        const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,6,16,Math.PI),metal);handle.position.set(-.58,.52,.22);g.add(handle);
+        const interaction={id:"wild-lattelo-41",title:"Lattelo · Natura",text:"Un Lattelo selvatico ti osserva tra i filari. Avvicinati per affrontarlo.",x:42,z:38,radius:4.2,action:()=>setLatteloBattleOpen(true)};
+        interactables.push(interaction);
+      }
       [[-53,-48],[-43,-54],[-34,-43],[-57,-31],[-28,-55],[34,34],[48,20],[53,-24],[28,52]].forEach(([x,z],i)=>makeZibelle(x,z,i));
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
@@ -1512,6 +1535,17 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
+    {latteloBattleOpen&&<AdventureBattle
+      opponentName="Lattelo"
+      isWild
+      playerRoster={ROSTER}
+      enemyTeam={[{...ROSTER.find(s=>s.id==="lattelo"),hp:20,hpMax:20}]}
+      onFinish={(result)=>{
+        setLatteloBattleOpen(false);
+        if(result==="win")setToast("Lattelo sconfitto · Lattelo #41");
+        else if(result==="loss")setToast("Lattelo ti ha respinto · Puoi riprovare");
+      }}
+    />}
     {zibelleBattleOpen&&<AdventureBattle
       opponentName="Zibelle selvatica"
       isWild
