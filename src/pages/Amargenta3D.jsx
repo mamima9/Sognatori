@@ -491,11 +491,41 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeNoren = (x,z,color="#a64c36") => {
       const fabric=mat(color,.95,{side:THREE.DoubleSide});
-      for(let i=0;i<3;i++){
-        const panel=box(.52,.88,.07,fabric,scene,x-.54+i*.54,2.35,z);
-        panel.rotation.z=(i-1)*-.035;
-      }
+      for(let i=0;i<3;i++){const panel=box(.52,.88,.07,fabric,scene,x-.54+i*.54,2.35,z);panel.rotation.z=(i-1)*-.035;}
       box(1.8,.12,.14,wood,scene,x,2.85,z);
+    };
+    const makeBench = (x,z,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(2.2,.18,.72,wood,g,0,.72,0);
+      for(const px of [-.82,.82]){box(.18,.72,.18,darkStone,g,px,.36,0);box(.16,.68,.16,wood,g,px,.38,-.42);}
+      box(2.2,.72,.16,wood,g,0,1.08,-.42);addCollider(x,z,.85);
+    };
+    const makeFlowerBed = (x,z,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(3.2,.42,1.65,wood,g,0,.21,0);box(2.9,.12,1.35,mat("#59452f"),g,0,.48,0);
+      for(let i=0;i<13;i++){const px=-1.25+(i%7)*.42,pz=-.4+Math.floor(i/7)*.75;cylinder(.035,.045,.5,leaf,g,px,.72,pz,5);sphere(.17,mat(["#d9a0a2","#e7c57f","#f0e5d0","#a5b68b"][i%4]),g,px,.99,pz,1);}
+      addCollider(x,z,1.35);
+    };
+    const makeWell = (x,z) => {
+      cylinder(1.25,1.4,.8,stone,scene,x,.4,z,16);cylinder(1.02,1.02,.12,water,scene,x,.84,z,16);
+      for(const px of [-1,1])box(.18,2.4,.18,wood,scene,x+px,1.9,z);
+      box(2.45,.18,.22,wood,scene,x,3.1,z);
+      const cap=addMesh(new THREE.ConeGeometry(1.6,.8,4),roof,scene,x,3.55,z);cap.rotation.y=Math.PI/4;
+      cylinder(.055,.055,1.7,gold,scene,x,1.8,z,8);addCollider(x,z,1.4);
+    };
+    const makeBanner = (x,z,color="#a64c36",rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(.14,3.3,.14,wood,g,0,1.65,0);box(.18,.18,1.6,gold,g,0,3.1,0);
+      box(1.15,1.9,.08,mat(color,.95,{side:THREE.DoubleSide}),g,0,2.05,.08);
+      const emblem=sphere(.22,gold,g,0,2.15,.15,1);emblem.scale.set(.7,1.25,.3);addCollider(x,z,.22);
+    };
+    const makeWoodCart = (x,z,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(2.3,.22,1.45,wood,g,0,.95,0);
+      for(const px of [-.9,.9])for(const pz of [-.62,.62])box(.16,.82,.16,wood,g,px,1.35,pz);
+      box(2.35,.16,1.5,wood,g,0,1.8,0);
+      for(const px of [-1.25,1.25]){const wheel=addMesh(new THREE.TorusGeometry(.48,.11,8,18),darkStone,g,px,.58,0);wheel.rotation.y=Math.PI/2;cylinder(.12,.12,.28,gold,g,px,.58,0,10).rotation.z=Math.PI/2;}
+      addCollider(x,z,1.35);
     };
 
     const makeInterior = (cx,cz,doorSide="north") => {
@@ -559,7 +589,7 @@ export default function Amargenta3D({ onExit }) {
     };
 
     try {
-      scene=new THREE.Scene();scene.background=new THREE.Color("#a9c4d1");scene.fog=new THREE.Fog("#a9c4d1",65,190);
+      scene=new THREE.Scene();scene.background=new THREE.Color("#b7cbd0");scene.fog=new THREE.Fog("#b7cbd0",78,210);
       camera=new THREE.PerspectiveCamera(62,host.clientWidth/host.clientHeight,.1,350);
       renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
@@ -568,8 +598,9 @@ export default function Amargenta3D({ onExit }) {
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
       host.appendChild(renderer.domElement);
-      scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",2.0));
-      const sun=new THREE.DirectionalLight("#fff0d6",3.2);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;scene.add(sun);
+      scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",1.65));
+      const sun=new THREE.DirectionalLight("#fff0d6",2.65);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
+      const warmFill=new THREE.DirectionalLight("#f4c98d",.45);warmFill.position.set(35,18,-30);scene.add(warmFill);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
       // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
       const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
@@ -637,6 +668,9 @@ export default function Amargenta3D({ onExit }) {
       const plaza=addMesh(new THREE.CylinderGeometry(13,13,.4,48),pathMat,scene,0,.05,0);plaza.scale.z=.72;
       makeFountain(0,.5);
       for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeStoneLantern(Math.cos(a)*10,Math.sin(a)*7.5);}
+      makeWell(-8,7);makeBench(-10,-5,Math.PI/2);makeBench(10,-5,-Math.PI/2);
+      makeFlowerBed(-12,0,Math.PI/2);makeFlowerBed(12,0,Math.PI/2);
+      makeBanner(-13,-12,"#a64c36",Math.PI/2);makeBanner(13,12,"#526d58",Math.PI/2);
       // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
       makeHouse(-1,-23,10,7,4.6,1);
       makeNoren(-1,-19.35,"#536d58");
@@ -660,6 +694,9 @@ export default function Amargenta3D({ onExit }) {
       makeCherryTree(-31,-12,1.15);makeCherryTree(31,12,1.05);makeCherryTree(-31,22,.9);
       makeVillageFence(-28,-2,12,Math.PI/2);makeVillageFence(29,-3,12,Math.PI/2);
       makeVillageFence(-28,15,10,Math.PI/2);makeVillageFence(29,17,10,Math.PI/2);
+      makeBench(-20,-15,.2);makeBench(20,18,-.2);
+      makeFlowerBed(-24,9,.2);makeFlowerBed(24,-10,-.2);
+      makeBanner(-18,26,"#b9824d",Math.PI/2);makeBanner(20,-23,"#9b4936",Math.PI/2);
       makeVillageSign(-19,-3,"Piazza",Math.PI/2);
       makeVillageSign(31,5,"Fiume",Math.PI/2);
       makeVillageSign(-31,29,"Terrazze",Math.PI/2);
@@ -677,9 +714,10 @@ export default function Amargenta3D({ onExit }) {
         makeCherryTree(Math.cos(a)*rr,Math.sin(a)*rr,.72+(i%2)*.16);
       }
       for(let i=0;i<24;i++){const x=-35+(i%6)*8,z=-4+Math.floor(i/6)*9;sphere(1.2,stoneLight,scene,x,.25,z,1);addCollider(x,z,.62);}
-      // Arredi, carri, sacchi e casse
+      // Arredi, carri, sacchi e casse: area di carico della corporazione.
+      makeWoodCart(22,22,-.15);makeWoodCart(-19,22,.25);
       for(let i=0;i<8;i++){const x=-8+(i%4)*4,z=17+Math.floor(i/4)*3;box(1.2,.8,.9,wood,scene,x,.4,z);box(1.25,.12,.95,gold,scene,x,.85,z);}
-      for(let i=0;i<5;i++){cylinder(.38,.42,.9,wood,scene,20+i*1.2, .45,35,10);}
+      for(let i=0;i<5;i++){const x=20+i*1.2;cylinder(.38,.42,.9,wood,scene,x,.45,35,10);cylinder(.4,.4,.1,gold,scene,x,.55,35,10);cylinder(.4,.4,.1,gold,scene,x,.2,35,10);}
       // Mercato coperto con tende, casse, sacchi e insegne da borgo artigiano.
       makeMarketStall(-8,9,"#a64c36");makeMarketStall(8,10,"#d0a05d");makeMarketStall(-17,19,"#567b68");
       makeNoren(-8,10.2,"#a64c36");makeNoren(8,11.2,"#c49a5b");
