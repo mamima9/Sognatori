@@ -202,28 +202,42 @@ export default function Amargenta3D({ onExit }) {
       if(berries) for(let i=0;i<15;i++){const a=i*2.399, rr=.55+(i%3)*.16; sphere(.105,coffeeRed,g,Math.cos(a)*rr,1.9+(i%5)*.22,Math.sin(a)*rr,1);}
       addCollider(x,z,.55*s);
     };
-    const makeZibelle = (x,z) => {
+    const makeZibelle = (x,z,index=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
-      const fur=mat("#713b28"), furLight=mat("#9b5634"), cream=mat("#f0c982"), dark=mat("#241510"), eye=mat("#fff8e9"), coffee=mat("#b47a3c");
-      const body=sphere(.78,fur,g,0,.72,0,2);body.scale.set(1.25,.72,.82);
-      const chest=sphere(.46,cream,g,0,.67,.58,2);chest.scale.set(1,.78,.42);
-      const head=sphere(.62,furLight,g,0,1.28,.66,2);head.scale.set(1.05,.92,.82);
-      const muzzle=sphere(.31,cream,g,0,1.08,1.18,2);muzzle.scale.set(1.25,.7,.72);
+      const fur=mat("#713b28"), furLight=mat("#9b5634"), furDark=mat("#48251d"), cream=mat("#f0c982"), innerEar=mat("#d88c62"), dark=mat("#241510"), eye=mat("#fff8e9"), coffee=mat("#b47a3c");
+      const bodyPivot=new THREE.Group();g.add(bodyPivot);
+      const body=sphere(.72,fur,bodyPivot,0,.68,0,2);body.scale.set(1.32,.72,.82);
+      const rump=sphere(.48,furDark,bodyPivot,-.56,.67,-.12,2);rump.scale.set(1.05,.88,.9);
+      const belly=sphere(.48,cream,bodyPivot,0,.48,.46,2);belly.scale.set(1.12,.55,.65);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.18,.52);
+      const head=sphere(.58,furLight,headPivot,0,.12,.12,2);head.scale.set(1.08,.96,.9);
+      const muzzle=sphere(.31,cream,headPivot,0,-.12,.61,2);muzzle.scale.set(1.25,.72,.72);
+      const nose=sphere(.075,dark,headPivot,0,-.09,.86,1);
+      const ears=[];
       for(const side of [-1,1]){
-        const ear=sphere(.29,fur,g,side*.43,1.78,.48,1);ear.scale.set(.72,1.45,.42);
-        const inner=sphere(.16,cream,g,side*.43,1.8,.78,1);inner.scale.set(.7,1.25,.2);
-        sphere(.095,eye,g,side*.23,1.42,1.23,1);sphere(.052,dark,g,side*.23,1.42,1.31,1);
-        const leg=sphere(.22,fur,g,side*.48,.3,.28,1);leg.scale.set(.8,1.25,1.2);
-        const backLeg=sphere(.25,fur,g,side*.52,.28,-.42,1);backLeg.scale.set(1.1,1.1,1.2);
+        const earPivot=new THREE.Group();headPivot.add(earPivot);earPivot.position.set(side*.39,.53,.02);earPivot.rotation.z=side*-.18;
+        const ear=sphere(.27,furDark,earPivot,0,.2,0,2);ear.scale.set(.72,1.48,.48);
+        const inner=sphere(.17,innerEar,earPivot,0,.22,.16,1);inner.scale.set(.72,1.25,.3);ears.push(earPivot);
+        sphere(.095,eye,headPivot,side*.225,.19,.66,1);sphere(.05,dark,headPivot,side*.225,.19,.735,1);
+        sphere(.035,mat("#ffffff"),headPivot,side*.245,.225,.77,1);
       }
-      sphere(.075,dark,g,0,1.12,1.42,1);
-      const tail=sphere(.55,fur,g,-.75,.88,-.52,2);tail.scale.set(1.05,.9,1.65);tail.rotation.z=-.35;
-      const tailTip=sphere(.27,furLight,g,-.98,1.08,-1.02,1);tailTip.scale.set(1,.9,1.2);
-      for(let i=0;i<3;i++){const bean=sphere(.09,coffee,g,-.34+i*.34,1.2,.12,1);bean.scale.set(.7,1.3,.5);}
+      const legs=[];
+      for(const side of [-1,1])for(const fore of [true,false]){
+        const pivot=new THREE.Group();g.add(pivot);pivot.position.set(side*(fore?.43:.49),.43,fore?.39:-.43);
+        const leg=sphere(fore?.2:.23,fore?fur:furDark,pivot,0,-.16,0,1);leg.scale.set(.86,1.25,1.05);
+        const paw=sphere(.19,furLight,pivot,0,-.32,.08,1);paw.scale.set(1,.48,1.35);
+        legs.push({pivot,side,fore});
+      }
+      const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(-.72,.82,-.36);
+      const tail=sphere(.5,furDark,tailPivot,0,-.1,-.34,2);tail.scale.set(1.02,.92,1.65);tail.rotation.x=-.28;
+      const tailTip=sphere(.28,furLight,tailPivot,-.03,.02,-.83,2);tailTip.scale.set(1,.92,1.12);
+      for(let i=0;i<3;i++){const bean=sphere(.085,coffee,bodyPivot,-.32+i*.3,.91,.22,1);bean.scale.set(.7,1.25,.5);}
       const aroma=new THREE.Group();g.add(aroma);
-      for(let i=0;i<3;i++)sphere(.11,mat("#d7b88c",.6,{transparent:true,opacity:.62}),aroma,-.25+i*.22,1.65+i*.22,-.9,1);
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:{rotation:{x:0}},rightArm:{rotation:{x:0}},wild:true,aroma});
-      addInteraction("wild-zibelle","Zibelle selvatica","Una Zibelle selvatica ti osserva tra gli alberi. Sembra pronta a difendere il suo territorio.",x,z,()=>setZibelleBattleOpen(true),3.8);
+      for(let i=0;i<3;i++){const puff=sphere(.085,mat("#e4c99d",.65,{transparent:true,opacity:.5}),aroma,.25+i*.12,1.5+i*.17,-.55,1);puff.userData.phase=i*.9;}
+      const interaction={id:"wild-zibelle-"+index,title:"Zibelle selvatica",text:"Una Zibelle selvatica ti ha notato. Avvicinati per affrontarla.",x,z,radius:3.8,action:()=>setZibelleBattleOpen(true)};
+      interactables.push(interaction);
+      const phase=index*1.73;
+      npcActors.push({group:g,phase,wild:true,legs,tailPivot,headPivot,ears,bodyPivot,aroma,interaction,homeX:x,homeZ:z,roamRadius:3.2+index%3*1.1,walkSpeed:.55+index%3*.12});
       return g;
     };
     const makeCoffeePlant = (x,z,s=1) => {
@@ -928,7 +942,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
-      makeZibelle(-49,-50);
+      [[-53,-48],[-43,-54],[-34,-43],[-57,-31],[-28,-55],[34,34],[48,20],[53,-24],[28,52]].forEach(([x,z],i)=>makeZibelle(x,z,i));
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
@@ -1215,11 +1229,30 @@ export default function Amargenta3D({ onExit }) {
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
           const idle=clock.elapsedTime*1.7+actor.phase;
-          actor.group.position.y=Math.sin(idle)*.045;
-          actor.leftArm.rotation.x=Math.sin(idle*.72)*.07;
-          actor.rightArm.rotation.x=-Math.sin(idle*.72)*.07;
-          const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
-          actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+          if(actor.wild){
+            const t=clock.elapsedTime*actor.walkSpeed+actor.phase;
+            const targetX=actor.homeX+Math.cos(t*.42)*actor.roamRadius;
+            const targetZ=actor.homeZ+Math.sin(t*.67)*actor.roamRadius*.72;
+            const dx=targetX-actor.group.position.x,dz=targetZ-actor.group.position.z;
+            const distanceToTarget=Math.hypot(dx,dz);
+            const step=Math.min(distanceToTarget,dt*(.8+actor.walkSpeed*.55));
+            if(distanceToTarget>.08){actor.group.position.x+=dx/distanceToTarget*step;actor.group.position.z+=dz/distanceToTarget*step;actor.group.rotation.y=Math.atan2(dx,dz);}
+            const gait=clock.elapsedTime*8*actor.walkSpeed+actor.phase;
+            actor.legs.forEach((leg,j)=>{leg.pivot.rotation.x=Math.sin(gait+(j%2)*Math.PI)*.42;});
+            actor.bodyPivot.position.y=.04+Math.abs(Math.sin(gait*2))*.045;
+            actor.headPivot.rotation.x=Math.sin(idle*.65)*.045;
+            actor.tailPivot.rotation.x=Math.sin(idle*1.4)*.18;
+            actor.tailPivot.rotation.z=Math.sin(idle*.9)*.13;
+            actor.ears.forEach((ear,j)=>{ear.rotation.z=(j===0?-.18:.18)+Math.sin(idle*1.8+j)*.07;});
+            actor.aroma.children.forEach((puff,j)=>{puff.position.y=1.45+j*.17+Math.sin(clock.elapsedTime*1.7+puff.userData.phase)*.09;puff.visible=Math.sin(clock.elapsedTime*1.7+puff.userData.phase)>.0;});
+            actor.interaction.x=actor.group.position.x;actor.interaction.z=actor.group.position.z;
+          }else{
+            actor.group.position.y=Math.sin(idle)*.045;
+            actor.leftArm.rotation.x=Math.sin(idle*.72)*.07;
+            actor.rightArm.rotation.x=-Math.sin(idle*.72)*.07;
+            const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
+            actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+          }
         });
         bellActors.forEach(({group,clapper,index})=>{
           const swing=Math.sin(clock.elapsedTime*2.4+index*1.8)*.035;
