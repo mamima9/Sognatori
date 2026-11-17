@@ -1255,7 +1255,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
       // I Cardinero curano le aiuole e i giardini: sono NPC pacifici, senza statistiche e senza battaglie.
       // Cardinero #43: custode pacifico dei giardini, reclutabile senza battaglia.
-      makeCardinero("Cardinero",-34,16,.92);
+      makeCardinero("Cardinero",-41,22,.92);
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
