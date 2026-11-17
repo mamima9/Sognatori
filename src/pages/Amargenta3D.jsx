@@ -567,7 +567,7 @@ export default function Amargenta3D({ onExit }) {
         sphere(.13,mat("#a9d7c2"),g,0,1.34,.36,1);
         for(let k=0;k<3;k++)sphere(.07,mat("#a9d7c2"),g,-.2+k*.2,1.88,.2,1);
       }
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm});
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm,kind:id});
       addCollider(x,z,.42*scale);
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
       return g;
@@ -1469,11 +1469,52 @@ export default function Amargenta3D({ onExit }) {
             actor.aroma.children.forEach((puff,j)=>{puff.position.y=1.45+j*.17+Math.sin(clock.elapsedTime*1.7+puff.userData.phase)*.09;puff.visible=Math.sin(clock.elapsedTime*1.7+puff.userData.phase)>.0;});
             actor.interaction.x=actor.group.position.x;actor.interaction.z=actor.group.position.z;
           }else{
-            actor.group.position.y=Math.sin(idle)*.045;
-            actor.leftArm.rotation.x=Math.sin(idle*.72)*.07;
-            actor.rightArm.rotation.x=-Math.sin(idle*.72)*.07;
+            const breath=Math.sin(idle)*.035;
+            actor.group.position.y=breath;
+            const wave=Math.sin(idle*.82), slow=Math.sin(idle*.48);
+            actor.leftArm.rotation.x=wave*.045;
+            actor.rightArm.rotation.x=-wave*.045;
+            actor.leftArm.rotation.z=-.16;
+            actor.rightArm.rotation.z=.16;
+            // Piccoli gesti caratteristici: ogni abitante ha un ritmo riconoscibile.
+            if(actor.kind==="barista"||actor.kind==="cafe-host"){
+              actor.rightArm.rotation.x=-.34+Math.sin(idle*1.25)*.13;
+              actor.leftArm.rotation.x=.08+Math.sin(idle*.7)*.05;
+            }else if(actor.kind==="archivist"){
+              actor.group.rotation.x=.025+Math.sin(idle*.55)*.018;
+              actor.rightArm.rotation.x=-.22+Math.sin(idle*.9)*.07;
+              actor.leftArm.rotation.x=-.16+Math.sin(idle*.8)*.05;
+            }else if(actor.kind==="guard"){
+              actor.group.rotation.y+=Math.sin(idle*.62)*.012;
+              actor.leftArm.rotation.x=-.08+Math.sin(idle*.7)*.035;
+              actor.rightArm.rotation.x=.04+Math.sin(idle*.7)*.025;
+            }else if(actor.kind==="farmer"||actor.kind==="town-gardener"){
+              actor.leftArm.rotation.x=-.12+Math.sin(idle*.72)*.11;
+              actor.rightArm.rotation.x=.12-Math.sin(idle*.72)*.11;
+              actor.group.rotation.z=Math.sin(idle*.5)*.012;
+            }else if(actor.kind==="town-cook"){
+              actor.rightArm.rotation.x=-.48+Math.sin(idle*1.65)*.2;
+              actor.rightArm.rotation.z=.2+Math.sin(idle*1.65)*.06;
+              actor.leftArm.rotation.x=-.12+Math.sin(idle*1.1)*.05;
+            }else if(actor.kind==="town-carpenter"){
+              actor.rightArm.rotation.x=-.22+Math.max(0,Math.sin(idle*2.1))*.38;
+              actor.rightArm.rotation.z=.12;
+              actor.leftArm.rotation.x=-.08+Math.sin(idle*.8)*.035;
+            }else if(actor.kind==="roaster"){
+              actor.rightArm.rotation.x=-.28+Math.sin(idle*1.4)*.12;
+              actor.leftArm.rotation.x=.1+Math.sin(idle*.9)*.05;
+            }else if(actor.kind==="keeper"){
+              actor.group.rotation.z=Math.sin(idle*.7)*.018;
+              actor.leftArm.rotation.x=-.08+Math.sin(idle*.6)*.04;
+              actor.rightArm.rotation.x=-.08-Math.sin(idle*.6)*.04;
+            }else{
+              actor.leftArm.rotation.x=wave*.07;
+              actor.rightArm.rotation.x=-wave*.07;
+            }
             const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
-            actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+            if(!["guard","town-cook","town-carpenter","town-gardener","farmer","keeper"].includes(actor.kind)){
+              actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+            }
           }
         });
         bellActors.forEach(({group,clapper,index})=>{
