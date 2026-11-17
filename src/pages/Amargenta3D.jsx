@@ -526,7 +526,7 @@ export default function Amargenta3D({ onExit }) {
         const core=sphere(.34,gold,g,0,0,0,2);core.scale.set(.78,1.25,.78);
         const ring=addMesh(new THREE.TorusGeometry(.56,.045,6,20),mat("#f4d28d",.3,{emissive:"#c58a42",emissiveIntensity:.7}),g,0,0,0);ring.rotation.x=Math.PI/2;
         g.userData.amberPickup=true;
-        addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
+        if(!collectedAmberRef.current.has(i)) addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
           if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
           if(g.userData.collected||collectedAmberRef.current.has(i))return;
           g.userData.collected=true;g.visible=false;removeInteraction("amber-bean-"+i);collectedAmberRef.current.add(i);
@@ -545,7 +545,7 @@ export default function Amargenta3D({ onExit }) {
         box(.3,.025,.04,mat("#9d7048"),page,0,.055,0);
         box(.34,.025,.04,mat("#9d7048"),page,0,.055,.15);
         if(collectedPagesRef.current.has(i))page.visible=false;
-        addInteraction("recipe-page-"+i,"Pagina della Ricetta Perduta","Una pagina antica della Ricetta delle Sette Tostature.",p[0],p[1],()=>{
+        if(!collectedPagesRef.current.has(i)) addInteraction("recipe-page-"+i,"Pagina della Ricetta Perduta","Una pagina antica della Ricetta delle Sette Tostature.",p[0],p[1],()=>{
           if(!recipeStartedRef.current){setDialogue({title:"Pagina della Ricetta",text:"Una pagina preziosa. Orma saprà cosa farne."});return;}
           if(collectedPagesRef.current.has(i))return;
           collectedPagesRef.current.add(i);removeInteraction("recipe-page-"+i);setCollectedPages([...collectedPagesRef.current]);
@@ -564,7 +564,7 @@ export default function Amargenta3D({ onExit }) {
         const handle=box(.12,1.1,.12,wood,valve,0,1.3,0);
         addCollider(p[0],p[1],.38);
         if(activatedValvesRef.current.has(i)){wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");}
-        addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
+        if(!activatedValvesRef.current.has(i)) addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
           if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Bruno al ponte dovrebbe sapere come riattivare le condotte."});return;}
           if(activatedValvesRef.current.has(i))return;
           activatedValvesRef.current.add(i);removeInteraction("water-valve-"+i);setActivatedValves([...activatedValvesRef.current]);
@@ -577,19 +577,21 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       const roasterInteraction=interactables.find(item=>item.id==="roaster");
       if(roasterInteraction)roasterInteraction.action=()=>{
-        if(inventoryRef.current.amberBeans<3){setDialogue({title:"Tostino · Banco di tostatura",text:"Per preparare una Miscela d'Autore servono tre Fave d'Ambra. Al momento non ne hai abbastanza."});return;}
+        const beans=inventoryRef.current.amberBeans;
+        if(beans<3){setDialogue({title:"Tostino · Banco di tostatura",text:"Per preparare una Miscela d'Autore servono 3 Fave d'Ambra.\nIn borsa: "+beans+"."});return;}
         setInventory(old=>({...old,amberBeans:old.amberBeans-3,coffeeBlend:old.coffeeBlend+1}));
         setDialogue({title:"Miscela d'Autore",text:"Tostino ha tostato tre Fave d'Ambra e preparato una Miscela d'Autore. La miscela è stata aggiunta alla tua borsa."});
       };
       const nerioInteraction=interactables.find(item=>item.id==="merchant");
       if(nerioInteraction)nerioInteraction.action=()=>{
-        if(inventoryRef.current.amberBeans<1||inventoryRef.current.citrus<1){setDialogue({title:"Nerio · Banco degli scambi",text:"Ti propongo uno scambio: una Fava d'Ambra e un agrume per una Tisana del Retrogusto."});return;}
+        const beans=inventoryRef.current.amberBeans, citrusCount=inventoryRef.current.citrus;
+        if(beans<1||citrusCount<1){setDialogue({title:"Nerio · Banco degli scambi",text:"Per preparare una Tisana del Retrogusto servono 1 Fava d'Ambra e 1 agrume.\nIn borsa: "+beans+" fave e "+citrusCount+" agrumi."});return;}
         setInventory(old=>({...old,amberBeans:old.amberBeans-1,citrus:old.citrus-1,herbalTea:old.herbalTea+1}));
         setDialogue({title:"Tisana del Retrogusto",text:"Nerio ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
       };
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
-      addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
+      if(!citrusHarvestedRef.current) addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
         if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
         citrusHarvestedRef.current=true;removeInteraction("citrus-harvest");setCitrusHarvested(true);
         setInventory(old=>({...old,citrus:old.citrus+1}));
@@ -643,8 +645,8 @@ export default function Amargenta3D({ onExit }) {
       };
       const onKeyUp=e=>keys.delete(e.code);
       const onWindowBlur=()=>keys.clear();
-      const onPointerDown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
-      const onPointerUp=()=>dragging=false;
+      const onPointerDown=e=>{if(e.button!==0)return;dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
+      const onPointerUp=()=>{dragging=false;};
       const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.005;pitch=Math.max(.12,Math.min(.9,pitch+dy*.004));};
       const onWheel=e=>{distance=Math.max(6,Math.min(22,distance+e.deltaY*.012));};
       renderer.domElement.addEventListener("pointerdown",onPointerDown);
