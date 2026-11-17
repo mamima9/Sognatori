@@ -411,12 +411,39 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeNpc = (id,name,job,x,z,shirt,lines,scale=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
-      const skin=mat("#d9ad83"), dark=mat("#302a2a"), trousers=mat("#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
-      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":"#ead4a9");
+      const skinToneById={barista:"#d9ad83",merchant:"#bd8868",archivist:"#e2c29b",guard:"#a96f50",farmer:"#d9a477","town-cook":"#e0b58c","town-carpenter":"#b77c58","town-gardener":"#e4c19b",roaster:"#bd8a68",keeper:"#d7a77d","cafe-host":"#edc9a2"};
+      const hairToneById={barista:"#4b2b24",merchant:"#30231f",archivist:"#a7a39a",guard:"#382b29",farmer:"#6b4329","town-cook":"#a94a35","town-carpenter":"#6d4934","town-gardener":"#72523a",roaster:"#39251f",keeper:"#6b527c","cafe-host":"#75452e"};
+      const skin=mat(skinToneById[id]||"#d9ad83"), dark=mat(hairToneById[id]||"#302a2a"), trousers=mat(id==="guard"?"#35483f":id==="farmer"?"#596044":"#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
+      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":id==="town-gardener"?"#c6d49b":"#ead4a9");
       // Linguaggio visivo Sognatori: proporzioni chibi, testa ampia, corpo compatto e silhouette leggibile.
       const torso=cylinder(.3,.39,.72,cloth,g,0,.96,0,10);torso.scale.z=.86;
       sphere(.39,skin,g,0,1.57,.015,2);
       const hair=sphere(.405,dark,g,0,1.78,-.035,2);hair.scale.set(1,.55,.95);
+      // Ogni abitante ha una silhouette dei capelli distinta.
+      if(["barista","cafe-host"].includes(id)){
+        const fringe=sphere(.28,dark,g,0,1.82,.29,1);fringe.scale.set(1.35,.48,.62);
+        for(let k=-1;k<=1;k++)sphere(.11,dark,g,k*.2,1.92,.22,1);
+      }else if(id==="merchant"){
+        const hood=sphere(.47,dark,g,0,1.82,-.08,2);hood.scale.set(1.12,.72,1);
+        sphere(.2,dark,g,-.34,1.54,.03,1);sphere(.2,dark,g,.34,1.54,.03,1);
+      }else if(id==="archivist"){
+        sphere(.18,dark,g,-.37,1.66,-.02,1);sphere(.18,dark,g,.37,1.66,-.02,1);
+        box(.48,.08,.18,dark,g,0,1.98,-.04);
+      }else if(id==="guard"){
+        sphere(.17,dark,g,0,1.98,-.02,1);
+        for(let k=-1;k<=1;k++)sphere(.09,dark,g,k*.18,1.88,.2,1);
+      }else if(id==="farmer"||id==="town-gardener"){
+        const bun=sphere(.2,dark,g,0,1.92,-.3,1);bun.scale.set(1,1,.85);
+        sphere(.1,dark,g,-.35,1.64,0,1);sphere(.1,dark,g,.35,1.64,0,1);
+      }else if(id==="town-cook"){
+        sphere(.14,dark,g,-.36,1.62,.02,1);sphere(.14,dark,g,.36,1.62,.02,1);
+      }else if(id==="town-carpenter"){
+        for(let k=-1;k<=1;k++)sphere(.12,dark,g,k*.2,1.95,.06,1);
+      }else if(id==="roaster"){
+        sphere(.22,dark,g,0,1.95,-.04,1);
+      }else if(id==="keeper"){
+        sphere(.2,dark,g,0,1.98,-.04,1);sphere(.12,dark,g,-.34,1.67,.02,1);sphere(.12,dark,g,.34,1.67,.02,1);
+      }
       box(.1,.07,.045,mat("#241f20"),g,-.105,1.64,.255);
       box(.1,.07,.045,mat("#241f20"),g,.105,1.64,.255);
       const leftArm=box(.17,.55,.18,cloth,g,-.39,.98,0);leftArm.rotation.z=-.16;
@@ -438,10 +465,12 @@ export default function Amargenta3D({ onExit }) {
       if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
       // Volti più leggibili: occhi, sopracciglia, naso, sorriso e acconciature individuali.
       const eyeWhite=mat("#fff5df"), pupil=mat("#211b19"), warmSkin=mat("#b97859");
+      const iris=mat(({barista:"#6b8f88",merchant:"#8a603b",archivist:"#71879a",guard:"#586b55",farmer:"#78904f","town-cook":"#7b604a","town-carpenter":"#6c7f8a","town-gardener":"#71945e",roaster:"#95633d",keeper:"#8a6a9d","cafe-host":"#6d8e9a"})[id]||"#6b8f88");
       for(const ex of [-.145,.145]){
         sphere(.075,eyeWhite,g,ex,1.62,.34,1);
-        sphere(.041,pupil,g,ex,1.62,.385,1);
-        sphere(.018,mat("#ffffff"),g,ex-.012,1.645,.415,1);
+        sphere(.043,iris,g,ex,1.62,.386,1);
+        sphere(.025,pupil,g,ex,1.62,.414,1);
+        sphere(.018,mat("#ffffff"),g,ex-.012,1.645,.435,1);
         box(.12,.035,.035,dark,g,ex,1.735,.31);
       }
       sphere(.052,warmSkin,g,0,1.52,.365,1);
@@ -484,6 +513,35 @@ export default function Amargenta3D({ onExit }) {
         cylinder(.31,.33,.1,mat("#4a3028"),g,0,2.02,0,10);
         box(.46,.07,.19,gold,g,0,2.1,0);
         const scarf=box(.5,.13,.12,mat("#e1a34d"),g,0,1.43,.19);scarf.rotation.z=-.08;
+        // Occhiali protettivi da torrefazione.
+        for(const ex of [-.15,.15]){const lens=sphere(.105,mat("#d7c39a",.75,{transparent:true,opacity:.65}),g,ex,1.63,.39,1);lens.scale.set(1,.72,.3);}
+        box(.18,.035,.035,mat("#4a3028"),g,0,1.63,.4);
+      }
+      if(id==="town-cook"){
+        // Cappello alto da cucina e grembiule.
+        cylinder(.27,.3,.12,mat("#fff0dc"),g,0,2.02,0,10);
+        sphere(.22,mat("#fff0dc"),g,-.12,2.2,0,1);sphere(.22,mat("#fff0dc"),g,.12,2.2,0,1);
+        box(.42,.48,.055,mat("#f0e4d1"),g,0,1.02,.38);
+        box(.44,.07,.07,mat("#a94a35"),g,0,.8,.41);
+      }
+      if(id==="town-carpenter"){
+        // Bretelle, martello e cappello da lavoro.
+        box(.08,.6,.08,gold,g,-.22,1.08,.17);box(.08,.6,.08,gold,g,.22,1.08,.17);
+        const hammer=cylinder(.045,.045,.48,mat("#70482f"),g,.55,1.05,.04,6);hammer.rotation.z=-.18;
+        box(.25,.12,.14,mat("#77736b"),g,.55,1.3,.04);
+        box(.72,.1,.62,mat("#8b6948"),g,0,1.99,0);
+      }
+      if(id==="town-gardener"){
+        // Corona di foglie e borsa di semi.
+        for(let k=0;k<5;k++){const leafBit=sphere(.12,mat("#718b59"),g,Math.cos(k*1.25)*.34,1.91+Math.sin(k*1.25)*.1,.02,1);leafBit.scale.set(.7,1.4,.4);leafBit.rotation.z=-Math.cos(k*1.25)*.5;}
+        box(.28,.3,.18,mat("#98633e"),g,-.48,.85,-.04);
+        for(let k=0;k<3;k++)sphere(.045,mat("#d8b65c"),g,-.48+k*.08,1.03,.05,1);
+      }
+      if(id==="keeper"){
+        // Mantellina e pendente della custode.
+        const cape=addMesh(new THREE.ConeGeometry(.48,.72,5),mat("#645071"),g,0,.96,-.16);cape.rotation.x=Math.PI;
+        sphere(.13,mat("#a9d7c2"),g,0,1.34,.36,1);
+        for(let k=0;k<3;k++)sphere(.07,mat("#a9d7c2"),g,-.2+k*.2,1.88,.2,1);
       }
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm});
       addCollider(x,z,.42*scale);
