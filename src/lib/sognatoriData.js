@@ -609,7 +609,7 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
 // anche quando l'ordine degli oggetti nel roster viene modificato.
 export function getSognatoreNumero(sognatore, index = -1) {
   if (Number.isFinite(sognatore?.numero)) return sognatore.numero;
-  const imageNumber = String(sognatore?.img || "").match(/(?:^|\\/)(\\d+)[ ._-]/);
+  const imageNumber = String(sognatore?.img || "").match(/(?:^|\/)(\d+)[ ._-]/);
   if (imageNumber) return Number(imageNumber[1]);
   const fallbackNumbers = { spinoff: 25, toasty: 26 };
   if (fallbackNumbers[sognatore?.id] != null) return fallbackNumbers[sognatore.id];
