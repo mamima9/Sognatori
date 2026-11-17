@@ -2,12 +2,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { ROSTER } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AVVENTURA } from "@/lib/sognatoriData";
 
-// Le specie di Amargenta non devono comparire nelle altre 11 città.
-const AMARGENTA_ONLY_SOGNATORE_IDS = new Set([
-  "torosucco", "crunchypat", "talamos", "pingcake", "muccanza", "umami", "flame", "lattelo"
-]);
 import AdventureCampaign from "@/components/game/AdventureCampaign";
 import Amargenta3D from "@/pages/Amargenta3D";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
@@ -80,7 +76,7 @@ const FACTION_LORE_SITES = {
 };
 
 function buildMapWildStarts(city) {
-  const residents = ROSTER.filter((sognatore) => !AMARGENTA_ONLY_SOGNATORE_IDS.has(sognatore.id) && (sognatore.tipo || sognatore.fazione) === city.faction);
+  const residents = ROSTER_AVVENTURA.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
   // Un solo incontro per specie in ogni città: niente copie duplicate dello stesso Sognatore.
   const offsets = [[0, 0]];
   return residents.flatMap((sognatore, index) => {
