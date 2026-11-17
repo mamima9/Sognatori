@@ -47,6 +47,8 @@ export default function Amargenta3D({ onExit }) {
   const [blendStarted, setBlendStarted] = useState(Boolean(savedProgress.blendStarted));
   const [blendDone, setBlendDone] = useState(Boolean(savedProgress.blendDone));
   const [botanicalCacheClaimed, setBotanicalCacheClaimed] = useState(Boolean(savedProgress.botanicalCacheClaimed));
+  const [dungeonSigils, setDungeonSigils] = useState(Array.isArray(savedProgress.dungeonSigils) ? savedProgress.dungeonSigils : []);
+  const [dungeonBossDefeated, setDungeonBossDefeated] = useState(Boolean(savedProgress.dungeonBossDefeated));
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -77,6 +79,8 @@ export default function Amargenta3D({ onExit }) {
   const blendStartedRef = useRef(Boolean(savedProgress.blendStarted));
   const blendDoneRef = useRef(Boolean(savedProgress.blendDone));
   const botanicalCacheClaimedRef = useRef(Boolean(savedProgress.botanicalCacheClaimed));
+  const dungeonSigilsRef = useRef(Array.isArray(savedProgress.dungeonSigils) ? savedProgress.dungeonSigils : []);
+  const dungeonBossDefeatedRef = useRef(Boolean(savedProgress.dungeonBossDefeated));
   const zoneRef = useRef("Ingresso di Amargenta");
   const controlsLockedRef = useRef(false);
 
@@ -98,12 +102,13 @@ export default function Amargenta3D({ onExit }) {
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves,
         bellsStarted, bellCount, bellsDone, activatedBells,
-        blendStarted, blendDone, botanicalCacheClaimed
+        blendStarted, blendDone, botanicalCacheClaimed,
+        dungeonSigils, dungeonBossDefeated
       }));
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone, botanicalCacheClaimed]);
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone, botanicalCacheClaimed, dungeonSigils, dungeonBossDefeated]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -499,8 +504,76 @@ export default function Amargenta3D({ onExit }) {
         setToast("La Cripta delle Miscele è stata aperta");
       },4.8);
       addInteraction("vault-exit","Uscita della Cripta","Tornare ai giardini di Amargenta?",68,-62,()=>{player.position.set(-70,0,-39.5);setZone("Giardino del Retrogusto");},4.2);
+      // Dungeon di Amargenta: tre sigilli da attivare nell'ordine inciso sulle lastre.
+      const dungeonSealMaterials = [];
+      const dungeonSealPositions = [[63,-66],[73,-66],[68,-72]];
+      dungeonSealPositions.forEach(([x,z],index)=>{
+        const pedestal=cylinder(.48,.62,.72,darkStone,scene,x,.36,z,8);
+        const rune=sphere(.3,mat("#53605c",.25,{emissive:"#243b35",emissiveIntensity:.25}),scene,x,1.05,z,2);
+        const halo=addMesh(new THREE.TorusGeometry(.52,.055,8,20),gold,scene,x,1.05,z);
+        halo.rotation.x=Math.PI/2;
+        dungeonSealMaterials.push({rune,halo});
+        if(dungeonSigilsRef.current.includes(index)){
+          rune.material=mat("#8ac6a0",.22,{emissive:"#397d58",emissiveIntensity:1.1});
+          halo.material=mat("#9bd9ad",.25,{emissive:"#397d58",emissiveIntensity:.7});
+        }
+        addInteraction("dungeon-seal-"+index,"Sigillo antico "+(index+1),"Una runa incisa nella pietra. L'ordine corretto è suggerito dalle tre incisioni all'ingresso.",x,z,()=>{
+          if(dungeonBossDefeatedRef.current)return;
+          if(dungeonSigilsRef.current.includes(index))return;
+          const sequence=[1,0,2];
+          const expected=sequence[dungeonSigilsRef.current.length];
+          if(index!==expected){
+            dungeonSigilsRef.current=[];
+            setDungeonSigils([]);
+            dungeonSealMaterials.forEach(({rune,halo})=>{
+              rune.material=mat("#53605c",.25,{emissive:"#243b35",emissiveIntensity:.25});
+              halo.material=gold;
+            });
+            setToast("Sequenza errata · I sigilli si sono resettati");
+            return;
+          }
+          const next=[...dungeonSigilsRef.current,index];
+          dungeonSigilsRef.current=next;
+          setDungeonSigils(next);
+          rune.material=mat("#8ac6a0",.22,{emissive:"#397d58",emissiveIntensity:1.1});
+          halo.material=mat("#9bd9ad",.25,{emissive:"#397d58",emissiveIntensity:.7});
+          setToast("Sigillo risvegliato · "+next.length+"/3");
+          if(next.length===3)setDialogue({title:"I tre sigilli sono attivi",text:"Le rune si sono accese. Qualcosa si sta risvegliando nel cuore della Cripta…"});
+        },3.2);
+      });
+      // Il Guardiano emerge soltanto dopo la soluzione del puzzle.
+      const dungeonGuardian=new THREE.Group();
+      scene.add(dungeonGuardian);
+      dungeonGuardian.position.set(68,0,-69.5);
+      const guardianDark=mat("#292d2b",.55,{metalness:.18});
+      const guardianGold=mat("#bd8750",.3,{metalness:.55,emissive:"#6f3d1c",emissiveIntensity:.35});
+      const guardianCore=sphere(1.05,guardianDark,dungeonGuardian,0,1.45,0,2);
+      guardianCore.scale.set(.8,1.25,.72);
+      for(let side of [-1,1]){
+        const horn=cylinder(.08,.28,1.05,guardianGold,dungeonGuardian,side*.62,2.55,-.08,7);
+        horn.rotation.z=side*.38;
+        sphere(.2,guardianGold,dungeonGuardian,side*.35,1.7,.63,2);
+      }
+      const guardianCrown=sphere(.32,guardianGold,dungeonGuardian,0,2.75,0,2);
+      dungeonGuardian.visible=dungeonSigilsRef.current.length===3&&!dungeonBossDefeatedRef.current;
+      addInteraction("dungeon-guardian","Guardiano del Retrogusto","Una presenza antica custodisce il cuore della Cripta.",68,-69.5,()=>{
+        if(dungeonBossDefeatedRef.current){
+          setDialogue({title:"Guardiano del Retrogusto",text:"La sua luce si è spenta. La Cripta riconosce il tuo coraggio."});
+          return;
+        }
+        if(dungeonSigilsRef.current.length<3){
+          setDialogue({title:"Guardiano del Retrogusto",text:"Tre sigilli trattengono il suo sonno. Risolvi la sequenza delle rune prima di affrontarlo."});
+          return;
+        }
+        dungeonBossDefeatedRef.current=true;
+        setDungeonBossDefeated(true);
+        dungeonGuardian.visible=false;
+        setToast("Guardiano sconfitto · Cripta purificata");
+        setDialogue({title:"Il Guardiano si dissolve",text:"La creatura si arrende e lascia libero il cuore della Cripta. Lo scrigno centrale può finalmente essere aperto."});
+      },3.8);
       addInteraction("vault-chest","Scrigno delle Miscele","Un antico scrigno custodisce il cuore della città.",68,-68,()=>{
         if(!secretUnlockedRef.current){setDialogue({title:"Scrigno sigillato",text:"Il sigillo della cripta non è ancora stato spezzato."});return;}
+        if(!dungeonBossDefeatedRef.current){setDialogue({title:"Il cuore è protetto",text:"Il Guardiano del Retrogusto è ancora nella Cripta. Attiva i tre sigilli e affrontalo prima di aprire lo scrigno."});return;}
         if(vaultClaimedRef.current){setDialogue({title:"Scrigno delle Miscele",text:"Lo scrigno è vuoto. Hai già recuperato il Cuore del Retrogusto."});return;}
         vaultClaimedRef.current=true;setVaultClaimed(true);setInventory(old=>({...old,relics:old.relics+1}));
         setDialogue({title:"Cuore del Retrogusto",text:"Hai ottenuto una reliquia unica di Amargenta. Il suo aroma cambia con la luce."});
@@ -812,6 +885,7 @@ export default function Amargenta3D({ onExit }) {
           }
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
+        if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
