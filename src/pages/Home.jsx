@@ -45,14 +45,18 @@ export default function Home() {
     }
   }, [screen, user?.id, user?.email]);
 
+  // La campagna standard ha 11 Capi fazione: Amargenta è una mappa privata di Bibito.
+  const STANDARD_ADVENTURE_CITIES = ADVENTURE_CITIES.filter((city) => city.id !== "amaro");
   const adventureCityCount = adventureSave.completedCities.filter((id) =>
-    ADVENTURE_CITIES.some((city) => city.id === id)
+    STANDARD_ADVENTURE_CITIES.some((city) => city.id === id)
   ).length;
   const adventureBondCount = adventureSave.ownedIds.filter((id) =>
     ROSTER.some((s) => s.id === id)
   ).length;
-  const adventureDefeatedLeaderCount = adventureSave.conqueredLeaders.filter((id) => ADVENTURE_CITIES.some((city) => city.id === id)).length;
-  const mission5Complete = ADVENTURE_CITIES.length > 0 && (isDev || adventureDefeatedLeaderCount === ADVENTURE_CITIES.length);
+  const adventureDefeatedLeaderCount = new Set(
+    adventureSave.conqueredLeaders.filter((id) => STANDARD_ADVENTURE_CITIES.some((city) => city.id === id))
+  ).size;
+  const mission5Complete = adventureDefeatedLeaderCount === STANDARD_ADVENTURE_CITIES.length;
   const mission6Complete = ROSTER.length > 0 && adventureBondCount === ROSTER.length;
 
   const groupedLog = (entries) => {
@@ -629,8 +633,8 @@ export default function Home() {
               </div>
               <h2 className="text-xl font-black text-white">{lang === "en" ? "Battle Champion" : "Campione di battaglie"}</h2>
               <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Open every door and defeat every Faction Leader." : "Apri tutte le porte e sconfiggi ogni Capo fazione."}</p>
-              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Faction Leaders defeated" : "Capi fazione sconfitti"}</span><span className="text-amber-300">{isDev ? ADVENTURE_CITIES.length : adventureDefeatedLeaderCount}/{ADVENTURE_CITIES.length}</span></div>
-              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style={{ width: `${ADVENTURE_CITIES.length ? (isDev ? 100 : adventureDefeatedLeaderCount / ADVENTURE_CITIES.length * 100) : 0}%` }} /></div>
+              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Faction Leaders defeated" : "Capi fazione sconfitti"}</span><span className="text-amber-300">{adventureDefeatedLeaderCount}/{STANDARD_ADVENTURE_CITIES.length}</span></div>
+              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style={{ width: `${STANDARD_ADVENTURE_CITIES.length ? (adventureDefeatedLeaderCount / STANDARD_ADVENTURE_CITIES.length * 100) : 0}%` }} /></div>
               <div className="mt-4 border-t border-white/10 pt-3 space-y-2">
                 <div className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">{lang === "en" ? "Lore rewards" : "Ricompensa · Lore"}</div>
                 <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Fourmouri</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission5Complete ? "Gran combattente, vuole raggiungere la casa della beatitudine, luogo sacro dei Luce." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
