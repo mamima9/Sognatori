@@ -412,16 +412,18 @@ export default function Amargenta3D({ onExit }) {
     const makeNpc = (id,name,job,x,z,shirt,lines,scale=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
       const skin=mat("#d9ad83"), dark=mat("#302a2a"), trousers=mat("#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
-      cylinder(.28,.34,.78,cloth,g,0,1.02,0,9);
-      sphere(.29,skin,g,0,1.62,0,2);
-      sphere(.31,dark,g,0,1.83,-.025,1).scale.set(1,.42,1);
+      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":"#ead4a9");
+      // Linguaggio visivo Sognatori: proporzioni chibi, testa ampia, corpo compatto e silhouette leggibile.
+      const torso=cylinder(.3,.39,.72,cloth,g,0,.96,0,10);torso.scale.z=.86;
+      sphere(.39,skin,g,0,1.57,.015,2);
+      const hair=sphere(.405,dark,g,0,1.78,-.035,2);hair.scale.set(1,.55,.95);
       box(.1,.07,.045,mat("#241f20"),g,-.105,1.64,.255);
       box(.1,.07,.045,mat("#241f20"),g,.105,1.64,.255);
-      const leftArm=box(.13,.62,.14,cloth,g,-.36,1.04,0);leftArm.rotation.z=-.16;
-      const rightArm=box(.13,.62,.14,cloth,g,.36,1.04,0);rightArm.rotation.z=.16;
-      box(.19,.62,.2,trousers,g,-.14,.43,0);
-      box(.19,.62,.2,trousers,g,.14,.43,0);
-      box(.24,.13,.34,boot,g,-.14,.12,.08);
+      const leftArm=box(.17,.55,.18,cloth,g,-.39,.98,0);leftArm.rotation.z=-.16;
+      const rightArm=box(.17,.55,.18,cloth,g,.39,.98,0);rightArm.rotation.z=.16;
+      box(.22,.53,.22,trousers,g,-.14,.38,0);
+      box(.22,.53,.22,trousers,g,.14,.38,0);
+      box(.27,.15,.36,boot,g,-.14,.1,.08);
       box(.24,.13,.34,boot,g,.14,.12,.08);
       const badge=sphere(.09,gold,g,0,1.12,.3,1);
       badge.scale.set(1,.8,.3);
@@ -435,16 +437,16 @@ export default function Amargenta3D({ onExit }) {
       if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
       if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
       // Volti più leggibili: occhi, sopracciglia, naso, sorriso e acconciature individuali.
-      const eyeWhite=mat("#fff0d9"), pupil=mat("#292323"), warmSkin=mat("#b97859");
-      for(const ex of [-.105,.105]){
-        sphere(.047,eyeWhite,g,ex,1.66,.263,1);
-        sphere(.024,pupil,g,ex,1.66,.302,1);
-        box(.095,.025,.035,dark,g,ex,1.735,.26);
+      const eyeWhite=mat("#fff5df"), pupil=mat("#211b19"), warmSkin=mat("#b97859");
+      for(const ex of [-.145,.145]){
+        sphere(.075,eyeWhite,g,ex,1.62,.34,1);
+        sphere(.041,pupil,g,ex,1.62,.385,1);
+        sphere(.018,mat("#ffffff"),g,ex-.012,1.645,.415,1);
+        box(.12,.035,.035,dark,g,ex,1.735,.31);
       }
-      sphere(.045,warmSkin,g,0,1.57,.285,1);
-      box(.105,.018,.018,mat("#704238"),g,0,1.505,.27);
+      sphere(.052,warmSkin,g,0,1.52,.365,1);
+      box(.13,.025,.02,mat("#704238"),g,0,1.455,.35);
       // Colletto, bordi delle maniche, cintura e fibbia.
-      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":"#ead4a9");
       const collar=addMesh(new THREE.ConeGeometry(.19,.22,4),trim,g,0,1.37,.02);collar.rotation.y=Math.PI/4;
       box(.59,.075,.32,dark,g,0,.72,0);
       box(.13,.14,.055,gold,g,0,.72,.19);
@@ -1136,31 +1138,39 @@ export default function Amargenta3D({ onExit }) {
       },4.5);
       // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
       const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
-      const torso=cylinder(.37,.48,1.12,jacket,player,0,1.18,0,12);torso.scale.z=.82;
-      sphere(.38,skinTone,player,0,2.02,.015,2);
+      // Protagonista: silhouette da eroe Sognatori, proporzioni chibi e outfit iconico da esploratore.
+      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;
+      sphere(.46,skinTone,player,0,1.92,.015,2);
       // Collo, colletto e dettagli della giacca.
-      cylinder(.13,.15,.22,skinTone,player,0,1.78,0,10);
+      cylinder(.15,.16,.2,skinTone,player,0,1.68,0,10);
       box(.55,.16,.13,jacketLight,player,0,1.68,.27);
       box(.09,.72,.07,leather,player,0,1.2,.36);
       for(let i=0;i<3;i++)sphere(.035,gold,player,0,1.42+i*.2,.405,1);
       // Cappellino rosso con visiera frontale.
-      sphere(.4,redCap,player,0,2.24,-.005,2).scale.set(1,.38,1);
-      box(.64,.09,.42,capShade,player,0,2.18,.22);
-      box(.28,.09,.12,mat("#e8d7bd"),player,0,2.28,-.02);
+      sphere(.47,redCap,player,0,2.16,-.005,2).scale.set(1,.38,1);
+      box(.72,.11,.48,capShade,player,0,2.1,.23);
+      // Emblema a stella, marchio distintivo del protagonista.
+      const heroEmblem=sphere(.105,gold,player,0,2.2,.385,1);heroEmblem.scale.set(1,.72,.28);
+      sphere(.035,mat("#fff0b8"),player,0,2.2,.42,1);
       // Zaino in cuoio, fibbie e tasca esterna.
       box(.68,.82,.34,leather,player,0,1.25,-.36);
       box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
       box(.58,.09,.08,gold,player,0,1.47,-.56);
       box(.2,.24,.08,wood,player,0,1.28,-.58);
       // Braccia e mani.
-      playerMotion.leftArm=box(.18,.76,.2,jacket,player,-.48,1.2,0);
-      playerMotion.rightArm=box(.18,.76,.2,jacket,player,.48,1.2,0);
-      sphere(.13,skinTone,player,-.48,.78,.02,1);sphere(.13,skinTone,player,.48,.78,.02,1);
+      playerMotion.leftArm=box(.2,.68,.22,jacket,player,-.5,1.12,0);
+      playerMotion.rightArm=box(.2,.68,.22,jacket,player,.5,1.12,0);
+      sphere(.15,skinTone,player,-.5,.76,.02,1);sphere(.15,skinTone,player,.5,.76,.02,1);
+      // Guanti e polsini color ambra.
+      for(const side of [-1,1])box(.22,.13,.23,gold,player,side*.5,.88,.015);
       // Pantaloni, ginocchia e scarponi.
-      playerMotion.leftLeg=box(.23,.72,.25,pants,player,-.19,.43,0);
-      playerMotion.rightLeg=box(.23,.72,.25,pants,player,.19,.43,0);
-      box(.28,.18,.43,bootMat,player,-.19,.09,.11);
-      box(.28,.18,.43,bootMat,player,.19,.09,.11);
+      playerMotion.leftLeg=box(.25,.62,.27,pants,player,-.2,.38,0);
+      playerMotion.rightLeg=box(.25,.62,.27,pants,player,.2,.38,0);
+      box(.31,.2,.46,bootMat,player,-.2,.08,.13);
+      box(.31,.2,.46,bootMat,player,.2,.08,.13);
+      // Fibbia frontale a stella e sciarpa corta: dettagli riconoscibili anche da lontano.
+      const beltBuckle=sphere(.105,gold,player,0,.83,.32,1);beltBuckle.scale.set(1,1,.35);
+      const scarf=box(.56,.12,.16,mat("#e3a34d"),player,0,1.57,.27);scarf.rotation.z=-.04;
       // Spallacci e fibbie dello zaino.
       for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
       scene.add(player);player.position.set(-44,0,2);
