@@ -153,7 +153,8 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
+  }, [dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
