@@ -157,9 +157,9 @@ export default function Amargenta3D({ onExit }) {
       texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;return texture;
     };
     groundMat.map=makeTileTexture("#66764b",["#87915a","#3e593d","#b0a16a","#52643e"],17);
-    groundMat.color.set("#ffffff");
+    groundMat.map.repeat.set(24,24);groundMat.color.set("#ffffff");
     pathMat.map=makeTileTexture("#b79a70",["#d5bc91","#8e7658","#e0c99f","#9c805d"],31);
-    pathMat.color.set("#ffffff");
+    pathMat.map.repeat.set(3,3);pathMat.color.set("#ffffff");
     const addMesh = (geo, material, parent=scene, x=0,y=0,z=0) => {
       const m = new THREE.Mesh(geo,material); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; parent.add(m); return m;
     };
@@ -229,24 +229,35 @@ export default function Amargenta3D({ onExit }) {
     const makeHouse = (x,z,w=5,d=4,h=3.3,variant=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
       box(w,h,d,variant?plaster:stone,g,0,h/2,0);
-      // pietre irregolari applicate alla facciata
-      for(let row=0;row<4;row++) for(let col=0;col<Math.floor(w/.55);col++){
-        const px=-w/2+.3+col*.55+(row%2)*.12;
-        box(.42,.16,.055,row%2?stoneLight:darkStone,g,px,.38+row*.7,d/2+.035);
+      // Facciata in intonaco caldo, assi orizzontali e travi lignee a vista.
+      const facade=variant?mat("#d7c29e"):mat("#c6b18b");
+      for(let row=0;row<Math.floor(h/.48);row++){
+        box(w+.035,.055,.055,row%2?wood:darkStone,g,0,.28+row*.48,d/2+.045);
       }
-      // Tetto a falde ampie, con gronda lignea: architettura rurale ispirata a Hisui.
-      const eaves=box(w+.9,.22,d+.9,wood,g,0,h-.02,0);
-      const roofMesh=addMesh(new THREE.ConeGeometry(w*.82,1.28,4),mat("#39483f"),g,0,h+.62,0);
+      for(let col=-1;col<=1;col++){
+        const px=col*w*.34;
+        box(.13,h-.18,.12,wood,g,px,h/2,d/2+.1);
+      }
+      // Tetto tradizionale a padiglione, con gronda profonda e copertura scura.
+      const eaves=box(w+.95,.2,d+.95,wood,g,0,h-.02,0);
+      const roofMaterial=mat(variant?"#465849":"#3b4a40",.98);
+      const roofMesh=addMesh(new THREE.ConeGeometry(w*.84,1.38,4),roofMaterial,g,0,h+.68,0);
       roofMesh.rotation.y=Math.PI/4;roofMesh.scale.z=d/w;
-      box(w+.45,.16,.22,darkStone,g,0,h+.05,d/2+.38);
-      box(.9,1.72,.16,wood,g,0,.88,d/2+.09);
+      // Fascia frontale e porta scorrevole con riquadri chiari.
+      box(w+.5,.18,.22,darkStone,g,0,h+.04,d/2+.4);
+      box(1.02,1.78,.17,wood,g,0,.9,d/2+.1);
+      box(.76,1.48,.045,mat("#d9c8a7"),g,0,.91,d/2+.2);
+      for(let y=.25;y<1.65;y+=.34)box(.78,.045,.035,wood,g,0,y,d/2+.24);
       for(const wx of [-w*.29,w*.29]){
-        box(.68,.82,.15,wood,g,wx,2.05,d/2+.1);
-        box(.48,.62,.055,mat("#d9c49c"),g,wx,2.05,d/2+.19);
-        box(.08,.72,.07,darkStone,g,wx,2.05,d/2+.23);
+        box(.72,.86,.16,wood,g,wx,2.05,d/2+.1);
+        box(.52,.64,.055,mat("#d9c49c"),g,wx,2.05,d/2+.19);
+        for(let bar=-1;bar<=1;bar++)box(.045,.62,.035,wood,g,wx+bar*.22,2.05,d/2+.23);
       }
-      // Travature a vista e insegna sopra l'ingresso.
-      for(const wx of [-w*.43,w*.43])box(.2,h-.2,.2,wood,g,wx,h/2,d/2+.11);
+      // Travi angolari, gronda con supporti e insegna del locale.
+      for(const wx of [-w*.43,w*.43]){
+        box(.2,h-.2,.2,wood,g,wx,h/2,d/2+.11);
+        box(.16,.42,.16,wood,g,wx,h-.3,d/2+.34);
+      }
       box(1.35,.28,.12,gold,g,0,h-0.55,d/2+.2);
       addBoxCollider(x,z,w+.7,d+.7);
       return g;
@@ -424,6 +435,9 @@ export default function Amargenta3D({ onExit }) {
       box(.16,2.1,.16,wood,g,-1.8,1.9,-.85);box(.16,2.1,.16,wood,g,1.8,1.9,-.85);
       box(4,.14,2.3,mat(accent),g,0,3,-.1);
       for(let i=0;i<5;i++) box(.72,.09,2.32,i%2?mat("#f1dfbd"):mat(accent),g,-1.44+i*.72,2.93,-.1);
+      // Bordo della tenda, frange e sostegni del banco.
+      box(4,.12,.16,wood,g,0,2.82,1.08);
+      for(let i=0;i<9;i++)box(.12,.22,.12,i%2?mat("#f1dfbd"):mat(accent),g,-1.92+i*.48,2.72,1.08);
       for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
       addBoxCollider(x,z,4,2.3);
     };
@@ -569,6 +583,16 @@ export default function Amargenta3D({ onExit }) {
       makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,15);
       // Ingresso ovest e strada principale
       const road=addMesh(new THREE.PlaneGeometry(13,75),pathMat,scene,-28,.04,4);road.rotation.x=-Math.PI/2;road.rotation.z=Math.PI/2;
+      // Solchi dei carri e pietre di bordo lungo la strada d'ingresso.
+      for(const offset of [-2.1,2.1]){
+        const rut=addMesh(new THREE.PlaneGeometry(.18,69),mat("#8e7658"),scene,-28+offset,.055,4);rut.rotation.x=-Math.PI/2;rut.rotation.z=Math.PI/2;
+      }
+      for(let i=0;i<18;i++){
+        const z=-30+i*4;
+        for(const x of [-35,-21]){
+          const edge=sphere(.22,stoneLight,scene,x,.12,z,1);edge.scale.set(1.6,.45,.8);
+        }
+      }
       makeWall(-38,-8,15,2.2,Math.PI/2);makeWall(-38,12,15,2.2,Math.PI/2);
       const gate=addMesh(new THREE.TorusGeometry(2.5,.48,8,24,Math.PI),stoneLight,scene,-38,3,2);gate.rotation.z=Math.PI;
       // Terrazze a gradoni sul lato nord e sud
