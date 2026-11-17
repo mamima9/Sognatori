@@ -960,13 +960,29 @@ export default function Amargenta3D({ onExit }) {
 
     try {
       scene=new THREE.Scene();scene.background=new THREE.Color("#b7cbd0");scene.fog=new THREE.Fog("#b7cbd0",78,210);
-      camera=new THREE.PerspectiveCamera(62,host.clientWidth/host.clientHeight,.1,350);
-      renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1.2:1.7));renderer.setSize(host.clientWidth,host.clientHeight);
+      const width=Math.max(1,host.clientWidth||window.innerWidth||800);
+      const height=Math.max(1,host.clientHeight||window.innerHeight||600);
+      // Alcuni browser/driver non concedono un contesto WebGL con antialias o profilo high-performance.
+      // Ritentiamo con un contesto essenziale prima di dichiarare la scena non disponibile.
+      let rendererError=null;
+      for(const options of [
+        {antialias:true,powerPreference:"high-performance",alpha:false,depth:true,stencil:false},
+        {antialias:false,powerPreference:"low-power",alpha:false,depth:true,stencil:false,preserveDrawingBuffer:false},
+        {antialias:false,powerPreference:"default",alpha:false,depth:true,stencil:false}
+      ]){
+        try { renderer=new THREE.WebGLRenderer(options); break; }
+        catch(error){ rendererError=error; console.warn("Amargenta WebGL retry:",error); }
+      }
+      if(!renderer) throw new Error("WebGL non disponibile: "+(rendererError?.message||"impossibile creare il contesto grafico"));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1:1.35));
+      renderer.setSize(width,height,false);
       renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
+      // Ombre più leggere: riducono consumo GPU e rischio di perdita del contesto.
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor("#b7cbd0",1);
+      renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("La scheda grafica ha sospeso WebGL. Ricarica Amargenta; se continua, aggiorna i driver grafici.");});
+      renderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica ripristinata. Ricarica Amargenta per riprendere l'esplorazione."));
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",1.65));
       const sun=new THREE.DirectionalLight("#fff0d6",2.65);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
@@ -1680,7 +1696,7 @@ export default function Amargenta3D({ onExit }) {
       return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();scene.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
-      setHint("Il browser non ha inizializzato WebGL. Prova ad aggiornare il browser o attivare l'accelerazione hardware.");
+      setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
     }
     return ()=>{disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
   }, []);
