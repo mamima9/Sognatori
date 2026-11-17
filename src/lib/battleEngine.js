@@ -2427,11 +2427,6 @@ export function aiChooseActions(
           !b.fainted
       );
 
-    if (s.preferNonCombat && s.hp > 0) {
-      if (!s.protectedLastTurn) return { type: "protect" };
-      return null;
-    }
-
     if (
       s.hp <= 4 &&
       benchAlive.length > 0
@@ -2445,6 +2440,11 @@ export function aiChooseActions(
               !b.fainted
           )
       };
+    }
+
+    if (s.preferNonCombat && s.hp > 0) {
+      if (!s.protectedLastTurn) return { type: "protect" };
+      return null;
     }
 
     if (
