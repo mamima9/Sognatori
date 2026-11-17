@@ -6,7 +6,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 // Roster locale di Amargenta: separato dal resto dell'Avventura.
 const AMARGENTA_SOGNATORE_IDS = new Set([
   "torosucco", "crunchypat", "talamos", "pingcake",
-  "zibelle", "lattelo", "muccanza", "cardinero", "umami", "flame"
+, "umami", "flame"
 ]);
 const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String(s.id)));
 
@@ -113,8 +113,6 @@ export default function Amargenta3D({ onExit }) {
   const [dungeonBattleOpen, setDungeonBattleOpen] = useState(false);
   const [zibelleBattleOpen, setZibelleBattleOpen] = useState(false);
   const [latteloBattleOpen, setLatteloBattleOpen] = useState(false);
-  const [muccanzaBattleOpen, setMuccanzaBattleOpen] = useState(false);
-  const [muccanzaOpponentName, setMuccanzaOpponentName] = useState("Fan del Latte");
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -155,8 +153,7 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || muccanzaBattleOpen);
-  }, [dialogue, panel, dungeonBattleOpen, muccanzaBattleOpen]);
+
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -198,8 +195,6 @@ export default function Amargenta3D({ onExit }) {
     const fireflies = [];
     const bellActors = [];
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
-    let muccanzaRoomGroup = null;
-    let muccanzaRoomActive = false;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -624,28 +619,7 @@ export default function Amargenta3D({ onExit }) {
       box(.22,.53,.22,trousers,g,.14,.38,0);
       box(.27,.15,.36,boot,g,-.14,.1,.08);
       box(.24,.13,.34,boot,g,.14,.12,.08);
-      if(id.startsWith("muccanza")){
-        // Cappuccio viola, giacca maculata e pantofole a muso di Lattelo.
-        const purple=mat("#382b42"), creamCow=mat("#f3e5c8"), pinkCow=mat("#e9878b"), cowSpot=mat("#35283d"), antenna=mat("#f5b51b");
-        sphere(.43,purple,g,0,1.72,-.03,2).scale.set(1.05,.9,.95);
-        for(const side of [-1,1]){
-          sphere(.13,pinkCow,g,side*.39,1.7,.02,1).scale.set(.8,1.25,.55);
-          sphere(.075,antenna,g,side*.22,.08,.23,1);
-          sphere(.13,creamCow,g,side*.14,.08,.19,1).scale.set(1.25,.55,1.5);
-          sphere(.09,pinkCow,g,side*.14,.09,.31,1).scale.set(1.1,.75,.55);
-          sphere(.025,mat("#17131a"),g,side*.14-.035,.13,.34,1);
-          sphere(.025,mat("#17131a"),g,side*.14+.035,.13,.34,1);
-          sphere(.11,cowSpot,g,side*.2,.39,.13,1).scale.set(1,.8,.45);
-          sphere(.11,cowSpot,g,side*.43,1.04,.1,1).scale.set(.8,1.2,.5);
-          sphere(.1,cowSpot,g,side*.15,.41,.12,1).scale.set(1,.8,.5);
-        }
-        for(const [sx,sy,sz,r] of [[-.19,1.03,.31,.13],[.13,1.08,.31,.16],[.02,.9,.32,.11],[-.2,.39,.12,.12],[.18,.4,.12,.1]]){
-          sphere(r,cowSpot,g,sx,sy,sz,1).scale.set(1,.85,.42);
-        }
-        const curl=new THREE.CatmullRomCurve3([new THREE.Vector3(0,2.08,0),new THREE.Vector3(0,2.28,.02),new THREE.Vector3(.1,2.43,.02),new THREE.Vector3(.02,2.54,.02),new THREE.Vector3(-.06,2.5,.02)]);
-        addMesh(new THREE.TubeGeometry(curl,.2,.045,6,false),antenna,g,0,0,0);
-      }
-      const badge=sphere(.09,gold,g,0,1.12,.3,1);
+(.09,gold,g,0,1.12,.3,1);
       badge.scale.set(1,.8,.3);
       if(id==="barista"||id==="roaster"){
         box(.34,.46,.055,mat("#e8d7bd"),g,0,1.12,.405);
@@ -1045,88 +1019,7 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<7;i++){sphere(1.2,stoneLight,scene,22+Math.sin(i*2)*3,.2,-35+i*11,1);}
       makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,15);
 
-      // Salone del Latte: i Muccanza vengono istanziati soltanto al primo ingresso.
-      const leaveMuccanzaRoom = () => {
-        if(!muccanzaRoomGroup)return;
-        interactables.splice(0,interactables.length,...interactables.filter(item=>!item.id.startsWith("muccanza-room-")));
-        npcActors.splice(0,npcActors.length,...npcActors.filter(actor=>actor.group.parent!==muccanzaRoomGroup));
-        muccanzaRoomGroup.traverse(object=>{
-          if(object.geometry)object.geometry.dispose();
-          if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}
-        });
-        scene.remove(muccanzaRoomGroup);
-        muccanzaRoomGroup=null;
-        muccanzaRoomActive=false;
-        player.position.set(-7,0,-13);
-        setZone("Piazza del Chicco");
-        setNearby(null);
-      };
-      const createMuccanzaRoom = () => {
-        if(muccanzaRoomGroup)return;
-        muccanzaRoomGroup=new THREE.Group();
-        muccanzaRoomGroup.position.set(100,0,100);
-        scene.add(muccanzaRoomGroup);
-        const roomFloor=mat("#765b43"), roomWall=mat("#d7c19a"), roomTrim=mat("#51372b");
-        const addRoomBox=(w,h,d,material,x,y,z)=>box(w,h,d,material,muccanzaRoomGroup,x,y,z);
-        addRoomBox(16,.4,14,roomFloor,0,-.2,0);
-        addRoomBox(16,4,.35,roomWall,0,2,-7);
-        addRoomBox(16,4,.35,roomWall,0,2,7);
-        addRoomBox(.35,4,14,roomWall,-8,2,0);
-        addRoomBox(.35,4,14,roomWall,8,2,0);
-        addRoomBox(16,.22,.42,roomTrim,0,3.92,-6.72);
-        addRoomBox(16,.22,.42,roomTrim,0,3.92,6.72);
-        addRoomBox(5,.18,1.3,roomTrim,0,1.05,-3.2);
-        addRoomBox(5,.18,.18,gold,0,1.18,-3.2);
-        for(let i=0;i<4;i++){
-          const shelfX=-5.4+i*3.6;
-          addRoomBox(1.5,.16,.55,roomTrim,shelfX,1.35,-5.5);
-          addRoomBox(1.5,.16,.55,roomTrim,shelfX,2.45,-5.5);
-          cylinder(.28,.32,.72,i%2?mat("#f3e5c8"):stoneLight,muccanzaRoomGroup,shelfX,1.82,-5.5,12);
-          cylinder(.31,.31,.1,gold,muccanzaRoomGroup,shelfX,2.23,-5.5,12);
-        }
-        for(const x of [-5,5]){
-          cylinder(.55,.62,1.25,wood,muccanzaRoomGroup,x,.65,2.2,12);
-          cylinder(.58,.58,.1,gold,muccanzaRoomGroup,x,1.1,2.2,12);
-        }
-        makeNpc("muccanza-1","Bovino","Fan del Latte",-3,0,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
-        makeNpc("muccanza-2","Panna","Collezionista di Lattelo",3,0,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
-        makeNpc("muccanza-3","Moka","Fan del Latte",0,3,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
-        const visitors=[
-          {id:"muccanza-room-1",name:"Bovino",x:97,z:100,index:0,text:"Il latte di Lattelo è il segreto dei caffè di Amargenta. Lo mischio al caffè ogni mattina!"},
-          {id:"muccanza-room-2",name:"Panna",x:103,z:100,index:1,text:"In tutta Amargenta si parla del latte di Lattelo. È perfetto da mischiare col caffè. Ho perfino una collezione di tazze dedicate a Lattelo!"},
-          {id:"muccanza-room-3",name:"Moka",x:100,z:103,index:2,text:"Il caffè senza latte di Lattelo? Per me è impensabile. Il suo gusto è diventato famoso in tutta la città."}
-        ];
-        visitors.forEach(({id,name,x,z,index,text})=>interactables.push({
-          id,title:name+" · Muccanza",text,x,z,radius:2.8,
-          action:()=>{
-            if(ownedAmargentaIdsRef.current.includes("muccanza")){
-              setDialogue({title:"Muccanza",text:"Hai già convinto un Muccanza a unirsi al gruppo. Gli altri sono semplici abitanti: nessun doppione."});
-              return;
-            }
-            setMuccanzaOpponentName(["Bovino · Fan del Latte","Panna · Collezionista","Moka · Fan del Latte"][index]);
-            setMuccanzaBattleOpen(true);
-          }
-        }));
-        interactables.push({id:"muccanza-room-exit",title:"Uscita · Amargenta",text:"Torna alle strade di Amargenta.",x:100,z:106,radius:2.6,action:leaveMuccanzaRoom});
-      };
-      // Facciata riconoscibile del Salone del Latte, con insegna a forma di bottiglia.
-      box(.42,3.2,.42,wood,scene,5.2,1.6,-28);
-      box(.42,3.2,.42,wood,scene,8.8,1.6,-28);
-      box(4,.42,.5,gold,scene,7,3.25,-28);
-      box(2.65,2.45,.18,roof,scene,7,1.25,-28.12);
-      box(2.25,2.1,.12,wood,scene,7,1.18,-27.98);
-      const milkSign=addMesh(new THREE.CylinderGeometry(.48,.48,.16,12),mat("#f3e5c8"),scene,7,4.05,-28);
-      milkSign.rotation.x=Math.PI/2;
-      sphere(.16,mat("#e9878b"),scene,7,4.05,-27.88,1);
-      addInteraction("muccanza-room-door","Salone del Latte","Entra nel salone dedicato al latte di Lattelo.",7,-28,()=>{
-        createMuccanzaRoom();
-        muccanzaRoomActive=true;
-        player.position.set(100,0,104);
-        setZone("Salone del Latte · Amargenta");
-        setToast("Sei entrato nel Salone del Latte");
-      },4.2);
 
-      // Ingresso ovest e strada principale
       const road=addMesh(new THREE.PlaneGeometry(13,75),pathMat,scene,-28,.04,4);road.rotation.x=-Math.PI/2;road.rotation.z=Math.PI/2;
       // Solchi dei carri e pietre di bordo lungo la strada d'ingresso.
       for(const offset of [-2.1,2.1]){
@@ -1670,8 +1563,7 @@ export default function Amargenta3D({ onExit }) {
         const acceleration= inputLength>.05 ? 8.5 : 11;
         movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
         const move=movementVelocity.clone().multiplyScalar(dt);
-        const nx=THREE.MathUtils.clamp(player.position.x+move.x,muccanzaRoomActive?94:-72,muccanzaRoomActive?106:72);
-        const nz=THREE.MathUtils.clamp(player.position.z+move.z,muccanzaRoomActive?94:-72,muccanzaRoomActive?106:72);
+
         if(Math.abs(move.x)>.0001&&!isBlockedAt(nx,player.position.z))player.position.x=nx;
         else if(isBlockedAt(nx,player.position.z))movementVelocity.x=0;
         if(Math.abs(move.z)>.0001&&!isBlockedAt(player.position.x,nz))player.position.z=nz;
@@ -1951,17 +1843,6 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
-    {muccanzaBattleOpen&&<AdventureBattle
-      opponentName={muccanzaOpponentName}
-      isWild={false}
-      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaPartyIds.includes(s.id))}
-      enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
-      onFinish={(result)=>{
-        setMuccanzaBattleOpen(false);
-        if(result==="win"){recruitAmargenta("muccanza");setToast("Muccanza si è unito ad Amargenta!");}
-        else if(result==="loss")setToast("Il fan di Lattelo ti ha battuto · Puoi riprovare");
-      }}
-    />}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
       isWild
