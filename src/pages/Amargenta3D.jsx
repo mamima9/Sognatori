@@ -404,7 +404,10 @@ export default function Amargenta3D({ onExit }) {
         const puff=sphere(.075,mat("#ffb04b",.55,{transparent:true,opacity:.58}),aroma,(i-2)*.12,1.95+(i%3)*.16,-.28,1);
         puff.userData.phase=i*.72;
       }
-      const interaction={id:"wild-flame-45",title:"Flame · Aroma di peperoncino",text:"Flame sprigiona un aroma intenso di peperoncino. L'aria intorno a lui pizzica il naso.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>setDialogue({title:"Flame · Aroma di peperoncino",text:"Fsssh! Flame diffonde nell'aria il suo aroma di peperoncino: pungente, caldo e impossibile da ignorare. Meglio non stargli troppo vicino quando si agita!"})};
+      const interaction={id:"recruit-flame",title:"Flame · Aroma di peperoncino",text:"Flame diffonde nell'aria un aroma intenso e pungente di peperoncino.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>{
+        if(ownedAmargentaIdsRef.current.includes("flame")){setDialogue({title:"Flame",text:"Flame è già nella tua collezione."});return;}
+        setDialogue({title:"Incontro · Flame",text:"Flame sprigiona un aroma intenso di peperoncino. L'aria intorno a lui pizzica il naso. Vuoi convincerlo a unirsi alla tua avventura?",confirm:()=>{recruitAmargenta("flame");setDialogue(null);}});
+      }};
       interactables.push(interaction);
       npcActors.push({group:g,phase:5.1,wild:true,legs,tailPivot,headPivot,ears:[],bodyPivot,aroma,interaction,homeX:32,homeZ:-28,roamRadius:2.1,walkSpeed:.36,flameTips});
       return g;
@@ -766,9 +769,13 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       sphere(.085,mat("#7a4a2a"),g,0,3.15,-.38,1);
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.9,leftArm,rightArm});
       addCollider(x,z,.5*scale);
-      addInteraction("cardinero-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-"),name+" · Cardinero",
-        "Sono un Cardinero: mi prendo cura dei giardini, delle aiuole e dei fiori di Amargenta. Non combatto: il mio posto è tra le piante! 🌻",
-        x,z,()=>setDialogue({title:name+" · Cardinero",text:"Qui ogni fiore merita attenzione. Noi Cardinero curiamo i giardini di Amargenta, annaffiamo le aiuole e proteggiamo le piante.\n\nNon siamo combattenti e non vogliamo lottare: preferiamo far fiorire la città!"}),4.2);
+      const cardineroId="cardinero";
+      addInteraction("recruit-"+cardineroId,name+" · Cardinero",
+        "Si prende cura dei giardini di Amargenta. È pacifico e non vuole combattere.",
+        x,z,()=>{
+          if(ownedAmargentaIdsRef.current.includes(cardineroId)){setDialogue({title:name+" · Cardinero",text:"Cardinero è già nella tua collezione."});return;}
+          setDialogue({title:"Incontro · "+name,text:"Cardinero cura i giardini, le aiuole e i fiori di Amargenta. Non vuole lottare: preferisce far fiorire la città. Vuoi convincerlo a unirsi a te?",confirm:()=>{recruitAmargenta(cardineroId);setDialogue(null);}});
+        },4.2);
       return g;
     };
     const makeMarketStall = (x,z,accent) => {
@@ -1247,8 +1254,8 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
       // I Cardinero curano le aiuole e i giardini: sono NPC pacifici, senza statistiche e senza battaglie.
-      // Test di stabilità: un solo Cardinero pacifico presente in città.
-      makeCardinero("Girasole",-14,3,.92);
+      // Cardinero #43: custode pacifico dei giardini, reclutabile senza battaglia.
+      makeCardinero("Cardinero",-34,16,.92);
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
@@ -1280,6 +1287,8 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeRecruitableCreature("talamos","Talamos",53,-48,["#496c62","#83a58c","#29453f","#d4c58b"],"swamp");
       makeRecruitableCreature("pingcake","Pingcake",48,48,["#d88d9d","#f4c6d0","#8c4b61","#fff0bd"],"rabbit");
       makeRecruitableCreature("muccanza","Muccanza",-28,-30,["#eee6d2","#a77b4d","#49352b","#f8f2e5"],"bull");
+      // Belligonghi-umami #44: incontro esplorabile e reclutabile.
+      makeRecruitableCreature("belligonghi-umami","Belligonghi-umami",46,-28,["#a9a18b","#e4d9b7","#514b43","#f4ead0"],"round");
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
