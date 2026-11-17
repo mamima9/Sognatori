@@ -603,3 +603,18 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     adventureOnly: true,
   },
 ]; 
+
+
+// Numero ufficiale della carta: il nome del file immagine conserva la numerazione
+// anche quando l'ordine degli oggetti nel roster viene modificato.
+export function getSognatoreNumero(sognatore, index = -1) {
+  if (Number.isFinite(sognatore?.numero)) return sognatore.numero;
+  const imageNumber = String(sognatore?.img || "").match(/(?:^|\\/)(\\d+)[ ._-]/);
+  if (imageNumber) return Number(imageNumber[1]);
+  const fallbackNumbers = { spinoff: 25, toasty: 26 };
+  if (fallbackNumbers[sognatore?.id] != null) return fallbackNumbers[sognatore.id];
+  return index >= 0 ? index + 1 : 999;
+}
+
+export const ROSTER_AVVENTURA = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 1 && getSognatoreNumero(sognatore, index) <= 39);
+export const ROSTER_AMARGENTA = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 40);
