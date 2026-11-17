@@ -5,7 +5,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 
 // Roster locale di Amargenta: separato dal resto dell'Avventura.
 const AMARGENTA_SOGNATORE_IDS = new Set([
-  "torosucco", "crunchypat", "talamos", "pingcake",
+  "torosucco", "crunchypat", "talamos", "pingcake", "muccanza",
 , "umami", "flame"
 ]);
 const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String(s.id)));
@@ -1282,6 +1282,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeRecruitableCreature("crunchypat","Crunchypat",-30,48,["#8e7562","#c5a98d","#55463d","#e8d6b9"],"round");
       makeRecruitableCreature("talamos","Talamos",53,-48,["#496c62","#83a58c","#29453f","#d4c58b"],"swamp");
       makeRecruitableCreature("pingcake","Pingcake",48,48,["#d88d9d","#f4c6d0","#8c4b61","#fff0bd"],"rabbit");
+      makeRecruitableCreature("muccanza","Muccanza",-28,-30,["#eee6d2","#a77b4d","#49352b","#f8f2e5"],"bull");
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
