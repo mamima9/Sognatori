@@ -18,7 +18,7 @@ const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String
  */
 export default function Amargenta3D({ onExit }) {
   const hostRef = useRef(null);
-  const [hint, setHint] = useState("Apri MENU per diario, mappa, borsa e comandi di esplorazione");
+  const [hint, setHint] = useState("");
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
@@ -34,7 +34,7 @@ export default function Amargenta3D({ onExit }) {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
       const valid = AMARGENTA_ROSTER.map((s) => s.id);
-      if (Array.isArray(saved.boxIds)) return saved.boxIds.filter((id) => valid.includes(id));
+      if (Array.isArray(saved.partyIds) && Array.isArray(saved.boxIds)) return saved.boxIds.filter((id) => valid.includes(id) && !saved.partyIds.includes(id));
       const party = Array.isArray(saved.partyIds) ? saved.partyIds : valid.slice(0, 4);
       return valid.filter((id) => !party.includes(id));
     } catch { return AMARGENTA_ROSTER.slice(4).map((s) => s.id); }
