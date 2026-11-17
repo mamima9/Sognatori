@@ -1109,6 +1109,15 @@ export default function Amargenta3D({ onExit }) {
         }));
         interactables.push({id:"muccanza-room-exit",title:"Uscita · Amargenta",text:"Torna alle strade di Amargenta.",x:100,z:106,radius:2.6,action:leaveMuccanzaRoom});
       };
+      // Facciata riconoscibile del Salone del Latte, con insegna a forma di bottiglia.
+      box(.42,3.2,.42,wood,scene,5.2,1.6,-28);
+      box(.42,3.2,.42,wood,scene,8.8,1.6,-28);
+      box(4,.42,.5,gold,scene,7,3.25,-28);
+      box(2.65,2.45,.18,roof,scene,7,1.25,-28.12);
+      box(2.25,2.1,.12,wood,scene,7,1.18,-27.98);
+      const milkSign=addMesh(new THREE.CylinderGeometry(.48,.48,.16,12),mat("#f3e5c8"),scene,7,4.05,-28);
+      milkSign.rotation.x=Math.PI/2;
+      sphere(.16,mat("#e9878b"),scene,7,4.05,-27.88,1);
       addInteraction("muccanza-room-door","Salone del Latte","Entra nel salone dedicato al latte di Lattelo.",7,-28,()=>{
         createMuccanzaRoom();
         muccanzaRoomActive=true;
