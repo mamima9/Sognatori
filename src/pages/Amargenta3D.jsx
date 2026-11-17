@@ -6,7 +6,7 @@ import { ROSTER } from "@/lib/sognatoriData";
 // Roster locale di Amargenta: separato dal resto dell'Avventura.
 const AMARGENTA_SOGNATORE_IDS = new Set([
   "torosucco", "crunchypat", "talamos", "pingcake", "muccanza",
-, "umami", "flame"
+  "umami", "flame"
 ]);
 const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String(s.id)));
 
