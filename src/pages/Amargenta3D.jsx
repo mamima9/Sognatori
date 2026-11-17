@@ -142,6 +142,24 @@ export default function Amargenta3D({ onExit }) {
     const coffeeRed = mat("#a82f27"), water = mat("#397f83",0.22,{metalness:0.08});
     const gold = mat("#bd8750",0.42,{metalness:0.45}), plaster = mat("#c7ad88");
     const groundMat = mat("#536746"), pathMat = mat("#9b896e");
+    // Texture procedurali leggere: prato screziato e terra battuta, senza asset esterni.
+    const makeTileTexture = (base, flecks, seed=1) => {
+      const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+      const ctx=canvas.getContext("2d");ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
+      let value=seed;const random=()=>{value=(value*16807)%2147483647;return(value-1)/2147483646;};
+      for(let i=0;i<1900;i++){
+        const x=random()*256,y=random()*256,r=.5+random()*2.2;
+        ctx.globalAlpha=.08+random()*.2;ctx.fillStyle=flecks[Math.floor(random()*flecks.length)];
+        ctx.beginPath();ctx.ellipse(x,y,r,r*(.45+random()),random()*Math.PI,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
+      texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;return texture;
+    };
+    groundMat.map=makeTileTexture("#66764b",["#87915a","#3e593d","#b0a16a","#52643e"],17);
+    groundMat.color.set("#ffffff");
+    pathMat.map=makeTileTexture("#b79a70",["#d5bc91","#8e7658","#e0c99f","#9c805d"],31);
+    pathMat.color.set("#ffffff");
     const addMesh = (geo, material, parent=scene, x=0,y=0,z=0) => {
       const m = new THREE.Mesh(geo,material); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; parent.add(m); return m;
     };
@@ -308,6 +326,9 @@ export default function Amargenta3D({ onExit }) {
       cylinder(.7,.85,2.4,gold,scene,x,1.35,z+4.25,16);
       cylinder(.48,.58,1.5,wood,scene,x,1.3,z+4.4,16);
       box(1.1,6.5,1.1,darkStone,scene,x+3.7,7,z-2.2);
+      // Tenda d'ingresso, travi esterne e catasta di legna della torrefazione.
+      makeNoren(x,z+4.24,"#9b4936");
+      for(let i=0;i<5;i++)box(.42,.22,.42,i%2?wood:darkStone,scene,x-4.2+i*.48,.22,z+4.6);
       for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);smokePuffs.push(puff);}
     };
 
@@ -441,6 +462,26 @@ export default function Amargenta3D({ onExit }) {
       box(1.8,.78,.16,wood,g,0,2.12,.04);
       box(1.55,.52,.04,gold,g,0,2.12,.14);
       const mark=box(.28,.28,.05,coffeeRed,g,0,2.12,.18);mark.rotation.z=Math.PI/4;
+      // Piccola targa leggibile anche da vicino, con simbolo del chicco.
+      const plaque=box(1.45,.34,.035,mat("#ead9b7"),g,0,1.82,.16);
+      plaque.material.side=THREE.DoubleSide;
+      const emblem=sphere(.1,coffeeRed,g,0,2.12,.22,1);emblem.scale.set(.7,1.25,.35);
+    };
+    const makeStoneLantern = (x,z) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      box(.62,.38,.62,stone,g,0,.2,0);
+      box(.42,1.05,.42,stoneLight,g,0,.88,0);
+      box(.78,.18,.78,stone,g,0,1.48,0);
+      const light=sphere(.18,mat("#ffd58b",.2,{emissive:"#d58c35",emissiveIntensity:.65}),g,0,1.72,0,2);
+      addCollider(x,z,.32);
+    };
+    const makeNoren = (x,z,color="#a64c36") => {
+      const fabric=mat(color,.95,{side:THREE.DoubleSide});
+      for(let i=0;i<3;i++){
+        const panel=box(.52,.88,.07,fabric,scene,x-.54+i*.54,2.35,z);
+        panel.rotation.z=(i-1)*-.035;
+      }
+      box(1.8,.12,.14,wood,scene,x,2.85,z);
     };
 
     const makeInterior = (cx,cz,doorSide="north") => {
@@ -544,11 +585,22 @@ export default function Amargenta3D({ onExit }) {
       makeHouse(-22,-5,7,6,4,0);makeHouse(-12,-13,6,5,3.5,1);makeHouse(-18,13,6,5,3.5,0);
       cylinder(1.7,2,13,stone,scene,-8,6.5,-25,12);const towerRoof=addMesh(new THREE.ConeGeometry(2.2,2.2,4),roof,scene,-8,14,-25);towerRoof.rotation.y=Math.PI/4;
       for(let y=0;y<3;y++)box(.6,1.2,.1,darkStone,scene,-8,3+y*3,-23.35);
-      // Piazza centrale e fontana monumentale
+      // Piazza centrale: pavimentazione in pietra, fontana e lanterne tradizionali.
       const plaza=addMesh(new THREE.CylinderGeometry(13,13,.4,48),pathMat,scene,0,.05,0);plaza.scale.z=.72;
       makeFountain(0,.5);
-      for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeLamp(Math.cos(a)*10,Math.sin(a)*7.5);}
+      for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeStoneLantern(Math.cos(a)*10,Math.sin(a)*7.5);}
+      // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
+      makeHouse(-1,-23,10,7,4.6,1);
+      makeNoren(-1,-19.35,"#536d58");
+      for(const dx of [-3.8,3.8])box(.24,3.6,.24,wood,scene,-1+dx,1.8,-19.3);
+      // Pietre di bordo e aiuole che incorniciano il centro del villaggio.
+      for(let i=0;i<16;i++){
+        const a=i*Math.PI/8,px=Math.cos(a)*15.5,pz=Math.sin(a)*11.5;
+        const pebble=sphere(.42, i%2?stoneLight:stone,scene,px,.2,pz,1);pebble.scale.set(1.4,.55,.8);
+        if(i%2===0)makeCoffeePlant(px*1.08,pz*1.08,.72);
+      }
       makeHouse(12,-13,6,5,3.7,1);makeHouse(15,13,6,5,3.7,0);
+      makeNoren(12,-10.35,"#567b68");makeNoren(15,15.65,"#a64c36");
       // Dettagli da villaggio di Hisui: vialetti, lanterne, recinti e alberi in fiore.
       const villagePath=mat("#b89b75");
       for(const [x,z,w,d] of [[0,-13,5,25],[0,13,5,24],[-14,0,20,4],[14,0,20,4],[-24,-8,4,18],[22,8,4,20]]){
@@ -566,14 +618,19 @@ export default function Amargenta3D({ onExit }) {
       // Giardini agrumati e serre della corporazione del caffè.
       for(let i=0;i<9;i++)makeCitrusTree(-48+(i%3)*7,18+Math.floor(i/3)*7,.85+(i%2)*.12);
       makeGreenhouse(-52,-16);
-      // Sentiero panoramico, rocce e vegetazione
+      // Sentiero panoramico, rocce e vegetazione: alternanza di pini e alberi in fiore.
       for(let i=0;i<48;i++){const a=i*2.399,rr=38+(i%5)*4;makeTree(Math.cos(a)*rr,Math.sin(a)*rr,.7+(i%3)*.18,i%4===0);}
+      for(let i=0;i<12;i++){
+        const a=i*Math.PI/6,rr=31+(i%3)*2;
+        makeCherryTree(Math.cos(a)*rr,Math.sin(a)*rr,.72+(i%2)*.16);
+      }
       for(let i=0;i<24;i++){const x=-35+(i%6)*8,z=-4+Math.floor(i/6)*9;sphere(1.2,stoneLight,scene,x,.25,z,1);addCollider(x,z,.62);}
       // Arredi, carri, sacchi e casse
       for(let i=0;i<8;i++){const x=-8+(i%4)*4,z=17+Math.floor(i/4)*3;box(1.2,.8,.9,wood,scene,x,.4,z);box(1.25,.12,.95,gold,scene,x,.85,z);}
       for(let i=0;i<5;i++){cylinder(.38,.42,.9,wood,scene,20+i*1.2, .45,35,10);}
       // Mercato coperto con tende, casse, sacchi e insegne da borgo artigiano.
       makeMarketStall(-8,9,"#a64c36");makeMarketStall(8,10,"#d0a05d");makeMarketStall(-17,19,"#567b68");
+      makeNoren(-8,10.2,"#a64c36");makeNoren(8,11.2,"#c49a5b");
       makeVillageLantern(-11,3);makeVillageLantern(11,3);
       makeVillageFence(-11,15,9,.1);makeVillageFence(11,16,9,-.1);
       for(const [x,z] of [[-5,4],[5,4],[18,-5],[-20,-18]]){cylinder(.08,.1,1.1,wood,scene,x,.55,z,8);box(1.6,.12,.55,wood,scene,x,.95,z);}
