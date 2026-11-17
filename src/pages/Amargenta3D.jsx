@@ -247,6 +247,81 @@ export default function Amargenta3D({ onExit }) {
       npcActors.push({group:g,phase,wild:true,legs,tailPivot,headPivot,ears,bodyPivot,aroma,interaction,homeX:x,homeZ:z,roamRadius:3.2+index%3*1.1,walkSpeed:.55+index%3*.12});
       return g;
     };
+    // Umami #44: cane da tartufo, esplora il sottobosco con il naso a terra.
+    const makeUmami = () => {
+      const g=new THREE.Group();scene.add(g);g.position.set(-48,0,30);
+      const coat=mat("#4a3025"), coatLight=mat("#79513a"), cream=mat("#d8c6a7"), dark=mat("#211815"), nose=mat("#171313"), eye=mat("#f7e8cf"), leather=mat("#8d4e32"), gold=mat("#d6a64f");
+      const bodyPivot=new THREE.Group();g.add(bodyPivot);
+      const body=sphere(.62,coat,bodyPivot,0,.7,0,2);body.scale.set(1.28,.82,.82);
+      const chest=sphere(.38,cream,bodyPivot,0,.53,.43,2);chest.scale.set(.9,.8,.6);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.03,.48);
+      const head=sphere(.43,coatLight,headPivot,0,.05,.12,2);head.scale.set(1.08,.9,1.05);
+      const muzzle=sphere(.27,cream,headPivot,0,-.17,.48,2);muzzle.scale.set(1.2,.7,.85);
+      sphere(.09,nose,headPivot,0,-.12,.69,1);
+      const ears=[];
+      for(const side of [-1,1]){
+        const ear=new THREE.Group();headPivot.add(ear);ear.position.set(side*.31,.31,-.02);ear.rotation.z=side*-.28;
+        const flap=sphere(.16,coat,ear,0,.12,0,1);flap.scale.set(.72,1.35,.48);ears.push(ear);
+        sphere(.07,eye,headPivot,side*.19,.12,.46,1);sphere(.035,dark,headPivot,side*.19,.12,.51,1);
+      }
+      const legs=[];
+      for(const side of [-1,1])for(const fore of [true,false]){
+        const pivot=new THREE.Group();g.add(pivot);pivot.position.set(side*.34,.4,fore?.32:-.37);
+        const leg=sphere(.14,coat,pivot,0,-.14,0,1);leg.scale.set(.85,1.35,.9);
+        sphere(.15,dark,pivot,0,-.29,.04,1);legs.push({pivot,side,fore});
+      }
+      const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(0,.83,-.68);
+      const tail=sphere(.12,coatLight,tailPivot,0,-.12,-.2,1);tail.scale.set(.8,1,1.8);
+      // Pettorina da cane da tartufo e tartufo trovato.
+      const harness=box(.62,.12,.48,leather,g,0,.85,-.02);harness.rotation.x=-.12;
+      sphere(.12,gold,g,0,.91,.28,1);
+      const truffle=sphere(.16,mat("#35251c"),g,.42,.1,.56,2);truffle.scale.set(1.2,.7,.9);
+      const aroma=new THREE.Group();g.add(aroma);
+      for(let i=0;i<3;i++){const scent=sphere(.055,mat("#d8c5a0",.7,{transparent:true,opacity:.42}),aroma,.2+i*.12,1.1+i*.16,-.4,1);scent.userData.phase=i*.8;}
+      const interaction={id:"wild-umami-44",title:"Umami · Cane da tartufo",text:"Umami, il cane da tartufo di Amargenta, annusa il terreno e sembra aver fiutato qualcosa.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>setDialogue({title:"Umami · Cane da tartufo",text:"Bau! Bau! Umami ha fiutato una traccia sotto le radici. Seguilo nel sottobosco: il suo naso non sbaglia mai."})};
+      interactables.push(interaction);
+      npcActors.push({group:g,phase:2.4,wild:true,legs,tailPivot,headPivot,ears,bodyPivot,aroma,interaction,homeX:-48,homeZ:30,roamRadius:2.4,walkSpeed:.48});
+      return g;
+    };
+    // Flame #45: creatura ardente che diffonde nell'aria il profumo pungente del peperoncino.
+    const makeFlame = () => {
+      const g=new THREE.Group();scene.add(g);g.position.set(32,0,-28);
+      const ember=mat("#c83b22"), red=mat("#f05a24"), orange=mat("#ff9b32"), gold=mat("#ffd05a"), dark=mat("#54231d"), eye=mat("#fff1d8");
+      const bodyPivot=new THREE.Group();g.add(bodyPivot);
+      const body=sphere(.52,ember,bodyPivot,0,1.02,0,2);body.scale.set(.88,1.18,.78);
+      const belly=sphere(.3,orange,bodyPivot,0,.87,.31,2);belly.scale.set(.9,1.05,.55);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.54,.04);
+      const head=sphere(.38,red,headPivot,0,.04,.04,2);head.scale.set(1,.95,.85);
+      for(const side of [-1,1]){
+        sphere(.07,eye,headPivot,side*.14,.1,.33,1);
+        sphere(.035,dark,headPivot,side*.14,.1,.38,1);
+      }
+      box(.15,.035,.025,dark,headPivot,0,-.12,.35);
+      const flameTips=[];
+      for(let i=0;i<5;i++){
+        const tip=sphere(.19-i*.018,i%2?orange:gold,bodyPivot,(i-2)*.16,1.55+(i%2)*.12,-.02,1);
+        tip.scale.set(.48,1.7,.5);tip.rotation.z=(i-2)*-.18;flameTips.push(tip);
+      }
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=sphere(.12,red,g,side*.48,1.08,.02,1);arm.scale.set(.7,1.5,.7);arms.push(arm);
+      }
+      const legs=[];
+      for(const side of [-1,1]){
+        const pivot=new THREE.Group();g.add(pivot);pivot.position.set(side*.19,.35,0);
+        sphere(.12,dark,pivot,0,-.1,.03,1);legs.push({pivot,side,fore:true});
+      }
+      const tailPivot=new THREE.Group();g.add(tailPivot);tailPivot.position.set(0,.8,-.4);
+      const aroma=new THREE.Group();g.add(aroma);
+      for(let i=0;i<5;i++){
+        const puff=sphere(.075,mat("#ffb04b",.55,{transparent:true,opacity:.58}),aroma,(i-2)*.12,1.95+(i%3)*.16,-.28,1);
+        puff.userData.phase=i*.72;
+      }
+      const interaction={id:"wild-flame-45",title:"Flame · Aroma di peperoncino",text:"Flame sprigiona un aroma intenso di peperoncino. L'aria intorno a lui pizzica il naso.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>setDialogue({title:"Flame · Aroma di peperoncino",text:"Fsssh! Flame diffonde nell'aria il suo aroma di peperoncino: pungente, caldo e impossibile da ignorare. Meglio non stargli troppo vicino quando si agita!"})};
+      interactables.push(interaction);
+      npcActors.push({group:g,phase:5.1,wild:true,legs,tailPivot,headPivot,ears:[],bodyPivot,aroma,interaction,homeX:32,homeZ:-28,roamRadius:2.1,walkSpeed:.36,flameTips});
+      return g;
+    };
     const makeCoffeePlant = (x,z,s=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
       cylinder(.045,.07,.72,wood,g,0,.36,0,6);
@@ -1128,6 +1203,8 @@ export default function Amargenta3D({ onExit }) {
         interactables.push(interaction);
       }
       [[-53,-48],[-43,-54],[-34,-43],[-57,-31],[-28,-55],[34,34],[48,20],[53,-24],[28,52]].forEach(([x,z],i)=>makeZibelle(x,z,i));
+      makeUmami();
+      makeFlame();
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
@@ -1467,6 +1544,7 @@ export default function Amargenta3D({ onExit }) {
             actor.tailPivot.rotation.z=Math.sin(idle*.9)*.13;
             actor.ears.forEach((ear,j)=>{ear.rotation.z=(j===0?-.18:.18)+Math.sin(idle*1.8+j)*.07;});
             actor.aroma.children.forEach((puff,j)=>{puff.position.y=1.45+j*.17+Math.sin(clock.elapsedTime*1.7+puff.userData.phase)*.09;puff.visible=Math.sin(clock.elapsedTime*1.7+puff.userData.phase)>.0;});
+            if(actor.flameTips)actor.flameTips.forEach((tip,j)=>{tip.scale.y=1.35+Math.sin(idle*2.8+j*.9)*.35;tip.rotation.z=Math.sin(idle*2+j)*.16;});
             actor.interaction.x=actor.group.position.x;actor.interaction.z=actor.group.position.z;
           }else{
             const breath=Math.sin(idle)*.035;
