@@ -1005,25 +1005,49 @@ export default function Amargenta3D({ onExit }) {
 
   return <div style={{position:"fixed",inset:0,background:"#18221e",color:"#f4ead8",fontFamily:"Inter,system-ui,sans-serif",overflow:"hidden"}}>
     <style>{`
+      .amargenta-glass{background:linear-gradient(145deg,rgba(19,32,29,.88),rgba(27,43,36,.76));border:1px solid rgba(232,199,139,.42);box-shadow:0 14px 38px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+      .amargenta-title{padding:10px 12px;border-radius:16px;background:linear-gradient(100deg,rgba(18,29,27,.82),rgba(18,29,27,.12));}
+      .amargenta-menu-button{border:1px solid rgba(238,204,145,.7)!important;border-radius:12px!important;background:linear-gradient(145deg,#c39455,#805638)!important;color:#fff6e8!important;padding:11px 16px!important;font-weight:950!important;letter-spacing:.08em;box-shadow:0 7px 22px #0006,inset 0 1px #fff5!important;transition:transform .18s,filter .18s}
+      .amargenta-menu-button:hover{transform:translateY(-2px);filter:brightness(1.12)}
+      .amargenta-status{position:absolute;top:18px;right:18px;display:flex;gap:8px;align-items:center;padding:9px 13px;border-radius:14px;color:#f8edda;font-size:11px;font-weight:800;letter-spacing:.04em}
+      .amargenta-objective{position:absolute;right:20px;bottom:22px;width:min(360px,calc(100vw - 180px));padding:15px 17px;border-radius:17px;color:#f7eddd}
+      .amargenta-objective-label{font-size:9px;letter-spacing:.2em;font-weight:900;color:#e9c58d;margin-bottom:6px}
+      .amargenta-objective-title{font-size:14px;line-height:1.45;font-weight:800}
+      .amargenta-objective-waypoint{display:flex;justify-content:space-between;gap:10px;margin-top:9px;padding-top:9px;border-top:1px solid #ffffff20;color:#d9c7a8;font-size:10px;font-weight:800}
+      .amargenta-menu-panel{position:absolute;left:18px;top:88px;width:min(390px,calc(100vw - 36px));max-height:calc(100vh - 108px);overflow-y:auto;padding:18px;border-radius:20px;background:linear-gradient(145deg,rgba(20,34,30,.97),rgba(28,43,35,.96));border:1px solid #d8b77d99;box-shadow:0 22px 70px #000b;font-size:12px;line-height:1.65;backdrop-filter:blur(20px)}
+      .amargenta-menu-panel button{transition:transform .16s,filter .16s}
+      .amargenta-menu-panel button:hover{filter:brightness(1.16);transform:translateY(-1px)}
+      .amargenta-toast{position:absolute;top:84px;left:50%;transform:translateX(-50%);padding:11px 18px;border-radius:14px;background:rgba(27,48,39,.94);border:1px solid #e0c18b;color:#f6e8cf;font-size:12px;font-weight:850;box-shadow:0 12px 32px #0008;backdrop-filter:blur(12px)}
+      .amargenta-interact{border:1px solid #f1d39a!important;background:linear-gradient(145deg,rgba(39,56,43,.96),rgba(21,33,29,.96))!important;box-shadow:0 12px 34px #0009,inset 0 1px #ffffff22!important;padding:13px 20px!important;border-radius:15px!important;backdrop-filter:blur(12px);font-size:12px!important}
+      .amargenta-dialogue{background:linear-gradient(145deg,rgba(42,34,27,.98),rgba(18,34,29,.98));border:1px solid #e2c28b;box-shadow:0 24px 80px #000c,inset 0 1px #ffffff20}
       @media (max-width: 720px) {
-        .amargenta-title { top: 10px !important; left: 12px !important; }
-        .amargenta-title strong { font-size: 23px !important; }
-        .amargenta-toolbar { top: 66px !important; left: 12px !important; right: 12px !important; transform: none !important; justify-content: flex-start !important; flex-wrap: wrap; }
-        .amargenta-hud { top: 112px !important; right: 12px !important; width: min(205px, calc(100vw - 24px)) !important; }
-        .amargenta-hint { left: 12px !important; right: 12px !important; bottom: 12px !important; max-width: none !important; }
-        .amargenta-joystick { left: 12px !important; bottom: 16px !important; width: 116px !important; height: 116px !important; }
-        .amargenta-interact { bottom: 158px !important; }
+        .amargenta-title{top:9px!important;left:9px!important;gap:8px!important;padding:7px 8px!important}
+        .amargenta-title .amargenta-brand{font-size:15px!important;letter-spacing:2px!important}
+        .amargenta-title .amargenta-city{font-size:21px!important}
+        .amargenta-menu-button{padding:8px 10px!important;font-size:10px}
+        .amargenta-status{top:64px;left:10px;right:auto;padding:7px 10px;font-size:9px}
+        .amargenta-objective{right:10px;bottom:12px;width:min(245px,calc(100vw - 145px));padding:11px 12px}
+        .amargenta-objective-title{font-size:11px}
+        .amargenta-objective-waypoint{font-size:9px;margin-top:6px;padding-top:6px}
+        .amargenta-menu-panel{left:10px;top:108px;width:min(370px,calc(100vw - 20px));max-height:calc(100vh - 120px);padding:14px}
+        .amargenta-toast{top:108px;width:max-content;max-width:calc(100vw - 24px);font-size:10px;text-align:center}
+        .amargenta-joystick{left:12px!important;bottom:16px!important;width:116px!important;height:116px!important}
+        .amargenta-interact{bottom:145px!important;max-width:calc(100vw - 28px);white-space:normal!important}
+        .amargenta-dialogue{bottom:14px!important;padding:16px!important}
       }
+      @media (max-width: 390px){.amargenta-title{gap:6px!important}.amargenta-title .amargenta-brand{font-size:12px!important}.amargenta-title .amargenta-city{font-size:18px!important}.amargenta-menu-button{padding:7px 8px!important}}
     `}</style>
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
     
-    <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
-      <div style={{fontSize:22,letterSpacing:3,color:"#f2c94c",fontWeight:1000}}>SOGNATORI</div>
-      <div style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
-      <button onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",border:"1px solid #e1c28d",borderRadius:10,background:"#18221eef",color:"#f8ecd8",padding:"11px 16px",fontWeight:900,cursor:"pointer",whiteSpace:"nowrap",boxShadow:"0 5px 18px #0007"}}>☰ MENU</button>
+    <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d",zIndex:20}}>
+      <div className="amargenta-brand" style={{fontSize:22,letterSpacing:3,color:"#f2c94c",fontWeight:1000}}>SOGNATORI</div>
+      <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
+      <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
-    {toast&&<div style={{position:"absolute",top:66,left:"50%",transform:"translateX(-50%)",padding:"9px 16px",borderRadius:10,background:"#26382bee",border:"1px solid #e0c18b",color:"#f6e8cf",fontSize:12,fontWeight:800}}>{toast}</div>}
-    {menuOpen&&<div style={{position:"absolute",left:18,top:18,width:"min(380px,calc(100vw - 36px))",maxHeight:"calc(100vh - 36px)",overflowY:"auto",padding:16,borderRadius:15,background:"#17231ff5",border:"1px solid #d8b77d99",boxShadow:"0 16px 45px #0009",fontSize:12,lineHeight:1.65}}>
+    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span></div>
+    {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
+    {toast&&<div className="amargenta-toast">{toast}</div>}
+    {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · AMARGENTA</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
         {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["map","⌖","Mappa"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["controls","⌨","Comandi"],["exit","↩","Torna ad Avventura"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else setPanel(id);}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
@@ -1098,7 +1122,7 @@ export default function Amargenta3D({ onExit }) {
       onLostPointerCapture={()=>{touchStickRef.current={x:0,y:0};setTouchStick({x:0,y:0});}}>
       <div style={{width:54,height:54,borderRadius:"50%",border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",boxShadow:"0 3px 12px #0009",transform:`translate(${touchStick.x*35}px,${touchStick.y*35}px)`,pointerEvents:"none"}}/>
     </div>
-    {dialogue&&<div role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:18,background:"linear-gradient(145deg,#30231ff5,#17241ff5)",border:"1px solid #d7b77d",boxShadow:"0 18px 60px #0009"}}>
+    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
