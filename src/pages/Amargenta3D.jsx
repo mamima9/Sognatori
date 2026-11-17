@@ -929,7 +929,7 @@ export default function Amargenta3D({ onExit }) {
           {[
             ["Ingresso",-44,2,"#f1d18b"],["Piazza",0,0,"#e5b66b"],["Lina",-24,-31,"#d9d58b"],
             ["Orma",-10,-19,"#c7a5df"],["Bruno",18,-7,"#78b6c1"],["Torrefazione",16,28,"#a64c36"],
-            ["Caffè",-22,-1,"#a64c36"],["Cassa botanico",-49,-50,"#9fc58e"],["Campana Ovest",-30,4,"#f0d28a"],["Campana Mercato",-2,18,"#f0d28a"],["Campana Est",16,-2,"#f0d28a"],["Cripta",-70,-43,"#d4b3ff"]
+            ["Caffè",-22,-1,"#a64c36"],["Campana Ovest",-30,4,"#f0d28a"],["Campana Mercato",-2,18,"#f0d28a"],["Campana Est",16,-2,"#f0d28a"],["Cripta",-70,-43,"#d4b3ff"]
           ].map(([name,x,z,color])=><div key={name} title={name} style={{position:"absolute",left:Math.max(2,Math.min(98,(x+72)/144*100))+"%",top:Math.max(2,Math.min(98,(z+72)/144*100))+"%",width:8,height:8,borderRadius:8,background:color,border:"1px solid #33271f",transform:"translate(-50%,-50%)"}}/>)}
           <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff",transform:"translate(-50%,-50%)"}}/>
           <div style={{position:"absolute",right:7,top:5,fontSize:9,fontWeight:900,color:"#fff4d8",textShadow:"0 1px 3px #000"}}>N ↑</div>
