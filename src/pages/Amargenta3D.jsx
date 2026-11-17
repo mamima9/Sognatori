@@ -22,32 +22,45 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
+  const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
+      const valid = AMARGENTA_ROSTER.map((s) => s.id);
+      if (Array.isArray(saved.ownedIds)) return [...new Set(saved.ownedIds.filter((id) => valid.includes(id)))];
+      if (Array.isArray(saved.partyIds) || Array.isArray(saved.boxIds)) return [...new Set([...(saved.partyIds || []), ...(saved.boxIds || [])].filter((id) => valid.includes(id)))];
+      return [];
+    } catch { return []; }
+  });
   const [amargentaPartyIds, setAmargentaPartyIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
       const valid = AMARGENTA_ROSTER.map((s) => s.id);
-      if (Array.isArray(saved.partyIds)) return saved.partyIds.filter((id) => valid.includes(id)).slice(0, 4);
-      return valid.slice(0, 4);
-    } catch { return AMARGENTA_ROSTER.slice(0, 4).map((s) => s.id); }
+      return Array.isArray(saved.partyIds) ? [...new Set(saved.partyIds.filter((id) => valid.includes(id)))].slice(0, 4) : [];
+    } catch { return []; }
   });
   const [amargentaBoxIds, setAmargentaBoxIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
       const valid = AMARGENTA_ROSTER.map((s) => s.id);
-      if (Array.isArray(saved.partyIds) && Array.isArray(saved.boxIds)) return saved.boxIds.filter((id) => valid.includes(id) && !saved.partyIds.includes(id));
-      const party = Array.isArray(saved.partyIds) ? saved.partyIds : valid.slice(0, 4);
-      return valid.filter((id) => !party.includes(id));
-    } catch { return AMARGENTA_ROSTER.slice(4).map((s) => s.id); }
+      return Array.isArray(saved.boxIds) ? [...new Set(saved.boxIds.filter((id) => valid.includes(id)))].slice(0, valid.length) : [];
+    } catch { return []; }
   });
+  const recruitAmargenta = (id) => {
+    if (!AMARGENTA_SOGNATORE_IDS.has(String(id)) || ownedAmargentaIds.includes(id)) return false;
+    setOwnedAmargentaIds((ids) => ids.includes(id) ? ids : [...ids, id]);
+    setAmargentaBoxIds((ids) => ids.includes(id) ? ids : [...ids, id]);
+    setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
+    return true;
+  };
   const moveAmargentaToParty = (id) => {
-    if (amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
+    if (!ownedAmargentaIds.includes(id) || amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
     setAmargentaBoxIds((ids) => ids.filter((item) => item !== id));
     setAmargentaPartyIds((ids) => [...ids, id]);
   };
   const moveAmargentaToBox = (id) => {
     if (!amargentaPartyIds.includes(id)) return;
     setAmargentaPartyIds((ids) => ids.filter((item) => item !== id));
-    setAmargentaBoxIds((ids) => [...ids, id]);
+    setAmargentaBoxIds((ids) => ids.includes(id) ? ids : [...ids, id]);
   };
   const [savedProgress] = useState(() => {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
@@ -56,11 +69,12 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:roster:v1", JSON.stringify({
-        partyIds: amargentaPartyIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id))).slice(0, 4),
-        boxIds: amargentaBoxIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id)))
+        ownedIds: [...new Set(ownedAmargentaIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id))))],
+        partyIds: amargentaPartyIds.filter((id) => ownedAmargentaIds.includes(id)).slice(0, 4),
+        boxIds: amargentaBoxIds.filter((id) => ownedAmargentaIds.includes(id) && !amargentaPartyIds.includes(id))
       }));
     } catch (error) { console.warn("Impossibile salvare il box di Amargenta:", error); }
-  }, [amargentaPartyIds, amargentaBoxIds]);
+  }, [ownedAmargentaIds, amargentaPartyIds, amargentaBoxIds]);
   const [questStarted, setQuestStarted] = useState(Boolean(savedProgress.questStarted));
   const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
@@ -1793,11 +1807,11 @@ export default function Amargenta3D({ onExit }) {
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}><strong style={{color:"#e9c58d"}}>SQUADRA ATTIVA</strong><span style={{color:"#e9c58d"}}>{amargentaPartyIds.length}/4</span></div>
-        {amargentaPartyIds.length===0&&<div style={{padding:10,color:"#d7c5a5"}}>La squadra è vuota: sposta qui almeno 2 Sognatori dal box per poter combattere.</div>}
+        {amargentaPartyIds.length===0&&<div style={{padding:10,color:"#d7c5a5"}}>Non hai ancora compagni. Esplora Amargenta, parla con i Sognatori e convincili a unirsi a te.</div>}
         {AMARGENTA_ROSTER.filter((s)=>amargentaPartyIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button onClick={()=>moveAmargentaToBox(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:"#49352d",color:"#f6ead5",fontSize:10,fontWeight:800}}>Al box</button></div>)}
         <div style={{marginTop:14,marginBottom:7}}><strong style={{color:"#e9c58d"}}>BOX DI AMARGENTA · {amargentaBoxIds.length}</strong></div>
         {amargentaBoxIds.length===0&&<div style={{color:"#d7c5a5",padding:8}}>Nessun Sognatore nel box.</div>}
-        {AMARGENTA_ROSTER.filter((s)=>amargentaBoxIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button disabled={amargentaPartyIds.length>=4} onClick={()=>moveAmargentaToParty(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:amargentaPartyIds.length>=4?"#454545":"#315b42",color:"#f6ead5",fontSize:10,fontWeight:800,opacity:amargentaPartyIds.length>=4?.5:1}}>In squadra</button></div>)}
+        {AMARGENTA_ROSTER.filter((s)=>ownedAmargentaIds.includes(s.id) && amargentaBoxIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button disabled={amargentaPartyIds.length>=4} onClick={()=>moveAmargentaToParty(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:amargentaPartyIds.length>=4?"#454545":"#315b42",color:"#f6ead5",fontSize:10,fontWeight:800,opacity:amargentaPartyIds.length>=4?.5:1}}>In squadra</button></div>)}
       </div>}
       {panel==="inventory"&&<div>
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
@@ -1811,7 +1825,7 @@ export default function Amargenta3D({ onExit }) {
       enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setMuccanzaBattleOpen(false);
-        if(result==="win")setToast("Sfida vinta · Muccanza #42");
+        if(result==="win")setToast("Sfida vinta · Muccanza ti ha riconosciuto come alleato.");
         else if(result==="loss")setToast("Il fan di Lattelo ti ha battuto · Puoi riprovare");
       }}
     />}
@@ -1822,7 +1836,7 @@ export default function Amargenta3D({ onExit }) {
       enemyTeam={[{...ROSTER.find(s=>s.id==="lattelo"),hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setLatteloBattleOpen(false);
-        if(result==="win")setToast("Lattelo sconfitto · Lattelo #41");
+        if(result==="win"){recruitAmargenta("lattelo");setToast("Lattelo ha deciso di unirsi a te!");}
         else if(result==="loss")setToast("Lattelo ti ha respinto · Puoi riprovare");
       }}
     />}
@@ -1833,7 +1847,7 @@ export default function Amargenta3D({ onExit }) {
       enemyTeam={[{...ROSTER.find(s=>s.id==="zibelle"),hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setZibelleBattleOpen(false);
-        if(result==="win")setToast("Zibelle selvatica sconfitta · Aroma di caffè disperso");
+        if(result==="win"){if(recruitAmargenta("zibelle"))setToast("Zibelle si è unita alla tua squadra!");else setToast("Zibelle è già stata convinta: non puoi ottenere un doppione.");}
         else if(result==="loss")setToast("La Zibelle ti ha respinto · Puoi riprovare");
       }}
     />}
