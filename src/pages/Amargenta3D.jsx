@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import AdventureBattle from "@/components/game/AdventureBattle";
+import { ROSTER } from "@/lib/sognatoriData";
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -49,6 +51,7 @@ export default function Amargenta3D({ onExit }) {
   const [botanicalCacheClaimed, setBotanicalCacheClaimed] = useState(Boolean(savedProgress.botanicalCacheClaimed));
   const [dungeonSigils, setDungeonSigils] = useState(Array.isArray(savedProgress.dungeonSigils) ? savedProgress.dungeonSigils : []);
   const [dungeonBossDefeated, setDungeonBossDefeated] = useState(Boolean(savedProgress.dungeonBossDefeated));
+  const [dungeonBattleOpen, setDungeonBattleOpen] = useState(false);
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -86,8 +89,8 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel);
-  }, [dialogue, panel]);
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
+  }, [dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -565,11 +568,7 @@ export default function Amargenta3D({ onExit }) {
           setDialogue({title:"Guardiano del Retrogusto",text:"Tre sigilli trattengono il suo sonno. Risolvi la sequenza delle rune prima di affrontarlo."});
           return;
         }
-        dungeonBossDefeatedRef.current=true;
-        setDungeonBossDefeated(true);
-        dungeonGuardian.visible=false;
-        setToast("Guardiano sconfitto · Cripta purificata");
-        setDialogue({title:"Il Guardiano si dissolve",text:"La creatura si arrende e lascia libero il cuore della Cripta. Lo scrigno centrale può finalmente essere aperto."});
+        setDungeonBattleOpen(true);
       },3.8);
       addInteraction("vault-chest","Scrigno delle Miscele","Un antico scrigno custodisce il cuore della città.",68,-68,()=>{
         if(!secretUnlockedRef.current){setDialogue({title:"Scrigno sigillato",text:"Il sigillo della cripta non è ancora stato spezzato."});return;}
@@ -1021,6 +1020,35 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
+    {dungeonBattleOpen&&<AdventureBattle
+      opponentName="Guardiano del Retrogusto"
+      isWild
+      playerRoster={ROSTER}
+      enemyTeam={[{
+        id:"guardian-retrogusto",
+        nome:"Guardiano del Retrogusto",
+        tipo:"Salato",
+        att:17,
+        dif:15,
+        vel:10,
+        hp:60,
+        hpMax:60,
+        abilKey:"riwi_riccioarmatura",
+        abil:"Corazza delle Tre Foglie",
+        abilDesc:"La corazza punisce chi osa colpire il Guardiano."
+      }]}
+      onFinish={(result)=>{
+        setDungeonBattleOpen(false);
+        if(result==="win"){
+          dungeonBossDefeatedRef.current=true;
+          setDungeonBossDefeated(true);
+          setToast("Guardiano sconfitto · Cripta purificata");
+          setDialogue({title:"Il Guardiano si dissolve",text:"La corazza si apre e la creatura si arrende. Il cuore della Cripta è finalmente libero: raggiungi lo scrigno centrale."});
+        } else if(result==="loss"){
+          setToast("Il Guardiano ti ha respinto · Puoi riprovare");
+        }
+      }}
+    />}
     <div className="amargenta-hint" style={{position:"absolute",left:18,bottom:18,maxWidth:420,padding:"11px 14px",borderRadius:12,background:"#18221ecc",border:"1px solid #d8c19a55",fontSize:12,lineHeight:1.6}}>
       <strong style={{color:"#e7c28c"}}>ESPLORAZIONE LIBERA</strong><br/>{hint}<br/><span style={{opacity:.65}}>Amargenta · esplorazione, missioni, crafting e segreti</span>
     </div>
