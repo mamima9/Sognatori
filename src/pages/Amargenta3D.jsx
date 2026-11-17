@@ -332,7 +332,10 @@ export default function Amargenta3D({ onExit }) {
       const truffle=sphere(.16,mat("#35251c"),g,.42,.1,.56,2);truffle.scale.set(1.2,.7,.9);
       const aroma=new THREE.Group();g.add(aroma);
       for(let i=0;i<3;i++){const scent=sphere(.055,mat("#d8c5a0",.7,{transparent:true,opacity:.42}),aroma,.2+i*.12,1.1+i*.16,-.4,1);scent.userData.phase=i*.8;}
-      const interaction={id:"wild-umami-44",title:"Umami · Cane da tartufo",text:"Umami, il cane da tartufo di Amargenta, annusa il terreno e sembra aver fiutato qualcosa.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>setDialogue({title:"Umami · Cane da tartufo",text:"Bau! Bau! Umami ha fiutato una traccia sotto le radici. Seguilo nel sottobosco: il suo naso non sbaglia mai."})};
+      const interaction={id:"recruit-belligonghi-umami",title:"Belligonghi-umami · Cane da tartufo",text:"Belligonghi-umami annusa il terreno di Amargenta alla ricerca di tartufi.",x:g.position.x,z:g.position.z,radius:4.2,action:()=>{
+        if(ownedAmargentaIdsRef.current.includes("belligonghi-umami")){setDialogue({title:"Belligonghi-umami",text:"Belligonghi-umami è già nella tua collezione."});return;}
+        setDialogue({title:"Incontro · Belligonghi-umami",text:"Bau! Belligonghi-umami ha fiutato una traccia sotto le radici. Il cane da tartufo sembra incuriosito: vuoi convincerlo a unirsi alla tua avventura?",confirm:()=>{recruitAmargenta("belligonghi-umami");setDialogue(null);}});
+      }};
       interactables.push(interaction);
       npcActors.push({group:g,phase:2.4,wild:true,legs,tailPivot,headPivot,ears,bodyPivot,aroma,interaction,homeX:-48,homeZ:30,roamRadius:2.4,walkSpeed:.48});
       return g;
@@ -1281,14 +1284,9 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         }};
         interactables.push(interaction);
       }
-      // I Sognatori 36–39: incontri esplorabili, modellati in 3D e reclutabili una sola volta.
-      makeRecruitableCreature("torosucco","Torosucco",-47,-5,["#e8a43d","#f7d47b","#9d4c2c","#f5e7b5"],"bull");
-      makeRecruitableCreature("crunchypat","Crunchypat",-30,48,["#8e7562","#c5a98d","#55463d","#e8d6b9"],"round");
-      makeRecruitableCreature("talamos","Talamos",53,-48,["#496c62","#83a58c","#29453f","#d4c58b"],"swamp");
-      makeRecruitableCreature("pingcake","Pingcake",48,48,["#d88d9d","#f4c6d0","#8c4b61","#fff0bd"],"rabbit");
+      // Solo i Sognatori esclusivi di Amargenta sono collocati in questa città.
+      // I personaggi dal #39 in giù restano nelle rispettive undici città.
       makeRecruitableCreature("muccanza","Muccanza",-28,-30,["#eee6d2","#a77b4d","#49352b","#f8f2e5"],"bull");
-      // Belligonghi-umami #44: incontro esplorabile e reclutabile.
-      makeRecruitableCreature("belligonghi-umami","Belligonghi-umami",46,-28,["#a9a18b","#e4d9b7","#514b43","#f4ead0"],"round");
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
