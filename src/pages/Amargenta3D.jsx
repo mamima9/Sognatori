@@ -216,9 +216,20 @@ export default function Amargenta3D({ onExit }) {
         const px=-w/2+.3+col*.55+(row%2)*.12;
         box(.42,.16,.055,row%2?stoneLight:darkStone,g,px,.38+row*.7,d/2+.035);
       }
-      const roofMesh=addMesh(new THREE.ConeGeometry(w*.78,.95,4),roof,g,0,h+.42,0);roofMesh.rotation.y=Math.PI/4;roofMesh.scale.z=d/w;
-      box(.9,1.7,.13,wood,g,0,.86,d/2+.08);
-      for(const wx of [-w*.29,w*.29]){box(.58,.72,.12,darkStone,g,wx,2.05,d/2+.08);box(.38,.5,.04,gold,g,wx,2.05,d/2+.15);}
+      // Tetto a falde ampie, con gronda lignea: architettura rurale ispirata a Hisui.
+      const eaves=box(w+.9,.22,d+.9,wood,g,0,h-.02,0);
+      const roofMesh=addMesh(new THREE.ConeGeometry(w*.82,1.28,4),mat("#39483f"),g,0,h+.62,0);
+      roofMesh.rotation.y=Math.PI/4;roofMesh.scale.z=d/w;
+      box(w+.45,.16,.22,darkStone,g,0,h+.05,d/2+.38);
+      box(.9,1.72,.16,wood,g,0,.88,d/2+.09);
+      for(const wx of [-w*.29,w*.29]){
+        box(.68,.82,.15,wood,g,wx,2.05,d/2+.1);
+        box(.48,.62,.055,mat("#d9c49c"),g,wx,2.05,d/2+.19);
+        box(.08,.72,.07,darkStone,g,wx,2.05,d/2+.23);
+      }
+      // Travature a vista e insegna sopra l'ingresso.
+      for(const wx of [-w*.43,w*.43])box(.2,h-.2,.2,wood,g,wx,h/2,d/2+.11);
+      box(1.35,.28,.12,gold,g,0,h-0.55,d/2+.2);
       addBoxCollider(x,z,w+.7,d+.7);
       return g;
     };
@@ -395,6 +406,43 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
       addBoxCollider(x,z,4,2.3);
     };
+    const makeVillageLantern = (x,z) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      cylinder(.09,.13,2.05,wood,g,0,1.02,0,8);
+      box(.72,.12,.72,wood,g,0,2.12,0);
+      box(.52,.66,.52,mat("#e6c995",.35,{emissive:"#b77b39",emissiveIntensity:.35,transparent:true,opacity:.82}),g,0,2.48,0);
+      box(.82,.13,.82,wood,g,0,2.86,0);
+      const cap=addMesh(new THREE.ConeGeometry(.62,.42,4),roof,g,0,3.12,0);cap.rotation.y=Math.PI/4;
+      box(.07,.45,.07,coffeeRed,g,0,3.52,0);
+      addCollider(x,z,.24);
+    };
+    const makeCherryTree = (x,z,s=1) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
+      cylinder(.2,.3,2.6,wood,g,0,1.3,0,7);
+      const blossom=mat("#e8aeb5");
+      for(let i=0;i<7;i++){
+        const a=i*Math.PI*2/7;
+        const crown=sphere(.88,blossom,g,Math.cos(a)*.58,2.75+(i%3)*.24,Math.sin(a)*.58,1);
+        crown.scale.set(1.15,.78,1);
+      }
+      for(let i=0;i<9;i++){const a=i*2.399;sphere(.12,mat("#f4d4cb"),g,Math.cos(a)*.8,2.5+(i%4)*.25,Math.sin(a)*.8,1);}
+      addCollider(x,z,.5*s);
+    };
+    const makeVillageFence = (x,z,length,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(length,.16,.18,wood,g,0,.58,0);box(length,.16,.18,wood,g,0,1.08,0);
+      const count=Math.max(2,Math.floor(length/.8));
+      for(let i=0;i<=count;i++){const px=-length/2+i*length/count;box(.14,1.35,.16,wood,g,px,.68,0);}
+      addBoxCollider(x,z,length,.35,rotation);
+    };
+    const makeVillageSign = (x,z,label,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(.16,2.2,.16,wood,g,0,1.1,0);
+      box(1.8,.78,.16,wood,g,0,2.12,.04);
+      box(1.55,.52,.04,gold,g,0,2.12,.14);
+      const mark=box(.28,.28,.05,coffeeRed,g,0,2.12,.18);mark.rotation.z=Math.PI/4;
+    };
+
     const makeInterior = (cx,cz,doorSide="north") => {
       const floor=mat("#6e5745"), wall=mat("#b99a72"), beam=mat("#4b3028"), brass=mat("#c08b4e",.35,{metalness:.55});
       box(14,.35,12,floor,scene,cx,-.175,cz);
@@ -501,6 +549,16 @@ export default function Amargenta3D({ onExit }) {
       makeFountain(0,.5);
       for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeLamp(Math.cos(a)*10,Math.sin(a)*7.5);}
       makeHouse(12,-13,6,5,3.7,1);makeHouse(15,13,6,5,3.7,0);
+      // Dettagli da villaggio di Hisui: vialetti, lanterne, recinti e alberi in fiore.
+      const villagePath=mat("#b89b75");
+      for(const [x,z,w,d] of [[0,-13,5,25],[0,13,5,24],[-14,0,20,4],[14,0,20,4],[-24,-8,4,18],[22,8,4,20]]){
+        const p=addMesh(new THREE.PlaneGeometry(w,d),villagePath,scene,x,.075,z);p.rotation.x=-Math.PI/2;
+      }
+      for(const [x,z] of [[-15,-8],[-15,8],[15,-8],[15,8],[-5,-18],[5,18],[25,-14],[25,18]])makeVillageLantern(x,z);
+      makeCherryTree(-31,-12,1.15);makeCherryTree(31,12,1.05);makeCherryTree(-31,22,.9);
+      makeVillageFence(-28,-2,12,Math.PI/2);makeVillageFence(29,-3,12,Math.PI/2);
+      makeVillageFence(-28,15,10,Math.PI/2);makeVillageFence(29,17,10,Math.PI/2);
+      makeVillageSign(-19,-3,"Piazza",Math.PI/2);
       // Distretto produttivo e magazzini a sud-est
       makeRoastery(16,28);makeHouse(7,39,6,5,3.3,0);makeHouse(25,42,5,5,3,1);
       // Muretti, scale e terrazzamenti di collegamento
@@ -514,8 +572,10 @@ export default function Amargenta3D({ onExit }) {
       // Arredi, carri, sacchi e casse
       for(let i=0;i<8;i++){const x=-8+(i%4)*4,z=17+Math.floor(i/4)*3;box(1.2,.8,.9,wood,scene,x,.4,z);box(1.25,.12,.95,gold,scene,x,.85,z);}
       for(let i=0;i<5;i++){cylinder(.38,.42,.9,wood,scene,20+i*1.2, .45,35,10);}
-      // Mercato, botteghe vive e arredi della piazza.
+      // Mercato coperto con tende, casse, sacchi e insegne da borgo artigiano.
       makeMarketStall(-8,9,"#a64c36");makeMarketStall(8,10,"#d0a05d");makeMarketStall(-17,19,"#567b68");
+      makeVillageLantern(-11,3);makeVillageLantern(11,3);
+      makeVillageFence(-11,15,9,.1);makeVillageFence(11,16,9,-.1);
       for(const [x,z] of [[-5,4],[5,4],[18,-5],[-20,-18]]){cylinder(.08,.1,1.1,wood,scene,x,.55,z,8);box(1.6,.12,.55,wood,scene,x,.95,z);}
       // Tubature, valvole e depositi esterni della torrefazione.
       for(let i=0;i<4;i++){const p=cylinder(.12,.12,5,gold,scene,10+i*1.6,3.4,32,10);p.rotation.z=Math.PI/2;box(.45,.45,.45,wood,scene,9+i*2, .4,35);}
@@ -1005,10 +1065,6 @@ export default function Amargenta3D({ onExit }) {
 
   return <div style={{position:"fixed",inset:0,background:"#18221e",color:"#f4ead8",fontFamily:"Inter,system-ui,sans-serif",overflow:"hidden"}}>
     <style>{`
-      .amargenta-title .amargenta-menu-button{display:none}
-      .amargenta-menu-corner{position:absolute;right:22px;bottom:22px;z-index:25;pointer-events:auto}
-      .amargenta-menu-corner .amargenta-menu-button{min-width:124px;min-height:48px}
-      @media (max-width:720px){.amargenta-menu-corner{right:14px;bottom:18px}.amargenta-menu-corner .amargenta-menu-button{min-width:108px;min-height:44px}}
       .amargenta-glass{background:linear-gradient(145deg,rgba(19,32,29,.88),rgba(27,43,36,.76));border:1px solid rgba(232,199,139,.42);box-shadow:0 14px 38px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
       .amargenta-title{padding:10px 12px;border-radius:16px;background:linear-gradient(100deg,rgba(18,29,27,.82),rgba(18,29,27,.12));}
       .amargenta-menu-button{border:1px solid rgba(238,204,145,.7)!important;border-radius:12px!important;background:linear-gradient(145deg,#c39455,#805638)!important;color:#fff6e8!important;padding:11px 16px!important;font-weight:950!important;letter-spacing:.08em;box-shadow:0 7px 22px #0006,inset 0 1px #fff5!important;transition:transform .18s,filter .18s}
@@ -1048,7 +1104,6 @@ export default function Amargenta3D({ onExit }) {
       <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
-    <div className="amargenta-menu-corner"><button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}}>☰ MENU</button></div>
     <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span></div>
     {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {toast&&<div className="amargenta-toast">{toast}</div>}
