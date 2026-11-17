@@ -60,6 +60,7 @@ fierononno_naturale: {
   crunchypat_avalanche: { name: "Avalanche", desc: "When it Protects, gains +1 ATK, +1 DEF and +1 SPD." },
   talamos_palude_salata: { name: "Salt Marsh", desc: "On entry, inflicts the Thirsty condition on opposing Sognatori." },
   pingcake_abbiocco: { name: "Drowsiness", desc: "When it attacks, the target becomes Drowsy." },
+  zibelle_aroma_caffe: { name: "Coffee Aroma", desc: "When attacked, inflicts Bitterness on the attacker: it loses 2 HP each turn; Sweet loses 4 HP, Amaro loses 0 HP." },
   icepadel_priority: { name: "Pan Strike", desc: "Attacks with +1 priority." },
   pirimar_lpool: { name: "Liquidity Pool", desc: "If its attack hits, recovers 6 HP." },
 };
