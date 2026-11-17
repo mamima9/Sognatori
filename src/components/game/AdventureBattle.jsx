@@ -33,7 +33,12 @@ export default function AdventureBattle({ enemyTeam = [], playerRoster, opponent
   const startBattle = () => {
     if (chosen.length < 2 || !enemyTeam.length) return;
     const playerTeam = chosen.map((s) => initBattleSognatore({ ...s, hp: 20, hpMax: 20 }));
-    const enemyTeamReady = enemyTeam.map((s, index) => initBattleSognatore({ ...s, id: `adventure-enemy-${index}-${s.id}`, hp: 20, hpMax: 20 }));
+    const enemyTeamReady = enemyTeam.map((s, index) => initBattleSognatore({
+      ...s,
+      id: `adventure-enemy-${index}-${s.id}`,
+      hp: Number.isFinite(s.hp) ? s.hp : 20,
+      hpMax: Number.isFinite(s.hpMax) ? s.hpMax : 20
+    }));
     const playerActive = playerTeam.slice(0, 2);
     const playerBench = playerTeam.slice(2);
     const enemyActive = enemyTeamReady.slice(0, 2);
