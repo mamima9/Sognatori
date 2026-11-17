@@ -198,6 +198,8 @@ export default function Amargenta3D({ onExit }) {
     const fireflies = [];
     const bellActors = [];
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
+    let muccanzaRoomGroup = null;
+    let muccanzaRoomActive = false;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -579,8 +581,8 @@ export default function Amargenta3D({ onExit }) {
       const index = interactables.findIndex(item => item.id === id);
       if (index >= 0) interactables.splice(index, 1);
     };
-    const makeNpc = (id,name,job,x,z,shirt,lines,scale=1) => {
-      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
+    const makeNpc = (id,name,job,x,z,shirt,lines,scale=1,options={}) => {
+      const g=new THREE.Group();(options.parent||scene).add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
       const skinToneById={barista:"#d9ad83",merchant:"#bd8868",archivist:"#e2c29b",guard:"#a96f50",farmer:"#d9a477","town-cook":"#e0b58c","town-carpenter":"#b77c58","town-gardener":"#e4c19b",roaster:"#bd8a68",keeper:"#d7a77d","cafe-host":"#edc9a2"};
       const hairToneById={barista:"#4b2b24",merchant:"#30231f",archivist:"#a7a39a",guard:"#382b29",farmer:"#6b4329","town-cook":"#a94a35","town-carpenter":"#6d4934","town-gardener":"#72523a",roaster:"#39251f",keeper:"#6b527c","cafe-host":"#75452e"};
       const skin=mat(skinToneById[id]||"#d9ad83"), dark=mat(hairToneById[id]||"#302a2a"), trousers=mat(id==="guard"?"#35483f":id==="farmer"?"#596044":"#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
@@ -735,8 +737,7 @@ export default function Amargenta3D({ onExit }) {
         for(let k=0;k<3;k++)sphere(.07,mat("#a9d7c2"),g,-.2+k*.2,1.88,.2,1);
       }
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm,kind:id});
-      addCollider(x,z,.42*scale);
-      addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
+      if(!options.detached){addCollider(x,z,.42*scale);addInteraction(id,name,lines.join("\n"),x,z,null,3.6);}
       return g;
     };
     // Cardinero: piccoli custodi dei giardini di Amargenta. Sono abitanti pacifici, non combattenti.
@@ -1043,6 +1044,79 @@ export default function Amargenta3D({ onExit }) {
       }
       for(let i=0;i<7;i++){sphere(1.2,stoneLight,scene,22+Math.sin(i*2)*3,.2,-35+i*11,1);}
       makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,15);
+
+      // Salone del Latte: i Muccanza vengono istanziati soltanto al primo ingresso.
+      const leaveMuccanzaRoom = () => {
+        if(!muccanzaRoomGroup)return;
+        interactables.splice(0,interactables.length,...interactables.filter(item=>!item.id.startsWith("muccanza-room-")));
+        npcActors.splice(0,npcActors.length,...npcActors.filter(actor=>actor.group.parent!==muccanzaRoomGroup));
+        muccanzaRoomGroup.traverse(object=>{
+          if(object.geometry)object.geometry.dispose();
+          if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}
+        });
+        scene.remove(muccanzaRoomGroup);
+        muccanzaRoomGroup=null;
+        muccanzaRoomActive=false;
+        player.position.set(-7,0,-13);
+        setZone("Piazza del Chicco");
+        setNearby(null);
+      };
+      const createMuccanzaRoom = () => {
+        if(muccanzaRoomGroup)return;
+        muccanzaRoomGroup=new THREE.Group();
+        muccanzaRoomGroup.position.set(100,0,100);
+        scene.add(muccanzaRoomGroup);
+        const roomFloor=mat("#765b43"), roomWall=mat("#d7c19a"), roomTrim=mat("#51372b");
+        const addRoomBox=(w,h,d,material,x,y,z)=>box(w,h,d,material,muccanzaRoomGroup,x,y,z);
+        addRoomBox(16,.4,14,roomFloor,0,-.2,0);
+        addRoomBox(16,4,.35,roomWall,0,2,-7);
+        addRoomBox(16,4,.35,roomWall,0,2,7);
+        addRoomBox(.35,4,14,roomWall,-8,2,0);
+        addRoomBox(.35,4,14,roomWall,8,2,0);
+        addRoomBox(16,.22,.42,roomTrim,0,3.92,-6.72);
+        addRoomBox(16,.22,.42,roomTrim,0,3.92,6.72);
+        addRoomBox(5,.18,1.3,roomTrim,0,1.05,-3.2);
+        addRoomBox(5,.18,.18,gold,0,1.18,-3.2);
+        for(let i=0;i<4;i++){
+          const shelfX=-5.4+i*3.6;
+          addRoomBox(1.5,.16,.55,roomTrim,shelfX,1.35,-5.5);
+          addRoomBox(1.5,.16,.55,roomTrim,shelfX,2.45,-5.5);
+          cylinder(.28,.32,.72,i%2?cream:stoneLight,muccanzaRoomGroup,shelfX,1.82,-5.5,12);
+          cylinder(.31,.31,.1,gold,muccanzaRoomGroup,shelfX,2.23,-5.5,12);
+        }
+        for(const x of [-5,5]){
+          cylinder(.55,.62,1.25,wood,muccanzaRoomGroup,x,.65,2.2,12);
+          cylinder(.58,.58,.1,gold,muccanzaRoomGroup,x,1.1,2.2,12);
+        }
+        makeNpc("muccanza-1","Bovino","Fan del Latte",-3,0,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
+        makeNpc("muccanza-2","Panna","Collezionista di Lattelo",3,0,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
+        makeNpc("muccanza-3","Moka","Fan del Latte",0,3,"#f0dfbf",[],1,{parent:muccanzaRoomGroup,detached:true});
+        const visitors=[
+          {id:"muccanza-room-1",name:"Bovino",x:97,z:100,index:0,text:"Il latte di Lattelo è il segreto dei caffè di Amargenta. Lo mischio al caffè ogni mattina!"},
+          {id:"muccanza-room-2",name:"Panna",x:103,z:100,index:1,text:"In tutta Amargenta si parla del latte di Lattelo. È perfetto da mischiare col caffè. Ho perfino una collezione di tazze dedicate a Lattelo!"},
+          {id:"muccanza-room-3",name:"Moka",x:100,z:103,index:2,text:"Il caffè senza latte di Lattelo? Per me è impensabile. Il suo gusto è diventato famoso in tutta la città."}
+        ];
+        visitors.forEach(({id,name,x,z,index,text})=>interactables.push({
+          id,title:name+" · Muccanza",text,x,z,radius:2.8,
+          action:()=>{
+            if(ownedAmargentaIdsRef.current.includes("muccanza")){
+              setDialogue({title:"Muccanza",text:"Hai già convinto un Muccanza a unirsi al gruppo. Gli altri sono semplici abitanti: nessun doppione."});
+              return;
+            }
+            setMuccanzaOpponentName(["Bovino · Fan del Latte","Panna · Collezionista","Moka · Fan del Latte"][index]);
+            setMuccanzaBattleOpen(true);
+          }
+        }));
+        interactables.push({id:"muccanza-room-exit",title:"Uscita · Amargenta",text:"Torna alle strade di Amargenta.",x:100,z:106,radius:2.6,action:leaveMuccanzaRoom});
+      };
+      addInteraction("muccanza-room-door","Salone del Latte","Entra nel salone dedicato al latte di Lattelo.",-7,-17,()=>{
+        createMuccanzaRoom();
+        muccanzaRoomActive=true;
+        player.position.set(100,0,104);
+        setZone("Salone del Latte · Amargenta");
+        setToast("Sei entrato nel Salone del Latte");
+      },4.2);
+
       // Ingresso ovest e strada principale
       const road=addMesh(new THREE.PlaneGeometry(13,75),pathMat,scene,-28,.04,4);road.rotation.x=-Math.PI/2;road.rotation.z=Math.PI/2;
       // Solchi dei carri e pietre di bordo lungo la strada d'ingresso.
@@ -1278,17 +1352,7 @@ export default function Amargenta3D({ onExit }) {
       makeCardinero("Primula",-55,13,.88);
       makeCardinero("Germoglio",-40,13,.88);
             // I Muccanza: fan del latte speciale di Lattelo, bevanda simbolo dei caffè di Amargenta.
-      makeNpc("muccanza-1","Bovino","Fan del Latte", -7,-17,"#f0dfbf",["Il latte di Lattelo è il segreto dei caffè di Amargenta. Lo mischio al caffè ogni mattina!","Non è latte qualunque: io bevo solo quello di Lattelo."]);
-      makeNpc("muccanza-2","Panna","Collezionista di Lattelo", 21,-8,"#f0dfbf",["In tutta Amargenta si parla del latte di Lattelo. È perfetto da mischiare col caffè.","Ho perfino una collezione di tazze dedicate a Lattelo!"]);
-      makeNpc("muccanza-3","Moka","Fan del Latte", 5,27,"#f0dfbf",["Il caffè senza latte di Lattelo? Per me è impensabile.","Il suo gusto è diventato famoso in tutta la città."]);
-      ["muccanza-1","muccanza-2","muccanza-3"].forEach((id,index)=>{
-        const interaction=interactables.find(item=>item.id===id);
-        if(interaction)interaction.action=()=>{
-          if(ownedAmargentaIdsRef.current.includes("muccanza")){setDialogue({title:"Muccanza",text:"Hai già convinto un Muccanza a unirsi al gruppo. Gli altri sono semplici abitanti: nessun doppione."});return;}
-          setMuccanzaOpponentName(["Bovino · Fan del Latte","Panna · Collezionista","Moka · Fan del Latte"][index]);
-          setMuccanzaBattleOpen(true);
-        };
-      });
+      // I tre Muccanza sono ospitati esclusivamente nel Salone del Latte, caricato on demand.
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
@@ -1597,8 +1661,8 @@ export default function Amargenta3D({ onExit }) {
         const acceleration= inputLength>.05 ? 8.5 : 11;
         movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
         const move=movementVelocity.clone().multiplyScalar(dt);
-        const nx=THREE.MathUtils.clamp(player.position.x+move.x,-72,72);
-        const nz=THREE.MathUtils.clamp(player.position.z+move.z,-72,72);
+        const nx=THREE.MathUtils.clamp(player.position.x+move.x,muccanzaRoomActive?94:-72,muccanzaRoomActive?106:72);
+        const nz=THREE.MathUtils.clamp(player.position.z+move.z,muccanzaRoomActive?94:-72,muccanzaRoomActive?106:72);
         if(Math.abs(move.x)>.0001&&!isBlockedAt(nx,player.position.z))player.position.x=nx;
         else if(isBlockedAt(nx,player.position.z))movementVelocity.x=0;
         if(Math.abs(move.z)>.0001&&!isBlockedAt(player.position.x,nz))player.position.z=nz;
