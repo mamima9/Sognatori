@@ -97,7 +97,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
     controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || muccanzaBattleOpen);
-  }, [dialogue, panel, dungeonBattleOpen]);
+  }, [dialogue, panel, dungeonBattleOpen, muccanzaBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -455,6 +455,27 @@ export default function Amargenta3D({ onExit }) {
       box(.22,.53,.22,trousers,g,.14,.38,0);
       box(.27,.15,.36,boot,g,-.14,.1,.08);
       box(.24,.13,.34,boot,g,.14,.12,.08);
+      if(id.startsWith("muccanza")){
+        // Cappuccio viola, giacca maculata e pantofole a muso di Lattelo.
+        const purple=mat("#382b42"), creamCow=mat("#f3e5c8"), pinkCow=mat("#e9878b"), cowSpot=mat("#35283d"), antenna=mat("#f5b51b");
+        sphere(.43,purple,g,0,1.72,-.03,2).scale.set(1.05,.9,.95);
+        for(const side of [-1,1]){
+          sphere(.13,pinkCow,g,side*.39,1.7,.02,1).scale.set(.8,1.25,.55);
+          sphere(.075,antenna,g,side*.22,.08,.23,1);
+          sphere(.13,creamCow,g,side*.14,.08,.19,1).scale.set(1.25,.55,1.5);
+          sphere(.09,pinkCow,g,side*.14,.09,.31,1).scale.set(1.1,.75,.55);
+          sphere(.025,mat("#17131a"),g,side*.14-.035,.13,.34,1);
+          sphere(.025,mat("#17131a"),g,side*.14+.035,.13,.34,1);
+          sphere(.11,cowSpot,g,side*.2,.39,.13,1).scale.set(1,.8,.45);
+          sphere(.11,cowSpot,g,side*.43,1.04,.1,1).scale.set(.8,1.2,.5);
+          sphere(.1,cowSpot,g,side*.15,.41,.12,1).scale.set(1,.8,.5);
+        }
+        for(const [sx,sy,sz,r] of [[-.19,1.03,.31,.13],[.13,1.08,.31,.16],[.02,.9,.32,.11],[-.2,.39,.12,.12],[.18,.4,.12,.1]]){
+          sphere(r,cowSpot,g,sx,sy,sz,1).scale.set(1,.85,.42);
+        }
+        const curl=new THREE.CatmullRomCurve3([new THREE.Vector3(0,2.08,0),new THREE.Vector3(0,2.28,.02),new THREE.Vector3(.1,2.43,.02),new THREE.Vector3(.02,2.54,.02),new THREE.Vector3(-.06,2.5,.02)]);
+        addMesh(new THREE.TubeGeometry(curl,.2,.045,6,false),antenna,g,0,0,0);
+      }
       const badge=sphere(.09,gold,g,0,1.12,.3,1);
       badge.scale.set(1,.8,.3);
       if(id==="barista"||id==="roaster"){
