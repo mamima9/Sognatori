@@ -577,8 +577,20 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<pos.count;i++)pos.setY(i,0);
       terrainGeo.computeVertexNormals();addMesh(terrainGeo,groundMat,scene,0,0,0);
       for(let i=0;i<12;i++) makeMountain(-65+(i%4)*42,-68-Math.floor(i/4)*12,12+(i%3)*5,26+(i%4)*9,i);
-      // Fiume e gola orientati da nord a sud, a est del borgo
+      // Fiume e gola orientati da nord a sud, a est del borgo.
       const river=addMesh(new THREE.PlaneGeometry(12,100,1,1),water,scene,28,.05,2);river.rotation.x=-Math.PI/2;river.rotation.z=.08;
+      // Sponde erbose e ciottoli levigati per dare profondità al corso d'acqua.
+      for(let i=0;i<22;i++){
+        const z=-46+i*4.2,wiggle=Math.sin(i*1.7)*1.6;
+        for(const side of [-1,1]){
+          const bank=sphere(.72,i%2?leaf:leaf2,scene,28+side*(7.1+wiggle*.2),.12,z,1);
+          bank.scale.set(1.8,.38,.72);
+          if(i%3===0){
+            const pebble=sphere(.42,stoneLight,scene,28+side*(6.2+wiggle*.2),.16,z+1,1);
+            pebble.scale.set(1.3,.55,.8);
+          }
+        }
+      }
       for(let i=0;i<7;i++){sphere(1.2,stoneLight,scene,22+Math.sin(i*2)*3,.2,-35+i*11,1);}
       makeWaterfall(31,-25,9);makeWaterfall(29,24,7);makeBridge(26,0,15);makeBridge(26,-32,15);
       // Ingresso ovest e strada principale
@@ -594,7 +606,19 @@ export default function Amargenta3D({ onExit }) {
         }
       }
       makeWall(-38,-8,15,2.2,Math.PI/2);makeWall(-38,12,15,2.2,Math.PI/2);
-      const gate=addMesh(new THREE.TorusGeometry(2.5,.48,8,24,Math.PI),stoneLight,scene,-38,3,2);gate.rotation.z=Math.PI;
+      // Portale d'ingresso in legno, ispirato ai portali dei villaggi di Hisui.
+      const oldGate=addMesh(new THREE.TorusGeometry(2.5,.48,8,24,Math.PI),stoneLight,scene,-38,3,2);oldGate.visible=false;
+      for(const gx of [-42,-34]){
+        box(.72,5.4,.72,wood,scene,gx,2.7,2);
+        box(.92,.28,.92,gold,scene,gx,5.15,2);
+      }
+      box(10.2,.72,1.05,wood,scene,-38,5.25,2);
+      box(8.8,.3,1.2,darkStone,scene,-38,5.72,2);
+      const gateCrest=addMesh(new THREE.ConeGeometry(1.2,.72,4),roof,scene,-38,6.22,2);gateCrest.rotation.y=Math.PI/4;
+      box(3.2,.7,.18,mat("#d9c49c"),scene,-38,4.35,2.55);
+      box(2.7,.12,.08,coffeeRed,scene,-38,4.35,2.67);
+      for(let i=0;i<5;i++)sphere(.1,gold,scene,-39+i*.5,4.35,2.75,1);
+      makeVillageLantern(-43,7);makeVillageLantern(-33,7);
       // Terrazze a gradoni sul lato nord e sud
       for(let l=0;l<3;l++){
         makeTerrace(-22,-36-l*12,25,9,l,l===0?"south":l===1?"east":"north");
@@ -616,6 +640,8 @@ export default function Amargenta3D({ onExit }) {
       // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
       makeHouse(-1,-23,10,7,4.6,1);
       makeNoren(-1,-19.35,"#536d58");
+      makeVillageSign(7,-22,"Piazza del Chicco",Math.PI/2);
+      makeStoneLantern(-7,-22);makeStoneLantern(7,-22);
       for(const dx of [-3.8,3.8])box(.24,3.6,.24,wood,scene,-1+dx,1.8,-19.3);
       // Pietre di bordo e aiuole che incorniciano il centro del villaggio.
       for(let i=0;i<16;i++){
@@ -635,6 +661,8 @@ export default function Amargenta3D({ onExit }) {
       makeVillageFence(-28,-2,12,Math.PI/2);makeVillageFence(29,-3,12,Math.PI/2);
       makeVillageFence(-28,15,10,Math.PI/2);makeVillageFence(29,17,10,Math.PI/2);
       makeVillageSign(-19,-3,"Piazza",Math.PI/2);
+      makeVillageSign(31,5,"Fiume",Math.PI/2);
+      makeVillageSign(-31,29,"Terrazze",Math.PI/2);
       // Distretto produttivo e magazzini a sud-est
       makeRoastery(16,28);makeHouse(7,39,6,5,3.3,0);makeHouse(25,42,5,5,3,1);
       // Muretti, scale e terrazzamenti di collegamento
