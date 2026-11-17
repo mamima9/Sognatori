@@ -114,6 +114,8 @@ export default function Amargenta3D({ onExit }) {
     const npcActors = [];
     const smokePuffs = [];
     const amberPickups = [];
+    const fireflies = [];
+    const bellActors = [];
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
     let dragging = false, lastX = 0, lastY = 0, lastHudUpdate = 0, currentPeriod = -1;
     const mat = (color, roughness=0.9, extra={}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
@@ -295,8 +297,8 @@ export default function Amargenta3D({ onExit }) {
       sphere(.31,dark,g,0,1.83,-.025,1).scale.set(1,.42,1);
       box(.1,.07,.045,mat("#241f20"),g,-.105,1.64,.255);
       box(.1,.07,.045,mat("#241f20"),g,.105,1.64,.255);
-      box(.13,.62,.14,cloth,g,-.36,1.04,0).rotation.z=-.16;
-      box(.13,.62,.14,cloth,g,.36,1.04,0).rotation.z=.16;
+      const leftArm=box(.13,.62,.14,cloth,g,-.36,1.04,0);leftArm.rotation.z=-.16;
+      const rightArm=box(.13,.62,.14,cloth,g,.36,1.04,0);rightArm.rotation.z=.16;
       box(.19,.62,.2,trousers,g,-.14,.43,0);
       box(.19,.62,.2,trousers,g,.14,.43,0);
       box(.24,.13,.34,boot,g,-.14,.12,.08);
@@ -312,7 +314,7 @@ export default function Amargenta3D({ onExit }) {
       if(id==="guard"){const spear=cylinder(.035,.05,2.2,gold,g,.62,1.35,0,6);spear.rotation.z=-.08;sphere(.1,stoneLight,g,.62,2.48,0,1);}
       if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
       if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7});
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm});
       addCollider(x,z,.42*scale);
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
       return g;
@@ -625,6 +627,8 @@ export default function Amargenta3D({ onExit }) {
         const body=cylinder(.34,.48,.62,gold,bell,0,1.95,0,12);
         sphere(.09,wood,bell,0,1.58,0,1);
         if(activatedBellsRef.current.has(i))body.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});
+        const clapper=sphere(.09,wood,bell,0,1.55,0,1);
+        bellActors.push({group:bell,body,clapper,index:i});
         if(!activatedBellsRef.current.has(i))addInteraction("town-bell-"+i,"Campana del borgo","Una delle tre campane storiche di Amargenta.",p[0],p[1],()=>{
           if(!bellsStartedRef.current){setDialogue({title:"Campana silenziosa",text:"La campana è ancora bloccata. Elia, al Caffè delle Tre Foglie, conosce la storia delle tre campane."});return;}
           if(activatedBellsRef.current.has(i))return;
@@ -636,6 +640,14 @@ export default function Amargenta3D({ onExit }) {
           else setDialogue({title:"Campana risvegliata",text:"Il bronzo ha vibrato dopo anni di silenzio. Campane attivate: "+bellCountRef.current+"/3."});
         },3.2);
       });
+      // Lucciole decorative: compaiono soltanto di notte nel giardino e vicino alla piazza.
+      const fireflyMaterial=mat("#f3d88b",.25,{emissive:"#d9a94c",emissiveIntensity:1.1});
+      for(let i=0;i<18;i++){
+        const x=-34+(i%6)*11, z=-10+Math.floor(i/6)*13;
+        const glow=sphere(.075,fireflyMaterial,scene,x,1.4+(i%4)*.28,z,1);
+        glow.visible=false;
+        fireflies.push({mesh:glow,baseX:x,baseZ:z,phase:i*.83});
+      }
       if(!citrusHarvestedRef.current) addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
         if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
         citrusHarvestedRef.current=true;removeInteraction("citrus-harvest");setCitrusHarvested(true);
@@ -735,9 +747,25 @@ export default function Amargenta3D({ onExit }) {
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
-          actor.group.position.y=Math.sin(clock.elapsedTime*1.7+actor.phase)*.045;
+          const idle=clock.elapsedTime*1.7+actor.phase;
+          actor.group.position.y=Math.sin(idle)*.045;
+          actor.leftArm.rotation.x=Math.sin(idle*.72)*.07;
+          actor.rightArm.rotation.x=-Math.sin(idle*.72)*.07;
           const nearPlayer=Math.hypot(p.x-actor.group.position.x,p.z-actor.group.position.z)<8;
           actor.group.rotation.y=nearPlayer?Math.atan2(p.x-actor.group.position.x,p.z-actor.group.position.z):Math.sin(clock.elapsedTime*.45+actor.phase)*.08;
+        });
+        bellActors.forEach(({group,clapper,index})=>{
+          const swing=Math.sin(clock.elapsedTime*2.4+index*1.8)*.035;
+          group.rotation.z=swing;
+          clapper.rotation.z=-swing*2.5;
+        });
+        fireflies.forEach(({mesh,baseX,baseZ,phase})=>{
+          mesh.visible=period===3;
+          if(mesh.visible){
+            mesh.position.x=baseX+Math.sin(clock.elapsedTime*.8+phase)*.65;
+            mesh.position.y=1.25+Math.sin(clock.elapsedTime*1.7+phase)*.42;
+            mesh.position.z=baseZ+Math.cos(clock.elapsedTime*.7+phase)*.65;
+          }
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
         const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
