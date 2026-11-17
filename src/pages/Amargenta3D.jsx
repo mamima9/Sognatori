@@ -54,6 +54,8 @@ export default function Amargenta3D({ onExit }) {
   const [dungeonBattleOpen, setDungeonBattleOpen] = useState(false);
   const [zibelleBattleOpen, setZibelleBattleOpen] = useState(false);
   const [latteloBattleOpen, setLatteloBattleOpen] = useState(false);
+  const [muccanzaBattleOpen, setMuccanzaBattleOpen] = useState(false);
+  const [muccanzaOpponentName, setMuccanzaOpponentName] = useState("Fan del Latte");
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -94,7 +96,7 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || muccanzaBattleOpen);
   }, [dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
@@ -1007,6 +1009,17 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
+      // I Muccanza: fan del latte speciale di Lattelo, bevanda simbolo dei caffè di Amargenta.
+      makeNpc("muccanza-1","Bovino","Fan del Latte", -7,-17,"#f0dfbf",["Il latte di Lattelo è il segreto dei caffè di Amargenta. Lo mischio al caffè ogni mattina!","Non è latte qualunque: io bevo solo quello di Lattelo."]);
+      makeNpc("muccanza-2","Panna","Collezionista di Lattelo", 21,-8,"#f0dfbf",["In tutta Amargenta si parla del latte di Lattelo. È perfetto da mischiare col caffè.","Ho perfino una collezione di tazze dedicate a Lattelo!"]);
+      makeNpc("muccanza-3","Moka","Fan del Latte", 5,27,"#f0dfbf",["Il caffè senza latte di Lattelo? Per me è impensabile.","Il suo gusto è diventato famoso in tutta la città."]);
+      ["muccanza-1","muccanza-2","muccanza-3"].forEach((id,index)=>{
+        const interaction=interactables.find(item=>item.id===id);
+        if(interaction)interaction.action=()=>{
+          setMuccanzaOpponentName(["Bovino · Fan del Latte","Panna · Collezionista","Moka · Fan del Latte"][index]);
+          setMuccanzaBattleOpen(true);
+        };
+      });
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
@@ -1535,6 +1548,17 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
+    {muccanzaBattleOpen&&<AdventureBattle
+      opponentName={muccanzaOpponentName}
+      isWild={false}
+      playerRoster={ROSTER}
+      enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
+      onFinish={(result)=>{
+        setMuccanzaBattleOpen(false);
+        if(result==="win")setToast("Sfida vinta · Muccanza #42");
+        else if(result==="loss")setToast("Il fan di Lattelo ti ha battuto · Puoi riprovare");
+      }}
+    />}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
       isWild
