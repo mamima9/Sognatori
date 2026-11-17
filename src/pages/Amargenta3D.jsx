@@ -22,12 +22,33 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
+  const [amargentaPartyIds, setAmargentaPartyIds] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
+      const valid = AMARGENTA_ROSTER.map((s) => s.id);
+      if (Array.isArray(saved.partyIds)) return saved.partyIds.filter((id) => valid.includes(id)).slice(0, 4);
+      return valid.slice(0, 4);
+    } catch { return AMARGENTA_ROSTER.slice(0, 4).map((s) => s.id); }
+  });
   const [amargentaBoxIds, setAmargentaBoxIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
-      return Array.isArray(saved.boxIds) ? saved.boxIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id))) : AMARGENTA_ROSTER.map((s) => s.id);
-    } catch { return AMARGENTA_ROSTER.map((s) => s.id); }
+      const valid = AMARGENTA_ROSTER.map((s) => s.id);
+      if (Array.isArray(saved.boxIds)) return saved.boxIds.filter((id) => valid.includes(id));
+      const party = Array.isArray(saved.partyIds) ? saved.partyIds : valid.slice(0, 4);
+      return valid.filter((id) => !party.includes(id));
+    } catch { return AMARGENTA_ROSTER.slice(4).map((s) => s.id); }
   });
+  const moveAmargentaToParty = (id) => {
+    if (amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
+    setAmargentaBoxIds((ids) => ids.filter((item) => item !== id));
+    setAmargentaPartyIds((ids) => [...ids, id]);
+  };
+  const moveAmargentaToBox = (id) => {
+    if (!amargentaPartyIds.includes(id)) return;
+    setAmargentaPartyIds((ids) => ids.filter((item) => item !== id));
+    setAmargentaBoxIds((ids) => [...ids, id]);
+  };
   const [savedProgress] = useState(() => {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
     catch { return {}; }
@@ -35,10 +56,11 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:roster:v1", JSON.stringify({
+        partyIds: amargentaPartyIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id))).slice(0, 4),
         boxIds: amargentaBoxIds.filter((id) => AMARGENTA_SOGNATORE_IDS.has(String(id)))
       }));
     } catch (error) { console.warn("Impossibile salvare il box di Amargenta:", error); }
-  }, [amargentaBoxIds]);
+  }, [amargentaPartyIds, amargentaBoxIds]);
   const [questStarted, setQuestStarted] = useState(Boolean(savedProgress.questStarted));
   const [questCount, setQuestCount] = useState(Number(savedProgress.questCount) || 0);
   const [questDone, setQuestDone] = useState(Boolean(savedProgress.questDone));
@@ -928,7 +950,7 @@ export default function Amargenta3D({ onExit }) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1.2:1.7));renderer.setSize(host.clientWidth,host.clientHeight);
       renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-      renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+      renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor("#b7cbd0",1);
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",1.65));
       const sun=new THREE.DirectionalLight("#fff0d6",2.65);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
@@ -1739,12 +1761,12 @@ export default function Amargenta3D({ onExit }) {
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · AMARGENTA</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
-        {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["map","⌖","Mappa"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["controls","⌨","Comandi"],["exit","↩","Torna ad Avventura"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else setPanel(id);}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
+        {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["map","⌖","Mappa"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["controls","⌨","Comandi"],["exit","↩","Torna ad Avventura"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else setPanel(id);}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
-      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione dal menu per consultare il taccuino, la mappa, la borsa o i comandi.</div></div>}
+      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione dal menu per consultare il taccuino, la mappa, la squadra, la borsa o i comandi.</div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
       {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>Shift: corri</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
-      {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>{panel==="map"?"MAPPA DI AMARGENTA":panel==="journal"?"TACCUINO DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
+      {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>{panel==="map"?"MAPPA DI AMARGENTA":panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
       {panel==="map"&&<div>
         <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
           <div style={{position:"absolute",left:"68%",top:0,width:9,height:"100%",background:"#397f83",opacity:.9}}/>
@@ -1768,6 +1790,15 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:6,color:botanicalCacheClaimed?"#9dd4a8":"#d7c5a5"}}>Esplorazione: {botanicalCacheClaimed?"Cassa del Botanico recuperata":"Una traccia delle Tre Foglie è nascosta tra le rocce occidentali."}</div>
         <div style={{marginTop:6,color:dungeonBossDefeated?"#9dd4a8":"#d7c5a5"}}>Cripta: {dungeonBossDefeated?"Guardiano sconfitto · "+(vaultClaimed?"Cuore recuperato":"scrigno da aprire"):dungeonSigils.length+"/3 sigilli risvegliati"}</div>
       </div>}
+      {panel==="team"&&<div>
+        <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}><strong style={{color:"#e9c58d"}}>SQUADRA ATTIVA</strong><span style={{color:"#e9c58d"}}>{amargentaPartyIds.length}/4</span></div>
+        {amargentaPartyIds.length===0&&<div style={{padding:10,color:"#d7c5a5"}}>La squadra è vuota: sposta qui almeno 2 Sognatori dal box per poter combattere.</div>}
+        {AMARGENTA_ROSTER.filter((s)=>amargentaPartyIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button onClick={()=>moveAmargentaToBox(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:"#49352d",color:"#f6ead5",fontSize:10,fontWeight:800}}>Al box</button></div>)}
+        <div style={{marginTop:14,marginBottom:7}}><strong style={{color:"#e9c58d"}}>BOX DI AMARGENTA · {amargentaBoxIds.length}</strong></div>
+        {amargentaBoxIds.length===0&&<div style={{color:"#d7c5a5",padding:8}}>Nessun Sognatore nel box.</div>}
+        {AMARGENTA_ROSTER.filter((s)=>amargentaBoxIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button disabled={amargentaPartyIds.length>=4} onClick={()=>moveAmargentaToParty(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:amargentaPartyIds.length>=4?"#454545":"#315b42",color:"#f6ead5",fontSize:10,fontWeight:800,opacity:amargentaPartyIds.length>=4?.5:1}}>In squadra</button></div>)}
+      </div>}
       {panel==="inventory"&&<div>
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
@@ -1776,7 +1807,7 @@ export default function Amargenta3D({ onExit }) {
     {muccanzaBattleOpen&&<AdventureBattle
       opponentName={muccanzaOpponentName}
       isWild={false}
-      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaBoxIds.includes(s.id))}
+      playerRoster={AMARGENTA_ROSTER.filter((s) => amargentaPartyIds.includes(s.id))}
       enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setMuccanzaBattleOpen(false);
