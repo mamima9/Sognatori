@@ -59,6 +59,8 @@ export default function Amargenta3D({ onExit }) {
   const [activatedValves, setActivatedValves] = useState(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []);
   const [panel, setPanel] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [touchStick, setTouchStick] = useState({x:0,y:0});
+  const touchStickRef = useRef({x:0,y:0});
   const [playerCoords, setPlayerCoords] = useState({ x: -44, z: 2 });
   const [worldMoment, setWorldMoment] = useState("Mattina");
   const [toast, setToast] = useState("");
@@ -834,8 +836,8 @@ export default function Amargenta3D({ onExit }) {
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
-        const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0);
-        const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
+        const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0)-touchStickRef.current.y;
+        const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0)+touchStickRef.current.x;
         if(controlsLockedRef.current) keys.clear();
         const activeForward=controlsLockedRef.current?0:forward;
         const activeSide=controlsLockedRef.current?0:side;
@@ -955,16 +957,17 @@ export default function Amargenta3D({ onExit }) {
         .amargenta-toolbar { top: 66px !important; left: 12px !important; right: 12px !important; transform: none !important; justify-content: flex-start !important; flex-wrap: wrap; }
         .amargenta-hud { top: 112px !important; right: 12px !important; width: min(205px, calc(100vw - 24px)) !important; }
         .amargenta-hint { left: 12px !important; right: 12px !important; bottom: 12px !important; max-width: none !important; }
-        .amargenta-controls { right: 12px !important; bottom: 88px !important; }
+        .amargenta-joystick { left: 12px !important; bottom: 16px !important; width: 116px !important; height: 116px !important; }
         .amargenta-interact { bottom: 158px !important; }
       }
     `}</style>
     <div ref={hostRef} style={{position:"absolute",inset:0}} />
-    <button onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{position:"absolute",top:18,left:18,zIndex:20,border:"1px solid #e1c28d",borderRadius:10,background:"#18221eeF",color:"#f8ecd8",padding:"11px 16px",fontWeight:900,cursor:"pointer",boxShadow:"0 5px 18px #0007"}}>☰ MENU</button>
-    <div className="amargenta-title" style={{position:"absolute",top:18,left:18,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
+    
+    <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d"}}>
       <div style={{fontSize:11,letterSpacing:4,color:"#e2bd85",fontWeight:800}}>S O G N A T O R I · AVVENTURA 3D</div>
       <div style={{fontSize:30,fontWeight:900,lineHeight:1.15}}>AMARGENTA</div>
       <div style={{fontSize:12,opacity:.8}}>La città segreta del caffè</div>
+      <button onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",border:"1px solid #e1c28d",borderRadius:10,background:"#18221eef",color:"#f8ecd8",padding:"11px 16px",fontWeight:900,cursor:"pointer",whiteSpace:"nowrap",boxShadow:"0 5px 18px #0007"}}>☰ MENU</button>
     </div>
     {toast&&<div style={{position:"absolute",top:66,left:"50%",transform:"translateX(-50%)",padding:"9px 16px",borderRadius:10,background:"#26382bee",border:"1px solid #e0c18b",color:"#f6e8cf",fontSize:12,fontWeight:800}}>{toast}</div>}
     {menuOpen&&<div style={{position:"absolute",left:18,top:18,width:"min(380px,calc(100vw - 36px))",maxHeight:"calc(100vh - 36px)",overflowY:"auto",padding:16,borderRadius:15,background:"#17231ff5",border:"1px solid #d8b77d99",boxShadow:"0 16px 45px #0009",fontSize:12,lineHeight:1.65}}>
@@ -1034,6 +1037,14 @@ export default function Amargenta3D({ onExit }) {
       }}
     />}
     {nearby&&!dialogue&&<button className="amargenta-interact" onClick={()=>{if(nearby.action)nearby.action();else setDialogue({title:nearby.title,text:nearby.text});}} style={{position:"absolute",left:"50%",bottom:30,transform:"translateX(-50%)",padding:"10px 16px",borderRadius:12,background:"#18221eef",border:"1px solid #e1c28d",fontSize:13,boxShadow:"0 8px 30px #0008",whiteSpace:"nowrap",color:"#f5ead7",cursor:"pointer"}}><strong style={{color:"#f0c98d"}}>E · INTERAGISCI</strong><span style={{marginLeft:10}}>{nearby.title}</span></button>}
+    <div className="amargenta-joystick" aria-label="Joystick analogico" style={{position:"absolute",left:24,bottom:24,width:132,height:132,borderRadius:"50%",border:"2px solid #e1c28d99",background:"radial-gradient(circle,#314638dd 0%,#18221edb 72%)",boxShadow:"0 8px 28px #0008",touchAction:"none",display:"grid",placeItems:"center",zIndex:12}}
+      onPointerDown={e=>{if(controlsLockedRef.current)return;e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-(r.left+r.width/2))/(r.width*.34);const y=(e.clientY-(r.top+r.height/2))/(r.height*.34);const v={x:Math.max(-1,Math.min(1,x)),y:Math.max(-1,Math.min(1,y))};touchStickRef.current=v;setTouchStick(v);}}
+      onPointerMove={e=>{if(!e.currentTarget.hasPointerCapture(e.pointerId))return;const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-(r.left+r.width/2))/(r.width*.34);const y=(e.clientY-(r.top+r.height/2))/(r.height*.34);const len=Math.hypot(x,y);const scale=len>1?1/len:1;const v={x:x*scale,y:y*scale};touchStickRef.current=v;setTouchStick(v);}}
+      onPointerUp={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);touchStickRef.current={x:0,y:0};setTouchStick({x:0,y:0});}}
+      onPointerCancel={()=>{touchStickRef.current={x:0,y:0};setTouchStick({x:0,y:0});}}
+      onLostPointerCapture={()=>{touchStickRef.current={x:0,y:0};setTouchStick({x:0,y:0});}}>
+      <div style={{width:54,height:54,borderRadius:"50%",border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",boxShadow:"0 3px 12px #0009",transform:`translate(${touchStick.x*35}px,${touchStick.y*35}px)`,pointerEvents:"none"}}/>
+    </div>
     {dialogue&&<div role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:18,background:"linear-gradient(145deg,#30231ff5,#17241ff5)",border:"1px solid #d7b77d",boxShadow:"0 18px 60px #0009"}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
