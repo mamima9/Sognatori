@@ -1284,6 +1284,7 @@ export default function Amargenta3D({ onExit }) {
       ["muccanza-1","muccanza-2","muccanza-3"].forEach((id,index)=>{
         const interaction=interactables.find(item=>item.id===id);
         if(interaction)interaction.action=()=>{
+          if(ownedAmargentaIdsRef.current.includes("muccanza")){setDialogue({title:"Muccanza",text:"Hai già convinto un Muccanza a unirsi al gruppo. Gli altri sono semplici abitanti: nessun doppione."});return;}
           setMuccanzaOpponentName(["Bovino · Fan del Latte","Panna · Collezionista","Moka · Fan del Latte"][index]);
           setMuccanzaBattleOpen(true);
         };
@@ -1884,7 +1885,7 @@ export default function Amargenta3D({ onExit }) {
       enemyTeam={[{...ROSTER.find(s=>s.id==="muccanza"),id:"muccanza-"+muccanzaOpponentName,hp:20,hpMax:20}]}
       onFinish={(result)=>{
         setMuccanzaBattleOpen(false);
-        if(result==="win")setToast("Sfida vinta · Muccanza ti ha riconosciuto come alleato.");
+        if(result==="win"){recruitAmargenta("muccanza");setToast("Muccanza si è unito ad Amargenta!");}
         else if(result==="loss")setToast("Il fan di Lattelo ti ha battuto · Puoi riprovare");
       }}
     />}
