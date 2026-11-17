@@ -189,6 +189,15 @@ function triggerMuccanzaPumpDump(attacker) {
   return true;
 }
 
+function triggerBelligonghiUmamiGuard(target, attacker) {
+  if (!target || target.fainted || target.abilityNullified ||
+      target.abilKey !== "belligonghi_umami_guard" ||
+      !target.protectedThisTurn || !attacker || attacker.fainted) return false;
+  attacker.hp = Math.max(0, (attacker.hp ?? 0) - 2);
+  if (attacker.hp === 0) attacker.fainted = true;
+  return true;
+}
+
 function triggerElmasHodl(target) {
   if (
     !target ||
@@ -610,6 +619,9 @@ export function resolveAttacks(
     }
 
     if (act.target.protectedThisTurn) {
+      if (triggerBelligonghiUmamiGuard(act.target, act.attacker)) {
+        log.push(`Umami protettivo: ${act.attacker.nome} perde 2 HP.`);
+      }
       events.push({
         targetId: act.target.id,
         efficacy: "protected",
@@ -1042,6 +1054,7 @@ export function processAction(
 
   if (act.target.protectedThisTurn) {
     if (triggerMuccanzaPumpDump(act.attacker)) msg += " · Pump and Dump: -1 HP";
+    if (triggerBelligonghiUmamiGuard(act.target, act.attacker)) msg += " · Umami protettivo: -2 HP all'attaccante";
     events.push({
       targetId: act.target.id,
       efficacy: "protected",
@@ -1099,6 +1112,9 @@ export function processAction(
   }
 
   if (act.target.protectedThisTurn) {
+    if (triggerBelligonghiUmamiGuard(act.target, act.attacker)) {
+      log.push(lang === "en" ? `Umami guard: ${act.attacker.nome} loses 2 HP.` : `Umami protettivo: ${act.attacker.nome} perde 2 HP.`);
+    }
     events.push({
       targetId: act.target.id,
       efficacy: "protected",
@@ -1938,6 +1954,10 @@ export function processActionDual(
   if (
   act.target.protectedThisTurn
 ) {
+  if (triggerBelligonghiUmamiGuard(act.target, act.attacker)) {
+    msgIt += ` · Umami protettivo: ${act.attacker.nome} perde 2 HP`;
+    msgEn += ` · Umami guard: ${act.attacker.nome} loses 2 HP`;
+  }
   if (triggerMuccanzaPumpDump(act.attacker)) {
     msgIt += " · Pump and Dump: -1 HP";
     msgEn += " · Pump and Dump: -1 HP";
@@ -2406,6 +2426,11 @@ export function aiChooseActions(
           b &&
           !b.fainted
       );
+
+    if (s.preferNonCombat && s.hp > 0) {
+      if (!s.protectedLastTurn) return { type: "protect" };
+      return null;
+    }
 
     if (
       s.hp <= 4 &&
