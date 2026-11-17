@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
-import { ROSTER } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 
-// Roster locale di Amargenta: separato dal resto dell'Avventura.
-const AMARGENTA_SOGNATORE_IDS = new Set([
-  "torosucco", "crunchypat", "talamos", "pingcake", "muccanza",
-  "umami", "flame", "lattelo"
-]);
-const AMARGENTA_ROSTER = ROSTER.filter((s) => AMARGENTA_SOGNATORE_IDS.has(String(s.id)));
+// Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
+const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
+const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
 
 
 /**
