@@ -1253,8 +1253,6 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeCardinero("Petalo",14,3,.92);
       makeCardinero("Primula",-55,13,.88);
       makeCardinero("Germoglio",-40,13,.88);
-            // I Muccanza: fan del latte speciale di Lattelo, bevanda simbolo dei caffè di Amargenta.
-      // I tre Muccanza sono ospitati esclusivamente nel Salone del Latte, caricato on demand.
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
