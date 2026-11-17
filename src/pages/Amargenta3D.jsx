@@ -332,6 +332,55 @@ export default function Amargenta3D({ onExit }) {
       if(id==="guard"){const spear=cylinder(.035,.05,2.2,gold,g,.62,1.35,0,6);spear.rotation.z=-.08;sphere(.1,stoneLight,g,.62,2.48,0,1);}
       if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
       if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
+      // Volti più leggibili: occhi, sopracciglia, naso, sorriso e acconciature individuali.
+      const eyeWhite=mat("#fff0d9"), pupil=mat("#292323"), warmSkin=mat("#b97859");
+      for(const ex of [-.105,.105]){
+        sphere(.047,eyeWhite,g,ex,1.66,.263,1);
+        sphere(.024,pupil,g,ex,1.66,.302,1);
+        box(.095,.025,.035,dark,g,ex,1.735,.26);
+      }
+      sphere(.045,warmSkin,g,0,1.57,.285,1);
+      box(.105,.018,.018,mat("#704238"),g,0,1.505,.27);
+      // Colletto, bordi delle maniche, cintura e fibbia.
+      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":"#ead4a9");
+      const collar=addMesh(new THREE.ConeGeometry(.19,.22,4),trim,g,0,1.37,.02);collar.rotation.y=Math.PI/4;
+      box(.59,.075,.32,dark,g,0,.72,0);
+      box(.13,.14,.055,gold,g,0,.72,.19);
+      for(const side of [-1,1]){
+        sphere(.105,skin,g,side*.37,.72,.02,1);
+        box(.2,.11,.19,trim,g,side*.36,1.28,.015);
+      }
+      // Firma visiva distinta per ogni mestiere.
+      if(id==="barista"||id==="cafe-host"){
+        cylinder(.23,.25,.12,mat("#eee0c5"),g,0,1.98,0,12);
+        cylinder(.12,.12,.19,mat("#8e4937"),g,0,2.12,0,10);
+        box(.42,.42,.045,mat("#eee0c5"),g,0,1.08,.43);
+        box(.34,.055,.05,mat("#a94a35"),g,0,1.23,.46);
+      }
+      if(id==="merchant"){
+        const hood=sphere(.34,mat("#8b5735"),g,0,1.91,-.03,1);hood.scale.set(1.05,.5,1);
+        box(.32,.07,.07,gold,g,0,1.94,.25);
+      }
+      if(id==="archivist"){
+        box(.78,.12,.72,mat("#4c6574"),g,0,1.94,0);
+        box(.86,.1,.78,mat("#b28a54"),g,0,2.02,0);
+        box(.1,.23,.08,mat("#b28a54"),g,0,2.14,0);
+      }
+      if(id==="guard"){
+        cylinder(.31,.34,.18,mat("#7e8d78"),g,0,1.98,0,8);
+        box(.5,.1,.12,gold,g,0,1.9,.05);
+        box(.1,.35,.09,mat("#9a4c37"),g,0,2.18,-.02);
+      }
+      if(id==="farmer"){
+        cylinder(.39,.4,.09,mat("#b58a4c"),g,0,1.91,0,10);
+        cylinder(.22,.25,.27,mat("#8b643b"),g,0,2.08,0,10);
+        for(let k=0;k<3;k++)sphere(.075,coffeeRed,g,-.16+k*.16,1.91,.2,1);
+      }
+      if(id==="roaster"){
+        cylinder(.31,.33,.1,mat("#4a3028"),g,0,2.02,0,10);
+        box(.46,.07,.19,gold,g,0,2.1,0);
+        const scarf=box(.5,.13,.12,mat("#e1a34d"),g,0,1.43,.19);scarf.rotation.z=-.08;
+      }
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm});
       addCollider(x,z,.42*scale);
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
@@ -847,6 +896,11 @@ export default function Amargenta3D({ onExit }) {
           if(!isBlockedAt(player.position.x,nz)) player.position.z=nz;
           player.position.y=getWalkHeight(player.position.x,player.position.z);
           player.rotation.y=Math.atan2(move.x,move.z);
+          // Auto-follow: la camera si riallinea dietro la direzione reale di marcia.
+          // Il trascinamento manuale resta disponibile quando il personaggio e fermo.
+          const followYaw=player.rotation.y+Math.PI;
+          const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
+          yaw+=yawDelta*Math.min(1,dt*2.8);
           const stride=clock.elapsedTime*10;playerMotion.leftArm.rotation.x=Math.sin(stride)*.38;playerMotion.rightArm.rotation.x=-Math.sin(stride)*.38;playerMotion.leftLeg.rotation.x=-Math.sin(stride)*.42;playerMotion.rightLeg.rotation.x=Math.sin(stride)*.42;
         } else {player.position.y=getWalkHeight(player.position.x,player.position.z);playerMotion.leftArm.rotation.x*=.82;playerMotion.rightArm.rotation.x*=.82;playerMotion.leftLeg.rotation.x*=.82;playerMotion.rightLeg.rotation.x*=.82;}
         const target=new THREE.Vector3(player.position.x,player.position.y+1.5,player.position.z);
