@@ -361,7 +361,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
       // Ogni Capo fazione sconfitto consegna una sola gemma del colore
       // della propria fazione: nessun Sognatore viene assegnato come premio.
       const alreadyDefeated = (save.conqueredLeaders || []).includes(encounter.id);
-      const completedCount = new Set([...(save.conqueredLeaders || []), encounter.id]).size;
+      const completedCount = new Set([...(save.conqueredLeaders || []).filter((id) => id !== "amaro"), encounter.id]).size;
       setSave((old) => {
         const conqueredLeaders = Array.from(new Set([...(old.conqueredLeaders || []), encounter.id]));
         const factionGems = (old.factionGems || []).some((gem) => gem.leaderId === encounter.id)
@@ -458,7 +458,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             </button>
             {menuContent}
             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200/70">
-              CAPI FAZIONE SCONFITTI · {(save.conqueredLeaders || []).length}/11
+              CAPI FAZIONE SCONFITTI · {new Set((save.conqueredLeaders || []).filter((id) => id !== "amaro")).size}/11
             </div>
             <div className="mx-3 mb-2 rounded-xl border border-white/10 bg-white/[0.04] p-3">
               <div className="mb-3 text-[10px] font-black uppercase tracking-[.18em] text-white/55">
