@@ -52,6 +52,7 @@ export default function Amargenta3D({ onExit }) {
   const [dungeonSigils, setDungeonSigils] = useState(Array.isArray(savedProgress.dungeonSigils) ? savedProgress.dungeonSigils : []);
   const [dungeonBossDefeated, setDungeonBossDefeated] = useState(Boolean(savedProgress.dungeonBossDefeated));
   const [dungeonBattleOpen, setDungeonBattleOpen] = useState(false);
+  const [zibelleBattleOpen, setZibelleBattleOpen] = useState(false);
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -200,6 +201,30 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<5;i++){const a=i*2.4; const c=sphere(1.05,i%2?leaf:leaf2,g,Math.cos(a)*.55,2.45+(i%2)*.3,Math.sin(a)*.55,1); c.scale.set(1.1,.78,1);}
       if(berries) for(let i=0;i<15;i++){const a=i*2.399, rr=.55+(i%3)*.16; sphere(.105,coffeeRed,g,Math.cos(a)*rr,1.9+(i%5)*.22,Math.sin(a)*rr,1);}
       addCollider(x,z,.55*s);
+    };
+    const makeZibelle = (x,z) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      const fur=mat("#713b28"), furLight=mat("#9b5634"), cream=mat("#f0c982"), dark=mat("#241510"), eye=mat("#fff8e9"), coffee=mat("#b47a3c");
+      const body=sphere(.78,fur,g,0,.72,0,2);body.scale.set(1.25,.72,.82);
+      const chest=sphere(.46,cream,g,0,.67,.58,2);chest.scale.set(1,.78,.42);
+      const head=sphere(.62,furLight,g,0,1.28,.66,2);head.scale.set(1.05,.92,.82);
+      const muzzle=sphere(.31,cream,g,0,1.08,1.18,2);muzzle.scale.set(1.25,.7,.72);
+      for(const side of [-1,1]){
+        const ear=sphere(.29,fur,g,side*.43,1.78,.48,1);ear.scale.set(.72,1.45,.42);
+        const inner=sphere(.16,cream,g,side*.43,1.8,.78,1);inner.scale.set(.7,1.25,.2);
+        sphere(.095,eye,g,side*.23,1.42,1.23,1);sphere(.052,dark,g,side*.23,1.42,1.31,1);
+        const leg=sphere(.22,fur,g,side*.48,.3,.28,1);leg.scale.set(.8,1.25,1.2);
+        const backLeg=sphere(.25,fur,g,side*.52,.28,-.42,1);backLeg.scale.set(1.1,1.1,1.2);
+      }
+      sphere(.075,dark,g,0,1.12,1.42,1);
+      const tail=sphere(.55,fur,g,-.75,.88,-.52,2);tail.scale.set(1.05,.9,1.65);tail.rotation.z=-.35;
+      const tailTip=sphere(.27,furLight,g,-.98,1.08,-1.02,1);tailTip.scale.set(1,.9,1.2);
+      for(let i=0;i<3;i++){const bean=sphere(.09,coffee,g,-.34+i*.34,1.2,.12,1);bean.scale.set(.7,1.3,.5);}
+      const aroma=new THREE.Group();g.add(aroma);
+      for(let i=0;i<3;i++)sphere(.11,mat("#d7b88c",.6,{transparent:true,opacity:.62}),aroma,-.25+i*.22,1.65+i*.22,-.9,1);
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:{rotation:{x:0}},rightArm:{rotation:{x:0}},wild:true,aroma});
+      addInteraction("wild-zibelle","Zibelle selvatica","Una Zibelle selvatica ti osserva tra gli alberi. Sembra pronta a difendere il suo territorio.",x,z,()=>setZibelleBattleOpen(true),3.8);
+      return g;
     };
     const makeCoffeePlant = (x,z,s=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
@@ -903,6 +928,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
+      makeZibelle(-49,-50);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
@@ -1352,6 +1378,17 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
+    {zibelleBattleOpen&&<AdventureBattle
+      opponentName="Zibelle selvatica"
+      isWild
+      playerRoster={ROSTER}
+      enemyTeam={[{...ROSTER.find(s=>s.id==="zibelle"),hp:20,hpMax:20}]}
+      onFinish={(result)=>{
+        setZibelleBattleOpen(false);
+        if(result==="win")setToast("Zibelle selvatica sconfitta · Aroma di caffè disperso");
+        else if(result==="loss")setToast("La Zibelle ti ha respinto · Puoi riprovare");
+      }}
+    />}
     {dungeonBattleOpen&&<AdventureBattle
       opponentName="Guardiano del Retrogusto"
       isWild
