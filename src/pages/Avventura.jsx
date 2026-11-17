@@ -75,7 +75,7 @@ const FACTION_LORE_SITES = {
 };
 
 function buildMapWildStarts(city) {
-  const residents = ROSTER.filter((sognatore) => (sognatore.tipo || sognatore.fazione) === city.faction);
+  const residents = ROSTER.filter((sognatore) => sognatore.id !== "muccanza" && (sognatore.tipo || sognatore.fazione) === city.faction);
   // Un solo incontro per specie in ogni città: niente copie duplicate dello stesso Sognatore.
   const offsets = [[0, 0]];
   return residents.flatMap((sognatore, index) => {
