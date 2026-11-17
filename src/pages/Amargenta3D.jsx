@@ -572,6 +572,65 @@ export default function Amargenta3D({ onExit }) {
       addInteraction(id,name,lines.join("\n"),x,z,null,3.6);
       return g;
     };
+    // Cardinero: piccoli custodi dei giardini di Amargenta. Sono abitanti pacifici, non combattenti.
+    const makeCardinero = (name,x,z,scale=1) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
+      const dark=mat("#202637"), face=mat("#151d2d"), goldBody=mat("#e8ad19"), goldLight=mat("#ffd34a");
+      const cream=mat("#f2d7a1"), leather=mat("#8a5938"), metal=mat("#aebbc1",.38,{metalness:.62});
+      const red=mat("#d82e26"), white=mat("#fff2d7"), green=mat("#4d8b38"), petal=mat("#f5bd22");
+      // Corpo segmentato da piccolo bruco-giardiniere.
+      sphere(.42,dark,g,0,1.62,0,2).scale.set(1.12,1,.92);
+      sphere(.31,face,g,0,1.72,.25,2).scale.set(1,.9,.7);
+      for(const ex of [-.17,.17]){
+        sphere(.145,red,g,ex,1.78,.48,1);
+        sphere(.065,white,g,ex-.025,1.82,.535,1);
+        sphere(.045,mat("#16131a"),g,ex,1.76,.55,1);
+      }
+      sphere(.16,red,g,0,1.52,.52,1);
+      sphere(.31,goldLight,g,0,1.17,.2,2).scale.set(1.05,.58,.7);
+      for(let i=0;i<4;i++){
+        const seg=sphere(.29-i*.018,goldBody,g,.42+i*.39,.68-i*.025,-.02,1);
+        seg.scale.set(1.08,.92,.95);
+        sphere(.09,goldLight,g,.42+i*.39,.48-i*.025,.02,1);
+      }
+      // Salopette da giardiniere e bretelle.
+      box(.52,.52,.12,cream,g,0,.92,.36);
+      box(.58,.09,.08,leather,g,0,.64,.39);
+      for(const sx of [-.2,.2]){
+        const strap=box(.075,.47,.08,cream,g,sx,1.2,.4);strap.rotation.z=sx<0?-.25:.25;
+        sphere(.055,goldLight,g,sx*1.08,1.37,.46,1);
+      }
+      // Cappello di paglia con margherita e coccinella.
+      cylinder(.55,.58,.12,leather,g,0,2.12,0,12);
+      const crown=sphere(.35,mat("#d9a34e"),g,0,2.29,0,2);crown.scale.set(1,.48,1);
+      for(let k=0;k<7;k++){
+        const a=k*Math.PI*2/7;
+        sphere(.115,petal,g,.31+Math.cos(a)*.13,2.34+Math.sin(a)*.13,.18,1);
+      }
+      sphere(.12,white,g,.31,2.34,.2,1);sphere(.09,red,g,-.28,2.25,.18,1);
+      for(let k=0;k<3;k++)sphere(.025,dark,g,-.32+k*.05,2.25,.255,1);
+      // Braccia, paletta e annaffiatoio.
+      const leftArm=box(.14,.43,.14,dark,g,-.43,1.02,.04);leftArm.rotation.z=-.42;
+      const rightArm=box(.14,.43,.14,dark,g,.43,1.02,.04);rightArm.rotation.z=.42;
+      const shovelHandle=cylinder(.035,.04,.48,leather,g,-.73,1.12,.26,6);shovelHandle.rotation.z=-.3;
+      const blade=addMesh(new THREE.ConeGeometry(.16,.3,4),metal,g,-.82,1.4,.26);blade.rotation.z=Math.PI;
+      cylinder(.16,.18,.25,metal,g,.58,.62,.42,10);
+      const canBody=sphere(.23,metal,g,.58,.62,.42,2);canBody.scale.set(1,.78,.8);
+      const spout=cylinder(.045,.07,.42,metal,g,.84,.7,.42,8);spout.rotation.z=-1.15;
+      const handle=addMesh(new THREE.TorusGeometry(.16,.035,6,12,Math.PI),metal,g,.42,.72,.42);handle.rotation.z=Math.PI;
+      // Vasetto con fiore sul dorso.
+      cylinder(.22,.28,.3,mat("#b65e2f"),g,0,2.48,-.38,8);
+      cylinder(.24,.3,.07,mat("#49372d"),g,0,2.65,-.38,8);
+      cylinder(.045,.055,.48,green,g,0,2.91,-.38,6);
+      for(let k=0;k<8;k++){const a=k*Math.PI/4;sphere(.105,petal,g,Math.cos(a)*.13,3.15,-.38+Math.sin(a)*.13,1);}
+      sphere(.085,mat("#7a4a2a"),g,0,3.15,-.38,1);
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.9,leftArm,rightArm});
+      addCollider(x,z,.5*scale);
+      addInteraction("cardinero-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-"),name+" · Cardinero",
+        "Sono un Cardinero: mi prendo cura dei giardini, delle aiuole e dei fiori di Amargenta. Non combatto: il mio posto è tra le piante! 🌻",
+        x,z,()=>setDialogue({title:name+" · Cardinero",text:"Qui ogni fiore merita attenzione. Noi Cardinero curiamo i giardini di Amargenta, annaffiamo le aiuole e proteggiamo le piante.\n\nNon siamo combattenti e non vogliamo lottare: preferiamo far fiorire la città!"}),4.2);
+      return g;
+    };
     const makeMarketStall = (x,z,accent) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
       box(4,.22,2.3,wood,g,0,1.05,0);
@@ -1030,7 +1089,12 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
-      // I Muccanza: fan del latte speciale di Lattelo, bevanda simbolo dei caffè di Amargenta.
+      // I Cardinero curano le aiuole e i giardini: sono NPC pacifici, senza statistiche e senza battaglie.
+      makeCardinero("Girasole",-14,3,.92);
+      makeCardinero("Petalo",14,3,.92);
+      makeCardinero("Primula",-55,13,.88);
+      makeCardinero("Germoglio",-40,13,.88);
+            // I Muccanza: fan del latte speciale di Lattelo, bevanda simbolo dei caffè di Amargenta.
       makeNpc("muccanza-1","Bovino","Fan del Latte", -7,-17,"#f0dfbf",["Il latte di Lattelo è il segreto dei caffè di Amargenta. Lo mischio al caffè ogni mattina!","Non è latte qualunque: io bevo solo quello di Lattelo."]);
       makeNpc("muccanza-2","Panna","Collezionista di Lattelo", 21,-8,"#f0dfbf",["In tutta Amargenta si parla del latte di Lattelo. È perfetto da mischiare col caffè.","Ho perfino una collezione di tazze dedicate a Lattelo!"]);
       makeNpc("muccanza-3","Moka","Fan del Latte", 5,27,"#f0dfbf",["Il caffè senza latte di Lattelo? Per me è impensabile.","Il suo gusto è diventato famoso in tutta la città."]);
