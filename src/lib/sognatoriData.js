@@ -601,7 +601,7 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     theme: "Fan del latte di Lattelo",
     img: "/images/42. MUCCANZA.png",
     adventureOnly: true,
-  },,
+  },
 
   {
     id: "cardinero", numero: 43, nome: "Cardinero", tipo: "Natura",
