@@ -541,8 +541,25 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeRockGarden = (x,z,seed=0) => {
       for(let i=0;i<9;i++){const a=i*2.399+seed,r=1.1+(i%3)*.7;const rock=sphere(.35+(i%3)*.12,i%2?stone:stoneLight,scene,x+Math.cos(a)*r,.18,z+Math.sin(a)*r,1);rock.scale.set(1.5,.7,1.1);}
-      const shrub=sphere(.75,leaf,scene,x,.5,z,1);shrub.scale.set(1.4,.7,1);
-      addCollider(x,z,1.5);
+      const shrub=sphere(.75,leaf,scene,x,.5,z,1);shrub.scale.set(1.4,.7,1);addCollider(x,z,1.5);
+    };
+    const makeNoticeBoard = (x,z,rotation=0) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      box(.18,2.4,.18,wood,g,-.72,1.2,0);box(.18,2.4,.18,wood,g,.72,1.2,0);
+      box(1.8,1.5,.18,wood,g,0,2.15,0);box(1.52,1.18,.06,mat("#d8c39b"),g,0,2.15,.13);
+      for(let i=0;i<3;i++){box(.82,.035,.035,coffeeRed,g,0,2.48-i*.28,.18);}
+      box(2.05,.16,.28,wood,g,0,3.02,0);addCollider(x,z,.3);
+    };
+    const makeStringLights = (x1,z1,x2,z2,count=9) => {
+      const points=[];
+      for(let i=0;i<=12;i++){const t=i/12;points.push(new THREE.Vector3(x1+(x2-x1)*t,5.1-Math.sin(t*Math.PI)*1.15,z1+(z2-z1)*t));}
+      const cable=new THREE.CatmullRomCurve3(points);
+      addMesh(new THREE.TubeGeometry(cable,24,.035,5,false),darkStone,scene);
+      for(let i=0;i<count;i++){
+        const t=(i+.5)/count,p=cable.getPoint(t);
+        cylinder(.045,.045,.35,gold,scene,p.x,p.y-.18,p.z,6);
+        sphere(.13,mat("#ffd58b",.2,{emissive:"#d58c35",emissiveIntensity:.9}),scene,p.x,p.y-.43,p.z,1);
+      }
     };
 
     const makeInterior = (cx,cz,doorSide="north") => {
@@ -687,6 +704,8 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<10;i++){const a=i*Math.PI*2/10;makeStoneLantern(Math.cos(a)*10,Math.sin(a)*7.5);}
       makeWell(-8,7);makeBench(-10,-5,Math.PI/2);makeBench(10,-5,-Math.PI/2);
       makeFlowerBed(-12,0,Math.PI/2);makeFlowerBed(12,0,Math.PI/2);
+      makeNoticeBoard(-16,-8,Math.PI/2);
+      makeStringLights(-12,-11,12,11,13);makeStringLights(-14,8,14,-8,11);
       makeWoodPergola(0,13,0);makeRockGarden(-15,-16,1);makeRockGarden(16,17,2);
       makeBanner(-13,-12,"#a64c36",Math.PI/2);makeBanner(13,12,"#526d58",Math.PI/2);
       // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
@@ -864,6 +883,10 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("archivist","Orma","Archivista", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
       makeNpc("guard","Bruno","Guardiano del ponte",18,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
       makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
+      // Abitanti di servizio: danno vita alla piazza senza introdurre nuove missioni.
+      makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
+      makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
+      makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
