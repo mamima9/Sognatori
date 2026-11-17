@@ -40,6 +40,10 @@ export default function Amargenta3D({ onExit }) {
   const [secretUnlocked, setSecretUnlocked] = useState(Boolean(savedProgress.secretUnlocked));
   const [vaultClaimed, setVaultClaimed] = useState(Boolean(savedProgress.vaultClaimed));
   const [citrusHarvested, setCitrusHarvested] = useState(Boolean(savedProgress.citrusHarvested));
+  const [bellsStarted, setBellsStarted] = useState(Boolean(savedProgress.bellsStarted));
+  const [bellCount, setBellCount] = useState(Number(savedProgress.bellCount) || 0);
+  const [bellsDone, setBellsDone] = useState(Boolean(savedProgress.bellsDone));
+  const [activatedBells, setActivatedBells] = useState(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []);
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -63,6 +67,10 @@ export default function Amargenta3D({ onExit }) {
   const collectedPagesRef = useRef(new Set(Array.isArray(savedProgress.collectedPages) ? savedProgress.collectedPages : []));
   const activatedValvesRef = useRef(new Set(Array.isArray(savedProgress.activatedValves) ? savedProgress.activatedValves : []));
   const vaultClaimedRef = useRef(Boolean(savedProgress.vaultClaimed));
+  const bellsStartedRef = useRef(Boolean(savedProgress.bellsStarted));
+  const bellCountRef = useRef(Number(savedProgress.bellCount) || 0);
+  const bellsDoneRef = useRef(Boolean(savedProgress.bellsDone));
+  const activatedBellsRef = useRef(new Set(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []));
   const zoneRef = useRef("Ingresso di Amargenta");
   const controlsLockedRef = useRef(false);
 
@@ -82,12 +90,13 @@ export default function Amargenta3D({ onExit }) {
         questStarted, questCount, questDone, inventory,
         recipeStarted, recipePages, recipeDone,
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
-        collectedAmber, collectedPages, activatedValves
+        collectedAmber, collectedPages, activatedValves,
+        bellsStarted, bellCount, bellsDone, activatedBells
       }));
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves]);
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -595,6 +604,38 @@ export default function Amargenta3D({ onExit }) {
       };
       makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
+      const eliaInteraction=interactables.find(item=>item.id==="cafe-host");
+      if(eliaInteraction)eliaInteraction.action=()=>{
+        if(bellsDoneRef.current){setDialogue({title:"Elia · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
+        if(bellCountRef.current>=3){
+          bellsDoneRef.current=true;setBellsDone(true);
+          setInventory(old=>({...old,relics:old.relics+1}));
+          setToast("Attività completata · Le campane del borgo");
+          setDialogue({title:"Elia · Il canto ritrovato",text:"Hai risvegliato tutte e tre le campane! Il loro suono si è propagato tra le terrazze e la piazza. Elia ti affida una Reliquia di Amargenta."});
+        } else if(!bellsStartedRef.current){
+          bellsStartedRef.current=true;setBellsStarted(true);
+          setDialogue({title:"Elia · Le campane del borgo",text:"Un tempo le tre campane annunciavano l'apertura del mercato. Ora sono mute. Raggiungile nella città e interagisci con ognuna: vorrei sentire di nuovo il loro canto."});
+        } else setDialogue({title:"Elia · Le campane del borgo",text:"Hai risvegliato "+bellCountRef.current+"/3 campane. Le trovi nella piazza e lungo la strada del mercato."});
+      };
+      // Piccola attività secondaria: riattiva le tre campane storiche di Amargenta.
+      [[-30,4],[-2,18],[16,-2]].forEach((p,i)=>{
+        const bell=new THREE.Group();scene.add(bell);bell.position.set(p[0],0,p[1]);
+        cylinder(.09,.11,2.35,wood,bell,0,1.18,0,8);
+        box(.72,.12,.72,gold,bell,0,2.35,0);
+        const body=cylinder(.34,.48,.62,gold,bell,0,1.95,0,12);
+        sphere(.09,wood,bell,0,1.58,0,1);
+        if(activatedBellsRef.current.has(i))body.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});
+        if(!activatedBellsRef.current.has(i))addInteraction("town-bell-"+i,"Campana del borgo","Una delle tre campane storiche di Amargenta.",p[0],p[1],()=>{
+          if(!bellsStartedRef.current){setDialogue({title:"Campana silenziosa",text:"La campana è ancora bloccata. Elia, al Caffè delle Tre Foglie, conosce la storia delle tre campane."});return;}
+          if(activatedBellsRef.current.has(i))return;
+          activatedBellsRef.current.add(i);removeInteraction("town-bell-"+i);setActivatedBells([...activatedBellsRef.current]);
+          bellCountRef.current+=1;setBellCount(bellCountRef.current);
+          body.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});
+          setToast("Campana risvegliata · "+bellCountRef.current+"/3");
+          if(bellCountRef.current===3)setDialogue({title:"Il canto di Amargenta",text:"La terza campana ha risposto alle altre. Torna da Elia al Caffè delle Tre Foglie."});
+          else setDialogue({title:"Campana risvegliata",text:"Il bronzo ha vibrato dopo anni di silenzio. Campane attivate: "+bellCountRef.current+"/3."});
+        },3.2);
+      });
       if(!citrusHarvestedRef.current) addInteraction("citrus-harvest","Agrumi maturi","Un piccolo raccolto profumato.",-48,18,()=>{
         if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
         citrusHarvestedRef.current=true;removeInteraction("citrus-harvest");setCitrusHarvested(true);
@@ -718,7 +759,8 @@ export default function Amargenta3D({ onExit }) {
       ? (recipePages >= 4 ? "Torna da Orma per ricomporre la Ricetta Perduta" : recipeStarted ? "Recupera le quattro pagine della ricetta" : "Parla con Orma nell'archivio")
       : !waterDone
         ? (valves >= 3 ? "Torna da Bruno per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Bruno vicino al ponte")
-        : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
+        : bellsStarted && !bellsDone ? (bellCount >= 3 ? "Torna da Elia per ricevere la ricompensa" : "Risveglia le tre campane del borgo")
+          : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : !vaultClaimed ? "Apri lo scrigno nella Cripta" : "Amargenta è stata completata: esplora liberamente";
 
   const nearestWaypoint = (points) => points
     .filter(point => !point.done)
@@ -743,6 +785,10 @@ export default function Amargenta3D({ onExit }) {
       : waterStarted
         ? nearestWaypoint([[19,-18],[37,18],[13,38]].map(([x,z],i)=>({name:"Valvola",x,z,done:activatedValves.includes(i)})))
         : { name:"Bruno", x:18, z:-7 };
+  } else if (bellsStarted && !bellsDone) {
+    objectiveWaypoint = bellCount >= 3
+      ? { name:"Elia", x:-68, z:66 }
+      : nearestWaypoint([[-30,4],[-2,18],[16,-2]].map(([x,z],i)=>({name:"Campana",x,z,done:activatedBells.includes(i)})));
   } else if (!secretUnlocked) objectiveWaypoint = { name:"Porta della Cripta", x:-70, z:-43 };
   else if (!vaultClaimed) objectiveWaypoint = { name:"Scrigno delle Miscele", x:68, z:-68 };
   const waypointDirection = objectiveWaypoint
@@ -780,6 +826,7 @@ export default function Amargenta3D({ onExit }) {
       <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Ricetta Perduta</strong><span>{recipeDone?"✓":recipePages+"/4"}</span></div>
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(recipePages/4*100)+"%",background:"#c7a5df"}}/></div>
       <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Condotte Antiche</strong><span>{waterDone?"✓":valves+"/3"}</span></div>
+      <div style={{marginTop:7,display:"flex",justifyContent:"space-between"}}><strong>Campane del borgo</strong><span>{bellsDone?"✓":bellsStarted?bellCount+"/3":"—"}</span></div>
       <div style={{height:4,marginTop:4,borderRadius:8,background:"#49382b",overflow:"hidden"}}><div style={{height:"100%",width:(valves/3*100)+"%",background:"#78b6c1"}}/></div>
       <div style={{marginTop:9,paddingTop:8,borderTop:"1px solid #ffffff20"}}>
         <div style={{fontSize:9,letterSpacing:2,color:"#e5bd7d",fontWeight:900}}>OBIETTIVO ATTUALE</div>
@@ -814,7 +861,7 @@ export default function Amargenta3D({ onExit }) {
         <div style={{marginTop:8,color:"#d7c5a5"}}>Punti dorati: ingresso e piazza · Simboli: personaggi, botteghe e Cripta · Punto bianco: tu</div>
       </div>}
       {panel==="journal"&&<div>
-        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
+        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Elia al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
         <div style={{marginTop:10,color:"#e6c28b"}}>Segreto: {secretUnlocked?"Cripta aperta":"completa tutte e tre le missioni."}</div>
       </div>}
       {panel==="inventory"&&<div>
