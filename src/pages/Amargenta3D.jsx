@@ -1249,10 +1249,8 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
       makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
       // I Cardinero curano le aiuole e i giardini: sono NPC pacifici, senza statistiche e senza battaglie.
+      // Test di stabilità: un solo Cardinero pacifico presente in città.
       makeCardinero("Girasole",-14,3,.92);
-      makeCardinero("Petalo",14,3,.92);
-      makeCardinero("Primula",-55,13,.88);
-      makeCardinero("Germoglio",-40,13,.88);
       // Lattelo #41: incontro selvatico Natura presso i filari orientali.
       {
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
@@ -1283,7 +1281,8 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       makeRecruitableCreature("crunchypat","Crunchypat",-30,48,["#8e7562","#c5a98d","#55463d","#e8d6b9"],"round");
       makeRecruitableCreature("talamos","Talamos",53,-48,["#496c62","#83a58c","#29453f","#d4c58b"],"swamp");
       makeRecruitableCreature("pingcake","Pingcake",48,48,["#d88d9d","#f4c6d0","#8c4b61","#fff0bd"],"rabbit");
-      [[-53,-48],[-43,-54],[-34,-43],[-57,-31],[-28,-55],[34,34],[48,20],[53,-24],[28,52]].forEach(([x,z],i)=>makeZibelle(x,z,i));
+      // Test di stabilità: una sola Zibelle selvatica attiva in città.
+      makeZibelle(-43,-54,0);
       makeUmami();
       makeFlame();
       const linaInteraction=interactables.find(item=>item.id==="farmer");
