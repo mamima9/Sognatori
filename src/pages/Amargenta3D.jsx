@@ -253,10 +253,26 @@ export default function Amargenta3D({ onExit }) {
         box(.52,.64,.055,mat("#d9c49c"),g,wx,2.05,d/2+.19);
         for(let bar=-1;bar<=1;bar++)box(.045,.62,.035,wood,g,wx+bar*.22,2.05,d/2+.23);
       }
+      // Finestre laterali con cornici lignee, davanzali e imposte.
+      for(const side of [-1,1]){
+        const sx=side*(w/2+.045);
+        box(.12,.92,1.05,wood,g,sx,2.05,0);
+        box(.055,.68,.78,mat("#d9c49c"),g,sx+side*.07,2.05,0);
+        box(.18,.12,1.18,wood,g,sx+side*.08,1.55,0);
+        box(.12,.78,.12,wood,g,sx+side*.1,2.05,0);
+        for(const dz of [-.52,.52])box(.12,.95,.12,wood,g,sx+side*.1,2.05,dz);
+      }
+      // Camino in pietra e comignolo in legno sul retro del tetto.
+      box(.72,1.25,.72,darkStone,g,w*.28,h+.95,-d*.2);
+      box(.9,.16,.9,stoneLight,g,w*.28,h+1.6,-d*.2);
       // Travi angolari, gronda con supporti e insegna del locale.
       for(const wx of [-w*.43,w*.43]){
         box(.2,h-.2,.2,wood,g,wx,h/2,d/2+.11);
         box(.16,.42,.16,wood,g,wx,h-.3,d/2+.34);
+      }
+      for(let i=0;i<Math.floor(w/1.4);i++){
+        const beam=box(.12,.16,d+.2,wood,g,-w/2+.7+i*1.4,h+.08,0);
+        beam.rotation.z=(i%2?-.025:.025);
       }
       box(1.35,.28,.12,gold,g,0,h-0.55,d/2+.2);
       addBoxCollider(x,z,w+.7,d+.7);
