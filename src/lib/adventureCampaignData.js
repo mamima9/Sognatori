@@ -1,4 +1,4 @@
-import { ROSTER } from "@/lib/sognatoriData";
+import { ROSTER_AVVENTURA } from "@/lib/sognatoriData";
 
 export const ADVENTURE_CITIES = [
   { id:"demone", city:"Braciombra", faction:"Demone", traveler:"Vark", x:520, y:400, color:"#bd5360", line:"Qui nessuno sogna senza pagare un prezzo. Dimostra di sapere cosa desideri." },
@@ -16,7 +16,7 @@ export const ADVENTURE_CITIES = [
 ];
 
 export function buildCityTeam(faction, cityId) {
-  const pool = ROSTER.filter((s) => (s.tipo || s.fazione) === faction);
+  const pool = ROSTER_AVVENTURA.filter((s) => (s.tipo || s.fazione) === faction);
   if (!pool.length) return [];
   const teamSize = faction === "Nuvola" ? 5 : 4;
   return Array.from({ length: teamSize }, (_, index) => {
@@ -32,7 +32,7 @@ export function buildCityTeam(faction, cityId) {
 }
 
 export function getCityRewards(city) {
-  const pool = ROSTER.filter((s) => (s.tipo || s.fazione) === city.faction);
+  const pool = ROSTER_AVVENTURA.filter((s) => (s.tipo || s.fazione) === city.faction);
   return pool.slice(-Math.min(2, pool.length));
 }
 
