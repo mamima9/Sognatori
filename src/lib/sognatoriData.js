@@ -601,10 +601,35 @@ abilDesc: "Quando infligge danno ad un avversario, riceve +1 DIF",
     theme: "Fan del latte di Lattelo",
     img: "/images/42. MUCCANZA.png",
     adventureOnly: true,
+  },,
+
+  {
+    id: "cardinero", numero: 43, nome: "Cardinero", tipo: "Natura",
+    att: 0, dif: 0, vel: 0, abilKey: null, abil: "Pacifici",
+    abilDesc: "Se possono, preferiscono non lottare.", costo: 1,
+    theme: "Giardiniere di Amargenta", img: "/images/43- CARDINERO.png",
+    preferNonCombat: true, adventureOnly: true,
+  },
+  {
+    id: "belligonghi-umami", numero: 44, nome: "Belligonghi-umami", tipo: "Umami",
+    att: 13, dif: 12, vel: 13.1, abilKey: "belligonghi_umami_guard",
+    abil: "Umami protettivo",
+    abilDesc: "Quando si protegge, l'avversario che lo attacca perde 2 HP.",
+    costo: 1, theme: "Protezione · Umami", img: "/images/44- BELLIGONGHI UMAMI.png",
+    adventureOnly: true,
+  },
+  {
+    id: "flame", numero: 45, nome: "Flame", tipo: "Natura",
+    att: 0, dif: 0, vel: 0, abilKey: null, abil: "Pacifico",
+    abilDesc: "Se può, preferisce non lottare.", costo: 1,
+    theme: "Natura di Amargenta", img: "/images/45 - FLAME.png",
+    preferNonCombat: true, adventureOnly: true,
   },
 ]; 
 
 
+
+ 
 // Numero ufficiale della carta: il nome del file immagine conserva la numerazione
 // anche quando l'ordine degli oggetti nel roster viene modificato.
 export function getSognatoreNumero(sognatore, index = -1) {
@@ -612,55 +637,7 @@ export function getSognatoreNumero(sognatore, index = -1) {
   const imageNumber = String(sognatore?.img || "").match(/(?:^|\/)(\d+)[ ._-]/);
   if (imageNumber) return Number(imageNumber[1]);
   const fallbackNumbers = { spinoff: 25, toasty: 26 };
-  if (fallbackNumbers[sognatore?.id] != null) return fallbackNumbers[sognatore.id
-  {
-    id: "cardinero",
-    numero: 43,
-    nome: "Cardinero",
-    tipo: "Natura",
-    att: 0,
-    dif: 0,
-    vel: 0,
-    abilKey: null,
-    abil: "Pacifici",
-    abilDesc: "Se possono, preferiscono non lottare.",
-    costo: 1,
-    theme: "Giardiniere di Amargenta",
-    preferNonCombat: true,
-    adventureOnly: true,
-  },
-  {
-    id: "belligonghi-umami",
-    numero: 44,
-    nome: "Belligonghi-umami",
-    tipo: "Umami",
-    att: 13,
-    dif: 12,
-    vel: 13.1,
-    abilKey: "belligonghi_umami_guard",
-    abil: "Umami protettivo",
-    abilDesc: "Quando si protegge, l'avversario che lo attacca perde 2 HP.",
-    costo: 1,
-    theme: "Protezione · Umami",
-    adventureOnly: true,
-  },
-  {
-    id: "flame",
-    numero: 45,
-    nome: "Flame",
-    tipo: "Natura",
-    att: 0,
-    dif: 0,
-    vel: 0,
-    abilKey: null,
-    abil: "Pacifico",
-    abilDesc: "Se può, preferisce non lottare.",
-    costo: 1,
-    theme: "Natura di Amargenta",
-    preferNonCombat: true,
-    adventureOnly: true,
-  },
-];
+  if (fallbackNumbers[sognatore?.id] != null) return fallbackNumbers[sognatore.id];
   return index >= 0 ? index + 1 : 999;
 }
 
