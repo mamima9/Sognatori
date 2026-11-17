@@ -166,6 +166,22 @@ function triggerToastyIgnifugo(target, attacker) {
   return true;
 }
 
+function triggerZibelleBitterness(target, attacker, msg) {
+  if (
+    !target ||
+    target.fainted ||
+    target.abilityNullified ||
+    target.abilKey !== "zibelle_aroma_caffe" ||
+    !attacker ||
+    attacker.fainted
+  ) return msg;
+  attacker.statusEffect = "amarezza";
+  attacker.statusTurns = 0; // Persistente finché resta in campo.
+  return msg + (attacker.tipo === "Amaro"
+    ? " · Aroma di caffè: " + attacker.nome + " è in Amarezza (immune ai danni)"
+    : " · Aroma di caffè: " + attacker.nome + " è in Amarezza!");
+}
+
 function triggerElmasHodl(target) {
   if (
     !target ||
@@ -628,6 +644,7 @@ export function resolveAttacks(
     if (dmg > 0 && triggerToastyIgnifugo(act.target, act.attacker)) {
       msg += " · Ignifugo: +1 ATT, +1 DIF, +1 VEL";
     }
+    if (dmg > 0) msg = triggerZibelleBitterness(act.target, act.attacker, msg);
 if (
   act.attacker.abilKey === "aragostino_fullhp" &&
   !act.attacker.abilityNullified &&
@@ -1124,6 +1141,7 @@ export function processAction(
   if (dmg > 0 && triggerToastyIgnifugo(act.target, act.attacker)) {
     msg += ` · ${m.toastyIgnifugo(act.target.nome)}`;
   }
+  if (dmg > 0) msg = triggerZibelleBitterness(act.target, act.attacker, msg);
 
   const abil =
     act.attacker.abilityNullified
@@ -1388,6 +1406,24 @@ export function applyEndOfTurn(
 
     // Dominance protegge solo durante il turno d'ingresso.
     s.dominanceProtected = false;
+
+    if (s.statusEffect === "amarezza") {
+      const bitternessDamage = getType(s) === "Amaro" ? 0 : getType(s) === "Dolce" ? 4 : 2;
+      if (bitternessDamage > 0) {
+        s.hp = Math.max(0, s.hp - bitternessDamage);
+        log.push(lang === "en"
+          ? `Bitterness: ${s.nome} loses ${bitternessDamage} HP.`
+          : `Amarezza: ${s.nome} perde ${bitternessDamage} HP.`);
+        if (s.hp <= 0) {
+          s.fainted = true;
+          log.push(lang === "en" ? `${s.nome} is knocked out!` : `${s.nome} è RIBALTATO!`);
+        }
+      } else {
+        log.push(lang === "en"
+          ? `Bitterness: ${s.nome} is immune as an Amaro.`
+          : `Amarezza: ${s.nome} è immune perché Amaro.`);
+      }
+    }
 
     if (s.statusEffect === "abbiocco" && s.statusTurns > 0) {
       s.statusTurns -= 1;
