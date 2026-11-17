@@ -1485,7 +1485,7 @@ export default function Amargenta3D({ onExit }) {
               actor.rightArm.rotation.x=-.22+Math.sin(idle*.9)*.07;
               actor.leftArm.rotation.x=-.16+Math.sin(idle*.8)*.05;
             }else if(actor.kind==="guard"){
-              actor.group.rotation.y+=Math.sin(idle*.62)*.012;
+              actor.group.rotation.y=Math.sin(idle*.62)*.12;
               actor.leftArm.rotation.x=-.08+Math.sin(idle*.7)*.035;
               actor.rightArm.rotation.x=.04+Math.sin(idle*.7)*.025;
             }else if(actor.kind==="farmer"||actor.kind==="town-gardener"){
