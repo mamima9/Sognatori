@@ -372,7 +372,8 @@ const AMARGENTA_CITY_SPAWN = { x: 1190, y: 1200 }; // ingresso ovest della cittÃ
 const MAP_SPAWN = { x: 1800, y: 320 };
 const MAP_SOUTH_SPAWN = { x: 1800, y: 2080 };
 
-const CHALLENGERS = ADVENTURE_CITIES.map((city) => {
+// Amargenta resta fuori dagli 11 Capi della campagna: Ã¨ accessibile soltanto a Bibito.
+const CHALLENGERS = ADVENTURE_CITIES.filter((city) => city.id !== "amaro").map((city) => {
   const lore = ADVENTURE_FACTION_LORE[city.id];
   return {
   ...city,
