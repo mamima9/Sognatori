@@ -1081,7 +1081,7 @@ export default function Amargenta3D({ onExit }) {
           const shelfX=-5.4+i*3.6;
           addRoomBox(1.5,.16,.55,roomTrim,shelfX,1.35,-5.5);
           addRoomBox(1.5,.16,.55,roomTrim,shelfX,2.45,-5.5);
-          cylinder(.28,.32,.72,i%2?cream:stoneLight,muccanzaRoomGroup,shelfX,1.82,-5.5,12);
+          cylinder(.28,.32,.72,i%2?mat("#f3e5c8"):stoneLight,muccanzaRoomGroup,shelfX,1.82,-5.5,12);
           cylinder(.31,.31,.1,gold,muccanzaRoomGroup,shelfX,2.23,-5.5,12);
         }
         for(const x of [-5,5]){
@@ -1109,7 +1109,7 @@ export default function Amargenta3D({ onExit }) {
         }));
         interactables.push({id:"muccanza-room-exit",title:"Uscita · Amargenta",text:"Torna alle strade di Amargenta.",x:100,z:106,radius:2.6,action:leaveMuccanzaRoom});
       };
-      addInteraction("muccanza-room-door","Salone del Latte","Entra nel salone dedicato al latte di Lattelo.",-7,-17,()=>{
+      addInteraction("muccanza-room-door","Salone del Latte","Entra nel salone dedicato al latte di Lattelo.",7,-28,()=>{
         createMuccanzaRoom();
         muccanzaRoomActive=true;
         player.position.set(100,0,104);
