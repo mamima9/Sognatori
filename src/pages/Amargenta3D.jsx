@@ -46,6 +46,7 @@ export default function Amargenta3D({ onExit }) {
   const [activatedBells, setActivatedBells] = useState(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []);
   const [blendStarted, setBlendStarted] = useState(Boolean(savedProgress.blendStarted));
   const [blendDone, setBlendDone] = useState(Boolean(savedProgress.blendDone));
+  const [botanicalCacheClaimed, setBotanicalCacheClaimed] = useState(Boolean(savedProgress.botanicalCacheClaimed));
   const inventoryRef = useRef(inventory);
   const citrusHarvestedRef = useRef(Boolean(savedProgress.citrusHarvested));
   const [collectedAmber, setCollectedAmber] = useState(Array.isArray(savedProgress.collectedAmber) ? savedProgress.collectedAmber : []);
@@ -75,6 +76,7 @@ export default function Amargenta3D({ onExit }) {
   const activatedBellsRef = useRef(new Set(Array.isArray(savedProgress.activatedBells) ? savedProgress.activatedBells : []));
   const blendStartedRef = useRef(Boolean(savedProgress.blendStarted));
   const blendDoneRef = useRef(Boolean(savedProgress.blendDone));
+  const botanicalCacheClaimedRef = useRef(Boolean(savedProgress.botanicalCacheClaimed));
   const zoneRef = useRef("Ingresso di Amargenta");
   const controlsLockedRef = useRef(false);
 
@@ -96,12 +98,12 @@ export default function Amargenta3D({ onExit }) {
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves,
         bellsStarted, bellCount, bellsDone, activatedBells,
-        blendStarted, blendDone
+        blendStarted, blendDone, botanicalCacheClaimed
       }));
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone]);
+  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone, botanicalCacheClaimed]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -663,6 +665,25 @@ export default function Amargenta3D({ onExit }) {
           else setDialogue({title:"Campana risvegliata",text:"Il bronzo ha vibrato dopo anni di silenzio. Campane attivate: "+bellCountRef.current+"/3."});
         },3.2);
       });
+      // Cassa nascosta del vecchio botanico: premio facoltativo per chi esplora il margine occidentale.
+      const botanicalChest = new THREE.Group();
+      scene.add(botanicalChest);
+      botanicalChest.position.set(-49,0,-50);
+      box(1.55,.82,1.05,wood,botanicalChest,0,.48,0);
+      box(1.62,.16,1.12,gold,botanicalChest,0,.91,0);
+      box(.18,.48,.16,gold,botanicalChest,0,.57,.58);
+      const botanicalGem = sphere(.18,mat("#a8c99b",.22,{emissive:"#547b4a",emissiveIntensity:.65}),botanicalChest,0,1.18,0,2);
+      botanicalGem.visible = !botanicalCacheClaimedRef.current;
+      botanicalChest.visible = !botanicalCacheClaimedRef.current;
+      if (!botanicalCacheClaimedRef.current) addInteraction("botanical-cache","Cassa del Vecchio Botanico","Una piccola cassa dimenticata tra le rocce. Il fermaglio porta il simbolo delle Tre Foglie.",-49,-50,()=>{
+        if (botanicalCacheClaimedRef.current) return;
+        botanicalCacheClaimedRef.current = true;
+        setBotanicalCacheClaimed(true);
+        botanicalChest.visible = false;
+        setInventory(old=>({...old,amberBeans:old.amberBeans+2,relics:old.relics+1}));
+        setToast("Segreto scoperto · Cassa del Vecchio Botanico");
+        setDialogue({title:"Il lascito del Botanico",text:"Hai trovato una cassa nascosta tra le rocce. Dentro ci sono due Fave d'Ambra e una Reliquia antica. Il vecchio botanico ha lasciato un segno delle Tre Foglie."});
+      },3.4);
       // Lucciole decorative: compaiono soltanto di notte nel giardino e vicino alla piazza.
       const fireflyMaterial=mat("#f3d88b",.25,{emissive:"#d9a94c",emissiveIntensity:1.1});
       for(let i=0;i<18;i++){
@@ -908,7 +929,7 @@ export default function Amargenta3D({ onExit }) {
           {[
             ["Ingresso",-44,2,"#f1d18b"],["Piazza",0,0,"#e5b66b"],["Lina",-24,-31,"#d9d58b"],
             ["Orma",-10,-19,"#c7a5df"],["Bruno",18,-7,"#78b6c1"],["Torrefazione",16,28,"#a64c36"],
-            ["Caffè",-22,-1,"#a64c36"],["Campana Ovest",-30,4,"#f0d28a"],["Campana Mercato",-2,18,"#f0d28a"],["Campana Est",16,-2,"#f0d28a"],["Cripta",-70,-43,"#d4b3ff"]
+            ["Caffè",-22,-1,"#a64c36"],["Cassa botanico",-49,-50,"#9fc58e"],["Campana Ovest",-30,4,"#f0d28a"],["Campana Mercato",-2,18,"#f0d28a"],["Campana Est",16,-2,"#f0d28a"],["Cripta",-70,-43,"#d4b3ff"]
           ].map(([name,x,z,color])=><div key={name} title={name} style={{position:"absolute",left:Math.max(2,Math.min(98,(x+72)/144*100))+"%",top:Math.max(2,Math.min(98,(z+72)/144*100))+"%",width:8,height:8,borderRadius:8,background:color,border:"1px solid #33271f",transform:"translate(-50%,-50%)"}}/>)}
           <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff",transform:"translate(-50%,-50%)"}}/>
           <div style={{position:"absolute",right:7,top:5,fontSize:9,fontWeight:900,color:"#fff4d8",textShadow:"0 1px 3px #000"}}>N ↑</div>
@@ -918,6 +939,7 @@ export default function Amargenta3D({ onExit }) {
       {panel==="journal"&&<div>
         {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Elia al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."],["La Miscela delle Tre Foglie",blendStarted,blendDone?1:0,1,blendDone,"Parla con Ada, porta una Miscela d'Autore e una Tisana del Retrogusto, poi ricevi la reliquia."]].map(([name,started,count,total,done,desc])=><div key={name} style={{padding:"9px 0",borderBottom:"1px solid #ffffff18"}}><div style={{display:"flex",justifyContent:"space-between"}}><strong>{name}</strong><span style={{color:done?"#9dd4a8":"#e8c58d"}}>{done?"COMPLETATA":started?count+"/"+total:"NON INIZIATA"}</span></div><div style={{color:"#d7c5a5",marginTop:3}}>{desc}</div></div>)}
         <div style={{marginTop:10,color:"#e6c28b"}}>Segreto: {secretUnlocked?"Cripta aperta":"completa tutte e tre le missioni."}</div>
+        <div style={{marginTop:6,color:botanicalCacheClaimed?"#9dd4a8":"#d7c5a5"}}>Esplorazione: {botanicalCacheClaimed?"Cassa del Botanico recuperata":"Una traccia delle Tre Foglie è nascosta tra le rocce occidentali."}</div>
       </div>}
       {panel==="inventory"&&<div>
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
