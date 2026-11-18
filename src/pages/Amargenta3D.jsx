@@ -191,7 +191,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
-    let renderer, scene, camera, frame, observer;
+    let renderer, scene, arabniteScene, camera, frame, observer;
     let disposed = false;
     const keys = new Set();
     const clock = new THREE.Clock();
@@ -1166,6 +1166,7 @@ export default function Amargenta3D({ onExit }) {
 
     try {
       scene=new THREE.Scene();scene.background=new THREE.Color("#c7dfdf");scene.fog=new THREE.Fog("#c7dfdf",92,235);
+      arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#171326");arabniteScene.fog=new THREE.FogExp2("#171326",0.0065);
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
       const width=Math.max(1,host.clientWidth||window.innerWidth||800);
       const height=Math.max(1,host.clientHeight||window.innerHeight||600);
@@ -1192,6 +1193,9 @@ export default function Amargenta3D({ onExit }) {
       renderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica ripristinata. Ricarica Amargenta per riprendere l'esplorazione."));
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#f2fbff","#52664b",1.9));
+      arabniteScene.add(new THREE.HemisphereLight("#c8c4ff","#4d2e28",2.15));
+      const arabMoon=new THREE.DirectionalLight("#ffe0ad",2.7);arabMoon.position.set(165,75,45);arabMoon.castShadow=true;arabMoon.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);arabMoon.shadow.camera.left=-65;arabMoon.shadow.camera.right=65;arabMoon.shadow.camera.top=65;arabMoon.shadow.camera.bottom=-65;arabniteScene.add(arabMoon);
+      const arabFill=new THREE.PointLight("#8a72ff",95,95,2);arabFill.position.set(178,18,28);arabniteScene.add(arabFill);
       const sun=new THREE.DirectionalLight("#fff1d7",2.35);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
       const warmFill=new THREE.DirectionalLight("#ffd6a0",.62);warmFill.position.set(35,18,-30);scene.add(warmFill);
       const skyFill=new THREE.DirectionalLight("#b9dfff",.34);skyFill.position.set(-8,22,48);scene.add(skyFill);
@@ -1584,11 +1588,11 @@ export default function Amargenta3D({ onExit }) {
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
-        window.setTimeout(()=>{amargentaScene.remove(player);amargentaScene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
         setWorldTransition("amargenta");controlsLockedRef.current=true;
-        window.setTimeout(()=>{arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
@@ -2081,6 +2085,10 @@ export default function Amargenta3D({ onExit }) {
       talpitrippaShadow.scale.set(1.25,.62,1);
       scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
+      // Sposta in Arabnite tutti gli oggetti collocati nel suo settore: geometrie, NPC, portale di ritorno e decorazioni.
+      scene.updateMatrixWorld(true);
+      for(const object of [...scene.children]){const worldPosition=new THREE.Vector3();object.getWorldPosition(worldPosition);if(worldPosition.x>110){scene.remove(object);arabniteScene.add(object);}}
+      arabniteScene.add(new THREE.AmbientLight("#c9b6ff",0.28));
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       const onKeyDown=e=>{
@@ -2316,10 +2324,10 @@ export default function Amargenta3D({ onExit }) {
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
-        renderer.render(scene,camera);
+        renderer.render(arabniteActive?arabniteScene:scene,camera);
       };
       animate();
-      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();scene.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
+      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();[scene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
       setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
