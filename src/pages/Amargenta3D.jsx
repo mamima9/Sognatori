@@ -2112,7 +2112,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       arabniteScene.add(new THREE.AmbientLight("#c9b6ff",0.28));
 
       const onKeyDown=e=>{
-        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
+        if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight","Space"].includes(e.code)){
           if(!controlsLockedRef.current){keys.add(e.code);e.preventDefault();}
         }
         if(e.code==="Space"&&!e.repeat&&!controlsLockedRef.current){jumpRequested=true;e.preventDefault();}
