@@ -6,19 +6,6 @@ import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
-const AMARGENTA_FIRST_DAY_QUESTIONS = [
-  {q:"Quando arrivi in un posto nuovo, cosa fai per primo?",a:[["Esploro e mi metto subito all'opera","flame"],["Osservo, annuso e studio l'ambiente","zibelle"],["Cerco gli altri e faccio amicizia","lattelo"]]},
-  {q:"Quale luogo ti attira di più?",a:[["Un campo pieno di peperoncini","flame"],["Una piantagione di caffè","zibelle"],["Un prato tranquillo con animali","lattelo"]]},
-  {q:"Come affronti un problema?",a:[["Con energia e coraggio","flame"],["Con attenzione e strategia","zibelle"],["Chiedendo aiuto e collaborando","lattelo"]]},
-  {q:"Quale attività ti dà più soddisfazione?",a:[["Coltivare qualcosa con le mie mani","flame"],["Creare una miscela perfetta","zibelle"],["Prendermi cura di qualcuno","lattelo"]]},
-  {q:"Scegli un momento della giornata.",a:[["Alba, quando tutto ricomincia","flame"],["Pomeriggio, con il profumo del caffè","zibelle"],["Tramonto, in compagnia","lattelo"]]},
-  {q:"Quale qualità ti rappresenta?",a:[["Determinazione","flame"],["Curiosità","zibelle"],["Gentilezza","lattelo"]]},
-  {q:"Se trovi un ingrediente raro?",a:[["Lo uso per creare qualcosa di nuovo","flame"],["Ne studio aroma e caratteristiche","zibelle"],["Lo condivido con il gruppo","lattelo"]]},
-  {q:"Come vorresti essere ricordato?",a:[["Come chi ha fatto fiorire Amargenta","flame"],["Come chi ha scoperto nuovi sapori","zibelle"],["Come un amico fidato","lattelo"]]},
-  {q:"Quale regalo sceglieresti?",a:[["Semi di peperoncino","flame"],["Chicchi di caffè profumati","zibelle"],["Una bottiglia di latte fresco","lattelo"]]},
-  {q:"Qual è il tuo modo di vivere Amargenta?",a:[["Con passione e iniziativa","flame"],["Con calma e curiosità","zibelle"],["Insieme agli altri Sognatori","lattelo"]]}
-];
-
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -31,11 +18,6 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
-  const [firstDayDone,setFirstDayDone] = useState(()=>{try{return window.localStorage.getItem("sognatori:amargenta:first-day:v1")==="done";}catch{return false;}});
-  const [firstDayStep,setFirstDayStep] = useState(0);
-  const [firstDayAnswers,setFirstDayAnswers] = useState([]);
-  const [firstDayStarter,setFirstDayStarter] = useState("");
-
   const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
@@ -67,19 +49,6 @@ export default function Amargenta3D({ onExit }) {
     setAmargentaBoxIds((ids) => ids.includes(id) ? ids : [...ids, id]);
     setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
     return true;
-  };
-  const answerFirstDay = (starter) => {
-    const next=[...firstDayAnswers,starter];
-    setFirstDayAnswers(next);
-    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
-    const scores={flame:0,zibelle:0,lattelo:0};
-    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
-    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
-    setFirstDayStarter(chosen);
-    setFirstDayDone(true);
-    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
-    recruitAmargenta(chosen);
-    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
   };
   const moveAmargentaToParty = (id) => {
     if (!ownedAmargentaIds.includes(id) || amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
@@ -185,8 +154,8 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || !firstDayDone);
-  }, [dialogue, panel, dungeonBattleOpen, firstDayDone]);
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
+  }, [dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -217,7 +186,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
-    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null, torso:null };
+    const playerMotion = { model:null, arms:[], feet:[] };
     const colliders = [];
     let jumpHeight = 0;
     let jumpVelocity = 0;
@@ -230,7 +199,7 @@ export default function Amargenta3D({ onExit }) {
     const amberPickups = [];
     const fireflies = [];
     const bellActors = [];
-    let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
+    let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -1675,46 +1644,105 @@ export default function Amargenta3D({ onExit }) {
         setInventory(old=>({...old,citrus:old.citrus+1}));
         setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Muccanza potrebbe scambiarlo con te."});
       },4.5);
-      // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
-      const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
-      // Protagonista: silhouette da eroe Sognatori, proporzioni chibi e outfit iconico da esploratore.
-      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;playerMotion.torso=torso;
-      sphere(.46,skinTone,player,0,1.92,.015,2);
-      // Collo, colletto e dettagli della giacca.
-      cylinder(.15,.16,.2,skinTone,player,0,1.68,0,10);
-      box(.55,.16,.13,jacketLight,player,0,1.68,.27);
-      box(.09,.72,.07,leather,player,0,1.2,.36);
-      for(let i=0;i<3;i++)sphere(.035,gold,player,0,1.42+i*.2,.405,1);
-      // Cappellino rosso con visiera frontale.
-      sphere(.47,redCap,player,0,2.16,-.005,2).scale.set(1,.38,1);
-      box(.72,.11,.48,capShade,player,0,2.1,.23);
-      // Emblema a stella, marchio distintivo del protagonista.
-      const heroEmblem=sphere(.105,gold,player,0,2.2,.385,1);heroEmblem.scale.set(1,.72,.28);
-      sphere(.035,mat("#fff0b8"),player,0,2.2,.42,1);
-      // Zaino in cuoio, fibbie e tasca esterna.
-      box(.68,.82,.34,leather,player,0,1.25,-.36);
-      box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
-      box(.58,.09,.08,gold,player,0,1.47,-.56);
-      box(.2,.24,.08,wood,player,0,1.28,-.58);
-      // Arti costruiti attorno a vere articolazioni: oscillano dalla spalla e dall'anca.
+      // TALPITRIPPA 3D — modello volumetrico originale, non billboard.
+      // Proporzioni: corpo tozzo, testa ampia, ventre crema, naso rosa, baffi dorati e artigli.
+      const talpitrippa = new THREE.Group();
+      const makePixelFur = (base, palette, seed=7) => {
+        const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+        const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
+        ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
+        let v=seed;const rand=()=>{v=(v*16807)%2147483647;return(v-1)/2147483646;};
+        for(let i=0;i<2100;i++){
+          const x=Math.floor(rand()*64)*4,y=Math.floor(rand()*64)*4;
+          ctx.globalAlpha=.22+rand()*.42;ctx.fillStyle=palette[Math.floor(rand()*palette.length)];
+          const s=2+Math.floor(rand()*2)*2;ctx.fillRect(x,y,s,s);
+        }
+        ctx.globalAlpha=1;
+        const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+        tex.magFilter=THREE.NearestFilter;tex.minFilter=THREE.NearestMipmapLinearFilter;tex.generateMipmaps=true;
+        return tex;
+      };
+      const furTex=makePixelFur("#382437",["#513449","#68465b","#241a2c","#7a5266","#30202f"],11);
+      const bellyTex=makePixelFur("#f4d58a",["#ffe9a8","#e9bd69","#fff0bd","#dcae62"],23);
+      const furMat=new THREE.MeshStandardMaterial({map:furTex,color:"#ffffff",roughness:1});
+      const bellyMat=new THREE.MeshStandardMaterial({map:bellyTex,color:"#ffffff",roughness:1});
+      const darkFur=mat("#30202f"), pawFur=mat("#493044"), clawMat=mat("#ffe09a",.62), noseMat=mat("#ef6672",.34);
+      const eyeMat=new THREE.MeshPhysicalMaterial({color:"#08070c",roughness:.08,clearcoat:1,clearcoatRoughness:.03});
+      const eyeGlint= new THREE.MeshBasicMaterial({color:"#ffffff"});
+      const whiskerMat=mat("#f3c66e",.52,{metalness:.08});
+      const ellipsoid=(parent,material,pos,scale,segments=32)=>{
+        const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,segments,Math.max(16,Math.floor(segments*.7))),material);
+        mesh.position.set(...pos);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+      };
+      // Massa principale e testa: forme sovrapposte con raccordo morbido.
+      ellipsoid(talpitrippa,furMat,[0,1.03,0],[.88,1.02,.72],48);
+      ellipsoid(talpitrippa,furMat,[0,2.02,.02],[.82,.79,.70],48);
+      // Ventre chiaro in primo piano.
+      ellipsoid(talpitrippa,bellyMat,[0,1.10,.575],[.62,.72,.205],40);
+      // Guance e muso.
+      ellipsoid(talpitrippa,darkFur,[-.43,1.99,.51],[.25,.20,.18],28);
+      ellipsoid(talpitrippa,darkFur,[.43,1.99,.51],[.25,.20,.18],28);
+      // Occhi neri lucidi con riflessi.
       for(const side of [-1,1]){
-        const armPivot=new THREE.Group();player.add(armPivot);armPivot.position.set(side*.5,1.43,0);
-        box(.2,.62,.22,jacket,armPivot,0,-.29,0);
-        box(.22,.13,.23,gold,armPivot,0,-.58,.015);
-        sphere(.15,skinTone,armPivot,0,-.68,.035,2);
-        if(side<0)playerMotion.leftArm=armPivot;else playerMotion.rightArm=armPivot;
-        const legPivot=new THREE.Group();player.add(legPivot);legPivot.position.set(side*.2,.68,0);
-        box(.25,.55,.27,pants,legPivot,0,-.275,0);
-        box(.31,.2,.46,bootMat,legPivot,0,-.62,.13);
-        // Piccola punta e cucitura dello stivale.
-        box(.23,.045,.025,mat("#8a6747"),legPivot,0,-.59,.355);
-        if(side<0)playerMotion.leftLeg=legPivot;else playerMotion.rightLeg=legPivot;
+        ellipsoid(talpitrippa,eyeMat,[side*.285,2.28,.625],[.145,.19,.095],32);
+        ellipsoid(talpitrippa,eyeGlint,[side*.325,2.355,.708],[.045,.052,.018],16);
+        ellipsoid(talpitrippa,eyeGlint,[side*.245,2.24,.713],[.018,.022,.012],12);
       }
-      // Fibbia frontale a stella e sciarpa corta: dettagli riconoscibili anche da lontano.
-      const beltBuckle=sphere(.105,gold,player,0,.83,.32,1);beltBuckle.scale.set(1,1,.35);
-      const scarf=box(.56,.12,.16,mat("#e3a34d"),player,0,1.57,.27);scarf.rotation.z=-.04;
-      // Spallacci e fibbie dello zaino.
-      for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
+      // Naso rosa prominente, con luce superiore.
+      ellipsoid(talpitrippa,noseMat,[0,2.04,.77],[.265,.225,.17],40);
+      ellipsoid(talpitrippa,new THREE.MeshBasicMaterial({color:"#ffb0a5"}),[-.075,2.145,.91],[.105,.045,.018],20);
+      // Baffi dorati a ciuffi curvi, su entrambi i lati del muso.
+      const whiskerCurve=(points,r=.025)=>{
+        const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+        const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,16,r,7,false),whiskerMat);
+        mesh.castShadow=true;talpitrippa.add(mesh);
+      };
+      for(const side of [-1,1]){
+        for(let j=0;j<3;j++){
+          const y=2.03+(j-1)*.105;
+          whiskerCurve([[side*.18,y,.79],[side*.42,y+(j-1)*.055,.83],[side*.67,y+(j-1)*.12,.76]],.027);
+        }
+      }
+      // Braccia corte e zampe anteriori appoggiate al ventre.
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(side*.57,1.32,.24);talpitrippa.add(arm);arms.push(arm);
+        ellipsoid(arm,furMat,[0,0,0],[.28,.48,.30],32);
+        ellipsoid(arm,pawFur,[0,-.30,.12],[.22,.19,.22],24);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.065,.22,12),clawMat);
+          claw.position.set(k*.115,-.43,.28);claw.rotation.x=-.48;claw.rotation.z=-k*.12;claw.castShadow=true;arm.add(claw);
+        }
+      }
+      // Piedi larghi, con tre unghiette ciascuno.
+      const feet=[];
+      for(const side of [-1,1]){
+        const foot=new THREE.Group();foot.position.set(side*.43,.19,.17);talpitrippa.add(foot);feet.push(foot);
+        ellipsoid(foot,pawFur,[0,0,.06],[.39,.20,.43],32);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.085,.25,12),clawMat);
+          claw.position.set(k*.19,-.015,.39);claw.rotation.x=-.58;claw.rotation.z=-k*.16;claw.castShadow=true;foot.add(claw);
+        }
+      }
+      // Piccole ciocche in rilievo lungo la silhouette per evitare l'effetto gommoso.
+      for(let i=0;i<17;i++){
+        const a=(i/17)*Math.PI*2;
+        const tuft=ellipsoid(talpitrippa,darkFur,[Math.cos(a)*.76,1.45+Math.sin(a)*.68,Math.sin(a)*.52],[.075,.12,.07],12);
+        tuft.rotation.z=-Math.cos(a)*.35;
+      }
+      talpitrippa.position.set(0,0,0);
+      player.add(talpitrippa);
+      playerMotion.model=talpitrippa;
+      playerMotion.arms=arms;
+      playerMotion.feet=feet;
+      const talpitrippaShadow = new THREE.Mesh(
+        new THREE.CircleGeometry(.78,32),
+        new THREE.MeshBasicMaterial({color:"#211b20",transparent:true,opacity:.28,depthWrite:false})
+      );
+      talpitrippaShadow.rotation.x=-Math.PI/2;
+      talpitrippaShadow.position.set(-44,.035,2);
+      talpitrippaShadow.scale.set(1.25,.62,1);
+      scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
@@ -1806,24 +1834,26 @@ export default function Amargenta3D({ onExit }) {
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
           yaw+=yawDelta*(1-Math.exp(-2.1*dt));
         }
-        // Ciclo passi proporzionale alla velocità, con ampiezza che sfuma durante la frenata.
+        // Ciclo di movimento del modello 3D: rimbalzo del corpo e alternanza di braccia/piedi.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
-        const gait=clock.elapsedTime*(sprint?12.2:8.8);
-        const armSwing=Math.sin(gait)*.34*walkBlend;
-        const legSwing=Math.sin(gait)*.43*walkBlend;
-        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,11,dt);
-        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,11,dt);
-        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,12,dt);
-        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,12,dt);
-        // Peso del corpo e lieve inclinazione in corsa: evita l'effetto marionetta.
-        playerMotion.torso.position.y=THREE.MathUtils.damp(playerMotion.torso.position.y,1.12+Math.abs(Math.sin(gait*2))*.035*walkBlend,9,dt);
-        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.055*walkBlend),7,dt);
+        const gait=clock.elapsedTime*(sprint?10.5:7.8);
+        const step=Math.sin(gait)*walkBlend;
+        if(playerMotion.model){
+          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10;
+          playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend,7,dt);
+          playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16,9,dt);});
+          playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
+        }
+        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
+        talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
+        talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
+        talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
         const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
-        const cameraEase=1-Math.exp(-7.5*dt);
+        const cameraEase=1-Math.exp(-5.8*dt);
         camera.position.lerp(cp,cameraEase);
-        cameraLookTarget.lerp(target,1-Math.exp(-9*dt));
+        cameraLookTarget.lerp(target,1-Math.exp(-7.2*dt));
         camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
@@ -2088,18 +2118,6 @@ export default function Amargenta3D({ onExit }) {
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕",["Peperoncini",inventory.peppers,"🌶️"],["Tartufi",inventory.truffles,"🍄"],["Latte imbottigliato",inventory.milk,"🥛"],["Chicchi di caffè",inventory.coffeeBeans,"🫘"]],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
-    </div>}
-    {!firstDayDone&&<div role="dialog" aria-modal="true" style={{position:"absolute",inset:0,zIndex:60,display:"grid",placeItems:"center",padding:20,background:"rgba(12,22,18,.88)",backdropFilter:"blur(10px)"}}>
-      <div style={{width:"min(620px,100%)",maxHeight:"90vh",overflowY:"auto",padding:24,borderRadius:22,background:"linear-gradient(145deg,#f2e4c8,#d9c39c)",border:"2px solid #b58a55",color:"#493522",boxShadow:"0 25px 90px #000b"}}>
-        <div style={{fontSize:10,letterSpacing:3,fontWeight:900,color:"#94683c"}}>AMARGENTA · GIORNO 1</div>
-        <div style={{fontFamily:"Georgia,serif",fontSize:27,fontWeight:900,margin:"8px 0"}}>{firstDayStep===0?"Benvenuto ad Amargenta!":"Scopriamo che Sognatore sei"}</div>
-        <div style={{fontSize:13,lineHeight:1.6,marginBottom:16}}>{firstDayStep===0?"I Sognatori ti hanno trovato all'ingresso. Prima di accoglierti nella comunità vogliono conoscerti: rispondi a dieci domande e scopri con chi stringerai il tuo primo legame.":"Domanda "+(firstDayStep+1)+" di 10 · Scegli la risposta che ti rappresenta di più."}</div>
-        {firstDayStep===0&&<div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>{[["Flame","#ed4b24"],["Zibelle","#713b28"],["Lattelo","#ffd92e"]].map(([n,c])=><span key={n} style={{padding:"5px 10px",borderRadius:20,background:c,color:"#fff",fontWeight:900,fontSize:11}}>{n}</span>)}</div>}
-        <div style={{fontSize:18,fontWeight:900,marginBottom:12}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].q}</div>
-        <div style={{display:"grid",gap:9}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].a.map(([label,id])=><button key={id} onClick={()=>answerFirstDay(id)} style={{textAlign:"left",padding:"13px 15px",borderRadius:12,border:"1px solid #a9855b",background:"#fff8e8",color:"#493522",fontWeight:800,cursor:"pointer"}}>{label}</button>)}</div>
-        <div style={{marginTop:15,height:6,borderRadius:9,background:"#c8b18e",overflow:"hidden"}}><div style={{height:"100%",width:((firstDayStep+1)/10*100)+"%",background:"#68824e",transition:"width .2s"}}/></div>
-        <div style={{marginTop:7,fontSize:10,color:"#806344",fontWeight:800}}>DOMANDA {firstDayStep+1}/10</div>
-      </div>
     </div>}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
