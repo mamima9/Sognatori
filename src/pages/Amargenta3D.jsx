@@ -265,27 +265,52 @@ export default function Amargenta3D({ onExit }) {
       addBoxCollider(cx+halfW,cz,wall,depth);
     };
     const makeTree = (x,z,s=1,berries=false) => {
-      const g=new THREE.Group(); scene.add(g); g.position.set(x,0,z); g.scale.setScalar(s);
-      cylinder(0.18,0.28,2.2,wood,g,0,1.1,0,9);
-      // Rami curvi e chiome stratificate: silhouette meno geometrica e più naturale.
-      for(let side of [-1,1]){
-        const branch=cylinder(.055,.09,1.15,wood,g,side*.28,1.85,-.02,7);
-        branch.rotation.z=side*-.58;
-        const twig=cylinder(.025,.045,.72,wood,g,side*.62,2.22,-.02,6);
-        twig.rotation.z=side*.35;
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
+      // Tronco rastremato e radici visibili: silhouette leggibile anche da lontano.
+      const trunk=cylinder(.29,.16,2.55,wood,g,0,1.22,0,11);
+      trunk.rotation.z=.025;
+      for(let side=-1;side<=1;side+=2){
+        const root=cylinder(.10,.22,.82,wood,g,side*.27,.28,.12,8);
+        root.rotation.z=side*.62;
+        const branch=cylinder(.065,.12,1.35,wood,g,side*.48,1.9,-.02,8);
+        branch.rotation.z=side*-.48;
+        const twig=cylinder(.035,.07,.8,wood,g,side*.9,2.48,-.04,7);
+        twig.rotation.z=side*.32;
       }
-      for(let i=0;i<8;i++){
-        const a=i*2.399, ring=i%3;
-        const c=sphere(.78+(i%2)*.12,i%3?leaf:leaf2,g,Math.cos(a)*(.48+ring*.12),2.25+ring*.34,Math.sin(a)*(.48+ring*.12),2);
-        c.scale.set(1.08,.82,.96);
+      // Chiome organiche: icosaedri deformati, non sfere perfette ripetute.
+      const makeCanopy=(radius,material,px,py,pz,seed)=>{
+        const geo=new THREE.IcosahedronGeometry(radius,2);
+        const attr=geo.attributes.position;
+        for(let v=0;v<attr.count;v++){
+          const vx=attr.getX(v),vy=attr.getY(v),vz=attr.getZ(v);
+          const wave=1+.075*Math.sin(vx*8+seed)*Math.cos(vy*7-seed*.7)+.035*Math.sin(vz*13+seed*1.3);
+          attr.setXYZ(v,vx*wave,vy*wave,vz*wave);
+        }
+        geo.computeVertexNormals();
+        const mesh=new THREE.Mesh(geo,material);
+        mesh.position.set(px,py,pz);mesh.scale.set(1.12,.94,1.02);
+        mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);return mesh;
+      };
+      for(let i=0;i<9;i++){
+        const a=i*2.399,ring=i%3;
+        makeCanopy(.72+(i%2)*.12,i%3?leaf:leaf2,Math.cos(a)*(.48+ring*.1),2.48+ring*.28,Math.sin(a)*(.48+ring*.1),i+Math.round(x*3));
       }
-      for(let i=0;i<12;i++){
-        const a=i*2.399, rr=.42+(i%4)*.19;
-        const leafCluster=sphere(.22,i%2?leaf2:leaf,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,1);
-        leafCluster.scale.set(1.25,.72,.9);
+      makeCanopy(.72,leaf2,0,3.12,0,31+Math.round(z));
+      // Ciuffi esterni e foglie singole spezzano il profilo della chioma.
+      for(let i=0;i<16;i++){
+        const a=i*2.399,rr=.83+(i%3)*.09;
+        const leafTip=addMesh(new THREE.ConeGeometry(.12,.34,5),i%3?leaf:leaf2,g,Math.cos(a)*rr,2.35+(i%4)*.19,Math.sin(a)*rr);
+        leafTip.rotation.z=Math.cos(a)*-.45;leafTip.rotation.x=Math.sin(a)*.42;
       }
-      if(berries) for(let i=0;i<18;i++){const a=i*2.399, rr=.52+(i%3)*.18; sphere(.09,coffeeRed,g,Math.cos(a)*rr,1.85+(i%5)*.24,Math.sin(a)*rr,2);}
-      addCollider(x,z,.55*s,3.2*s);
+      if(berries){
+        const berryMat=mat("#c85b4c",.48,{roughness:.48});
+        for(let i=0;i<16;i++){
+          const a=i*2.399,rr=.58+(i%3)*.16;
+          sphere(.075,berryMat,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,2);
+        }
+      }
+      addCollider(x,z,.62*s,3.4*s);
+      return g;
     };
     // Muccanza #42 — giovane fan umano del latte di Lattelo, con bottiglia e tazza da caffellatte.
     const makeMuccanza = () => {
@@ -1260,7 +1285,7 @@ export default function Amargenta3D({ onExit }) {
       // La distribuzione è deterministica per mantenere identica la scena ad ogni caricamento.
       const meadowMats=["#e7c96f","#f1e6c2","#e99a9a","#d8b7e8","#f4a65e"].map(color=>mat(color,.82));
       const grassMats=["#718e50","#8da85d","#a5b96d","#587b49"].map(color=>mat(color,1));
-      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);
+      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);\n      const flowerCenterMat=mat("#f7d56c",.72), flowerPetalMats=meadowMats;
       const seeded=(n)=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
       for(let i=0;i<210;i++){
         const a=seeded(i+11)*Math.PI*2, r=13+seeded(i+91)*43;
@@ -1276,7 +1301,7 @@ export default function Amargenta3D({ onExit }) {
         if(i%3===0){
           const flower=sphere(.105,meadowMats[i%meadowMats.length],patch,0,.43,0,2);
           flower.scale.set(1,.55,1);
-          sphere(.045,mat("#f7d56c"),patch,0,.49,0,1);
+          sphere(.045,flowerCenterMat,patch,0,.49,0,1);
         }
         if(i%9===0){
           cylinder(.09,.12,.22,mushroomStem,patch,.24,.11,.12,7);
@@ -1296,7 +1321,7 @@ export default function Amargenta3D({ onExit }) {
           const a=j/7*Math.PI*2,rr=1.1+(j%2)*.45;
           const flower=sphere(.12,meadowMats[j%meadowMats.length],scene,cx+Math.cos(a)*rr,.38,cz+Math.sin(a)*rr,2);
           flower.scale.set(1,.62,1);
-          sphere(.045,mat("#f8d76a"),scene,cx+Math.cos(a)*rr,.45,cz+Math.sin(a)*rr,1);
+          sphere(.045,flowerCenterMat,scene,cx+Math.cos(a)*rr,.45,cz+Math.sin(a)*rr,1);
         }
       }
       // Piccolo bosco sacro ai margini del villaggio: rocce, cespugli e pietre votive.
