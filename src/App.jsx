@@ -72,6 +72,7 @@ const AuthenticatedApp = () => {
            <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="/avventura" element={<Avventura />} />
+        <Route path="/provaMESHY" element={<Amargenta3D />} />
         <Route path="/amargenta-3d" element={canAccessAmargenta3D ? <Amargenta3D /> : (
           <div className="min-h-screen flex items-center justify-center bg-[#18221e] text-[#f4ead8] p-6">
             <div className="max-w-md text-center rounded-2xl border border-[#d8b77d66] bg-[#243229] p-8 shadow-2xl">
