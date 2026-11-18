@@ -1573,10 +1573,13 @@ export default function Amargenta3D({ onExit }) {
       };
       const nerioInteraction=interactables.find(item=>item.id==="merchant");
       if(nerioInteraction)nerioInteraction.action=()=>{
-        const beans=inventoryRef.current.amberBeans, citrusCount=inventoryRef.current.citrus;
-        if(beans<1||citrusCount<1){setDialogue({title:"Muccanza · Banco degli scambi",text:"Per preparare una Tisana del Retrogusto servono 1 Fava d'Ambra e 1 agrume.\nIn borsa: "+beans+" fave e "+citrusCount+" agrumi."});return;}
-        setInventory(old=>({...old,amberBeans:old.amberBeans-1,citrus:old.citrus-1,herbalTea:old.herbalTea+1}));
-        setDialogue({title:"Tisana del Retrogusto",text:"Muccanza ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
+        const bag=inventoryRef.current;
+        if(bag.milk>0&&bag.truffles>0&&bag.peppers>0&&bag.coffeeBeans>0){
+          setInventory(old=>({...old,milk:old.milk-1,truffles:old.truffles-1,peppers:old.peppers-1,coffeeBeans:old.coffeeBeans-1,amberBeans:old.amberBeans+4}));
+          setDialogue({title:"Muccanza · Mercato di Amargenta",text:"Affare fatto! Ho acquistato 1 latte, 1 tartufo, 1 peperoncino e 1 chicco di caffè. Hai ricevuto 4 Fave d'Ambra."});
+        }else{
+          setDialogue({title:"Muccanza · Mercato di Amargenta",text:"Compro i prodotti freschi di Amargenta: consegnami 1 latte, 1 tartufo, 1 peperoncino e 1 chicco di caffè e ti pago 4 Fave d'Ambra. Raccogli i prodotti e torna da me."});
+        }
       };
       makeNpc("keeper","Belligonghi-umami","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       const adaInteraction=interactables.find(item=>item.id==="keeper");
@@ -2075,7 +2078,7 @@ export default function Amargenta3D({ onExit }) {
         {AMARGENTA_ROSTER.filter((s)=>ownedAmargentaIds.includes(s.id) && amargentaBoxIds.includes(s.id)).map((s)=><div key={s.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid #ffffff18"}}><img src={s.img} alt={s.nome} style={{width:42,height:42,objectFit:"contain",background:"#ffffff12",borderRadius:9}}/><div style={{flex:1,minWidth:0}}><strong>{s.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{s.tipo} · ATK {s.att} · DEF {s.dif} · SPE {s.vel}</div></div><button disabled={amargentaPartyIds.length>=4} onClick={()=>moveAmargentaToParty(s.id)} style={{border:"1px solid #d8bd8b88",borderRadius:8,padding:"6px 9px",background:amargentaPartyIds.length>=4?"#454545":"#315b42",color:"#f6ead5",fontSize:10,fontWeight:800,opacity:amargentaPartyIds.length>=4?.5:1}}>In squadra</button></div>)}
       </div>}
       {panel==="inventory"&&<div>
-        {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
+        {[[ "Fave d'Ambra",inventory.amberBeans,"☕",["Peperoncini",inventory.peppers,"🌶️"],["Tartufi",inventory.truffles,"🍄"],["Latte imbottigliato",inventory.milk,"🥛"],["Chicchi di caffè",inventory.coffeeBeans,"🫘"]],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
     </div>}
