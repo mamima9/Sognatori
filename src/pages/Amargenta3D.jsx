@@ -1582,10 +1582,10 @@ export default function Amargenta3D({ onExit }) {
       const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
-        arabniteActive=true;characterState.active="cervio";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");
+        arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
-        arabniteActive=false;characterState.active="talpitrippa";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
+        arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
       },5.5);
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
