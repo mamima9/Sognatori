@@ -1803,9 +1803,96 @@ export default function Amargenta3D({ onExit }) {
       }
       talpitrippa.position.set(0,0,0);
       player.add(talpitrippa);
-      playerMotion.model=talpitrippa;
-      playerMotion.arms=arms;
-      playerMotion.feet=feet;
+
+      // RIPPLE 3D — secondo personaggio selezionabile e giocabile nell'overworld.
+      // Modello procedurale ispirato allo screenshot: squalo antropomorfo, tuta rossa,
+      // fasce bianche/nere, sneakers e amo. Tutte le parti sono geometria 3D.
+      const ripple = new THREE.Group();
+      const rippleBlack=mat("#171820",.48), rippleDark=mat("#252630",.52);
+      const rippleWhite=mat("#eee9df",.72), rippleRed=mat("#c92332",.48);
+      const rippleRedDark=mat("#831b28",.58), rippleSole=mat("#f4eee4",.82);
+      const rippleEye=new THREE.MeshPhysicalMaterial({color:"#e8e4df",roughness:.16,clearcoat:1});
+      const rippleIris=mat("#d52d37",.24,{metalness:.18});
+      const ripplePupil=mat("#100f16",.12);
+      const rippleTeeth=mat("#fff4d9",.35);
+      const rippleBody=new THREE.Group();ripple.add(rippleBody);
+      const rEll=(parent,material,pos,scale,detail=24)=>{
+        const m=new THREE.Mesh(new THREE.SphereGeometry(1,detail,Math.max(12,detail>>1)),material);
+        m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+      };
+      // Testa allungata e muso da squalo.
+      rEll(rippleBody,rippleBlack,[0,2.16,.02],[.66,.73,.62],40);
+      rEll(rippleBody,rippleDark,[0,2.28,.48],[.59,.40,.72],36);
+      rEll(rippleBody,rippleWhite,[0,1.98,.72],[.53,.18,.57],32);
+      // Mascella aperta: interno rosso e doppia fila di denti.
+      rEll(rippleBody,rippleRedDark,[0,1.91,.93],[.48,.12,.40],32);
+      rEll(rippleBody,rippleWhite,[0,2.035,.93],[.49,.075,.39],32);
+      for(let i=0;i<7;i++){
+        const x=-.38+i*.127;
+        const tooth=new THREE.Mesh(new THREE.ConeGeometry(.045,.15,8),rippleTeeth);
+        tooth.position.set(x,1.985,.99);tooth.rotation.z=Math.PI;tooth.castShadow=true;rippleBody.add(tooth);
+        const lower=new THREE.Mesh(new THREE.ConeGeometry(.04,.13,8),rippleTeeth);
+        lower.position.set(x,1.855,1.02);lower.castShadow=true;rippleBody.add(lower);
+      }
+      // Occhio laterale rosso, grande e leggibile.
+      rEll(rippleBody,rippleEye,[-.47,2.47,.38],[.17,.19,.10],28);
+      rEll(rippleBody,rippleIris,[-.49,2.47,.465],[.105,.12,.045],24);
+      rEll(rippleBody,ripplePupil,[-.50,2.47,.502],[.055,.075,.025],20);
+      rEll(rippleBody,rippleEye,[-.52,2.51,.523],[.025,.03,.012],12);
+      // Corpo a righe bianco/nero e dettagli rossi sulla schiena.
+      rEll(rippleBody,rippleBlack,[0,1.25,-.02],[.49,.77,.39],32);
+      for(let i=0;i<4;i++){
+        const stripe=rEll(rippleBody,rippleWhite,[0,.91+i*.20,.285],[.47,.055,.13],24);
+        stripe.rotation.z=-.05;
+      }
+      const dorsal=new THREE.Mesh(new THREE.ConeGeometry(.16,.42,8),rippleRed);
+      dorsal.position.set(.02,2.68,-.34);dorsal.rotation.z=-.25;dorsal.castShadow=true;rippleBody.add(dorsal);
+      // Pantaloncini rossi con bande laterali bianche.
+      rEll(rippleBody,rippleRed,[0,.69,.02],[.51,.30,.40],32);
+      for(const side of [-1,1]){
+        const stripe=rEll(rippleBody,rippleSole,[side*.48,.72,.045],[.045,.25,.32],18);
+        stripe.rotation.z=side*-.10;
+      }
+      const rippleArms=[],rippleFeet=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(side*.53,1.42,.02);rippleBody.add(arm);rippleArms.push(arm);
+        const limb=rEll(arm,rippleBlack,[side*.10,-.35,.02],[.17,.55,.19],24);limb.rotation.z=side*-.13;
+        rEll(arm,rippleRedDark,[side*.13,-.66,.06],[.13,.23,.15],18);
+        for(let k=0;k<3;k++)rEll(arm,rippleWhite,[side*(.08+k*.055),-.82,.14],[.035,.10,.04],12);
+        const leg=new THREE.Group();leg.position.set(side*.23,.48,.04);rippleBody.add(leg);rippleFeet.push(leg);
+        rEll(leg,rippleWhite,[0,-.20,.01],[.13,.38,.14],20);
+        rEll(leg,rippleRed,[0,-.43,.08],[.17,.13,.22],20);
+        rEll(leg,rippleSole,[0,-.52,.12],[.20,.055,.27],20);
+        // Lacci delle sneakers.
+        for(let lace=0;lace<3;lace++)rEll(leg,rippleWhite,[0,-.39+lace*.045,.255],[.09,.018,.018],10);
+      }
+      // Amo appeso al muso con cordino rosso.
+      const hookCurve=new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-.59,2.03,.75),new THREE.Vector3(-.72,1.75,.82),
+        new THREE.Vector3(-.70,1.48,.80),new THREE.Vector3(-.55,1.40,.80),
+        new THREE.Vector3(-.48,1.52,.80)
+      ]);
+      const hook=new THREE.Mesh(new THREE.TubeGeometry(hookCurve,24,.025,8,false),mat("#9da1a6",.25,{metalness:.8}));
+      hook.castShadow=true;rippleBody.add(hook);
+      const cord=new THREE.Mesh(new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)
+      ]).getPoints(16).length?new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)
+      ]),12,.018,6,false):new THREE.BufferGeometry(),rippleRed);
+      rippleBody.add(cord);
+      ripple.visible=false;player.add(ripple);
+      playerMotion.model=talpitrippa;playerMotion.arms=arms;playerMotion.feet=feet;
+      const characterState={active:"talpitrippa",talpitrippa,ripple,arms,feet,rippleArms,rippleFeet};
+      const switchCharacter=()=>{
+        characterState.active=characterState.active==="talpitrippa"?"ripple":"talpitrippa";
+        const isRipple=characterState.active==="ripple";
+        talpitrippa.visible=!isRipple;ripple.visible=isRipple;
+        playerMotion.model=isRipple?rippleBody:talpitrippa;
+        playerMotion.arms=isRipple?rippleArms:arms;
+        playerMotion.feet=isRipple?rippleFeet:feet;
+        playerMotion.eyes=isRipple?[]:eyeMeshes;
+        setToast(isRipple?"Ripple · personaggio attivo":"Talpitrippa · personaggio attivo");
+      };
       const talpitrippaShadow = new THREE.Mesh(
         new THREE.CircleGeometry(.78,32),
         new THREE.MeshBasicMaterial({color:"#211b20",transparent:true,opacity:.28,depthWrite:false})
@@ -1827,7 +1914,7 @@ export default function Amargenta3D({ onExit }) {
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
-        if(e.code==="Escape"){setDialogue(null);setPanel(null);}
+        if(e.code==="Escape"){setDialogue(null);setPanel(null);}\n        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
         if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
         if(!e.repeat&&e.code==="KeyI")setPanel(old=>old==="inventory"?null:"inventory");
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
@@ -2152,7 +2239,7 @@ export default function Amargenta3D({ onExit }) {
       </div>
       {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
-      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
+      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>C: cambia personaggio · Talpitrippa / Ripple</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
       {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:panel==="journal"?"#68472f":"#e9c58d",letterSpacing:1}}>{panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:panel==="journal"?"#68472f":"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
       {panel==="map"&&<div>
         <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
