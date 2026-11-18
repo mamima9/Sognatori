@@ -1,18 +1,4 @@
-impo
-  const answerFirstDay = (starter) => {
-    const next=[...firstDayAnswers,starter];
-    setFirstDayAnswers(next);
-    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
-    const scores={flame:0,zibelle:0,lattelo:0};
-    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
-    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
-    setFirstDayStarter(chosen);
-    setFirstDayDone(true);
-    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
-    recruitAmargenta(chosen);
-    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
-  };
-rt React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
