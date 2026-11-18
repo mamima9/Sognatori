@@ -212,6 +212,10 @@ function Amargenta3DContent({ onExit }) {
     const bellActors = [];
     const groundEdits = [];
     const ambientCreatures = [];
+    const harvestableTrees = [];
+    const candyShots = [];
+    let climbHeight = 0;
+    let climbingWall = null;
     let arabniteActive = false;
     let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
     const movementVelocity = new THREE.Vector3();
@@ -323,13 +327,15 @@ function Amargenta3DContent({ onExit }) {
         const leafTip=addMesh(new THREE.ConeGeometry(.12,.34,5),i%3?leaf:leaf2,g,Math.cos(a)*rr,2.35+(i%4)*.19,Math.sin(a)*rr);
         leafTip.rotation.z=Math.cos(a)*-.45;leafTip.rotation.x=Math.sin(a)*.42;
       }
+      const berryMeshes=[];
       if(berries){
         const berryMat=mat("#c85b4c",.48,{roughness:.48});
         for(let i=0;i<16;i++){
           const a=i*2.399,rr=.58+(i%3)*.16;
-          sphere(.075,berryMat,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,2);
+          berryMeshes.push(sphere(.075,berryMat,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,2));
         }
       }
+      harvestableTrees.push({group:g,x,z,berries:berryMeshes,harvested:false});
       addCollider(x,z,.62*s,3.4*s);
       return g;
     };
@@ -1598,6 +1604,13 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
+      // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
+      const arabIce=mat("#a8e8f2",.22,{metalness:.28,roughness:.2,transparent:true,opacity:.92});
+      const icePatch=addMesh(new THREE.PlaneGeometry(27,19),arabIce,scene,164,.035,-13);
+      icePatch.rotation.x=-Math.PI/2;
+      const iceEdge=addMesh(new THREE.RingGeometry(12.8,13.35,64),mat("#e2fbff",.28,{metalness:.18}),scene,164,.07,-13);
+      iceEdge.rotation.x=-Math.PI/2;
+      const isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
       const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
       const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
@@ -2108,8 +2121,26 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
-        if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current&&characterState.active==="talpitrippa"){
-          const p=player.position;makeGroundEdit("hole",p.x+Math.sin(player.rotation.y)*1.15,p.z+Math.cos(player.rotation.y)*1.15);setToast("Talpitrippa ha scavato una buca!");
+        if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current){
+          const p=player.position;
+          if(characterState.active==="talpitrippa"){
+            makeGroundEdit("hole",p.x+Math.sin(player.rotation.y)*1.15,p.z+Math.cos(player.rotation.y)*1.15);setToast("Talpitrippa ha scavato una buca!");
+          } else if(characterState.active==="ripple"){
+            if(isWaterAt(p.x,p.z)||Math.abs(p.x-(28+(p.z-2)*.08))<9){setInventory(old=>({...old,fish:(old.fish||0)+1}));setToast("Ripple ha pescato un pesce con il suo uncino!");playerMotion.arms.forEach((arm)=>{arm.rotation.x=-.85;});}
+            else setToast("Avvicinati al fiume per pescare con Ripple.");
+          } else if(characterState.active==="moci-moci"){
+            const wall=colliders.filter(c=>c.type==="box"&&c.height>=2.5).map(c=>({...c,distance:Math.hypot(p.x-c.x,p.z-c.z)})).filter(c=>c.distance<Math.max(c.halfW,c.halfD)+1.8).sort((a,b)=>a.distance-b.distance)[0];
+            if(wall){climbingWall=wall;climbHeight=Math.max(.2,climbHeight);setToast("Moci Moci si è appiccicato alla parete: tieni W per scalarla!");}
+            else setToast("Avvicinati a una parete per scalarla con Moci Moci.");
+          } else if(characterState.active==="piocino"){
+            jumpRequested=true;setToast("Piocino prende il volo! Tieni premuto SPAZIO per svolazzare.");
+          } else if(characterState.active==="gunvallo"){
+            const shot=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),mat("#ff70b8",.3,{emissive:"#d52d86",emissiveIntensity:.7}));
+            shot.position.set(p.x,1.65,p.z);shot.castShadow=true;scene.add(shot);
+            const dir=new THREE.Vector3(Math.sin(player.rotation.y),.08,Math.cos(player.rotation.y)).normalize();
+            candyShots.push({mesh:shot,velocity:dir.multiplyScalar(22),life:2.2});
+            setToast("Gunvallo spara una caramella! Colpisci un albero per far cadere le bacche.");
+          }
         }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
         if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
@@ -2142,10 +2173,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
-        if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=7.4;
+        if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
+        const fluttering=characterState.active==="piocino"&&keys.has("Space")&&jumpHeight>.05;
         jumpRequested=false;
         if(jumpHeight>0||jumpVelocity>0){
-          jumpVelocity-=18*dt;
+          jumpVelocity-=(fluttering?5.2:18)*dt;
+          if(fluttering)jumpVelocity=Math.max(jumpVelocity,1.8);
           jumpHeight+=jumpVelocity*dt;
           if(jumpHeight<=0){jumpHeight=0;jumpVelocity=0;}
         }
@@ -2156,17 +2189,28 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const activeSide=controlsLockedRef.current?0:side;
         const inputLength=Math.min(1,Math.hypot(activeForward,activeSide));
         const sprint=(keys.has("ShiftLeft")||keys.has("ShiftRight"))&&inputLength>.05;
+        const onIce=isArabniteIceAt(player.position.x,player.position.z);
+        const isRullino=characterState.active==="rullino"&&arabniteActive;
+        const isCervio=characterState.active==="cervio"&&arabniteActive;
         desiredMovement.set(0,0,0);
         if(inputLength>.05){
           const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
           const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-          desiredMovement.copy(dir).multiplyScalar(activeForward).addScaledVector(right,activeSide).normalize().multiplyScalar(sprint?9.2:6.1);
+          const baseSpeed=isCervio?11.4:isRullino?8.2:6.1;
+          const speed=baseSpeed*(sprint?(isCervio?1.32:1.5):1);
+          desiredMovement.copy(dir).multiplyScalar(activeForward).addScaledVector(right,activeSide).normalize().multiplyScalar(speed);
         }
-        // Partenza morbida e frenata controllata, con velocità più leggibile.
-        const acceleration=inputLength>.05?7.2:9.5;
+        // Sul ghiaccio senza Rullino la trazione crolla: si continua a scivolare e sterzare tardi.
+        const acceleration=onIce&&!isRullino?(inputLength>.05?1.65:.38):isRullino?11.5:inputLength>.05?7.2:9.5;
         movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
         const move=movementVelocity.clone().multiplyScalar(dt);
 
+        if(climbingWall&&characterState.active==="moci-moci"){
+          if(inputLength>.05&&activeForward>.05){climbHeight=Math.min((climbingWall.height||3.4)+.6,climbHeight+3.4*dt);movementVelocity.multiplyScalar(.08);}
+          else if(inputLength>.05&&activeForward<-.05){climbHeight=Math.max(0,climbHeight-3.4*dt);}
+          else if(inputLength<.05){climbHeight=Math.max(0,climbHeight-1.1*dt);}
+          if(climbHeight<=.01){climbHeight=0;climbingWall=null;}
+        }else if(climbingWall){climbHeight=0;climbingWall=null;}
         const nx = player.position.x + move.x;
         const nz = player.position.z + move.z;
         if (Math.abs(move.x) > 0.0001 && !isBlockedAt(nx, player.position.z)) {
@@ -2179,12 +2223,18 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         } else if (isBlockedAt(player.position.x, nz)) {
           movementVelocity.z = 0;
         }
-        player.position.y=(player.position.x>120?0:getWalkHeight(player.position.x,player.position.z))+jumpHeight;
+        player.position.y=(player.position.x>120?0:getWalkHeight(player.position.x,player.position.z))+jumpHeight+climbHeight;
         ambientCreatures.forEach(cr=>{
           const t=clock.elapsedTime+cr.phase;
           if(cr.fly){cr.group.position.set(cr.homeX+Math.sin(t*.22)*9,cr.baseY+Math.sin(t*1.25)*1.15,cr.homeZ+Math.cos(t*.19)*8);cr.group.rotation.z=Math.sin(t*2.4)*.08;cr.leftWing.rotation.z=Math.sin(t*9)*.52;cr.rightWing.rotation.z=-Math.sin(t*9)*.52;}
           else{cr.group.position.x=cr.homeX+Math.sin(t*.28)*3.2;cr.group.position.z=cr.homeZ+Math.cos(t*.24)*2.8;cr.group.position.y=Math.abs(Math.sin(t*3))*.07;cr.group.rotation.y=Math.sin(t*.28)*.5;cr.feet.forEach((foot,i)=>foot.rotation.x=Math.sin(t*4+i*Math.PI)*.18);if(cr.id==="tartadino"&&Math.floor(t/9)!==Math.floor((t-.04)/9))makeGroundEdit("grass",cr.group.position.x,cr.group.position.z);if(cr.id==="patato"&&Math.floor(t/12)!==Math.floor((t-.04)/12))makeGroundEdit("furrow",cr.group.position.x,cr.group.position.z);}
         });
+        for(let i=candyShots.length-1;i>=0;i--){
+          const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
+          const tree=harvestableTrees.find(t=>t.berries.length&&!t.harvested&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<2.4&&shot.mesh.position.y<5.2);
+          if(tree){tree.harvested=true;tree.berries.forEach((berry,j)=>{berry.visible=false;});setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Le bacche sono cadute dall’albero! +5 bacche.");shot.life=0;}
+          if(shot.life<=0){scene.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
+        }
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
         if(horizontalSpeed>.18){
           const desiredFacing=Math.atan2(movementVelocity.x,movementVelocity.z);
@@ -2198,6 +2248,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         // Ciclo di movimento del modello 3D: rimbalzo del corpo e alternanza di braccia/piedi.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
         const gait=clock.elapsedTime*(sprint?10.5:7.8);
+        if(isRullino&&onIce){player.rotation.z=THREE.MathUtils.damp(player.rotation.z,Math.sin(clock.elapsedTime*5)*.035,5,dt);playerMotion.model.rotation.x=Math.sin(clock.elapsedTime*9)*.035;}
+        if(isCervio&&horizontalSpeed>.2){playerMotion.model.scale.set(1.04,1.02,1.06);}
         const step=Math.sin(gait)*walkBlend;
         if(playerMotion.model){
           const idleBreath=Math.sin(clock.elapsedTime*2.1)*.018;
@@ -2211,7 +2263,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const blink=blinkPhase>.0&&blinkPhase<.13?Math.sin(Math.PI*blinkPhase/.13):0;
           playerMotion.eyes?.forEach(eye=>{eye.scale.y=.19*(1-.88*blink);});
         }
-        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
+        if(!(isRullino&&onIce))player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
+        if(!isCervio)playerMotion.model?.scale.set(1,1,1);
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
         talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
         talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
