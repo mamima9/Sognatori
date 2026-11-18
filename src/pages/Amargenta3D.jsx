@@ -68,6 +68,19 @@ export default function Amargenta3D({ onExit }) {
     setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
     return true;
   };
+  const answerFirstDay = (starter) => {
+    const next=[...firstDayAnswers,starter];
+    setFirstDayAnswers(next);
+    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
+    const scores={flame:0,zibelle:0,lattelo:0};
+    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
+    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+    setFirstDayStarter(chosen);
+    setFirstDayDone(true);
+    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
+    recruitAmargenta(chosen);
+    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
+  };
   const moveAmargentaToParty = (id) => {
     if (!ownedAmargentaIds.includes(id) || amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
     setAmargentaBoxIds((ids) => ids.filter((item) => item !== id));
