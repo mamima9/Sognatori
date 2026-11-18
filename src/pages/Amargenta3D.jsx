@@ -184,6 +184,9 @@ export default function Amargenta3D({ onExit }) {
     const player = new THREE.Group();
     const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null, torso:null };
     const colliders = [];
+    let jumpHeight = 0;
+    let jumpVelocity = 0;
+    let jumpRequested = false;
     const walkablePlatforms = [];
     const walkableRamps = [];
     const interactables = [];
@@ -228,11 +231,12 @@ export default function Amargenta3D({ onExit }) {
     const box = (w,h,d,material,parent,x,y,z) => addMesh(new THREE.BoxGeometry(w,h,d),material,parent,x,y,z);
     const cylinder = (rt,rb,h,material,parent,x,y,z,segments=12) => addMesh(new THREE.CylinderGeometry(rt,rb,h,segments),material,parent,x,y,z);
     const sphere = (r,material,parent,x,y,z,detail=1) => addMesh(new THREE.IcosahedronGeometry(r,detail),material,parent,x,y,z);
-    const addCollider = (x,z,r) => colliders.push({type:"circle",x,z,r});
-    const addBoxCollider = (x,z,w,d,rotation=0) => colliders.push({
-      type:"box",x,z,halfW:w/2,halfD:d/2,rotation
+    const addCollider = (x,z,r,height=2.2) => colliders.push({type:"circle",x,z,r,height});
+    const addBoxCollider = (x,z,w,d,rotation=0,height=3) => colliders.push({
+      type:"box",x,z,halfW:w/2,halfD:d/2,rotation,height
     });
     const isBlockedAt = (x,z,radius=.55) => colliders.some(collider => {
+      if (jumpHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
         return Math.hypot(x-collider.x,z-collider.z) < collider.r+radius;
       }
@@ -277,7 +281,7 @@ export default function Amargenta3D({ onExit }) {
         leafCluster.scale.set(1.25,.72,.9);
       }
       if(berries) for(let i=0;i<18;i++){const a=i*2.399, rr=.52+(i%3)*.18; sphere(.09,coffeeRed,g,Math.cos(a)*rr,1.85+(i%5)*.24,Math.sin(a)*rr,2);}
-      addCollider(x,z,.55*s);
+      addCollider(x,z,.55*s,3.2*s);
     };
     // Muccanza #42 — giovane fan umano del latte di Lattelo, con bottiglia e tazza da caffellatte.
     const makeMuccanza = () => {
@@ -592,7 +596,7 @@ export default function Amargenta3D({ onExit }) {
         beam.rotation.z=(i%2?-.025:.025);
       }
       box(1.35,.28,.12,gold,g,0,h-0.55,d/2+.2);
-      addBoxCollider(x,z,w+.7,d+.7);
+      addBoxCollider(x,z,w+.7,d+.7,0,4.8);
       return g;
     };
     const makeWall = (x,z,length,height=1.2,rot=0) => {
@@ -654,7 +658,7 @@ export default function Amargenta3D({ onExit }) {
       const cap=addMesh(new THREE.ConeGeometry(r*.38,h*.24,7),mat("#d8d8cf"),scene,x,h*.88-1,z);cap.rotation.y=seed*1.7;
       addCollider(x,z,r*.68);
     };
-    const makeLamp = (x,z) => {cylinder(.07,.11,2.5,darkStone,scene,x,1.25,z,8);box(.55,.55,.55,gold,scene,x,2.55,z);sphere(.22,mat("#ffd58b",.25,{emissive:"#d58c35",emissiveIntensity:1.2}),scene,x,2.55,z,2);addCollider(x,z,.28);};
+    const makeLamp = (x,z) => {cylinder(.07,.11,2.5,darkStone,scene,x,1.25,z,8);box(.55,.55,.55,gold,scene,x,2.55,z);sphere(.22,mat("#ffd58b",.25,{emissive:"#d58c35",emissiveIntensity:1.2}),scene,x,2.55,z,2);addCollider(x,z,.28,2.9);};
     const makeFountain = (x,z) => {
       cylinder(3.3,3.7,.65,stoneLight,scene,x,.35,z,32);
       cylinder(2.8,3.1,.22,water,scene,x,.78,z,32);
@@ -953,20 +957,20 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
       box(2.2,.18,.72,wood,g,0,.72,0);
       for(const px of [-.82,.82]){box(.18,.72,.18,darkStone,g,px,.36,0);box(.16,.68,.16,wood,g,px,.38,-.42);}
-      box(2.2,.72,.16,wood,g,0,1.08,-.42);addCollider(x,z,.85);
+      box(2.2,.72,.16,wood,g,0,1.08,-.42);addCollider(x,z,.85,.95);
     };
     const makeFlowerBed = (x,z,rotation=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
       box(3.2,.42,1.65,wood,g,0,.21,0);box(2.9,.12,1.35,mat("#59452f"),g,0,.48,0);
       for(let i=0;i<13;i++){const px=-1.25+(i%7)*.42,pz=-.4+Math.floor(i/7)*.75;cylinder(.035,.045,.5,leaf,g,px,.72,pz,5);sphere(.17,mat(["#d9a0a2","#e7c57f","#f0e5d0","#a5b68b"][i%4]),g,px,.99,pz,1);}
-      addCollider(x,z,1.35);
+      addCollider(x,z,1.35,.58);
     };
     const makeWell = (x,z) => {
       cylinder(1.25,1.4,.8,stone,scene,x,.4,z,16);cylinder(1.02,1.02,.12,water,scene,x,.84,z,16);
       for(const px of [-1,1])box(.18,2.4,.18,wood,scene,x+px,1.9,z);
       box(2.45,.18,.22,wood,scene,x,3.1,z);
       const cap=addMesh(new THREE.ConeGeometry(1.6,.8,4),roof,scene,x,3.55,z);cap.rotation.y=Math.PI/4;
-      cylinder(.055,.055,1.7,gold,scene,x,1.8,z,8);addCollider(x,z,1.4);
+      cylinder(.055,.055,1.7,gold,scene,x,1.8,z,8);addCollider(x,z,1.4,3.9);
     };
     const makeBanner = (x,z,color="#a64c36",rotation=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
@@ -980,11 +984,12 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       for(const px of [-.9,.9])for(const pz of [-.62,.62])box(.16,.82,.16,wood,g,px,1.35,pz);
       box(2.35,.16,1.5,wood,g,0,1.8,0);
       for(const px of [-1.25,1.25]){const wheel=addMesh(new THREE.TorusGeometry(.48,.11,8,18),darkStone,g,px,.58,0);wheel.rotation.y=Math.PI/2;cylinder(.12,.12,.28,gold,g,px,.58,0,10).rotation.z=Math.PI/2;}
-      addCollider(x,z,1.35);
+      addCollider(x,z,1.35,1.95);
     };
     const makeStoneSteps = (x,z,count=5,rotation=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
       for(let i=0;i<count;i++){box(3.2,.22,.9,stoneLight,g,0,.11+i*.25,i*.88);box(3.35,.1,.12,darkStone,g,0,.25+i*.25,i*.88-.38);}
+      addBoxCollider(x,z+count*.38,3.25,count*.88+.5,rotation,Math.max(1.1,count*.25+.25));
     };
     const makeWoodPergola = (x,z,rotation=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
@@ -992,7 +997,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       for(let i=0;i<7;i++)box(.18,.2,4.2,wood,g,-2.4+i*.8,3.45,0);
       box(5,.2,.22,wood,g,0,3.48,-1.8);box(5,.2,.22,wood,g,0,3.48,1.8);
       for(let i=0;i<12;i++){const a=i*2.399;const vine=sphere(.18,leaf,g,Math.cos(a)*2.1,2.8+(i%3)*.18,Math.sin(a)*1.5,1);vine.scale.set(1.5,.7,1);}
-      addCollider(x,z,2.1);
+      for(const px of [-2.4,2.4])for(const pz of [-1.8,1.8])addCollider(x+px*Math.cos(rotation)+pz*Math.sin(rotation),z-px*Math.sin(rotation)+pz*Math.cos(rotation),.22,3.6);
     };
     const makeRockGarden = (x,z,seed=0) => {
       for(let i=0;i<9;i++){const a=i*2.399+seed,r=1.1+(i%3)*.7;const rock=sphere(.35+(i%3)*.12,i%2?stone:stoneLight,scene,x+Math.cos(a)*r,.18,z+Math.sin(a)*r,1);rock.scale.set(1.5,.7,1.1);}
@@ -1003,7 +1008,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       box(.18,2.4,.18,wood,g,-.72,1.2,0);box(.18,2.4,.18,wood,g,.72,1.2,0);
       box(1.8,1.5,.18,wood,g,0,2.15,0);box(1.52,1.18,.06,mat("#d8c39b"),g,0,2.15,.13);
       for(let i=0;i<3;i++){box(.82,.035,.035,coffeeRed,g,0,2.48-i*.28,.18);}
-      box(2.05,.16,.28,wood,g,0,3.02,0);addCollider(x,z,.3);
+      box(2.05,.16,.28,wood,g,0,3.02,0);addCollider(x,z,.3,3.2);
     };
     const makeStringLights = (x1,z1,x2,z2,count=9) => {
       const points=[];
@@ -1642,6 +1647,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
           if(!controlsLockedRef.current){keys.add(e.code);e.preventDefault();}
         }
+        if(e.code==="Space"&&!e.repeat&&!controlsLockedRef.current){jumpRequested=true;e.preventDefault();}
         if(e.code==="KeyE"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
@@ -1677,6 +1683,13 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
+        if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=7.4;
+        jumpRequested=false;
+        if(jumpHeight>0||jumpVelocity>0){
+          jumpVelocity-=18*dt;
+          jumpHeight+=jumpVelocity*dt;
+          if(jumpHeight<=0){jumpHeight=0;jumpVelocity=0;}
+        }
         const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0)-touchStickRef.current.y;
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0)+touchStickRef.current.x;
         if(controlsLockedRef.current) keys.clear();
@@ -1707,7 +1720,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         } else if (isBlockedAt(player.position.x, nz)) {
           movementVelocity.z = 0;
         }
-        player.position.y=getWalkHeight(player.position.x,player.position.z);
+        player.position.y=getWalkHeight(player.position.x,player.position.z)+jumpHeight;
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
         if(horizontalSpeed>.18){
           const desiredFacing=Math.atan2(movementVelocity.x,movementVelocity.z);
@@ -1950,7 +1963,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       </div>
       {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione dal menu per consultare il taccuino, la mappa, la squadra, la borsa o i comandi.</div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
-      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>Shift: corri</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
+      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
       {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>{panel==="map"?"MAPPA DI AMARGENTA":panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
       {panel==="map"&&<div>
         <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
@@ -2049,6 +2062,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       onLostPointerCapture={()=>{touchStickRef.current={x:0,y:0};setTouchStick({x:0,y:0});}}>
       <div style={{width:54,height:54,borderRadius:"50%",border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",boxShadow:"0 3px 12px #0009",transform:`translate(${touchStick.x*35}px,${touchStick.y*35}px)`,pointerEvents:"none"}}/>
     </div>
+    <button aria-label="Salta" onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current)window.dispatchEvent(new KeyboardEvent("keydown",{code:"Space"}));}} style={{position:"absolute",right:28,bottom:42,width:76,height:76,borderRadius:"50%",border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",color:"#fff3dc",fontWeight:900,fontSize:13,boxShadow:"0 5px 18px #0009",zIndex:15,touchAction:"none",cursor:"pointer"}}>SALTO</button>
     {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
