@@ -1731,7 +1731,6 @@ export default function Amargenta3D({ onExit }) {
         tuft.rotation.z=-Math.cos(a)*.35;
       }
       talpitrippa.position.set(0,0,0);
-      talpitrippa.rotation.y=Math.PI;
       player.add(talpitrippa);
       playerMotion.model=talpitrippa;
       playerMotion.arms=arms;
