@@ -1582,10 +1582,10 @@ export default function Amargenta3D({ onExit }) {
       const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
-        arabniteActive=true;player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Sei arrivato ad Arabnite");
+        arabniteActive=true;characterState.active="cervio";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
-        arabniteActive=false;player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
+        arabniteActive=false;characterState.active="talpitrippa";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
       },5.5);
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
@@ -2001,22 +2001,73 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<9;i++){const a=Math.PI+(i/8)*Math.PI;const gem=mEll(necklace,birdPurple,[Math.cos(a)*.43,1.63+Math.sin(a)*.25,.48],[.13,.15,.12],12);gem.rotation.z=a*.2;mEll(necklace,mociWhite,[Math.cos(a)*.43-.035,1.68+Math.sin(a)*.25,.59],[.035,.04,.02],8);}
       const birdFeet=[];
       for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.27,.57,.08);piocino.add(leg);cylinder(.045,.05,.32,birdPink,leg,0,-.12,0,8);const foot=mEll(leg,birdPink,[0,-.29,.12],[.18,.07,.25],12);for(let k=-1;k<=1;k++){const toe=new THREE.Mesh(new THREE.ConeGeometry(.045,.24,6),birdCream);toe.position.set(k*.1,-.3,.32);toe.rotation.x=-Math.PI/2;leg.add(toe);}birdFeet.push(leg);}
-      const characterState={active:"talpitrippa",talpitrippa,ripple,mociMoci,piocino,arms,feet,rippleArms,rippleFeet,mociArms,birdFeet,birdWings,eyeMeshes,mociEyes,piocinoEyes};
-      const characterOrder=["talpitrippa","ripple","moci-moci","piocino"];
+      // ARABNITE: tre avatar esclusivi selezionabili soltanto nella tredicesima città.
+      const cervio=new THREE.Group();player.add(cervio);cervio.visible=false;
+      const cervioWhite=mat("#e8f8ff"),cervioBlue=mat("#55c9f4"),cervioDark=mat("#163b78"),cervioEye=mat("#071b35");
+      mEll(cervio,cervioWhite,[0,1.28,-.05],[.48,.75,.72],28);
+      mEll(cervio,cervioWhite,[0,2.15,.35],[.43,.55,.43],28);
+      for(const side of [-1,1]){
+        mEll(cervio,cervioBlue,[side*.39,2.31,.34],[.22,.12,.14],16);
+        mEll(cervio,cervioEye,[side*.17,2.23,.72],[.075,.09,.035],16);
+        const leg=new THREE.Group();leg.position.set(side*.28,.72,.03);cervio.add(leg);cylinder(.11,.085,.68,cervioWhite,leg,0,-.25,0,10);mEll(leg,cervioBlue,[0,-.62,.08],[.14,.12,.18],12);
+        const antler=new THREE.Group();antler.position.set(side*.2,2.55,.16);cervio.add(antler);
+        const stem=cylinder(.035,.05,.85,cervioBlue,antler,0,.4,0,7);stem.rotation.z=-side*.15;
+        for(let j=0;j<3;j++){const branch=cylinder(.025,.035,.42,cervioBlue,antler,side*(.12+j*.08),.48+j*.17,0,7);branch.rotation.z=-side*.9;}
+      }
+      mEll(cervio,cervioBlue,[0,1.52,.48],[.32,.42,.22],20);
+      const cervioTail=mEll(cervio,cervioWhite,[.42,1.55,-.62],[.2,.36,.2],16);cervioTail.rotation.z=-.6;
+      const cervioLegs=[];for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.22,.65,-.42);cervio.add(leg);cylinder(.09,.07,.62,cervioWhite,leg,0,-.25,0,8);cervioLegs.push(leg);}
+      
+      // GUNVALLO: destriero cowboy bruno con cappello, stella e archibugio scenico.
+      const gunvallo=new THREE.Group();player.add(gunvallo);gunvallo.visible=false;
+      const horseBrown=mat("#9b4d20"),horseLight=mat("#d58a45"),horseDark=mat("#4b2418"),gunMetal=mat("#78899a",.35,{metalness:.65}),gunGold=mat("#e9ad26",.35,{metalness:.5});
+      mEll(gunvallo,horseBrown,[0,1.12,-.05],[.68,.55,.95],28);
+      mEll(gunvallo,horseBrown,[0,1.9,.53],[.42,.75,.42],28);
+      mEll(gunvallo,horseLight,[0,1.65,.88],[.35,.28,.32],20);
+      const hat=cylinder(.39,.39,.18,horseDark,gunvallo,0,2.62,.48,12);cylinder(.56,.56,.08,horseDark,gunvallo,0,2.53,.48,16);
+      mEll(gunvallo,gunGold,[0,2.68,.59],[.13,.15,.045],12);
+      const star=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),gunGold);star.position.set(0,2.68,.65);gunvallo.add(star);
+      // Fucile portato lateralmente, puramente decorativo.
+      const barrel=cylinder(.09,.09,1.45,gunMetal,gunvallo,0,1.83,1.0,10);barrel.rotation.x=Math.PI/2;
+      cylinder(.15,.15,.38,horseDark,gunvallo,0,1.83,.48,10).rotation.x=Math.PI/2;
+      cylinder(.12,.12,.26,gunGold,gunvallo,0,1.83,.13,10).rotation.x=Math.PI/2;
+      const gunLegs=[];for(const side of [-1,1])for(const z of [-.52,.48]){const leg=new THREE.Group();leg.position.set(side*.4,.72,z);gunvallo.add(leg);cylinder(.13,.09,.65,horseBrown,leg,0,-.28,0,9);mEll(leg,gunMetal,[0,-.62,.06],[.17,.12,.2],12);gunLegs.push(leg);}
+      const mane=mEll(gunvallo,horseDark,[0,2.05,.02],[.18,.58,.22],16);mane.rotation.x=-.3;
+      const gunTail=mEll(gunvallo,horseBrown,[.56,1.25,-.8],[.2,.22,.55],16);gunTail.rotation.x=-.6;
+      
+      // RULLINO: papero blu tondeggiante, pancia turchese e becco/zampe arancioni.
+      const rullino=new THREE.Group();player.add(rullino);rullino.visible=false;
+      const duckBlue=mat("#1455df"),duckLight=mat("#2b79ff"),duckMint=mat("#43dcb2"),duckOrange=mat("#ff861c"),duckDark=mat("#101333");
+      mEll(rullino,duckBlue,[0,1.55,0],[.72,.82,.62],32);
+      mEll(rullino,duckMint,[.08,1.05,.24],[.66,.59,.48],28);
+      mEll(rullino,duckBlue,[0,2.27,.12],[.68,.65,.56],32);
+      for(const side of [-1,1]){mEll(rullino,duckDark,[side*.27,2.29,.61],[.12,.15,.055],18);mEll(rullino,mociWhite,[side*.30,2.35,.66],[.045,.05,.02],10);}
+      mEll(rullino,duckOrange,[0,2.02,.72],[.29,.18,.2],16);
+      const duckFeet=[];for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.28,.63,.08);rullino.add(leg);cylinder(.055,.05,.32,duckOrange,leg,0,-.13,0,8);mEll(leg,duckOrange,[0,-.29,.16],[.23,.07,.28],12);duckFeet.push(leg);}
+      const duckWings=[];for(const side of [-1,1]){const wing=new THREE.Group();wing.position.set(side*.58,1.42,-.03);rullino.add(wing);mEll(wing,duckLight,[side*.13,0,0],[.27,.44,.17],18);duckWings.push(wing);}
+      
+      const characterState={active:"talpitrippa",talpitrippa,ripple,mociMoci,piocino,cervio,gunvallo,rullino,arms,feet,rippleArms,rippleFeet,mociArms,birdFeet,birdWings,eyeMeshes,mociEyes,piocinoEyes};
+      const regularOrder=["talpitrippa","ripple","moci-moci","piocino"];
+      const arabniteOrder=["cervio","gunvallo","rullino"];
       const switchCharacter=()=>{
-        const current=characterOrder.indexOf(characterState.active);
-        characterState.active=characterOrder[(current+1)%characterOrder.length];
-        const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino};
+        const order=arabniteActive?arabniteOrder:regularOrder;
+        if(!order.includes(characterState.active))characterState.active=order[0];
+        else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
+        const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
         Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
         const configs={
           "talpitrippa":{model:talpitrippa,arms,feet,eyes:eyeMeshes},
           "ripple":{model:rippleBody,arms:rippleArms,feet:rippleFeet,eyes:[]},
           "moci-moci":{model:mociMoci,arms:mociArms,feet:[],eyes:mociEyes},
-          "piocino":{model:piocino,arms:birdWings,feet:birdFeet,eyes:piocinoEyes}
+          "piocino":{model:piocino,arms:birdWings,feet:birdFeet,eyes:piocinoEyes},
+          "cervio":{model:cervio,arms:[],feet:cervioLegs,eyes:[]},
+          "gunvallo":{model:gunvallo,arms:[],feet:gunLegs,eyes:[]},
+          "rullino":{model:rullino,arms:duckWings,feet:duckFeet,eyes:[]}
         };
         const config=configs[characterState.active];
         playerMotion.model=config.model;playerMotion.arms=config.arms;playerMotion.feet=config.feet;playerMotion.eyes=config.eyes;
-        setToast(({ "talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino"})[characterState.active]+" · personaggio attivo");
+        const labels={"talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino","cervio":"Cervio","gunvallo":"Gunvallo","rullino":"Rullino"};
+        setToast(labels[characterState.active]+" · personaggio attivo");
       };
       const talpitrippaShadow = new THREE.Mesh(
         new THREE.CircleGeometry(.78,32),
