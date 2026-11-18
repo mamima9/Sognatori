@@ -116,7 +116,11 @@ export default function Amargenta3D({ onExit }) {
       citrus: Number(savedInventory.citrus) || 0,
       relics: Number(savedInventory.relics) || 0,
       coffeeBlend: Number(savedInventory.coffeeBlend) || 0,
-      herbalTea: Number(savedInventory.herbalTea) || 0
+      herbalTea: Number(savedInventory.herbalTea) || 0,
+      peppers: Number(savedInventory.peppers) || 0,
+      truffles: Number(savedInventory.truffles) || 0,
+      milk: Number(savedInventory.milk) || 0,
+      coffeeBeans: Number(savedInventory.coffeeBeans) || 0
     };
   });
   const [recipeStarted, setRecipeStarted] = useState(Boolean(savedProgress.recipeStarted));
@@ -1469,6 +1473,11 @@ export default function Amargenta3D({ onExit }) {
       makeTrufflePatch(-48,30);
       makeFlame();
       makeChiliTree(36,-28);
+      addInteraction("chili-harvest","Raccogli peperoncini","Le piante di Flame hanno prodotto peperoncini maturi.",36,-28,()=>{setInventory(old=>({...old,peppers:old.peppers+1}));setToast("Peperoncino raccolto");},4.2);
+      addInteraction("coffee-harvest","Raccogli chicchi di caffè","Zibelle ti mostra i chicchi maturi.",-43,-54,()=>{setInventory(old=>({...old,coffeeBeans:old.coffeeBeans+1}));setToast("Chicco di caffè raccolto");},4.2);
+      addInteraction("truffle-harvest","Cerca tartufi","Il terreno smosso nasconde tartufi profumati.",-48,30,()=>{setInventory(old=>({...old,truffles:old.truffles+1}));setToast("Tartufo trovato");},4.2);
+      addInteraction("milk-bottle","Imbottiglia il latte","I Lattelo hanno riempito il contenitore.",48,45,()=>{setInventory(old=>({...old,milk:old.milk+1}));setToast("Latte imbottigliato");},4.5);
+      addInteraction("cardinero-prune","Cura il giardino","Cardinero ti indica le piante da potare.",-34,16,()=>{setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Giardino curato · Essenza verde ottenuta");},4.2);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
