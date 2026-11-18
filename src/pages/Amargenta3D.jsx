@@ -191,7 +191,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
-    let renderer, scene, camera, frame, observer;
+    let renderer, scene, amargentaScene, arabniteScene, camera, frame, observer;
     let disposed = false;
     const keys = new Set();
     const clock = new THREE.Clock();
@@ -1591,6 +1591,21 @@ export default function Amargenta3D({ onExit }) {
         window.setTimeout(()=>{arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
+      // Arabnite vive in una scena Three.js indipendente: la scena Amargenta resta separata.
+      amargentaScene=scene;
+      arabniteScene=new THREE.Scene();
+      arabniteScene.background=new THREE.Color("#171326");
+      arabniteScene.fog=new THREE.FogExp2("#171326",0.0065);
+      arabniteScene.add(new THREE.HemisphereLight("#c8c4ff","#4d2e28",2.15));
+      const arabMoon=new THREE.DirectionalLight("#ffe0ad",2.7);
+      arabMoon.position.set(165,75,45);arabMoon.castShadow=true;
+      arabMoon.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);
+      arabMoon.shadow.camera.left=-65;arabMoon.shadow.camera.right=65;
+      arabMoon.shadow.camera.top=65;arabMoon.shadow.camera.bottom=-65;
+      arabniteScene.add(arabMoon);
+      const arabFill=new THREE.PointLight("#8a72ff",95,95,2);
+      arabFill.position.set(178,18,28);arabniteScene.add(arabFill);
+      scene=arabniteScene;
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
@@ -1610,6 +1625,7 @@ export default function Amargenta3D({ onExit }) {
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
 
+      arabniteScene=scene;scene=amargentaScene;
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
@@ -2079,8 +2095,8 @@ export default function Amargenta3D({ onExit }) {
       talpitrippaShadow.rotation.x=-Math.PI/2;
       talpitrippaShadow.position.set(-44,.035,2);
       talpitrippaShadow.scale.set(1.25,.62,1);
-      scene.add(talpitrippaShadow);
-      scene.add(player);player.position.set(-44,0,2);
+      amargentaScene.add(talpitrippaShadow);arabniteScene.add(talpitrippaShadow);
+      amargentaScene.add(player);arabniteScene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       const onKeyDown=e=>{
@@ -2316,10 +2332,10 @@ export default function Amargenta3D({ onExit }) {
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
-        renderer.render(scene,camera);
+        renderer.render(arabniteActive?arabniteScene:amargentaScene,camera);
       };
       animate();
-      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();scene.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
+      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();[amargentaScene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
       setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
