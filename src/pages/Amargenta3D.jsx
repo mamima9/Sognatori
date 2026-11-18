@@ -813,7 +813,8 @@ export default function Amargenta3D({ onExit }) {
         "town-gardener":["#e8ad19","#ffd34a","#f2d7a1","#4d8b38"],
         roaster:["#713b28","#9b5634","#f0c982","#b47a3c"],
         keeper:["#4a3025","#79513a","#d8c6a7","#a9d7c2"],
-        "cafe-host":["#d99b70","#4b2d24","#f1e8d6","#278ed0"],\n        milkkeeper:["#ffd92e","#fff0b2","#f5d8a1","#087df0"]
+        "cafe-host":["#d99b70","#4b2d24","#f1e8d6","#278ed0"],
+        milkkeeper:["#ffd92e","#fff0b2","#f5d8a1","#087df0"]
       };
       const [baseColor,lightColor,bellyColor,accentColor]=palettes[id]||palettes.barista;
       const base=mat(baseColor),light=mat(lightColor),belly=mat(bellyColor),accent=mat(accentColor);
