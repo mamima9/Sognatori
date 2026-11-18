@@ -1962,17 +1962,61 @@ export default function Amargenta3D({ onExit }) {
       const cord=new THREE.Mesh(new THREE.TubeGeometry(cordCurve,12,.018,6,false),rippleRed);
       rippleBody.add(cord);
       ripple.visible=false;player.add(ripple);
-      playerMotion.model=talpitrippa;playerMotion.arms=arms;playerMotion.feet=feet;playerMotion.eyes=eyeMeshes;
-      const characterState={active:"talpitrippa",talpitrippa,ripple,arms,feet,rippleArms,rippleFeet};
+
+      // MOCI-MOCI — spiritello nuvola rosa con ciuffi di panna e sfere zuccherate.
+      const mociMoci=new THREE.Group();player.add(mociMoci);mociMoci.visible=false;
+      const mociPink=mat("#f48ab8"),mociLight=mat("#ffc1d8"),mociShadow=mat("#bd6da9"),mociCream=mat("#fff1dc"),mociBlue=mat("#668bdc"),mociDark=mat("#25152f"),mociWhite=new THREE.MeshBasicMaterial({color:"#ffffff"});
+      const mEll=(parent,material,pos,scale,detail=24)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,detail,Math.max(12,detail>>1)),material);m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;parent.add(m);return m;};
+      mEll(mociMoci,mociPink,[0,1.42,0],[1.12,.83,.62],36);
+      mEll(mociMoci,mociCream,[0,1.05,.34],[.91,.48,.34],32);
+      mEll(mociMoci,mociLight,[-.34,2.08,-.02],[.69,.58,.55],28);
+      mEll(mociMoci,mat("#9ce77d"),[.02,2.48,-.03],[.64,.49,.52],28);
+      mEll(mociMoci,mat("#ffd84c"),[.76,2.02,.02],[.48,.55,.45],28);
+      // Riccioli bianchi e azzurri ai lati del corpo.
+      const mociCurl=(x,y,z,scale=1)=>{const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(x,y+.38*scale,z),new THREE.Vector3(x-.18*scale,y+.2*scale,z+.06),new THREE.Vector3(x-.13*scale,y-.05*scale,z+.08),new THREE.Vector3(x+.12*scale,y-.12*scale,z+.08),new THREE.Vector3(x+.19*scale,y+.04*scale,z+.08)]);const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.12*scale,10,false),mociBlue);mociMoci.add(mesh);};
+      mociCurl(-.9,1.62,.25,.9);mociCurl(.53,.84,.48,.82);
+      const mociEyes=[];
+      for(const side of [-1,1]){mEll(mociMoci,mociDark,[side*.38,1.48,.57],[.19,.25,.09],24);mEll(mociMoci,mat("#d94c9a"),[side*.38,1.43,.65],[.12,.14,.035],20);mociEyes.push(mEll(mociMoci,mociWhite,[side*.43,1.57,.69],[.055,.07,.025],12));mEll(mociMoci,mociPink,[side*.69,1.22,.48],[.19,.12,.05],16);}
+      mEll(mociMoci,mociDark,[0,1.16,.72],[.18,.12,.06],16);mEll(mociMoci,mat("#ef5b85"),[0,1.08,.78],[.13,.1,.04],16);
+      const antenna=new THREE.Group();antenna.position.set(.67,2.4,-.02);mociMoci.add(antenna);
+      const antennaStem=cylinder(.045,.06,.48,mat("#f28a39"),antenna,0,.22,0,8);antennaStem.rotation.z=-.3;
+      mEll(antenna,mat("#ed4b9a"),[.1,.52,0],[.25,.29,.22],20);mEll(antenna,mociWhite,[.04,.62,.17],[.1,.1,.04],12);
+      const mociArms=[];
+      for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.84,1.08,.02);mociMoci.add(arm);mociArms.push(arm);mEll(arm,mociPink,[side*.08,-.22,.05],[.22,.35,.2],18);}
+      
+      // PIOCINO — piccolo uccello giallo, cresta fucsia e collana di gemme viola.
+      const piocino=new THREE.Group();player.add(piocino);piocino.visible=false;
+      const birdYellow=mat("#ffd51e"),birdGold=mat("#f3a900"),birdCream=mat("#fff0a6"),birdPink=mat("#e82d9a"),birdPurple=mat("#7425bc"),birdBeak=mat("#9147d6"),birdEye=new THREE.MeshPhysicalMaterial({color:"#120b22",roughness:.08,clearcoat:1});
+      mEll(piocino,birdYellow,[0,1.3,0],[.73,.83,.58],36);
+      mEll(piocino,birdYellow,[0,2.04,.08],[.68,.65,.57],36);
+      mEll(piocino,birdCream,[0,1.18,.49],[.49,.48,.16],28);
+      const piocinoEyes=[];
+      for(const side of [-1,1]){mEll(piocino,mociWhite,[side*.28,2.18,.55],[.2,.23,.08],24);piocinoEyes.push(mEll(piocino,birdEye,[side*.29,2.17,.62],[.13,.17,.06],24));mEll(piocino,mociWhite,[side*.33,2.25,.675],[.055,.065,.025],12);}
+      const beak= new THREE.Mesh(new THREE.ConeGeometry(.2,.42,6),birdBeak);beak.position.set(0,1.91,.72);beak.rotation.x=-Math.PI/2;piocino.add(beak);
+      const crest=[];
+      for(let i=0;i<5;i++){const feather=new THREE.Mesh(new THREE.ConeGeometry(.15,.78-i*.055,7),birdPink);feather.position.set(-.34+i*.17,2.73+(i%2)*.1,-.05);feather.rotation.z=-.45+i*.23;feather.castShadow=true;piocino.add(feather);crest.push(feather);}
+      const birdWings=[];
+      for(const side of [-1,1]){const wing=new THREE.Group();wing.position.set(side*.58,1.48,-.02);piocino.add(wing);mEll(wing,birdGold,[side*.16,0,0],[.34,.48,.17],20);birdWings.push(wing);}
+      const necklace=new THREE.Group();piocino.add(necklace);
+      for(let i=0;i<9;i++){const a=Math.PI+(i/8)*Math.PI;const gem=mEll(necklace,birdPurple,[Math.cos(a)*.43,1.63+Math.sin(a)*.25,.48],[.13,.15,.12],12);gem.rotation.z=a*.2;mEll(necklace,mociWhite,[Math.cos(a)*.43-.035,1.68+Math.sin(a)*.25,.59],[.035,.04,.02],8);}
+      const birdFeet=[];
+      for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.27,.57,.08);piocino.add(leg);cylinder(.045,.05,.32,birdPink,leg,0,-.12,0,8);const foot=mEll(leg,birdPink,[0,-.29,.12],[.18,.07,.25],12);for(let k=-1;k<=1;k++){const toe=new THREE.Mesh(new THREE.ConeGeometry(.045,.24,6),birdCream);toe.position.set(k*.1,-.3,.32);toe.rotation.x=-Math.PI/2;leg.add(toe);}birdFeet.push(leg);}
+      const characterState={active:"talpitrippa",talpitrippa,ripple,mociMoci,piocino,arms,feet,rippleArms,rippleFeet,mociArms,birdFeet,birdWings,eyeMeshes,mociEyes,piocinoEyes};
+      const characterOrder=["talpitrippa","ripple","moci-moci","piocino"];
       const switchCharacter=()=>{
-        characterState.active=characterState.active==="talpitrippa"?"ripple":"talpitrippa";
-        const isRipple=characterState.active==="ripple";
-        talpitrippa.visible=!isRipple;ripple.visible=isRipple;
-        playerMotion.model=isRipple?rippleBody:talpitrippa;
-        playerMotion.arms=isRipple?rippleArms:arms;
-        playerMotion.feet=isRipple?rippleFeet:feet;
-        playerMotion.eyes=isRipple?[]:eyeMeshes;
-        setToast(isRipple?"Ripple · personaggio attivo":"Talpitrippa · personaggio attivo");
+        const current=characterOrder.indexOf(characterState.active);
+        characterState.active=characterOrder[(current+1)%characterOrder.length];
+        const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino};
+        Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
+        const configs={
+          "talpitrippa":{model:talpitrippa,arms,feet,eyes:eyeMeshes},
+          "ripple":{model:rippleBody,arms:rippleArms,feet:rippleFeet,eyes:[]},
+          "moci-moci":{model:mociMoci,arms:mociArms,feet:[],eyes:mociEyes},
+          "piocino":{model:piocino,arms:birdWings,feet:birdFeet,eyes:piocinoEyes}
+        };
+        const config=configs[characterState.active];
+        playerMotion.model=config.model;playerMotion.arms=config.arms;playerMotion.feet=config.feet;playerMotion.eyes=config.eyes;
+        setToast(({ "talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino"})[characterState.active]+" · personaggio attivo");
       };
       const talpitrippaShadow = new THREE.Mesh(
         new THREE.CircleGeometry(.78,32),
