@@ -64,6 +64,15 @@ export default function Amargenta3D({ onExit }) {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
     catch { return {}; }
   });
+  // La fiducia è la progressione sociale di Amargenta: ogni incarico concluso
+  // rafforza il legame con il Sognatore che lo ha affidato.
+  const [residentTrust, setResidentTrust] = useState(() =>
+    savedProgress.residentTrust && typeof savedProgress.residentTrust === "object" ? savedProgress.residentTrust : {}
+  );
+  const awardResidentTrust = (residentId) => setResidentTrust((current) => ({
+    ...current,
+    [residentId]: Math.min(5, (Number(current[residentId]) || 0) + 1)
+  }));
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:roster:v1", JSON.stringify({
@@ -165,7 +174,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:save:v2", JSON.stringify({
-        questStarted, questCount, questDone, inventory,
+        questStarted, questCount, questDone, inventory, residentTrust,
         recipeStarted, recipePages, recipeDone,
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves,
@@ -1524,7 +1533,7 @@ export default function Amargenta3D({ onExit }) {
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
-          if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
+          if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);awardResidentTrust("farmer");setToast("Missione completata · Fave d'Ambra · Fiducia di Flame +1");}
           setDialogue({title:"Flame · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
         } else if(!questActiveRef.current){
           questActiveRef.current=true;setQuestStarted(true);
@@ -1534,7 +1543,7 @@ export default function Amargenta3D({ onExit }) {
       const ormaInteraction=interactables.find(item=>item.id==="archivist");
       if(ormaInteraction)ormaInteraction.action=()=>{
         if(recipePagesRef.current>=4){
-          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setToast("Missione completata · Ricetta Perduta");}
+          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);awardResidentTrust("archivist");setToast("Missione completata · Ricetta Perduta · Fiducia +1");}
           setDialogue({title:"Belligonghi-umami · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
         } else if(!recipeStartedRef.current){
           recipeStartedRef.current=true;setRecipeStarted(true);
@@ -1544,7 +1553,7 @@ export default function Amargenta3D({ onExit }) {
       const brunoInteraction=interactables.find(item=>item.id==="guard");
       if(brunoInteraction)brunoInteraction.action=()=>{
         if(valvesRef.current>=3){
-          if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
+          if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);awardResidentTrust("guard");setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate · Fiducia +1");}
           setDialogue({title:"Cardinero · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
         } else if(!waterStartedRef.current){
           waterStartedRef.current=true;setWaterStarted(true);
@@ -1639,8 +1648,8 @@ export default function Amargenta3D({ onExit }) {
           return;
         }
         setInventory(old=>({...old,coffeeBlend:old.coffeeBlend-1,herbalTea:old.herbalTea-1,relics:old.relics+1}));
-        blendDoneRef.current=true;setBlendDone(true);
-        setToast("Ricetta segreta completata · Reliquia ottenuta");
+        blendDoneRef.current=true;setBlendDone(true);awardResidentTrust("keeper");
+        setToast("Ricetta segreta completata · Fiducia di Belligonghi-umami +1 · Reliquia ottenuta");
         setDialogue({title:"Belligonghi-umami · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Belligonghi-umami ti affida una Reliquia delle Tre Foglie."});
       };
       makeNpc("cafe-host","Muccanza","Gestore della caffetteria",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
@@ -1648,9 +1657,9 @@ export default function Amargenta3D({ onExit }) {
       if(eliaInteraction)eliaInteraction.action=()=>{
         if(bellsDoneRef.current){setDialogue({title:"Muccanza · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
         if(bellCountRef.current>=3){
-          bellsDoneRef.current=true;setBellsDone(true);
+          bellsDoneRef.current=true;setBellsDone(true);awardResidentTrust("cafe-host");
           setInventory(old=>({...old,relics:old.relics+1}));
-          setToast("Attività completata · Le campane del borgo");
+          setToast("Attività completata · Fiducia di Muccanza +1 · Le campane del borgo");
           setDialogue({title:"Muccanza · Il canto ritrovato",text:"Hai risvegliato tutte e tre le campane! Il loro suono si è propagato tra le terrazze e la piazza. Muccanza ti affida una Reliquia di Amargenta."});
         } else if(!bellsStartedRef.current){
           bellsStartedRef.current=true;setBellsStarted(true);
@@ -2135,6 +2144,15 @@ export default function Amargenta3D({ onExit }) {
     return ()=>{disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
   }, []);
 
+  const trustTotal = Object.values(residentTrust).reduce((sum, value) => sum + Math.max(0, Math.min(5, Number(value) || 0)), 0);
+  const trustResidents = [
+    { id: "farmer", name: "Flame" },
+    { id: "archivist", name: "Belligonghi-umami" },
+    { id: "guard", name: "Cardinero" },
+    { id: "cafe-host", name: "Muccanza" },
+    { id: "keeper", name: "Belligonghi-umami · Ricette" }
+  ];
+
   const activeObjective = !questDone
     ? (questCount >= 3 ? "Torna da Flame per concludere le Fave d'Ambra" : questStarted ? "Raccogli le tre Fave d'Ambra sulle terrazze" : "Parla con Flame tra le piante di peperoncino")
     : !recipeDone
@@ -2224,7 +2242,7 @@ export default function Amargenta3D({ onExit }) {
       <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
-    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span></div>
+    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></div>
     {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
@@ -2232,7 +2250,7 @@ export default function Amargenta3D({ onExit }) {
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
         {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
-      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div></div>}
+      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
       {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>C: cambia personaggio · Talpitrippa / Ripple</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
       {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:panel==="journal"?"#68472f":"#e9c58d",letterSpacing:1}}>{panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:panel==="journal"?"#68472f":"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
