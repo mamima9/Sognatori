@@ -213,7 +213,7 @@ export default function Amargenta3D({ onExit }) {
     const groundMat = mat("#536746"), pathMat = mat("#9b896e");
     // Texture procedurali leggere: prato screziato e terra battuta, senza asset esterni.
     const makeTileTexture = (base, flecks, seed=1) => {
-      const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+      const canvas=document.createElement("canvas");canvas.width=canvas.height=512;
       const ctx=canvas.getContext("2d");ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
       let value=seed;const random=()=>{value=(value*16807)%2147483647;return(value-1)/2147483646;};
       for(let i=0;i<1900;i++){
@@ -1721,8 +1721,8 @@ export default function Amargenta3D({ onExit }) {
         const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
         ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
         let v=seed;const rand=()=>{v=(v*16807)%2147483647;return(v-1)/2147483646;};
-        for(let i=0;i<2100;i++){
-          const x=Math.floor(rand()*64)*4,y=Math.floor(rand()*64)*4;
+        for(let i=0;i<5600;i++){
+          const x=Math.floor(rand()*128)*4,y=Math.floor(rand()*128)*4;
           ctx.globalAlpha=.22+rand()*.42;ctx.fillStyle=palette[Math.floor(rand()*palette.length)];
           const s=2+Math.floor(rand()*2)*2;ctx.fillRect(x,y,s,s);
         }
@@ -1751,9 +1751,11 @@ export default function Amargenta3D({ onExit }) {
       // Guance e muso.
       ellipsoid(talpitrippa,darkFur,[-.43,1.99,.51],[.25,.20,.18],28);
       ellipsoid(talpitrippa,darkFur,[.43,1.99,.51],[.25,.20,.18],28);
-      // Occhi neri lucidi con riflessi.
+      // Occhi lucidi con riflessi: i riferimenti permettono un battito naturale.
+      const eyeMeshes=[];
       for(const side of [-1,1]){
-        ellipsoid(talpitrippa,eyeMat,[side*.285,2.28,.625],[.145,.19,.095],32);
+        const eye=ellipsoid(talpitrippa,eyeMat,[side*.285,2.28,.625],[.145,.19,.095],32);
+        eyeMeshes.push(eye);
         ellipsoid(talpitrippa,eyeGlint,[side*.325,2.355,.708],[.045,.052,.018],16);
         ellipsoid(talpitrippa,eyeGlint,[side*.245,2.24,.713],[.018,.022,.012],12);
       }
@@ -1908,10 +1910,17 @@ export default function Amargenta3D({ onExit }) {
         const gait=clock.elapsedTime*(sprint?10.5:7.8);
         const step=Math.sin(gait)*walkBlend;
         if(playerMotion.model){
-          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10;
-          playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend,7,dt);
-          playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16,9,dt);});
+          const idleBreath=Math.sin(clock.elapsedTime*2.1)*.018;
+          const idleSway=Math.sin(clock.elapsedTime*1.05)*.012;
+          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10+idleBreath*(1-walkBlend);
+          playerMotion.model.scale.y=1+idleBreath*.32;
+          playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend+idleSway*(1-walkBlend),7,dt);
+          playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16+Math.sin(clock.elapsedTime*1.7+i)*.025*(1-walkBlend),9,dt);});
           playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
+          // Battito palpebrale breve e asincrono, senza interrompere il movimento.
+          const blinkPhase=(clock.elapsedTime+1.3)%4.7;
+          const blink=blinkPhase>.0&&blinkPhase<.13?Math.sin(Math.PI*blinkPhase/.13):0;
+          playerMotion.eyes?.forEach(eye=>{eye.scale.y=.19*(1-.88*blink);});
         }
         player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
