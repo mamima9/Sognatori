@@ -191,7 +191,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
-    let renderer, arabRenderer, scene, amargentaScene, arabniteScene, camera, frame, observer;
+    let renderer, scene, amargentaScene, arabniteScene, camera, frame, observer;
     let disposed = false;
     const keys = new Set();
     const clock = new THREE.Clock();
@@ -1184,7 +1184,7 @@ export default function Amargenta3D({ onExit }) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1:1.35));
       renderer.setSize(width,height,false);
       camera = new THREE.PerspectiveCamera(58, width / height, 0.1, 260);
-      renderer.domElement.style.display="block";renderer.domElement.style.position="absolute";renderer.domElement.style.inset="0";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";renderer.domElement.style.zIndex="1";
+      renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
       // Ombre più leggere: riducono consumo GPU e rischio di perdita del contesto.
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor("#b7cbd0",1);
@@ -2098,31 +2098,6 @@ export default function Amargenta3D({ onExit }) {
       amargentaScene.add(talpitrippaShadow);arabniteScene.add(talpitrippaShadow);
       amargentaScene.add(player);arabniteScene.add(player);player.position.set(-44,0,2);
 
-      // Renderer WebGL separato per Arabnite: ogni mondo possiede il proprio contesto GPU e canvas.
-      let arabRendererError=null;
-      for(const options of [
-        {antialias:!compactDevice,powerPreference:"high-performance",alpha:false,depth:true,stencil:false},
-        {antialias:false,powerPreference:"low-power",alpha:false,depth:true,stencil:false}
-      ]){
-        try{arabRenderer=new THREE.WebGLRenderer(options);break;}
-        catch(error){arabRendererError=error;console.warn("Arabnite WebGL retry:",error);}
-      }
-      if(!arabRenderer)throw new Error("Renderer Arabnite non disponibile: "+(arabRendererError?.message||"contesto WebGL negato"));
-      arabRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1:1.6));
-      arabRenderer.setSize(width,height,false);
-      arabRenderer.domElement.style.display="none";arabRenderer.domElement.style.position="absolute";
-      arabRenderer.domElement.style.inset="0";arabRenderer.domElement.style.width="100%";
-      arabRenderer.domElement.style.height="100%";arabRenderer.domElement.style.touchAction="none";
-      arabRenderer.domElement.style.zIndex="2";
-      arabRenderer.shadowMap.enabled=true;arabRenderer.shadowMap.type=THREE.PCFSoftShadowMap;
-      arabRenderer.outputColorSpace=THREE.SRGBColorSpace;
-      arabRenderer.toneMapping=THREE.ACESFilmicToneMapping;
-      arabRenderer.toneMappingExposure=1.2;
-      arabRenderer.setClearColor("#171326",1);
-      arabRenderer.domElement.addEventListener("webglcontextlost",event=>{event.preventDefault();setHint("Arabnite ha perso il contesto grafico. Rientra nel portale per riprovare.");});
-      arabRenderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica di Arabnite ripristinata."));
-      host.appendChild(arabRenderer.domElement);
-
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       const onKeyDown=e=>{
         if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){
@@ -2149,11 +2124,6 @@ export default function Amargenta3D({ onExit }) {
       const onPointerUp=()=>{dragging=false;};
       const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.0038;pitch=Math.max(.16,Math.min(.82,pitch+dy*.0032));};
       const onWheel=e=>{distance=THREE.MathUtils.clamp(distance+e.deltaY*.009,7,20);};
-      arabRenderer.domElement.addEventListener("pointerdown",onPointerDown);
-      arabRenderer.domElement.addEventListener("pointerup",onPointerUp);
-      arabRenderer.domElement.addEventListener("pointercancel",onPointerUp);
-      arabRenderer.domElement.addEventListener("pointermove",onPointerMove);
-      arabRenderer.domElement.addEventListener("wheel",onWheel,{passive:true});
       renderer.domElement.addEventListener("pointerdown",onPointerDown);
       renderer.domElement.addEventListener("pointerup",onPointerUp);
       renderer.domElement.addEventListener("pointercancel",onPointerUp);
@@ -2168,7 +2138,6 @@ export default function Amargenta3D({ onExit }) {
         camera.aspect = resizeWidth / resizeHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(resizeWidth, resizeHeight);
-        arabRenderer?.setSize(resizeWidth,resizeHeight);
       };
       observer=new ResizeObserver(resize);observer.observe(host);
       const animate=()=>{
@@ -2363,16 +2332,10 @@ export default function Amargenta3D({ onExit }) {
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
-        if(arabniteActive){
-          renderer.domElement.style.display="none";arabRenderer.domElement.style.display="block";
-          arabRenderer.render(arabniteScene,camera);
-        }else{
-          arabRenderer.domElement.style.display="none";renderer.domElement.style.display="block";
-          renderer.render(amargentaScene,camera);
-        }
+        renderer.render(arabniteActive?arabniteScene:amargentaScene,camera);
       };
       animate();
-      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);arabRenderer?.domElement.removeEventListener("pointerdown",onPointerDown);arabRenderer?.domElement.removeEventListener("pointerup",onPointerUp);arabRenderer?.domElement.removeEventListener("pointercancel",onPointerUp);arabRenderer?.domElement.removeEventListener("pointermove",onPointerMove);arabRenderer?.domElement.removeEventListener("wheel",onWheel);arabRenderer?.dispose();if(arabRenderer?.domElement.parentNode===host)host.removeChild(arabRenderer.domElement);renderer.dispose();[amargentaScene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
+      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();[amargentaScene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
       setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
