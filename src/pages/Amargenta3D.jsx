@@ -6,19 +6,6 @@ import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
-const AMARGENTA_FIRST_DAY_QUESTIONS = [
-  {q:"Quando arrivi in un posto nuovo, cosa fai per primo?",a:[["Esploro e mi metto subito all'opera","flame"],["Osservo, annuso e studio l'ambiente","zibelle"],["Cerco gli altri e faccio amicizia","lattelo"]]},
-  {q:"Quale luogo ti attira di più?",a:[["Un campo pieno di peperoncini","flame"],["Una piantagione di caffè","zibelle"],["Un prato tranquillo con animali","lattelo"]]},
-  {q:"Come affronti un problema?",a:[["Con energia e coraggio","flame"],["Con attenzione e strategia","zibelle"],["Chiedendo aiuto e collaborando","lattelo"]]},
-  {q:"Quale attività ti dà più soddisfazione?",a:[["Coltivare qualcosa con le mie mani","flame"],["Creare una miscela perfetta","zibelle"],["Prendermi cura di qualcuno","lattelo"]]},
-  {q:"Scegli un momento della giornata.",a:[["Alba, quando tutto ricomincia","flame"],["Pomeriggio, con il profumo del caffè","zibelle"],["Tramonto, in compagnia","lattelo"]]},
-  {q:"Quale qualità ti rappresenta?",a:[["Determinazione","flame"],["Curiosità","zibelle"],["Gentilezza","lattelo"]]},
-  {q:"Se trovi un ingrediente raro?",a:[["Lo uso per creare qualcosa di nuovo","flame"],["Ne studio aroma e caratteristiche","zibelle"],["Lo condivido con il gruppo","lattelo"]]},
-  {q:"Come vorresti essere ricordato?",a:[["Come chi ha fatto fiorire Amargenta","flame"],["Come chi ha scoperto nuovi sapori","zibelle"],["Come un amico fidato","lattelo"]]},
-  {q:"Quale regalo sceglieresti?",a:[["Semi di peperoncino","flame"],["Chicchi di caffè profumati","zibelle"],["Una bottiglia di latte fresco","lattelo"]]},
-  {q:"Qual è il tuo modo di vivere Amargenta?",a:[["Con passione e iniziativa","flame"],["Con calma e curiosità","zibelle"],["Insieme agli altri Sognatori","lattelo"]]}
-];
-
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -31,11 +18,6 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
-  const [firstDayDone,setFirstDayDone] = useState(()=>{try{return window.localStorage.getItem("sognatori:amargenta:first-day:v1")==="done";}catch{return false;}});
-  const [firstDayStep,setFirstDayStep] = useState(0);
-  const [firstDayAnswers,setFirstDayAnswers] = useState([]);
-  const [firstDayStarter,setFirstDayStarter] = useState("");
-
   const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
@@ -68,19 +50,6 @@ export default function Amargenta3D({ onExit }) {
     setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
     return true;
   };
-  const answerFirstDay = (starter) => {
-    const next=[...firstDayAnswers,starter];
-    setFirstDayAnswers(next);
-    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
-    const scores={flame:0,zibelle:0,lattelo:0};
-    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
-    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
-    setFirstDayStarter(chosen);
-    setFirstDayDone(true);
-    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
-    recruitAmargenta(chosen);
-    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
-  };
   const moveAmargentaToParty = (id) => {
     if (!ownedAmargentaIds.includes(id) || amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
     setAmargentaBoxIds((ids) => ids.filter((item) => item !== id));
@@ -95,6 +64,15 @@ export default function Amargenta3D({ onExit }) {
     try { return JSON.parse(window.localStorage.getItem("sognatori:amargenta:save:v2") || "{}"); }
     catch { return {}; }
   });
+  // La fiducia è la progressione sociale di Amargenta: ogni incarico concluso
+  // rafforza il legame con il Sognatore che lo ha affidato.
+  const [residentTrust, setResidentTrust] = useState(() =>
+    savedProgress.residentTrust && typeof savedProgress.residentTrust === "object" ? savedProgress.residentTrust : {}
+  );
+  const awardResidentTrust = (residentId) => setResidentTrust((current) => ({
+    ...current,
+    [residentId]: Math.min(5, (Number(current[residentId]) || 0) + 1)
+  }));
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:roster:v1", JSON.stringify({
@@ -185,8 +163,8 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || !firstDayDone);
-  }, [dialogue, panel, dungeonBattleOpen, firstDayDone]);
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
+  }, [dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -196,7 +174,7 @@ export default function Amargenta3D({ onExit }) {
   useEffect(() => {
     try {
       window.localStorage.setItem("sognatori:amargenta:save:v2", JSON.stringify({
-        questStarted, questCount, questDone, inventory,
+        questStarted, questCount, questDone, inventory, residentTrust,
         recipeStarted, recipePages, recipeDone,
         waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested,
         collectedAmber, collectedPages, activatedValves,
@@ -207,7 +185,7 @@ export default function Amargenta3D({ onExit }) {
     } catch (error) {
       console.warn("Salvataggio Amargenta non disponibile", error);
     }
-  }, [questStarted, questCount, questDone, inventory, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone, botanicalCacheClaimed, dungeonSigils, dungeonBossDefeated]);
+  }, [questStarted, questCount, questDone, inventory, residentTrust, recipeStarted, recipePages, recipeDone, waterStarted, valves, waterDone, secretUnlocked, vaultClaimed, citrusHarvested, collectedAmber, collectedPages, activatedValves, bellsStarted, bellCount, bellsDone, activatedBells, blendStarted, blendDone, botanicalCacheClaimed, dungeonSigils, dungeonBossDefeated]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -217,7 +195,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
-    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null, torso:null };
+    const playerMotion = { model:null, arms:[], feet:[] };
     const colliders = [];
     let jumpHeight = 0;
     let jumpVelocity = 0;
@@ -230,7 +208,10 @@ export default function Amargenta3D({ onExit }) {
     const amberPickups = [];
     const fireflies = [];
     const bellActors = [];
-    let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
+    const groundEdits = [];
+    const ambientCreatures = [];
+    let arabniteActive = false;
+    let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -244,7 +225,7 @@ export default function Amargenta3D({ onExit }) {
     const groundMat = mat("#536746"), pathMat = mat("#9b896e");
     // Texture procedurali leggere: prato screziato e terra battuta, senza asset esterni.
     const makeTileTexture = (base, flecks, seed=1) => {
-      const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+      const canvas=document.createElement("canvas");canvas.width=canvas.height=512;
       const ctx=canvas.getContext("2d");ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
       let value=seed;const random=()=>{value=(value*16807)%2147483647;return(value-1)/2147483646;};
       for(let i=0;i<1900;i++){
@@ -270,7 +251,13 @@ export default function Amargenta3D({ onExit }) {
     const addBoxCollider = (x,z,w,d,rotation=0,height=3) => colliders.push({
       type:"box",x,z,halfW:w/2,halfD:d/2,rotation,height
     });
-    const isBlockedAt = (x,z,radius=.55) => colliders.some(collider => {
+    const isWaterAt = (x,z) => {
+      const center=28+(z-2)*.08, bridge=Math.abs(z)<3.8||Math.abs(z+32)<3.8;
+      return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
+    };
+    const isBlockedAt = (x,z,radius=.55) => {
+      if(isWaterAt(x,z)&&characterState?.active!=="ripple")return true;
+      return colliders.some(collider => {
       if (jumpHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
         return Math.hypot(x-collider.x,z-collider.z) < collider.r+radius;
@@ -281,7 +268,8 @@ export default function Amargenta3D({ onExit }) {
       const closestX=THREE.MathUtils.clamp(localX,-collider.halfW,collider.halfW);
       const closestZ=THREE.MathUtils.clamp(localZ,-collider.halfD,collider.halfD);
       return Math.hypot(localX-closestX,localZ-closestZ)<radius;
-    });
+      });
+    };
     const addInteriorWallColliders = (cx,cz,width,depth,doorSide="north",doorWidth=3.2) => {
       const halfW=width/2, halfD=depth/2, wall=.5, gap=doorWidth/2;
       if (doorSide==="north") {
@@ -296,27 +284,52 @@ export default function Amargenta3D({ onExit }) {
       addBoxCollider(cx+halfW,cz,wall,depth);
     };
     const makeTree = (x,z,s=1,berries=false) => {
-      const g=new THREE.Group(); scene.add(g); g.position.set(x,0,z); g.scale.setScalar(s);
-      cylinder(0.18,0.28,2.2,wood,g,0,1.1,0,9);
-      // Rami curvi e chiome stratificate: silhouette meno geometrica e più naturale.
-      for(let side of [-1,1]){
-        const branch=cylinder(.055,.09,1.15,wood,g,side*.28,1.85,-.02,7);
-        branch.rotation.z=side*-.58;
-        const twig=cylinder(.025,.045,.72,wood,g,side*.62,2.22,-.02,6);
-        twig.rotation.z=side*.35;
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
+      // Tronco rastremato e radici visibili: silhouette leggibile anche da lontano.
+      const trunk=cylinder(.29,.16,2.55,wood,g,0,1.22,0,11);
+      trunk.rotation.z=.025;
+      for(let side=-1;side<=1;side+=2){
+        const root=cylinder(.10,.22,.82,wood,g,side*.27,.28,.12,8);
+        root.rotation.z=side*.62;
+        const branch=cylinder(.065,.12,1.35,wood,g,side*.48,1.9,-.02,8);
+        branch.rotation.z=side*-.48;
+        const twig=cylinder(.035,.07,.8,wood,g,side*.9,2.48,-.04,7);
+        twig.rotation.z=side*.32;
       }
-      for(let i=0;i<8;i++){
-        const a=i*2.399, ring=i%3;
-        const c=sphere(.78+(i%2)*.12,i%3?leaf:leaf2,g,Math.cos(a)*(.48+ring*.12),2.25+ring*.34,Math.sin(a)*(.48+ring*.12),2);
-        c.scale.set(1.08,.82,.96);
+      // Chiome organiche: icosaedri deformati, non sfere perfette ripetute.
+      const makeCanopy=(radius,material,px,py,pz,seed)=>{
+        const geo=new THREE.IcosahedronGeometry(radius,2);
+        const attr=geo.attributes.position;
+        for(let v=0;v<attr.count;v++){
+          const vx=attr.getX(v),vy=attr.getY(v),vz=attr.getZ(v);
+          const wave=1+.075*Math.sin(vx*8+seed)*Math.cos(vy*7-seed*.7)+.035*Math.sin(vz*13+seed*1.3);
+          attr.setXYZ(v,vx*wave,vy*wave,vz*wave);
+        }
+        geo.computeVertexNormals();
+        const mesh=new THREE.Mesh(geo,material);
+        mesh.position.set(px,py,pz);mesh.scale.set(1.12,.94,1.02);
+        mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);return mesh;
+      };
+      for(let i=0;i<9;i++){
+        const a=i*2.399,ring=i%3;
+        makeCanopy(.72+(i%2)*.12,i%3?leaf:leaf2,Math.cos(a)*(.48+ring*.1),2.48+ring*.28,Math.sin(a)*(.48+ring*.1),i+Math.round(x*3));
       }
-      for(let i=0;i<12;i++){
-        const a=i*2.399, rr=.42+(i%4)*.19;
-        const leafCluster=sphere(.22,i%2?leaf2:leaf,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,1);
-        leafCluster.scale.set(1.25,.72,.9);
+      makeCanopy(.72,leaf2,0,3.12,0,31+Math.round(z));
+      // Ciuffi esterni e foglie singole spezzano il profilo della chioma.
+      for(let i=0;i<16;i++){
+        const a=i*2.399,rr=.83+(i%3)*.09;
+        const leafTip=addMesh(new THREE.ConeGeometry(.12,.34,5),i%3?leaf:leaf2,g,Math.cos(a)*rr,2.35+(i%4)*.19,Math.sin(a)*rr);
+        leafTip.rotation.z=Math.cos(a)*-.45;leafTip.rotation.x=Math.sin(a)*.42;
       }
-      if(berries) for(let i=0;i<18;i++){const a=i*2.399, rr=.52+(i%3)*.18; sphere(.09,coffeeRed,g,Math.cos(a)*rr,1.85+(i%5)*.24,Math.sin(a)*rr,2);}
-      addCollider(x,z,.55*s,3.2*s);
+      if(berries){
+        const berryMat=mat("#c85b4c",.48,{roughness:.48});
+        for(let i=0;i<16;i++){
+          const a=i*2.399,rr=.58+(i%3)*.16;
+          sphere(.075,berryMat,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,2);
+        }
+      }
+      addCollider(x,z,.62*s,3.4*s);
+      return g;
     };
     // Muccanza #42 — giovane fan umano del latte di Lattelo, con bottiglia e tazza da caffellatte.
     const makeMuccanza = () => {
@@ -503,8 +516,7 @@ export default function Amargenta3D({ onExit }) {
       }};
       interactables.push(interaction);
       npcActors.push({group:g,phase:x*.13+z*.07,wild:true,legs,tailPivot,headPivot,ears,bodyPivot:{position:{y:0}},aroma,interaction,homeX:x,homeZ:z,roamRadius:1.8,walkSpeed:.32});
-      return g;
-    };
+      return g;    };
     // Flame #45: creatura ardente che diffonde nell'aria il profumo pungente del peperoncino.
     const makeFlame = () => {
       const g=new THREE.Group();scene.add(g);g.position.set(32,0,-28);
@@ -802,6 +814,20 @@ export default function Amargenta3D({ onExit }) {
       const index = interactables.findIndex(item => item.id === id);
       if (index >= 0) interactables.splice(index, 1);
     };
+    const makeGroundEdit=(kind,x,z)=>{
+      const g=new THREE.Group();scene.add(g);g.position.set(x,.06,z);
+      if(kind==="hole"){
+        const rim=addMesh(new THREE.TorusGeometry(.72,.16,7,18),mat("#765037"),g,0,0,0);rim.rotation.x=-Math.PI/2;
+        const hollow=addMesh(new THREE.CircleGeometry(.62,20),mat("#30231d"),g,0,-.025,0);hollow.rotation.x=-Math.PI/2;
+        for(let i=0;i<5;i++){const clod=sphere(.13,mat("#956744"),g,Math.cos(i*1.25)*.8,.04,Math.sin(i*1.25)*.8,1);clod.scale.y=.45;}
+      }else if(kind==="furrow"){
+        for(let i=-1;i<=1;i++){const line=addMesh(new THREE.PlaneGeometry(.18,4.6),mat("#6d4c31"),g,i*.48,.01,0);line.rotation.x=-Math.PI/2;}
+      }else{
+        const patch=addMesh(new THREE.CircleGeometry(.9,20),mat("#879b4c"),g,0,0,0);patch.rotation.x=-Math.PI/2;
+        for(let i=0;i<7;i++){const blade=addMesh(new THREE.ConeGeometry(.08,.42,4),mat("#b3bd60"),g,Math.cos(i)*.5,.2,Math.sin(i)*.5);blade.rotation.z=-.25+Math.sin(i)*.5;}
+      }
+      groundEdits.push(g);if(groundEdits.length>42){scene.remove(groundEdits.shift());}
+    };
     // Ogni abitante è un Sognatore: niente esseri umani generici ad Amargenta.
     // Le professioni sono accessori/attività, non NPC separati.
     const makeNpc = (id,name,job,x,z,shirt,lines,scale=1,options={}) => {
@@ -1003,8 +1029,7 @@ export default function Amargenta3D({ onExit }) {
       box(.78,.18,.78,stone,g,0,1.48,0);
       const light=sphere(.18,mat("#ffd58b",.2,{emissive:"#d58c35",emissiveIntensity:.65}),g,0,1.72,0,2);
       addCollider(x,z,.32);
-    };
-    const makeNoren = (x,z,color="#a64c36") => {
+    };    const makeNoren = (x,z,color="#a64c36") => {
       const fabric=mat(color,.95,{side:THREE.DoubleSide});
       for(let i=0;i<3;i++){const panel=box(.52,.88,.07,fabric,scene,x-.54+i*.54,2.35,z);panel.rotation.z=(i-1)*-.035;}
       box(1.8,.12,.14,wood,scene,x,2.85,z);
@@ -1139,7 +1164,7 @@ export default function Amargenta3D({ onExit }) {
     };
 
     try {
-      scene=new THREE.Scene();scene.background=new THREE.Color("#b7cbd0");scene.fog=new THREE.Fog("#b7cbd0",78,210);
+      scene=new THREE.Scene();scene.background=new THREE.Color("#c7dfdf");scene.fog=new THREE.Fog("#c7dfdf",92,235);
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
       const width=Math.max(1,host.clientWidth||window.innerWidth||800);
       const height=Math.max(1,host.clientHeight||window.innerHeight||600);
@@ -1165,9 +1190,10 @@ export default function Amargenta3D({ onExit }) {
       renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("La scheda grafica ha sospeso WebGL. Ricarica Amargenta; se continua, aggiorna i driver grafici.");});
       renderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica ripristinata. Ricarica Amargenta per riprendere l'esplorazione."));
       host.appendChild(renderer.domElement);
-      scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",1.65));
-      const sun=new THREE.DirectionalLight("#fff0d6",2.65);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
-      const warmFill=new THREE.DirectionalLight("#f4c98d",.45);warmFill.position.set(35,18,-30);scene.add(warmFill);
+      scene.add(new THREE.HemisphereLight("#f2fbff","#52664b",1.9));
+      const sun=new THREE.DirectionalLight("#fff1d7",2.35);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
+      const warmFill=new THREE.DirectionalLight("#ffd6a0",.62);warmFill.position.set(35,18,-30);scene.add(warmFill);
+      const skyFill=new THREE.DirectionalLight("#b9dfff",.34);skyFill.position.set(-8,22,48);scene.add(skyFill);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
       // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
       const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
@@ -1285,6 +1311,50 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<12;i++){
         const a=i*Math.PI/6,rr=31+(i%3)*2;
         makeCherryTree(Math.cos(a)*rr,Math.sin(a)*rr,.72+(i%2)*.16);
+      }
+      // Passata artistica: sottobosco a più livelli, bordi morbidi e dettagli ravvicinati.
+      // La distribuzione è deterministica per mantenere identica la scena ad ogni caricamento.
+      const meadowMats=["#e7c96f","#f1e6c2","#e99a9a","#d8b7e8","#f4a65e"].map(color=>mat(color,.82));
+      const grassMats=["#718e50","#8da85d","#a5b96d","#587b49"].map(color=>mat(color,1));
+      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);
+      const flowerCenterMat=mat("#f7d56c",.72), flowerPetalMats=meadowMats;
+      const seeded=(n)=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
+      for(let i=0;i<210;i++){
+        const a=seeded(i+11)*Math.PI*2, r=13+seeded(i+91)*43;
+        const x=Math.cos(a)*r,z=Math.sin(a)*r;
+        if(Math.abs(x-28)<9&&Math.abs(z)<48)continue;
+        const patch=new THREE.Group();scene.add(patch);patch.position.set(x,0,z);
+        const blades=3+(i%4);
+        for(let j=0;j<blades;j++){
+          const angle=seeded(i*7+j)*Math.PI*2;
+          const blade=addMesh(new THREE.ConeGeometry(.055+seeded(i+j)*.035,.38+seeded(i+j+4)*.24,5),grassMats[(i+j)%grassMats.length],patch,Math.cos(angle)*.12,.19,Math.sin(angle)*.12);
+          blade.rotation.z=Math.cos(angle)*.28;blade.rotation.x=Math.sin(angle)*.28;
+        }
+        if(i%3===0){
+          const flower=sphere(.105,meadowMats[i%meadowMats.length],patch,0,.43,0,2);
+          flower.scale.set(1,.55,1);
+          sphere(.045,flowerCenterMat,patch,0,.49,0,1);
+        }
+        if(i%9===0){
+          cylinder(.09,.12,.22,mushroomStem,patch,.24,.11,.12,7);
+          const cap=sphere(.18,mushroomCap,patch,.24,.27,.12,2);cap.scale.set(1,.48,1);
+        }
+      }
+      // Pietre piatte irregolari lungo il sentiero principale: leggibilità senza effetto griglia.
+      for(let i=0;i<74;i++){
+        const t=i/73,side=(seeded(i+501)-.5)*1.9;
+        const x=-18+t*39+side,z=10+Math.sin(t*Math.PI*2)*2.2+(seeded(i+601)-.5)*1.4;
+        const stoneMesh=addMesh(new THREE.DodecahedronGeometry(.28+seeded(i+701)*.18,0),detailRock,scene,x,.09,z);
+        stoneMesh.scale.set(1.35,.28,.9);stoneMesh.rotation.y=seeded(i+801)*Math.PI;
+      }
+      // Piccoli gruppi di fiori vicino agli ingressi delle case.
+      for(const [cx,cz] of [[-18,-12],[8,-18],[18,8],[-34,4],[35,-10]]){
+        for(let j=0;j<7;j++){
+          const a=j/7*Math.PI*2,rr=1.1+(j%2)*.45;
+          const flower=sphere(.12,meadowMats[j%meadowMats.length],scene,cx+Math.cos(a)*rr,.38,cz+Math.sin(a)*rr,2);
+          flower.scale.set(1,.62,1);
+          sphere(.045,flowerCenterMat,scene,cx+Math.cos(a)*rr,.45,cz+Math.sin(a)*rr,1);
+        }
       }
       // Piccolo bosco sacro ai margini del villaggio: rocce, cespugli e pietre votive.
       makeRockGarden(-42,-26,3);makeRockGarden(43,27,5);makeRockGarden(-43,39,7);
@@ -1459,8 +1529,7 @@ export default function Amargenta3D({ onExit }) {
         sphere(.24,muzzle,g,0,.48,.34,2).scale.set(1.15,.72,.9);
         for(const side of [-1,1])sphere(.045,muzzle,g,side*.1,.31,.39,1);
         const collar=cylinder(.34,.34,.09,blue,g,0,1.28,.02,12);collar.rotation.x=Math.PI/2;
-        sphere(.18,blue,g,.62,.76,-.4,2);
-        const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
+        sphere(.18,blue,g,.62,.76,-.4,2);        const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
         const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,6,16,Math.PI),metal);handle.position.set(-.58,.52,.22);g.add(handle);
         const interaction={id:"wild-lattelo-41",title:"Lattelo · Natura",text:"Un Lattelo selvatico ti osserva tra i filari.",x:42,z:38,radius:4.2,action:()=>{
           if(ownedAmargentaIdsRef.current.includes("lattelo")){setDialogue({title:"Lattelo",text:"Lattelo è già parte della tua collezione. Nessun doppione."});return;}
@@ -1485,10 +1554,63 @@ export default function Amargenta3D({ onExit }) {
       addInteraction("truffle-harvest","Cerca tartufi","Il terreno smosso nasconde tartufi profumati.",-48,30,()=>{setInventory(old=>({...old,truffles:old.truffles+1}));setToast("Tartufo trovato");},4.2);
       addInteraction("milk-bottle","Imbottiglia il latte","I Lattelo hanno riempito il contenitore.",48,45,()=>{setInventory(old=>({...old,milk:old.milk+1}));setToast("Latte imbottigliato");},4.5);
       addInteraction("cardinero-prune","Cura il giardino","Cardinero ti indica le piante da potare.",-34,16,()=>{setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Giardino curato · Essenza verde ottenuta");},4.2);
+      // Compagni nell'overworld: Tartadino pascola, Patato lascia solchi.
+      const makeCompanion=(id,x,z,color)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        const body=sphere(.72,mat(color),g,0,.78,0,2);body.scale.set(1.05,.9,.95);
+        sphere(.48,mat(color),g,0,1.42,.28,2);
+        for(const side of [-1,1]){sphere(.12,mat("#fff8e9"),g,side*.19,1.48,.68,2);sphere(.055,mat("#211820"),g,side*.19,1.48,.77,2);}
+        const feet=[];for(const side of [-1,1]){const foot=sphere(.2,mat("#a66a42"),g,side*.28,.18,.12,1);foot.scale.set(1,.55,1.3);feet.push(foot);}
+        if(id==="tartadino"){const shell=sphere(.42,mat("#b46a32"),g,0,1.05,-.35,2);shell.scale.set(1.25,.75,.8);sphere(.18,mat("#65a83f"),g,0,1.92,.22,1).scale.set(.45,1.5,.35);}
+        if(id==="patato"){for(let i=0;i<3;i++){const lump=sphere(.17,mat("#8b633e"),g,-.28+i*.28,.92,-.52,1);lump.scale.y=.65;}}
+        ambientCreatures.push({id,group:g,homeX:x,homeZ:z,phase:ambientCreatures.length*1.7,feet});
+      };
+      makeCompanion("tartadino",-36,20,"#dca52c");makeCompanion("patato",-50,-18,"#a87b4b");
+      const makeFlyer=(id,x,y,z,color)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);
+        const body=sphere(.48,mat(color),g,0,0,0,2);body.scale.set(1.25,.72,.85);sphere(.28,mat(color),g,0,.08,.38,2);
+        const wingMat=mat("#eee2f5",.65),left=sphere(.38,wingMat,g,-.52,.12,0,1),right=sphere(.38,wingMat,g,.52,.12,0,1);left.scale.set(1.3,.2,.7);right.scale.set(1.3,.2,.7);
+        ambientCreatures.push({id,group:g,homeX:x,homeZ:z,baseY:y,phase:ambientCreatures.length*2.1,fly:true,leftWing:left,rightWing:right});
+      };
+      makeFlyer("dodo",-28,12,-8,"#9b83c4");makeFlyer("flypork",5,16,-34,"#ef9d9d");makeFlyer("cocconn",44,14,24,"#e7c18d");
+
+      // Portale orientale verso Arabnite, la tredicesima città.
+      const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
+      const gate=new THREE.Group();scene.add(gate);gate.position.set(67,0,2);
+      for(const side of [-1,1]){cylinder(.72,.92,7,arabStone,gate,side*4,3.5,0,10);cylinder(.84,.84,.35,arabGold,gate,side*4,6.9,0,10);sphere(.65,arabRed,gate,side*4,7.5,0,1).scale.set(.7,1.5,.7);}
+      box(9,.8,1.2,arabGold,gate,0,7,0);
+      const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
+      sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
+      addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
+        arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");
+      },5.5);
+      addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
+        arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
+      },5.5);
+
+      // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
+      addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
+      const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
+      const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
+      const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
+      [[158,-8,9,13,"#e6c17b"],[193,-8,7,10,"#d9ad69"],[176,31,8,12,"#b78bd0"],[211,25,6,9,"#e6c17b"],[144,31,6,9,"#d7a35e"]].forEach(v=>dome(...v));
+      for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,scene,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),scene,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,scene,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
+      const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),scene,190,.04,48);oasis.rotation.x=-Math.PI/2;
+      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
+      for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,scene,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
+      makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15);
+      makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08);
+      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1);
+      makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08);
+      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05);
+      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
+      makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
+      for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
+
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
-          if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
+          if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);awardResidentTrust("farmer");setToast("Missione completata · Fave d'Ambra · Fiducia di Flame +1");}
           setDialogue({title:"Flame · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
         } else if(!questActiveRef.current){
           questActiveRef.current=true;setQuestStarted(true);
@@ -1498,7 +1620,7 @@ export default function Amargenta3D({ onExit }) {
       const ormaInteraction=interactables.find(item=>item.id==="archivist");
       if(ormaInteraction)ormaInteraction.action=()=>{
         if(recipePagesRef.current>=4){
-          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setToast("Missione completata · Ricetta Perduta");}
+          if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);awardResidentTrust("archivist");setToast("Missione completata · Ricetta Perduta · Fiducia +1");}
           setDialogue({title:"Belligonghi-umami · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
         } else if(!recipeStartedRef.current){
           recipeStartedRef.current=true;setRecipeStarted(true);
@@ -1508,7 +1630,7 @@ export default function Amargenta3D({ onExit }) {
       const brunoInteraction=interactables.find(item=>item.id==="guard");
       if(brunoInteraction)brunoInteraction.action=()=>{
         if(valvesRef.current>=3){
-          if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
+          if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);awardResidentTrust("guard");setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate · Fiducia +1");}
           setDialogue({title:"Cardinero · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
         } else if(!waterStartedRef.current){
           waterStartedRef.current=true;setWaterStarted(true);
@@ -1603,8 +1725,8 @@ export default function Amargenta3D({ onExit }) {
           return;
         }
         setInventory(old=>({...old,coffeeBlend:old.coffeeBlend-1,herbalTea:old.herbalTea-1,relics:old.relics+1}));
-        blendDoneRef.current=true;setBlendDone(true);
-        setToast("Ricetta segreta completata · Reliquia ottenuta");
+        blendDoneRef.current=true;setBlendDone(true);awardResidentTrust("keeper");
+        setToast("Ricetta segreta completata · Fiducia di Belligonghi-umami +1 · Reliquia ottenuta");
         setDialogue({title:"Belligonghi-umami · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Belligonghi-umami ti affida una Reliquia delle Tre Foglie."});
       };
       makeNpc("cafe-host","Muccanza","Gestore della caffetteria",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
@@ -1612,9 +1734,9 @@ export default function Amargenta3D({ onExit }) {
       if(eliaInteraction)eliaInteraction.action=()=>{
         if(bellsDoneRef.current){setDialogue({title:"Muccanza · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
         if(bellCountRef.current>=3){
-          bellsDoneRef.current=true;setBellsDone(true);
+          bellsDoneRef.current=true;setBellsDone(true);awardResidentTrust("cafe-host");
           setInventory(old=>({...old,relics:old.relics+1}));
-          setToast("Attività completata · Le campane del borgo");
+          setToast("Attività completata · Fiducia di Muccanza +1 · Le campane del borgo");
           setDialogue({title:"Muccanza · Il canto ritrovato",text:"Hai risvegliato tutte e tre le campane! Il loro suono si è propagato tra le terrazze e la piazza. Muccanza ti affida una Reliquia di Amargenta."});
         } else if(!bellsStartedRef.current){
           bellsStartedRef.current=true;setBellsStarted(true);
@@ -1675,46 +1797,286 @@ export default function Amargenta3D({ onExit }) {
         setInventory(old=>({...old,citrus:old.citrus+1}));
         setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Muccanza potrebbe scambiarlo con te."});
       },4.5);
-      // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
-      const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
-      // Protagonista: silhouette da eroe Sognatori, proporzioni chibi e outfit iconico da esploratore.
-      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;playerMotion.torso=torso;
-      sphere(.46,skinTone,player,0,1.92,.015,2);
-      // Collo, colletto e dettagli della giacca.
-      cylinder(.15,.16,.2,skinTone,player,0,1.68,0,10);
-      box(.55,.16,.13,jacketLight,player,0,1.68,.27);
-      box(.09,.72,.07,leather,player,0,1.2,.36);
-      for(let i=0;i<3;i++)sphere(.035,gold,player,0,1.42+i*.2,.405,1);
-      // Cappellino rosso con visiera frontale.
-      sphere(.47,redCap,player,0,2.16,-.005,2).scale.set(1,.38,1);
-      box(.72,.11,.48,capShade,player,0,2.1,.23);
-      // Emblema a stella, marchio distintivo del protagonista.
-      const heroEmblem=sphere(.105,gold,player,0,2.2,.385,1);heroEmblem.scale.set(1,.72,.28);
-      sphere(.035,mat("#fff0b8"),player,0,2.2,.42,1);
-      // Zaino in cuoio, fibbie e tasca esterna.
-      box(.68,.82,.34,leather,player,0,1.25,-.36);
-      box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
-      box(.58,.09,.08,gold,player,0,1.47,-.56);
-      box(.2,.24,.08,wood,player,0,1.28,-.58);
-      // Arti costruiti attorno a vere articolazioni: oscillano dalla spalla e dall'anca.
+      // TALPITRIPPA 3D — modello volumetrico originale, non billboard.
+      // Proporzioni: corpo tozzo, testa ampia, ventre crema, naso rosa, baffi dorati e artigli.
+      const talpitrippa = new THREE.Group();
+      const makePixelFur = (base, palette, seed=7) => {
+        const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+        const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
+        ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
+        let v=seed;const rand=()=>{v=(v*16807)%2147483647;return(v-1)/2147483646;};
+        for(let i=0;i<5600;i++){
+          const x=Math.floor(rand()*128)*4,y=Math.floor(rand()*128)*4;
+          ctx.globalAlpha=.22+rand()*.42;ctx.fillStyle=palette[Math.floor(rand()*palette.length)];
+          const s=2+Math.floor(rand()*2)*2;ctx.fillRect(x,y,s,s);
+        }
+        ctx.globalAlpha=1;
+        const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+        tex.magFilter=THREE.NearestFilter;tex.minFilter=THREE.NearestMipmapLinearFilter;tex.generateMipmaps=true;
+        return tex;
+      };
+      const furTex=makePixelFur("#382437",["#513449","#68465b","#241a2c","#7a5266","#30202f"],11);
+      const bellyTex=makePixelFur("#f4d58a",["#ffe9a8","#e9bd69","#fff0bd","#dcae62"],23);
+      const furMat=new THREE.MeshStandardMaterial({map:furTex,color:"#ffffff",roughness:1});
+      const bellyMat=new THREE.MeshStandardMaterial({map:bellyTex,color:"#ffffff",roughness:1});
+      const darkFur=mat("#30202f"), pawFur=mat("#493044"), clawMat=mat("#ffe09a",.62), noseMat=mat("#ef6672",.34);
+      const eyeMat=new THREE.MeshPhysicalMaterial({color:"#08070c",roughness:.08,clearcoat:1,clearcoatRoughness:.03});
+      const eyeGlint= new THREE.MeshBasicMaterial({color:"#ffffff"});
+      const whiskerMat=mat("#f3c66e",.52,{metalness:.08});
+      const ellipsoid=(parent,material,pos,scale,segments=32)=>{
+        const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,segments,Math.max(16,Math.floor(segments*.7))),material);
+        mesh.position.set(...pos);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+      };
+      // Massa principale e testa: forme sovrapposte con raccordo morbido.
+      ellipsoid(talpitrippa,furMat,[0,1.03,0],[.88,1.02,.72],48);
+      ellipsoid(talpitrippa,furMat,[0,2.02,.02],[.82,.79,.70],48);
+      // Ventre chiaro in primo piano.
+      ellipsoid(talpitrippa,bellyMat,[0,1.10,.575],[.62,.72,.205],40);
+      // Guance e muso.
+      ellipsoid(talpitrippa,darkFur,[-.43,1.99,.51],[.25,.20,.18],28);
+      ellipsoid(talpitrippa,darkFur,[.43,1.99,.51],[.25,.20,.18],28);
+      // Occhi lucidi con riflessi: i riferimenti permettono un battito naturale.
+      const eyeMeshes=[];
       for(const side of [-1,1]){
-        const armPivot=new THREE.Group();player.add(armPivot);armPivot.position.set(side*.5,1.43,0);
-        box(.2,.62,.22,jacket,armPivot,0,-.29,0);
-        box(.22,.13,.23,gold,armPivot,0,-.58,.015);
-        sphere(.15,skinTone,armPivot,0,-.68,.035,2);
-        if(side<0)playerMotion.leftArm=armPivot;else playerMotion.rightArm=armPivot;
-        const legPivot=new THREE.Group();player.add(legPivot);legPivot.position.set(side*.2,.68,0);
-        box(.25,.55,.27,pants,legPivot,0,-.275,0);
-        box(.31,.2,.46,bootMat,legPivot,0,-.62,.13);
-        // Piccola punta e cucitura dello stivale.
-        box(.23,.045,.025,mat("#8a6747"),legPivot,0,-.59,.355);
-        if(side<0)playerMotion.leftLeg=legPivot;else playerMotion.rightLeg=legPivot;
+        const eye=ellipsoid(talpitrippa,eyeMat,[side*.285,2.28,.625],[.145,.19,.095],32);
+        eyeMeshes.push(eye);
+        ellipsoid(talpitrippa,eyeGlint,[side*.325,2.355,.708],[.045,.052,.018],16);
+        ellipsoid(talpitrippa,eyeGlint,[side*.245,2.24,.713],[.018,.022,.012],12);
       }
-      // Fibbia frontale a stella e sciarpa corta: dettagli riconoscibili anche da lontano.
-      const beltBuckle=sphere(.105,gold,player,0,.83,.32,1);beltBuckle.scale.set(1,1,.35);
-      const scarf=box(.56,.12,.16,mat("#e3a34d"),player,0,1.57,.27);scarf.rotation.z=-.04;
-      // Spallacci e fibbie dello zaino.
-      for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
+      // Naso rosa prominente, con luce superiore.
+      ellipsoid(talpitrippa,noseMat,[0,2.04,.77],[.265,.225,.17],40);
+      ellipsoid(talpitrippa,new THREE.MeshBasicMaterial({color:"#ffb0a5"}),[-.075,2.145,.91],[.105,.045,.018],20);
+      // Baffi dorati a ciuffi curvi, su entrambi i lati del muso.
+      const whiskerCurve=(points,r=.025)=>{
+        const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+        const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,16,r,7,false),whiskerMat);
+        mesh.castShadow=true;talpitrippa.add(mesh);
+      };
+      for(const side of [-1,1]){
+        for(let j=0;j<3;j++){
+          const y=2.03+(j-1)*.105;
+          whiskerCurve([[side*.18,y,.79],[side*.42,y+(j-1)*.055,.83],[side*.67,y+(j-1)*.12,.76]],.027);
+        }
+      }
+      // Braccia corte e zampe anteriori appoggiate al ventre.
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(side*.57,1.32,.24);talpitrippa.add(arm);arms.push(arm);
+        ellipsoid(arm,furMat,[0,0,0],[.28,.48,.30],32);
+        ellipsoid(arm,pawFur,[0,-.30,.12],[.22,.19,.22],24);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.065,.22,12),clawMat);
+          claw.position.set(k*.115,-.43,.28);claw.rotation.x=-.48;claw.rotation.z=-k*.12;claw.castShadow=true;arm.add(claw);
+        }
+      }
+      // Piedi larghi, con tre unghiette ciascuno.
+      const feet=[];
+      for(const side of [-1,1]){
+        const foot=new THREE.Group();foot.position.set(side*.43,.19,.17);talpitrippa.add(foot);feet.push(foot);
+        ellipsoid(foot,pawFur,[0,0,.06],[.39,.20,.43],32);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.085,.25,12),clawMat);
+          claw.position.set(k*.19,-.015,.39);claw.rotation.x=-.58;claw.rotation.z=-k*.16;claw.castShadow=true;foot.add(claw);
+        }
+      }
+      // Piccole ciocche in rilievo lungo la silhouette per evitare l'effetto gommoso.
+      for(let i=0;i<17;i++){
+        const a=(i/17)*Math.PI*2;
+        const tuft=ellipsoid(talpitrippa,darkFur,[Math.cos(a)*.76,1.45+Math.sin(a)*.68,Math.sin(a)*.52],[.075,.12,.07],12);
+        tuft.rotation.z=-Math.cos(a)*.35;
+      }
+      talpitrippa.position.set(0,0,0);
+      player.add(talpitrippa);
+
+      // RIPPLE 3D — secondo personaggio selezionabile e giocabile nell'overworld.
+      // Modello procedurale ispirato allo screenshot: squalo antropomorfo, tuta rossa,
+      // fasce bianche/nere, sneakers e amo. Tutte le parti sono geometria 3D.
+      const ripple = new THREE.Group();
+      const rippleBlack=mat("#171820",.48), rippleDark=mat("#252630",.52);
+      const rippleWhite=mat("#eee9df",.72), rippleRed=mat("#c92332",.48);
+      const rippleRedDark=mat("#831b28",.58), rippleSole=mat("#f4eee4",.82);
+      const rippleEye=new THREE.MeshPhysicalMaterial({color:"#e8e4df",roughness:.16,clearcoat:1});
+      const rippleIris=mat("#d52d37",.24,{metalness:.18});
+      const ripplePupil=mat("#100f16",.12);
+      const rippleTeeth=mat("#fff4d9",.35);
+      const rippleBody=new THREE.Group();ripple.add(rippleBody);
+      const rEll=(parent,material,pos,scale,detail=24)=>{
+        const m=new THREE.Mesh(new THREE.SphereGeometry(1,detail,Math.max(12,detail>>1)),material);
+        m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+      };
+      // Testa allungata e muso da squalo.
+      rEll(rippleBody,rippleBlack,[0,2.16,.02],[.66,.73,.62],40);
+      rEll(rippleBody,rippleDark,[0,2.28,.48],[.59,.40,.72],36);
+      rEll(rippleBody,rippleWhite,[0,1.98,.72],[.53,.18,.57],32);
+      // Mascella aperta: interno rosso e doppia fila di denti.
+      rEll(rippleBody,rippleRedDark,[0,1.91,.93],[.48,.12,.40],32);
+      rEll(rippleBody,rippleWhite,[0,2.035,.93],[.49,.075,.39],32);
+      for(let i=0;i<7;i++){
+        const x=-.38+i*.127;
+        const tooth=new THREE.Mesh(new THREE.ConeGeometry(.045,.15,8),rippleTeeth);
+        tooth.position.set(x,1.985,.99);tooth.rotation.z=Math.PI;tooth.castShadow=true;rippleBody.add(tooth);
+        const lower=new THREE.Mesh(new THREE.ConeGeometry(.04,.13,8),rippleTeeth);
+        lower.position.set(x,1.855,1.02);lower.castShadow=true;rippleBody.add(lower);
+      }
+      // Occhio laterale rosso, grande e leggibile.
+      rEll(rippleBody,rippleEye,[-.47,2.47,.38],[.17,.19,.10],28);
+      rEll(rippleBody,rippleIris,[-.49,2.47,.465],[.105,.12,.045],24);
+      rEll(rippleBody,ripplePupil,[-.50,2.47,.502],[.055,.075,.025],20);
+      rEll(rippleBody,rippleEye,[-.52,2.51,.523],[.025,.03,.012],12);
+      // Corpo a righe bianco/nero e dettagli rossi sulla schiena.
+      rEll(rippleBody,rippleBlack,[0,1.25,-.02],[.49,.77,.39],32);
+      for(let i=0;i<4;i++){
+        const stripe=rEll(rippleBody,rippleWhite,[0,.91+i*.20,.285],[.47,.055,.13],24);
+        stripe.rotation.z=-.05;
+      }
+      const dorsal=new THREE.Mesh(new THREE.ConeGeometry(.16,.42,8),rippleRed);
+      dorsal.position.set(.02,2.68,-.34);dorsal.rotation.z=-.25;dorsal.castShadow=true;rippleBody.add(dorsal);
+      // Pantaloncini rossi con bande laterali bianche.
+      rEll(rippleBody,rippleRed,[0,.69,.02],[.51,.30,.40],32);
+      for(const side of [-1,1]){
+        const stripe=rEll(rippleBody,rippleSole,[side*.48,.72,.045],[.045,.25,.32],18);
+        stripe.rotation.z=side*-.10;
+      }
+      const rippleArms=[],rippleFeet=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(side*.53,1.42,.02);rippleBody.add(arm);rippleArms.push(arm);
+        const limb=rEll(arm,rippleBlack,[side*.10,-.35,.02],[.17,.55,.19],24);limb.rotation.z=side*-.13;
+        rEll(arm,rippleRedDark,[side*.13,-.66,.06],[.13,.23,.15],18);
+        for(let k=0;k<3;k++)rEll(arm,rippleWhite,[side*(.08+k*.055),-.82,.14],[.035,.10,.04],12);
+        const leg=new THREE.Group();leg.position.set(side*.23,.48,.04);rippleBody.add(leg);rippleFeet.push(leg);
+        rEll(leg,rippleWhite,[0,-.20,.01],[.13,.38,.14],20);
+        rEll(leg,rippleRed,[0,-.43,.08],[.17,.13,.22],20);
+        rEll(leg,rippleSole,[0,-.52,.12],[.20,.055,.27],20);
+        // Lacci delle sneakers.
+        for(let lace=0;lace<3;lace++)rEll(leg,rippleWhite,[0,-.39+lace*.045,.255],[.09,.018,.018],10);
+      }
+      // Amo appeso al muso con cordino rosso.
+      const hookCurve=new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-.59,2.03,.75),new THREE.Vector3(-.72,1.75,.82),
+        new THREE.Vector3(-.70,1.48,.80),new THREE.Vector3(-.55,1.40,.80),
+        new THREE.Vector3(-.48,1.52,.80)
+      ]);
+      const hook=new THREE.Mesh(new THREE.TubeGeometry(hookCurve,24,.025,8,false),mat("#9da1a6",.25,{metalness:.8}));
+      hook.castShadow=true;rippleBody.add(hook);
+      const cordCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)]);
+      const cord=new THREE.Mesh(new THREE.TubeGeometry(cordCurve,12,.018,6,false),rippleRed);
+      rippleBody.add(cord);
+      ripple.visible=false;player.add(ripple);
+
+      // MOCI-MOCI — spiritello nuvola rosa con ciuffi di panna e sfere zuccherate.
+      const mociMoci=new THREE.Group();player.add(mociMoci);mociMoci.visible=false;
+      const mociPink=mat("#f48ab8"),mociLight=mat("#ffc1d8"),mociShadow=mat("#bd6da9"),mociCream=mat("#fff1dc"),mociBlue=mat("#668bdc"),mociDark=mat("#25152f"),mociWhite=new THREE.MeshBasicMaterial({color:"#ffffff"});
+      const mEll=(parent,material,pos,scale,detail=24)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,detail,Math.max(12,detail>>1)),material);m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;parent.add(m);return m;};
+      mEll(mociMoci,mociPink,[0,1.42,0],[1.12,.83,.62],36);
+      mEll(mociMoci,mociCream,[0,1.05,.34],[.91,.48,.34],32);
+      mEll(mociMoci,mociLight,[-.34,2.08,-.02],[.69,.58,.55],28);
+      mEll(mociMoci,mat("#9ce77d"),[.02,2.48,-.03],[.64,.49,.52],28);
+      mEll(mociMoci,mat("#ffd84c"),[.76,2.02,.02],[.48,.55,.45],28);
+      // Riccioli bianchi e azzurri ai lati del corpo.
+      const mociCurl=(x,y,z,scale=1)=>{const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(x,y+.38*scale,z),new THREE.Vector3(x-.18*scale,y+.2*scale,z+.06),new THREE.Vector3(x-.13*scale,y-.05*scale,z+.08),new THREE.Vector3(x+.12*scale,y-.12*scale,z+.08),new THREE.Vector3(x+.19*scale,y+.04*scale,z+.08)]);const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.12*scale,10,false),mociBlue);mociMoci.add(mesh);};
+      mociCurl(-.9,1.62,.25,.9);mociCurl(.53,.84,.48,.82);
+      const mociEyes=[];
+      for(const side of [-1,1]){mEll(mociMoci,mociDark,[side*.38,1.48,.57],[.19,.25,.09],24);mEll(mociMoci,mat("#d94c9a"),[side*.38,1.43,.65],[.12,.14,.035],20);mociEyes.push(mEll(mociMoci,mociWhite,[side*.43,1.57,.69],[.055,.07,.025],12));mEll(mociMoci,mociPink,[side*.69,1.22,.48],[.19,.12,.05],16);}
+      mEll(mociMoci,mociDark,[0,1.16,.72],[.18,.12,.06],16);mEll(mociMoci,mat("#ef5b85"),[0,1.08,.78],[.13,.1,.04],16);
+      const antenna=new THREE.Group();antenna.position.set(.67,2.4,-.02);mociMoci.add(antenna);
+      const antennaStem=cylinder(.045,.06,.48,mat("#f28a39"),antenna,0,.22,0,8);antennaStem.rotation.z=-.3;
+      mEll(antenna,mat("#ed4b9a"),[.1,.52,0],[.25,.29,.22],20);mEll(antenna,mociWhite,[.04,.62,.17],[.1,.1,.04],12);
+      const mociArms=[];
+      for(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.84,1.08,.02);mociMoci.add(arm);mociArms.push(arm);mEll(arm,mociPink,[side*.08,-.22,.05],[.22,.35,.2],18);}
+      
+      // PIOCINO — piccolo uccello giallo, cresta fucsia e collana di gemme viola.
+      const piocino=new THREE.Group();player.add(piocino);piocino.visible=false;
+      const birdYellow=mat("#ffd51e"),birdGold=mat("#f3a900"),birdCream=mat("#fff0a6"),birdPink=mat("#e82d9a"),birdPurple=mat("#7425bc"),birdBeak=mat("#9147d6"),birdEye=new THREE.MeshPhysicalMaterial({color:"#120b22",roughness:.08,clearcoat:1});
+      mEll(piocino,birdYellow,[0,1.3,0],[.73,.83,.58],36);
+      mEll(piocino,birdYellow,[0,2.04,.08],[.68,.65,.57],36);
+      mEll(piocino,birdCream,[0,1.18,.49],[.49,.48,.16],28);
+      const piocinoEyes=[];
+      for(const side of [-1,1]){mEll(piocino,mociWhite,[side*.28,2.18,.55],[.2,.23,.08],24);piocinoEyes.push(mEll(piocino,birdEye,[side*.29,2.17,.62],[.13,.17,.06],24));mEll(piocino,mociWhite,[side*.33,2.25,.675],[.055,.065,.025],12);}
+      const beak= new THREE.Mesh(new THREE.ConeGeometry(.2,.42,6),birdBeak);beak.position.set(0,1.91,.72);beak.rotation.x=-Math.PI/2;piocino.add(beak);
+      const crest=[];
+      for(let i=0;i<5;i++){const feather=new THREE.Mesh(new THREE.ConeGeometry(.15,.78-i*.055,7),birdPink);feather.position.set(-.34+i*.17,2.73+(i%2)*.1,-.05);feather.rotation.z=-.45+i*.23;feather.castShadow=true;piocino.add(feather);crest.push(feather);}
+      const birdWings=[];
+      for(const side of [-1,1]){const wing=new THREE.Group();wing.position.set(side*.58,1.48,-.02);piocino.add(wing);mEll(wing,birdGold,[side*.16,0,0],[.34,.48,.17],20);birdWings.push(wing);}
+      const necklace=new THREE.Group();piocino.add(necklace);
+      for(let i=0;i<9;i++){const a=Math.PI+(i/8)*Math.PI;const gem=mEll(necklace,birdPurple,[Math.cos(a)*.43,1.63+Math.sin(a)*.25,.48],[.13,.15,.12],12);gem.rotation.z=a*.2;mEll(necklace,mociWhite,[Math.cos(a)*.43-.035,1.68+Math.sin(a)*.25,.59],[.035,.04,.02],8);}
+      const birdFeet=[];
+      for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.27,.57,.08);piocino.add(leg);cylinder(.045,.05,.32,birdPink,leg,0,-.12,0,8);const foot=mEll(leg,birdPink,[0,-.29,.12],[.18,.07,.25],12);for(let k=-1;k<=1;k++){const toe=new THREE.Mesh(new THREE.ConeGeometry(.045,.24,6),birdCream);toe.position.set(k*.1,-.3,.32);toe.rotation.x=-Math.PI/2;leg.add(toe);}birdFeet.push(leg);}
+      // ARABNITE: tre avatar esclusivi selezionabili soltanto nella tredicesima città.
+      const cervio=new THREE.Group();player.add(cervio);cervio.visible=false;
+      const cervioWhite=mat("#e8f8ff"),cervioBlue=mat("#55c9f4"),cervioDark=mat("#163b78"),cervioEye=mat("#071b35");
+      mEll(cervio,cervioWhite,[0,1.28,-.05],[.48,.75,.72],28);
+      mEll(cervio,cervioWhite,[0,2.15,.35],[.43,.55,.43],28);
+      for(const side of [-1,1]){
+        mEll(cervio,cervioBlue,[side*.39,2.31,.34],[.22,.12,.14],16);
+        mEll(cervio,cervioEye,[side*.17,2.23,.72],[.075,.09,.035],16);
+        const leg=new THREE.Group();leg.position.set(side*.28,.72,.03);cervio.add(leg);cylinder(.11,.085,.68,cervioWhite,leg,0,-.25,0,10);mEll(leg,cervioBlue,[0,-.62,.08],[.14,.12,.18],12);
+        const antler=new THREE.Group();antler.position.set(side*.2,2.55,.16);cervio.add(antler);
+        const stem=cylinder(.035,.05,.85,cervioBlue,antler,0,.4,0,7);stem.rotation.z=-side*.15;
+        for(let j=0;j<3;j++){const branch=cylinder(.025,.035,.42,cervioBlue,antler,side*(.12+j*.08),.48+j*.17,0,7);branch.rotation.z=-side*.9;}
+      }
+      mEll(cervio,cervioBlue,[0,1.52,.48],[.32,.42,.22],20);
+      const cervioTail=mEll(cervio,cervioWhite,[.42,1.55,-.62],[.2,.36,.2],16);cervioTail.rotation.z=-.6;
+      const cervioLegs=[];for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.22,.65,-.42);cervio.add(leg);cylinder(.09,.07,.62,cervioWhite,leg,0,-.25,0,8);cervioLegs.push(leg);}
+      
+      // GUNVALLO: destriero cowboy bruno con cappello, stella e archibugio scenico.
+      const gunvallo=new THREE.Group();player.add(gunvallo);gunvallo.visible=false;
+      const horseBrown=mat("#9b4d20"),horseLight=mat("#d58a45"),horseDark=mat("#4b2418"),gunMetal=mat("#78899a",.35,{metalness:.65}),gunGold=mat("#e9ad26",.35,{metalness:.5});
+      mEll(gunvallo,horseBrown,[0,1.12,-.05],[.68,.55,.95],28);
+      mEll(gunvallo,horseBrown,[0,1.9,.53],[.42,.75,.42],28);
+      mEll(gunvallo,horseLight,[0,1.65,.88],[.35,.28,.32],20);
+      const hat=cylinder(.39,.39,.18,horseDark,gunvallo,0,2.62,.48,12);cylinder(.56,.56,.08,horseDark,gunvallo,0,2.53,.48,16);
+      mEll(gunvallo,gunGold,[0,2.68,.59],[.13,.15,.045],12);
+      const star=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),gunGold);star.position.set(0,2.68,.65);gunvallo.add(star);
+      // Fucile portato lateralmente, puramente decorativo.
+      const barrel=cylinder(.09,.09,1.45,gunMetal,gunvallo,0,1.83,1.0,10);barrel.rotation.x=Math.PI/2;
+      cylinder(.15,.15,.38,horseDark,gunvallo,0,1.83,.48,10).rotation.x=Math.PI/2;
+      cylinder(.12,.12,.26,gunGold,gunvallo,0,1.83,.13,10).rotation.x=Math.PI/2;
+      const gunLegs=[];for(const side of [-1,1])for(const z of [-.52,.48]){const leg=new THREE.Group();leg.position.set(side*.4,.72,z);gunvallo.add(leg);cylinder(.13,.09,.65,horseBrown,leg,0,-.28,0,9);mEll(leg,gunMetal,[0,-.62,.06],[.17,.12,.2],12);gunLegs.push(leg);}
+      const mane=mEll(gunvallo,horseDark,[0,2.05,.02],[.18,.58,.22],16);mane.rotation.x=-.3;
+      const gunTail=mEll(gunvallo,horseBrown,[.56,1.25,-.8],[.2,.22,.55],16);gunTail.rotation.x=-.6;
+      
+      // RULLINO: papero blu tondeggiante, pancia turchese e becco/zampe arancioni.
+      const rullino=new THREE.Group();player.add(rullino);rullino.visible=false;
+      const duckBlue=mat("#1455df"),duckLight=mat("#2b79ff"),duckMint=mat("#43dcb2"),duckOrange=mat("#ff861c"),duckDark=mat("#101333");
+      mEll(rullino,duckBlue,[0,1.55,0],[.72,.82,.62],32);
+      mEll(rullino,duckMint,[.08,1.05,.24],[.66,.59,.48],28);
+      mEll(rullino,duckBlue,[0,2.27,.12],[.68,.65,.56],32);
+      for(const side of [-1,1]){mEll(rullino,duckDark,[side*.27,2.29,.61],[.12,.15,.055],18);mEll(rullino,mociWhite,[side*.30,2.35,.66],[.045,.05,.02],10);}
+      mEll(rullino,duckOrange,[0,2.02,.72],[.29,.18,.2],16);
+      const duckFeet=[];for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.28,.63,.08);rullino.add(leg);cylinder(.055,.05,.32,duckOrange,leg,0,-.13,0,8);mEll(leg,duckOrange,[0,-.29,.16],[.23,.07,.28],12);duckFeet.push(leg);}
+      const duckWings=[];for(const side of [-1,1]){const wing=new THREE.Group();wing.position.set(side*.58,1.42,-.03);rullino.add(wing);mEll(wing,duckLight,[side*.13,0,0],[.27,.44,.17],18);duckWings.push(wing);}
+      
+      const characterState={active:"talpitrippa",talpitrippa,ripple,mociMoci,piocino,cervio,gunvallo,rullino,arms,feet,rippleArms,rippleFeet,mociArms,birdFeet,birdWings,eyeMeshes,mociEyes,piocinoEyes};
+      const regularOrder=["talpitrippa","ripple","moci-moci","piocino"];
+      const arabniteOrder=["cervio","gunvallo","rullino"];
+      const switchCharacter=()=>{
+        const order=arabniteActive?arabniteOrder:regularOrder;
+        if(!order.includes(characterState.active))characterState.active=order[0];
+        else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
+        const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
+        Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
+        const configs={
+          "talpitrippa":{model:talpitrippa,arms,feet,eyes:eyeMeshes},
+          "ripple":{model:rippleBody,arms:rippleArms,feet:rippleFeet,eyes:[]},
+          "moci-moci":{model:mociMoci,arms:mociArms,feet:[],eyes:mociEyes},
+          "piocino":{model:piocino,arms:birdWings,feet:birdFeet,eyes:piocinoEyes},
+          "cervio":{model:cervio,arms:[],feet:cervioLegs,eyes:[]},
+          "gunvallo":{model:gunvallo,arms:[],feet:gunLegs,eyes:[]},
+          "rullino":{model:rullino,arms:duckWings,feet:duckFeet,eyes:[]}
+        };
+        const config=configs[characterState.active];
+        playerMotion.model=config.model;playerMotion.arms=config.arms;playerMotion.feet=config.feet;playerMotion.eyes=config.eyes;
+        const labels={"talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino","cervio":"Cervio","gunvallo":"Gunvallo","rullino":"Rullino"};
+        setToast(labels[characterState.active]+" · personaggio attivo");
+      };
+      const talpitrippaShadow = new THREE.Mesh(
+        new THREE.CircleGeometry(.78,32),
+        new THREE.MeshBasicMaterial({color:"#211b20",transparent:true,opacity:.28,depthWrite:false})
+      );
+      talpitrippaShadow.rotation.x=-Math.PI/2;
+      talpitrippaShadow.position.set(-44,.035,2);
+      talpitrippaShadow.scale.set(1.25,.62,1);
+      scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
@@ -1728,7 +2090,11 @@ export default function Amargenta3D({ onExit }) {
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
+        if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current&&characterState.active==="talpitrippa"){
+          const p=player.position;makeGroundEdit("hole",p.x+Math.sin(player.rotation.y)*1.15,p.z+Math.cos(player.rotation.y)*1.15);setToast("Talpitrippa ha scavato una buca!");
+        }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
+        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
         if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
         if(!e.repeat&&e.code==="KeyI")setPanel(old=>old==="inventory"?null:"inventory");
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
@@ -1795,7 +2161,12 @@ export default function Amargenta3D({ onExit }) {
         } else if (isBlockedAt(player.position.x, nz)) {
           movementVelocity.z = 0;
         }
-        player.position.y=getWalkHeight(player.position.x,player.position.z)+jumpHeight;
+        player.position.y=(player.position.x>120?0:getWalkHeight(player.position.x,player.position.z))+jumpHeight;
+        ambientCreatures.forEach(cr=>{
+          const t=clock.elapsedTime+cr.phase;
+          if(cr.fly){cr.group.position.set(cr.homeX+Math.sin(t*.22)*9,cr.baseY+Math.sin(t*1.25)*1.15,cr.homeZ+Math.cos(t*.19)*8);cr.group.rotation.z=Math.sin(t*2.4)*.08;cr.leftWing.rotation.z=Math.sin(t*9)*.52;cr.rightWing.rotation.z=-Math.sin(t*9)*.52;}
+          else{cr.group.position.x=cr.homeX+Math.sin(t*.28)*3.2;cr.group.position.z=cr.homeZ+Math.cos(t*.24)*2.8;cr.group.position.y=Math.abs(Math.sin(t*3))*.07;cr.group.rotation.y=Math.sin(t*.28)*.5;cr.feet.forEach((foot,i)=>foot.rotation.x=Math.sin(t*4+i*Math.PI)*.18);if(cr.id==="tartadino"&&Math.floor(t/9)!==Math.floor((t-.04)/9))makeGroundEdit("grass",cr.group.position.x,cr.group.position.z);if(cr.id==="patato"&&Math.floor(t/12)!==Math.floor((t-.04)/12))makeGroundEdit("furrow",cr.group.position.x,cr.group.position.z);}
+        });
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
         if(horizontalSpeed>.18){
           const desiredFacing=Math.atan2(movementVelocity.x,movementVelocity.z);
@@ -1806,24 +2177,32 @@ export default function Amargenta3D({ onExit }) {
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
           yaw+=yawDelta*(1-Math.exp(-2.1*dt));
         }
-        // Ciclo passi proporzionale alla velocità, con ampiezza che sfuma durante la frenata.
+        // Ciclo di movimento del modello 3D: rimbalzo del corpo e alternanza di braccia/piedi.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
-        const gait=clock.elapsedTime*(sprint?12.2:8.8);
-        const armSwing=Math.sin(gait)*.34*walkBlend;
-        const legSwing=Math.sin(gait)*.43*walkBlend;
-        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,11,dt);
-        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,11,dt);
-        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,12,dt);
-        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,12,dt);
-        // Peso del corpo e lieve inclinazione in corsa: evita l'effetto marionetta.
-        playerMotion.torso.position.y=THREE.MathUtils.damp(playerMotion.torso.position.y,1.12+Math.abs(Math.sin(gait*2))*.035*walkBlend,9,dt);
-        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.055*walkBlend),7,dt);
+        const gait=clock.elapsedTime*(sprint?10.5:7.8);
+        const step=Math.sin(gait)*walkBlend;
+        if(playerMotion.model){
+          const idleBreath=Math.sin(clock.elapsedTime*2.1)*.018;
+          const idleSway=Math.sin(clock.elapsedTime*1.05)*.012;
+          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10+idleBreath*(1-walkBlend);          playerMotion.model.scale.y=1+idleBreath*.32;
+          playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend+idleSway*(1-walkBlend),7,dt);
+          playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16+Math.sin(clock.elapsedTime*1.7+i)*.025*(1-walkBlend),9,dt);});
+          playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
+          // Battito palpebrale breve e asincrono, senza interrompere il movimento.
+          const blinkPhase=(clock.elapsedTime+1.3)%4.7;
+          const blink=blinkPhase>.0&&blinkPhase<.13?Math.sin(Math.PI*blinkPhase/.13):0;
+          playerMotion.eyes?.forEach(eye=>{eye.scale.y=.19*(1-.88*blink);});
+        }
+        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
+        talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
+        talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
+        talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
         const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
-        const cameraEase=1-Math.exp(-7.5*dt);
+        const cameraEase=1-Math.exp(-5.8*dt);
         camera.position.lerp(cp,cameraEase);
-        cameraLookTarget.lerp(target,1-Math.exp(-9*dt));
+        cameraLookTarget.lerp(target,1-Math.exp(-7.2*dt));
         camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
@@ -1932,7 +2311,7 @@ export default function Amargenta3D({ onExit }) {
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
-        const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
       };
@@ -1944,6 +2323,15 @@ export default function Amargenta3D({ onExit }) {
     }
     return ()=>{disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
   }, []);
+
+  const trustTotal = Object.values(residentTrust).reduce((sum, value) => sum + Math.max(0, Math.min(5, Number(value) || 0)), 0);
+  const trustResidents = [
+    { id: "farmer", name: "Flame" },
+    { id: "archivist", name: "Belligonghi-umami" },
+    { id: "guard", name: "Cardinero" },
+    { id: "cafe-host", name: "Muccanza" },
+    { id: "keeper", name: "Belligonghi-umami · Ricette" }
+  ];
 
   const activeObjective = !questDone
     ? (questCount >= 3 ? "Torna da Flame per concludere le Fave d'Ambra" : questStarted ? "Raccogli le tre Fave d'Ambra sulle terrazze" : "Parla con Flame tra le piante di peperoncino")
@@ -2034,7 +2422,7 @@ export default function Amargenta3D({ onExit }) {
       <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
-    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span></div>
+    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></div>
     {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
@@ -2042,9 +2430,9 @@ export default function Amargenta3D({ onExit }) {
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
         {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
-      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div></div>}
+      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
-      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
+      {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>C: cambia personaggio · Talpitrippa / Ripple</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
       {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:panel==="journal"?"#68472f":"#e9c58d",letterSpacing:1}}>{panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:panel==="journal"?"#68472f":"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
       {panel==="map"&&<div>
         <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
@@ -2088,18 +2476,6 @@ export default function Amargenta3D({ onExit }) {
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕",["Peperoncini",inventory.peppers,"🌶️"],["Tartufi",inventory.truffles,"🍄"],["Latte imbottigliato",inventory.milk,"🥛"],["Chicchi di caffè",inventory.coffeeBeans,"🫘"]],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
-    </div>}
-    {!firstDayDone&&<div role="dialog" aria-modal="true" style={{position:"absolute",inset:0,zIndex:60,display:"grid",placeItems:"center",padding:20,background:"rgba(12,22,18,.88)",backdropFilter:"blur(10px)"}}>
-      <div style={{width:"min(620px,100%)",maxHeight:"90vh",overflowY:"auto",padding:24,borderRadius:22,background:"linear-gradient(145deg,#f2e4c8,#d9c39c)",border:"2px solid #b58a55",color:"#493522",boxShadow:"0 25px 90px #000b"}}>
-        <div style={{fontSize:10,letterSpacing:3,fontWeight:900,color:"#94683c"}}>AMARGENTA · GIORNO 1</div>
-        <div style={{fontFamily:"Georgia,serif",fontSize:27,fontWeight:900,margin:"8px 0"}}>{firstDayStep===0?"Benvenuto ad Amargenta!":"Scopriamo che Sognatore sei"}</div>
-        <div style={{fontSize:13,lineHeight:1.6,marginBottom:16}}>{firstDayStep===0?"I Sognatori ti hanno trovato all'ingresso. Prima di accoglierti nella comunità vogliono conoscerti: rispondi a dieci domande e scopri con chi stringerai il tuo primo legame.":"Domanda "+(firstDayStep+1)+" di 10 · Scegli la risposta che ti rappresenta di più."}</div>
-        {firstDayStep===0&&<div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>{[["Flame","#ed4b24"],["Zibelle","#713b28"],["Lattelo","#ffd92e"]].map(([n,c])=><span key={n} style={{padding:"5px 10px",borderRadius:20,background:c,color:"#fff",fontWeight:900,fontSize:11}}>{n}</span>)}</div>}
-        <div style={{fontSize:18,fontWeight:900,marginBottom:12}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].q}</div>
-        <div style={{display:"grid",gap:9}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].a.map(([label,id])=><button key={id} onClick={()=>answerFirstDay(id)} style={{textAlign:"left",padding:"13px 15px",borderRadius:12,border:"1px solid #a9855b",background:"#fff8e8",color:"#493522",fontWeight:800,cursor:"pointer"}}>{label}</button>)}</div>
-        <div style={{marginTop:15,height:6,borderRadius:9,background:"#c8b18e",overflow:"hidden"}}><div style={{height:"100%",width:((firstDayStep+1)/10*100)+"%",background:"#68824e",transition:"width .2s"}}/></div>
-        <div style={{marginTop:7,fontSize:10,color:"#806344",fontWeight:800}}>DOMANDA {firstDayStep+1}/10</div>
-      </div>
     </div>}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
