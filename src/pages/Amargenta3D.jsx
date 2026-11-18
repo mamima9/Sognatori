@@ -956,9 +956,14 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       cylinder(.22,.28,.3,mat("#b65e2f"),g,0,2.48,-.38,8);
       cylinder(.24,.3,.07,mat("#49372d"),g,0,2.65,-.38,8);
       cylinder(.045,.055,.48,green,g,0,2.91,-.38,6);
-      for(let k=0;k<8;k++){const a=k*Math.PI/4;sphere(.105,petal,g,Math.cos(a)*.13,3.15,-.38+Math.sin(a)*.13,1);}
-      sphere(.085,mat("#7a4a2a"),g,0,3.15,-.38,1);
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.9,leftArm,rightArm});
+      const flowerPivot=new THREE.Group();g.add(flowerPivot);flowerPivot.position.set(0,3.15,-.38);
+      for(let k=0;k<8;k++){const a=k*Math.PI/4;const bloom=sphere(.105,petal,flowerPivot,Math.cos(a)*.13,Math.sin(a)*.13,0,2);bloom.scale.set(.9,1.25,.65);}
+      sphere(.085,mat("#7a4a2a"),flowerPivot,0,0,.04,2);
+      // Piccole foglie luminose e una coccinella sulla salopette.
+      for(let k=0;k<3;k++){const leafBit=sphere(.09,green,g,-.22+k*.22,1.48,.43,1);leafBit.scale.set(.55,1.45,.35);leafBit.rotation.z=(k-1)*-.42;}
+      const ladybug=sphere(.075,red,g,.34,1.02,.42,2);ladybug.scale.set(1.15,.72,.55);
+      sphere(.025,dark,g,.31,1.04,.47,1);sphere(.025,dark,g,.37,1.04,.47,1);
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.9,leftArm,rightArm,flowerPivot});
       addCollider(x,z,.5*scale);
       const cardineroId="cardinero";
       addInteraction("recruit-"+cardineroId,name+" · Cardinero",
@@ -1901,6 +1906,11 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
               actor.rightArm.rotation.x=-.72+Math.sin(idle*1.2)*.12;
               actor.leftArm.rotation.x=.16+Math.sin(idle*.8)*.06;
               actor.headPivot.rotation.z=Math.sin(idle*.7)*.045;
+            }else if(actor.kind==="cardinero"){
+              actor.leftArm.rotation.z=-.42+Math.sin(idle*1.4)*.08;
+              actor.rightArm.rotation.z=.42-Math.sin(idle*1.1)*.08;
+              if(actor.flowerPivot)actor.flowerPivot.rotation.z=Math.sin(idle*.9)*.12;
+              actor.group.rotation.y=Math.sin(idle*.42)*.08;
             }else if(actor.kind==="town-cook"){
               actor.rightArm.rotation.x=-.48+Math.sin(idle*1.65)*.2;
               actor.rightArm.rotation.z=.2+Math.sin(idle*1.65)*.06;
