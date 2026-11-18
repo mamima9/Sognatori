@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ROSTER } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AVVENTURA } from "@/lib/sognatoriData";
 import AdventureBattleArena from "@/components/game/AdventureBattleArena";
 import AdventureSognatoreSprite from "@/components/game/AdventureSognatoreSprite";
 import AdventureTravelerSprite from "@/components/game/AdventureTravelerSprite";
@@ -66,6 +66,10 @@ const WILD_RECRUIT_QUESTS = {
   "roccota": { clue: "Roccota custodisce una parete di fossili.", task: "Come reagisci?", choices: ["Osserva e proteggi i reperti","Li stacchi per portarli via","Incidi il tuo nome"], correct: 0, bond: "Hai rispettato la memoria della pietra." },
   "slurpo": { clue: "Slurpo sperimenta una ricetta improbabile.", task: "Come reagisci?", choices: ["Assaggia e proponi una nuova combinazione","Lo giudichi senza provare","Butti via tutto"], correct: 0, bond: "La tua voglia di sperimentare lo diverte." },
   "riwi": { clue: "Riwi sistema un giardino dopo la tempesta.", task: "Come reagisci?", choices: ["Osserva i danni e ripara prima ciò che serve","Sistemi tutto senza guardare","Aspetti che lo faccia qualcun altro"], correct: 0, bond: "Hai dimostrato cura e buon senso." },
+  "torosucco": { clue: "Torosucco sta preparando una bevanda frizzante e teme che le bolle scappino.", task: "Qual è il modo migliore per aiutarlo?", choices: ["Versa lentamente e lascia spazio alle bolle","Agita il contenitore prima di aprirlo","Riempi il bicchiere fino all’orlo"], correct: 0, bond: "Hai capito che anche l’entusiasmo ha bisogno della giusta misura." },
+  "crunchypat": { clue: "Crunchypat è davanti a una parete di sale che sta per cedere.", task: "Come proteggi chi si trova dietro di te?", choices: ["Ti metti al riparo giusto e fai da scudo agli altri","Corri via lasciando il gruppo","Colpisci la parete per vedere cosa succede"], correct: 0, bond: "Hai dimostrato che proteggere significa restare saldo quando serve." },
+  "talamos": { clue: "Talamos ha trovato una pozza salata in cui l’acqua sta evaporando.", task: "Come la aiuti a conservarsi?", choices: ["Ombreggi la pozza e controlli il livello dell’acqua","Aggiungi altro sale senza misurare","Lasci evaporare tutto"], correct: 0, bond: "Hai rispettato l’equilibrio delicato della palude salata." },
+  "pingcake": { clue: "Pingcake si è appisolato mentre preparava una torta e rischia di bruciarla.", task: "Come lo aiuti a finire senza stressarlo?", choices: ["Abbassi il forno, sistemi il timer e lo svegli con calma","Alzi la temperatura per fare prima","Gli urli di svegliarsi"], correct: 0, bond: "Hai trovato il ritmo giusto tra dolcezza e attenzione." },
 };
 function getWildRecruitQuest(sognatore) {
   return WILD_RECRUIT_QUESTS[sognatore?.id] || WILD_RECRUIT_QUESTS.adlimago;
@@ -267,6 +271,8 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
     () => save.ownedIds.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean),
     [save.ownedIds]
   );
+  // Il contatore del legame riguarda esclusivamente il Pokédex delle 11 città (carte 1–39).
+  const ownedAdventureCount = save.ownedIds.filter((id) => ROSTER_AVVENTURA.some((s) => s.id === id)).length;
   const party = useMemo(() => {
     const starters = (save.starterIds || []).filter((id) => save.partyIds.includes(id));
     const orderedIds = [...starters, ...save.partyIds.filter((id) => !starters.includes(id))];
@@ -486,7 +492,7 @@ export default function AdventureCampaign({ userKey, player, facing = { x: 0, y:
             <div className="mt-2 border-t border-white/10 px-3 pt-3">
               <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[.12em] text-white/55">
                 <span>Sognatori con cui hai stretto legame</span>
-                <span className="shrink-0 text-emerald-200">{owned.length}/{ROSTER.length}</span>
+                <span className="shrink-0 text-emerald-200">{ownedAdventureCount}/{ROSTER_AVVENTURA.length}</span>
               </div>
             </div>
             <button
