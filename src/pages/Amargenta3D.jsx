@@ -851,7 +851,11 @@ export default function Amargenta3D({ onExit }) {
         sphere(.17,dark,g,side*.24,.09,.07,1);
       }
       // Attrezzo distintivo del mestiere, sempre integrato nel design del Sognatore.
-      if(id==="milkkeeper"){\n        cylinder(.16,.19,.42,mat("#c8d4df",.35,{metalness:.45}),g,.62,.72,.12,10);\n        cylinder(.12,.12,.035,accent,g,.62,.95,.12,10);\n        sphere(.09,belly,g,.62,.72,.34,1);\n      }else if(["barista","roaster","cafe-host"].includes(id)){
+      if(id==="milkkeeper"){
+        cylinder(.16,.19,.42,mat("#c8d4df",.35,{metalness:.45}),g,.62,.72,.12,10);
+        cylinder(.12,.12,.035,accent,g,.62,.95,.12,10);
+        sphere(.09,belly,g,.62,.72,.34,1);
+      }else if(["barista","roaster","cafe-host"].includes(id)){
         cylinder(.13,.16,.28,belly,g,.62,.76,.12,10);
         cylinder(.11,.11,.025,accent,g,.62,.915,.12,10);
         const handle=addMesh(new THREE.TorusGeometry(.09,.018,6,12,Math.PI),belly,g,.76,.78,.12);handle.rotation.z=Math.PI/2;
@@ -1466,7 +1470,10 @@ export default function Amargenta3D({ onExit }) {
       }
       // Solo i Sognatori esclusivi di Amargenta sono collocati in questa città.
       // Muccanza è un Umano fan del latte di Lattelo: non una seconda mucca.
-      makeMuccanza();\n      // Piccolo branco di Lattelo: pascolo e imbottigliamento del latte.\n      makeNpc("milkkeeper","Lattelo","Pascolo e raccolta del latte",45,43,"#ffd92e",["Il latte fresco viene imbottigliato qui ogni mattina.","I Lattelo pascolano tranquilli tra i filari."]);\n      makeNpc("milkkeeper","Lattelo","Addetto all’imbottigliamento",51,47,"#ffd92e",["Ogni bottiglia viene chiusa e conservata al fresco.","Il latte di Amargenta è pronto per il mercato."]);
+      makeMuccanza();
+      // Piccolo branco di Lattelo: pascolo e imbottigliamento del latte.
+      makeNpc("milkkeeper","Lattelo","Pascolo e raccolta del latte",45,43,"#ffd92e",["Il latte fresco viene imbottigliato qui ogni mattina.","I Lattelo pascolano tranquilli tra i filari."]);
+      makeNpc("milkkeeper","Lattelo","Addetto all’imbottigliamento",51,47,"#ffd92e",["Ogni bottiglia viene chiusa e conservata al fresco.","Il latte di Amargenta è pronto per il mercato."]);
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
