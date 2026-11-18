@@ -182,7 +182,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
-    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null };
+    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null, torso:null };
     const colliders = [];
     const walkablePlatforms = [];
     const walkableRamps = [];
@@ -258,9 +258,25 @@ export default function Amargenta3D({ onExit }) {
     };
     const makeTree = (x,z,s=1,berries=false) => {
       const g=new THREE.Group(); scene.add(g); g.position.set(x,0,z); g.scale.setScalar(s);
-      cylinder(0.18,0.28,2.2,wood,g,0,1.1,0,7);
-      for(let i=0;i<5;i++){const a=i*2.4; const c=sphere(1.05,i%2?leaf:leaf2,g,Math.cos(a)*.55,2.45+(i%2)*.3,Math.sin(a)*.55,1); c.scale.set(1.1,.78,1);}
-      if(berries) for(let i=0;i<15;i++){const a=i*2.399, rr=.55+(i%3)*.16; sphere(.105,coffeeRed,g,Math.cos(a)*rr,1.9+(i%5)*.22,Math.sin(a)*rr,1);}
+      cylinder(0.18,0.28,2.2,wood,g,0,1.1,0,9);
+      // Rami curvi e chiome stratificate: silhouette meno geometrica e più naturale.
+      for(let side of [-1,1]){
+        const branch=cylinder(.055,.09,1.15,wood,g,side*.28,1.85,-.02,7);
+        branch.rotation.z=side*-.58;
+        const twig=cylinder(.025,.045,.72,wood,g,side*.62,2.22,-.02,6);
+        twig.rotation.z=side*.35;
+      }
+      for(let i=0;i<8;i++){
+        const a=i*2.399, ring=i%3;
+        const c=sphere(.78+(i%2)*.12,i%3?leaf:leaf2,g,Math.cos(a)*(.48+ring*.12),2.25+ring*.34,Math.sin(a)*(.48+ring*.12),2);
+        c.scale.set(1.08,.82,.96);
+      }
+      for(let i=0;i<12;i++){
+        const a=i*2.399, rr=.42+(i%4)*.19;
+        const leafCluster=sphere(.22,i%2?leaf2:leaf,g,Math.cos(a)*rr,2.05+(i%5)*.22,Math.sin(a)*rr,1);
+        leafCluster.scale.set(1.25,.72,.9);
+      }
+      if(berries) for(let i=0;i<18;i++){const a=i*2.399, rr=.52+(i%3)*.18; sphere(.09,coffeeRed,g,Math.cos(a)*rr,1.85+(i%5)*.24,Math.sin(a)*rr,2);}
       addCollider(x,z,.55*s);
     };
     const makeZibelle = (x,z,index=0) => {
@@ -455,8 +471,22 @@ export default function Amargenta3D({ onExit }) {
       // Tetto tradizionale a padiglione, con gronda profonda e copertura scura.
       const eaves=box(w+.95,.2,d+.95,wood,g,0,h-.02,0);
       const roofMaterial=mat(variant?"#465849":"#3b4a40",.98);
-      const roofMesh=addMesh(new THREE.ConeGeometry(w*.84,1.38,4),roofMaterial,g,0,h+.68,0);
-      roofMesh.rotation.y=Math.PI/4;roofMesh.scale.z=d/w;
+      // Tetto a due falde con colmo leggibile, invece del cono piramidale.
+      const roofAngle=Math.atan2(.95,d*.56);
+      const roofHalf=Math.sqrt((d*.56)*(d*.56)+.95*.95);
+      const roofA=addMesh(new THREE.BoxGeometry(w+.72,.18,roofHalf*1.12),roofMaterial,g,0,h+.48,-d*.25);
+      roofA.rotation.x=-roofAngle;
+      const roofB=addMesh(new THREE.BoxGeometry(w+.72,.18,roofHalf*1.12),roofMaterial,g,0,h+.48,d*.25);
+      roofB.rotation.x=roofAngle;
+      box(w+.82,.2,.22,darkStone,g,0,h+1.02,0);
+      // Tegole in fasce sottili e terminali in legno.
+      for(let row=0;row<3;row++){
+        const z=-d*.39+row*d*.26;
+        const tileA=box(w+.76,.045,.075,mat("#6b5541"),g,0,h+.88-row*.25,z);
+        tileA.rotation.x=-roofAngle;
+        const tileB=box(w+.76,.045,.075,mat("#6b5541"),g,0,h+.88-row*.25,-z);
+        tileB.rotation.x=roofAngle;
+      }
       // Fascia frontale e porta scorrevole con riquadri chiari.
       box(w+.5,.18,.22,darkStone,g,0,h+.04,d/2+.4);
       box(1.02,1.78,.17,wood,g,0,.9,d/2+.1);
@@ -1482,7 +1512,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
       const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
       // Protagonista: silhouette da eroe Sognatori, proporzioni chibi e outfit iconico da esploratore.
-      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;
+      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;playerMotion.torso=torso;
       sphere(.46,skinTone,player,0,1.92,.015,2);
       // Collo, colletto e dettagli della giacca.
       cylinder(.15,.16,.2,skinTone,player,0,1.68,0,10);
@@ -1500,17 +1530,20 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
       box(.58,.09,.08,gold,player,0,1.47,-.56);
       box(.2,.24,.08,wood,player,0,1.28,-.58);
-      // Braccia e mani.
-      playerMotion.leftArm=box(.2,.68,.22,jacket,player,-.5,1.12,0);
-      playerMotion.rightArm=box(.2,.68,.22,jacket,player,.5,1.12,0);
-      sphere(.15,skinTone,player,-.5,.76,.02,1);sphere(.15,skinTone,player,.5,.76,.02,1);
-      // Guanti e polsini color ambra.
-      for(const side of [-1,1])box(.22,.13,.23,gold,player,side*.5,.88,.015);
-      // Pantaloni, ginocchia e scarponi.
-      playerMotion.leftLeg=box(.25,.62,.27,pants,player,-.2,.38,0);
-      playerMotion.rightLeg=box(.25,.62,.27,pants,player,.2,.38,0);
-      box(.31,.2,.46,bootMat,player,-.2,.08,.13);
-      box(.31,.2,.46,bootMat,player,.2,.08,.13);
+      // Arti costruiti attorno a vere articolazioni: oscillano dalla spalla e dall'anca.
+      for(const side of [-1,1]){
+        const armPivot=new THREE.Group();player.add(armPivot);armPivot.position.set(side*.5,1.43,0);
+        box(.2,.62,.22,jacket,armPivot,0,-.29,0);
+        box(.22,.13,.23,gold,armPivot,0,-.58,.015);
+        sphere(.15,skinTone,armPivot,0,-.68,.035,2);
+        if(side<0)playerMotion.leftArm=armPivot;else playerMotion.rightArm=armPivot;
+        const legPivot=new THREE.Group();player.add(legPivot);legPivot.position.set(side*.2,.68,0);
+        box(.25,.55,.27,pants,legPivot,0,-.275,0);
+        box(.31,.2,.46,bootMat,legPivot,0,-.62,.13);
+        // Piccola punta e cucitura dello stivale.
+        box(.23,.045,.025,mat("#8a6747"),legPivot,0,-.59,.355);
+        if(side<0)playerMotion.leftLeg=legPivot;else playerMotion.rightLeg=legPivot;
+      }
       // Fibbia frontale a stella e sciarpa corta: dettagli riconoscibili anche da lontano.
       const beltBuckle=sphere(.105,gold,player,0,.83,.32,1);beltBuckle.scale.set(1,1,.35);
       const scarf=box(.56,.12,.16,mat("#e3a34d"),player,0,1.57,.27);scarf.rotation.z=-.04;
@@ -1563,16 +1596,16 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         if(controlsLockedRef.current) keys.clear();
         const activeForward=controlsLockedRef.current?0:forward;
         const activeSide=controlsLockedRef.current?0:side;
-        const inputLength=Math.hypot(activeForward,activeSide);
+        const inputLength=Math.min(1,Math.hypot(activeForward,activeSide));
         const sprint=(keys.has("ShiftLeft")||keys.has("ShiftRight"))&&inputLength>.05;
         desiredMovement.set(0,0,0);
         if(inputLength>.05){
           const dir=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
           const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-          desiredMovement.copy(dir).multiplyScalar(activeForward).addScaledVector(right,activeSide).normalize().multiplyScalar(sprint?11.5:7.2);
+          desiredMovement.copy(dir).multiplyScalar(activeForward).addScaledVector(right,activeSide).normalize().multiplyScalar(sprint?9.2:6.1);
         }
-        // Accelerazione e frenata progressive: niente scatti quando si preme o rilascia il movimento.
-        const acceleration= inputLength>.05 ? 8.5 : 11;
+        // Partenza morbida e frenata controllata, con velocità più leggibile.
+        const acceleration=inputLength>.05?7.2:9.5;
         movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
         const move=movementVelocity.clone().multiplyScalar(dt);
 
@@ -1600,14 +1633,17 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
           yaw+=yawDelta*(1-Math.exp(-2.1*dt));
         }
         // Ciclo passi proporzionale alla velocità, con ampiezza che sfuma durante la frenata.
-        const gait=clock.elapsedTime*10.5;
-        const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/5.2,0,1);
-        const armSwing=Math.sin(gait)*.42*walkBlend;
-        const legSwing=Math.sin(gait)*.48*walkBlend;
-        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,14,dt);
-        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,14,dt);
-        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,14,dt);
-        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,14,dt);
+        const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
+        const gait=clock.elapsedTime*(sprint?12.2:8.8);
+        const armSwing=Math.sin(gait)*.34*walkBlend;
+        const legSwing=Math.sin(gait)*.43*walkBlend;
+        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,11,dt);
+        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,11,dt);
+        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,12,dt);
+        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,12,dt);
+        // Peso del corpo e lieve inclinazione in corsa: evita l'effetto marionetta.
+        playerMotion.torso.position.y=THREE.MathUtils.damp(playerMotion.torso.position.y,1.12+Math.abs(Math.sin(gait*2))*.035*walkBlend,9,dt);
+        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.055*walkBlend),7,dt);
         const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
