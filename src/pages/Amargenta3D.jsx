@@ -301,11 +301,16 @@ export default function Amargenta3D({ onExit }) {
       sphere(.22,hair,headPivot,.29,.12,.05,1).scale.set(.65,1.1,.8);
       const eyes=[];
       for(const side of [-1,1]){
-        sphere(.095,milk,headPivot,side*.16,.08,.79,1);
-        sphere(.047,hair,headPivot,side*.16,.08,.835,1);
-        sphere(.025,mat("#ffffff"),headPivot,side*.14,.105,.86,1);
+        sphere(.105,milk,headPivot,side*.16,.08,.79,2);
+        sphere(.052,hair,headPivot,side*.16,.08,.842,2);
+        sphere(.025,mat("#ffffff"),headPivot,side*.14,.112,.875,1);
+        const brow=sphere(.09,hair,headPivot,side*.16,.235,.76,1);brow.scale.set(1.25,.34,.3);brow.rotation.z=side*.12;
       }
       const smile=box(.16,.035,.025,hair,headPivot,0,-.14,.82);
+      // Ciuffo a goccia e distintivo a tazza: dettagli da protagonista Nintendo.
+      const forelock=sphere(.19,hair,headPivot,.12,.39,.31,2);forelock.scale.set(1.05,.55,.5);forelock.rotation.z=-.35;
+      const milkBadge=sphere(.105,gold,torso,.27,1.38,.29,2);milkBadge.scale.set(.75,1,.35);
+      sphere(.045,milk,torso,.27,1.4,.33,1);
       const legs=[];
       for(const side of [-1,1]){
         const leg=new THREE.Group();g.add(leg);leg.position.set(side*.19,.68,0);
@@ -366,6 +371,10 @@ export default function Amargenta3D({ onExit }) {
       const tail=sphere(.5,furDark,tailPivot,0,-.1,-.34,2);tail.scale.set(1.02,.92,1.65);tail.rotation.x=-.28;
       const tailTip=sphere(.28,furLight,tailPivot,-.03,.02,-.83,2);tailTip.scale.set(1,.92,1.12);
       for(let i=0;i<3;i++){const bean=sphere(.085,coffee,bodyPivot,-.32+i*.3,.91,.22,1);bean.scale.set(.7,1.25,.5);}
+      // Macchie morbide sul dorso e ciuffo scuro per una silhouette più riconoscibile.
+      for(const [x,y,z,r] of [[-.48,.91,-.42,.14],[.38,.84,-.43,.12],[-.2,1.08,-.48,.1]]){const patch=sphere(r,furDark,bodyPivot,x,y,z,1);patch.scale.set(1.3,.65,.35);}
+      const whiskers=[];
+      for(const side of [-1,1]){const w=box(.22,.018,.018,cream,headPivot,side*.34,-.2,.69);w.rotation.z=side*.18;whiskers.push(w);}
       const aroma=new THREE.Group();g.add(aroma);
       for(let i=0;i<3;i++){const puff=sphere(.085,mat("#e4c99d",.65,{transparent:true,opacity:.5}),aroma,.25+i*.12,1.5+i*.17,-.55,1);puff.userData.phase=i*.9;}
       const interaction={id:"wild-zibelle-"+index,title:"Zibelle selvatica",text:"Una Zibelle selvatica ti ha notato. Avvicinati per affrontarla.",x,z,radius:3.8,action:()=>setZibelleBattleOpen(true)};
@@ -392,6 +401,9 @@ export default function Amargenta3D({ onExit }) {
       const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.03,.48);
       const head=sphere(.43,coatLight,headPivot,0,.05,.12,2);head.scale.set(1.08,.9,1.05);
       const muzzle=sphere(.27,cream,headPivot,0,-.17,.48,2);muzzle.scale.set(1.2,.7,.85);
+      const tongue=sphere(.09,mat("#d97878"),headPivot,0,-.34,.63,1);tongue.scale.set(.8,1.2,.45);
+      const browL=sphere(.1,coat,headPivot,-.2,.3,.4,1);browL.scale.set(1.3,.42,.5);
+      const browR=sphere(.1,coat,headPivot,.2,.3,.4,1);browR.scale.set(1.3,.42,.5);
       sphere(.09,nose,headPivot,0,-.12,.69,2);
       // Tartufo ampio e lucido, guance morbide e sopracciglia espressive.
       sphere(.18,coatLight,headPivot,0,-.22,.49,2).scale.set(1.18,.55,.62);
@@ -1455,7 +1467,13 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
           const horn=sphere(.18,cream,g,side*.32,2.35,.02,2);horn.scale.set(.65,1.25,.65);
           const ear=sphere(.25,coat,g,side*.58,1.95,0,2);ear.scale.set(1.2,.48,.5);
           const innerEar=sphere(.12,muzzle,g,side*.58,1.96,.09,1);innerEar.scale.set(1.1,.55,.35);
+          sphere(.115,mat("#fff8e8"),g,side*.22,1.86,.65,2);
+          sphere(.055,dark,g,side*.22,1.86,.705,2);
+          sphere(.022,mat("#ffffff"),g,side*.195,1.89,.745,1);
         }
+        // Ciuffo a stella e macchie blu sul fianco: firma visiva del Lattelo.
+        for(let i=0;i<3;i++){const tuft=sphere(.14,cream,g,(i-1)*.16,2.27,.34,2);tuft.scale.set(.65,1.35,.5);tuft.rotation.z=(i-1)*-.3;}
+        for(const [x,y,z] of [[-.55,1.05,.2],[.5,.9,.25],[-.34,1.3,-.35],[.28,.72,-.4]]){const spot=sphere(.12,blue,g,x,y,z,1);spot.scale.set(1.25,.85,.3);}
         // Quattro zampette corte e robuste, con zoccoli ben visibili.
         for(const side of [-1,1])for(const front of [-1,1]){
           const x=side*.34,z=front*.39;
