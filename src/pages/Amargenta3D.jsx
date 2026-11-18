@@ -208,6 +208,9 @@ export default function Amargenta3D({ onExit }) {
     const amberPickups = [];
     const fireflies = [];
     const bellActors = [];
+    const groundEdits = [];
+    const ambientCreatures = [];
+    let arabniteActive = false;
     let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
@@ -248,7 +251,13 @@ export default function Amargenta3D({ onExit }) {
     const addBoxCollider = (x,z,w,d,rotation=0,height=3) => colliders.push({
       type:"box",x,z,halfW:w/2,halfD:d/2,rotation,height
     });
-    const isBlockedAt = (x,z,radius=.55) => colliders.some(collider => {
+    const isWaterAt = (x,z) => {
+      const center=28+(z-2)*.08, bridge=Math.abs(z)<3.8||Math.abs(z+32)<3.8;
+      return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
+    };
+    const isBlockedAt = (x,z,radius=.55) => {
+      if(isWaterAt(x,z)&&characterState?.active!=="ripple")return true;
+      return colliders.some(collider => {
       if (jumpHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
         return Math.hypot(x-collider.x,z-collider.z) < collider.r+radius;
@@ -259,7 +268,8 @@ export default function Amargenta3D({ onExit }) {
       const closestX=THREE.MathUtils.clamp(localX,-collider.halfW,collider.halfW);
       const closestZ=THREE.MathUtils.clamp(localZ,-collider.halfD,collider.halfD);
       return Math.hypot(localX-closestX,localZ-closestZ)<radius;
-    });
+      });
+    };
     const addInteriorWallColliders = (cx,cz,width,depth,doorSide="north",doorWidth=3.2) => {
       const halfW=width/2, halfD=depth/2, wall=.5, gap=doorWidth/2;
       if (doorSide==="north") {
@@ -803,6 +813,20 @@ export default function Amargenta3D({ onExit }) {
     const removeInteraction = (id) => {
       const index = interactables.findIndex(item => item.id === id);
       if (index >= 0) interactables.splice(index, 1);
+    };
+    const makeGroundEdit=(kind,x,z)=>{
+      const g=new THREE.Group();scene.add(g);g.position.set(x,.06,z);
+      if(kind==="hole"){
+        const rim=addMesh(new THREE.TorusGeometry(.72,.16,7,18),mat("#765037"),g,0,0,0);rim.rotation.x=-Math.PI/2;
+        const hollow=addMesh(new THREE.CircleGeometry(.62,20),mat("#30231d"),g,0,-.025,0);hollow.rotation.x=-Math.PI/2;
+        for(let i=0;i<5;i++){const clod=sphere(.13,mat("#956744"),g,Math.cos(i*1.25)*.8,.04,Math.sin(i*1.25)*.8,1);clod.scale.y=.45;}
+      }else if(kind==="furrow"){
+        for(let i=-1;i<=1;i++){const line=addMesh(new THREE.PlaneGeometry(.18,4.6),mat("#6d4c31"),g,i*.48,.01,0);line.rotation.x=-Math.PI/2;}
+      }else{
+        const patch=addMesh(new THREE.CircleGeometry(.9,20),mat("#879b4c"),g,0,0,0);patch.rotation.x=-Math.PI/2;
+        for(let i=0;i<7;i++){const blade=addMesh(new THREE.ConeGeometry(.08,.42,4),mat("#b3bd60"),g,Math.cos(i)*.5,.2,Math.sin(i)*.5);blade.rotation.z=-.25+Math.sin(i)*.5;}
+      }
+      groundEdits.push(g);if(groundEdits.length>42){scene.remove(groundEdits.shift());}
     };
     // Ogni abitante è un Sognatore: niente esseri umani generici ad Amargenta.
     // Le professioni sono accessori/attività, non NPC separati.
@@ -1530,6 +1554,59 @@ export default function Amargenta3D({ onExit }) {
       addInteraction("truffle-harvest","Cerca tartufi","Il terreno smosso nasconde tartufi profumati.",-48,30,()=>{setInventory(old=>({...old,truffles:old.truffles+1}));setToast("Tartufo trovato");},4.2);
       addInteraction("milk-bottle","Imbottiglia il latte","I Lattelo hanno riempito il contenitore.",48,45,()=>{setInventory(old=>({...old,milk:old.milk+1}));setToast("Latte imbottigliato");},4.5);
       addInteraction("cardinero-prune","Cura il giardino","Cardinero ti indica le piante da potare.",-34,16,()=>{setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Giardino curato · Essenza verde ottenuta");},4.2);
+      // Compagni nell'overworld: Tartadino pascola, Patato lascia solchi.
+      const makeCompanion=(id,x,z,color)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        const body=sphere(.72,mat(color),g,0,.78,0,2);body.scale.set(1.05,.9,.95);
+        sphere(.48,mat(color),g,0,1.42,.28,2);
+        for(const side of [-1,1]){sphere(.12,mat("#fff8e9"),g,side*.19,1.48,.68,2);sphere(.055,mat("#211820"),g,side*.19,1.48,.77,2);}
+        const feet=[];for(const side of [-1,1]){const foot=sphere(.2,mat("#a66a42"),g,side*.28,.18,.12,1);foot.scale.set(1,.55,1.3);feet.push(foot);}
+        if(id==="tartadino"){const shell=sphere(.42,mat("#b46a32"),g,0,1.05,-.35,2);shell.scale.set(1.25,.75,.8);sphere(.18,mat("#65a83f"),g,0,1.92,.22,1).scale.set(.45,1.5,.35);}
+        if(id==="patato"){for(let i=0;i<3;i++){const lump=sphere(.17,mat("#8b633e"),g,-.28+i*.28,.92,-.52,1);lump.scale.y=.65;}}
+        ambientCreatures.push({id,group:g,homeX:x,homeZ:z,phase:ambientCreatures.length*1.7,feet});
+      };
+      makeCompanion("tartadino",-36,20,"#dca52c");makeCompanion("patato",-50,-18,"#a87b4b");
+      const makeFlyer=(id,x,y,z,color)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);
+        const body=sphere(.48,mat(color),g,0,0,0,2);body.scale.set(1.25,.72,.85);sphere(.28,mat(color),g,0,.08,.38,2);
+        const wingMat=mat("#eee2f5",.65),left=sphere(.38,wingMat,g,-.52,.12,0,1),right=sphere(.38,wingMat,g,.52,.12,0,1);left.scale.set(1.3,.2,.7);right.scale.set(1.3,.2,.7);
+        ambientCreatures.push({id,group:g,homeX:x,homeZ:z,baseY:y,phase:ambientCreatures.length*2.1,fly:true,leftWing:left,rightWing:right});
+      };
+      makeFlyer("dodo",-28,12,-8,"#9b83c4");makeFlyer("flypork",5,16,-34,"#ef9d9d");makeFlyer("cocconn",44,14,24,"#e7c18d");
+
+      // Portale orientale verso Arabnite, la tredicesima città.
+      const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
+      const gate=new THREE.Group();scene.add(gate);gate.position.set(67,0,2);
+      for(const side of [-1,1]){cylinder(.72,.92,7,arabStone,gate,side*4,3.5,0,10);cylinder(.84,.84,.35,arabGold,gate,side*4,6.9,0,10);sphere(.65,arabRed,gate,side*4,7.5,0,1).scale.set(.7,1.5,.7);}
+      box(9,.8,1.2,arabGold,gate,0,7,0);
+      const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
+      sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
+      addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
+        arabniteActive=true;player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Sei arrivato ad Arabnite");
+      },5.5);
+      addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
+        arabniteActive=false;player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
+      },5.5);
+
+      // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
+      addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
+      const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
+      const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
+      const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
+      [[158,-8,9,13,"#e6c17b"],[193,-8,7,10,"#d9ad69"],[176,31,8,12,"#b78bd0"],[211,25,6,9,"#e6c17b"],[144,31,6,9,"#d7a35e"]].forEach(v=>dome(...v));
+      for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,scene,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),scene,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,scene,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
+      const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),scene,190,.04,48);oasis.rotation.x=-Math.PI/2;
+      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
+      for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,scene,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
+      makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15);
+      makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08);
+      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1);
+      makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08);
+      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05);
+      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
+      makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
+      for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
+
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
@@ -1918,6 +1995,9 @@ export default function Amargenta3D({ onExit }) {
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
+        if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current&&characterState.active==="talpitrippa"){
+          const p=player.position;makeGroundEdit("hole",p.x+Math.sin(player.rotation.y)*1.15,p.z+Math.cos(player.rotation.y)*1.15);setToast("Talpitrippa ha scavato una buca!");
+        }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
         if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
         if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
@@ -1986,7 +2066,12 @@ export default function Amargenta3D({ onExit }) {
         } else if (isBlockedAt(player.position.x, nz)) {
           movementVelocity.z = 0;
         }
-        player.position.y=getWalkHeight(player.position.x,player.position.z)+jumpHeight;
+        player.position.y=(player.position.x>120?0:getWalkHeight(player.position.x,player.position.z))+jumpHeight;
+        ambientCreatures.forEach(cr=>{
+          const t=clock.elapsedTime+cr.phase;
+          if(cr.fly){cr.group.position.set(cr.homeX+Math.sin(t*.22)*9,cr.baseY+Math.sin(t*1.25)*1.15,cr.homeZ+Math.cos(t*.19)*8);cr.group.rotation.z=Math.sin(t*2.4)*.08;cr.leftWing.rotation.z=Math.sin(t*9)*.52;cr.rightWing.rotation.z=-Math.sin(t*9)*.52;}
+          else{cr.group.position.x=cr.homeX+Math.sin(t*.28)*3.2;cr.group.position.z=cr.homeZ+Math.cos(t*.24)*2.8;cr.group.position.y=Math.abs(Math.sin(t*3))*.07;cr.group.rotation.y=Math.sin(t*.28)*.5;cr.feet.forEach((foot,i)=>foot.rotation.x=Math.sin(t*4+i*Math.PI)*.18);if(cr.id==="tartadino"&&Math.floor(t/9)!==Math.floor((t-.04)/9))makeGroundEdit("grass",cr.group.position.x,cr.group.position.z);if(cr.id==="patato"&&Math.floor(t/12)!==Math.floor((t-.04)/12))makeGroundEdit("furrow",cr.group.position.x,cr.group.position.z);}
+        });
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
         if(horizontalSpeed>.18){
           const desiredFacing=Math.atan2(movementVelocity.x,movementVelocity.z);
@@ -2131,7 +2216,7 @@ export default function Amargenta3D({ onExit }) {
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
-        const nextZone=p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(scene,camera);
       };
