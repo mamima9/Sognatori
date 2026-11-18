@@ -462,29 +462,44 @@ export default function Amargenta3D({ onExit }) {
     // Flame #45: creatura ardente che diffonde nell'aria il profumo pungente del peperoncino.
     const makeFlame = () => {
       const g=new THREE.Group();scene.add(g);g.position.set(32,0,-28);
-      const ember=mat("#c83b22"), red=mat("#f05a24"), orange=mat("#ff9b32"), gold=mat("#ffd05a"), dark=mat("#54231d"), eye=mat("#fff1d8");
+      const ember=mat("#b92d20",.55), red=mat("#ed4b24",.48), orange=mat("#ff842e",.42), gold=mat("#ffd45c",.38), pale=mat("#fff0b5",.32), dark=mat("#54231d"), eye=mat("#fff8e9",.22), pupil=mat("#30202a",.28);
       const bodyPivot=new THREE.Group();g.add(bodyPivot);
-      const body=sphere(.52,ember,bodyPivot,0,1.02,0,2);body.scale.set(.88,1.18,.78);
-      const belly=sphere(.3,orange,bodyPivot,0,.87,.31,2);belly.scale.set(.9,1.05,.55);
-      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.54,.04);
-      const head=sphere(.38,red,headPivot,0,.04,.04,2);head.scale.set(1,.95,.85);
+      // Corpo compatto e leggibile: pancia luminosa, guance e piccoli rilievi da creatura Nintendo.
+      const body=sphere(.58,ember,bodyPivot,0,.91,0,3);body.scale.set(.9,1.08,.82);
+      const belly=sphere(.34,orange,bodyPivot,0,.82,.34,3);belly.scale.set(.92,1.04,.48);
+      sphere(.19,gold,bodyPivot,0,.83,.51,2).scale.set(.88,.94,.28);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.43,.08);
+      const head=sphere(.43,red,headPivot,0,.04,.04,3);head.scale.set(1.08,.96,.9);
+      const cheeks=[];
       for(const side of [-1,1]){
-        sphere(.07,eye,headPivot,side*.14,.1,.33,1);
-        sphere(.035,dark,headPivot,side*.14,.1,.38,1);
+        sphere(.105,orange,headPivot,side*.29,-.08,.43,2).scale.set(1,.72,.35);
+        sphere(.105,eye,headPivot,side*.155,.12,.405,2).scale.set(.82,1.12,.55);
+        sphere(.052,pupil,headPivot,side*.145,.105,.447,2);
+        sphere(.018,mat("#ffffff",.18),headPivot,side*.13,.13,.475,1);
+        cheeks.push(side);
       }
-      box(.15,.035,.025,dark,headPivot,0,-.12,.35);
+      // Sopracciglia e sorriso danno un'espressione vivace e riconoscibile.
+      const browL=sphere(.075,dark,headPivot,-.16,.29,.39,2);browL.scale.set(1.3,.38,.35);browL.rotation.z=.18;
+      const browR=sphere(.075,dark,headPivot,.16,.29,.39,2);browR.scale.set(1.3,.38,.35);browR.rotation.z=-.18;
+      const smile=new THREE.Mesh(new THREE.TorusGeometry(.105,.018,7,18,Math.PI),dark);smile.position.set(0,-.13,.435);smile.rotation.z=Math.PI;headPivot.add(smile);
       const flameTips=[];
-      // Cresta a fiamma con punte affusolate e sfumature alternate.
-      for(let i=0;i<7;i++){
-        const tip=sphere(.2-i*.014,i%2?orange:gold,bodyPivot,(i-3)*.145,1.55+(i%2)*.13,-.02,2);
-        tip.scale.set(.48,1.95,.52);tip.rotation.z=(i-3)*-.2;flameTips.push(tip);
+      // Cresta a gocce appuntite: silhouette a corona, più organica delle sfere sovrapposte.
+      for(let i=0;i<5;i++){
+        const tip=sphere(.19-i*.012,i%2?orange:gold,bodyPivot,(i-2)*.19,1.55+(i%2)*.12,-.015,3);
+        tip.scale.set(.42,1.9,.48);tip.rotation.z=(i-2)*-.24;flameTips.push(tip);
       }
-      // Lingue di fuoco laterali, come piccole foglie incandescenti.
+      // Due grandi fiammelle laterali e una punta centrale luminosa.
       for(const side of [-1,1]){
-        const petal=sphere(.22,orange,bodyPivot,side*.42,1.26,-.03,2);
-        petal.scale.set(.48,1.65,.58);petal.rotation.z=side*-.55;
-        const inner=sphere(.11,gold,bodyPivot,side*.43,1.27,.12,1);
-        inner.scale.set(.5,1.45,.45);
+        const petal=sphere(.23,orange,bodyPivot,side*.43,1.2,-.025,3);
+        petal.scale.set(.42,1.72,.55);petal.rotation.z=side*-.58;
+        const inner=sphere(.12,gold,bodyPivot,side*.44,1.22,.13,2);
+        inner.scale.set(.48,1.45,.42);
+      }
+      const crownCore=sphere(.13,pale,bodyPivot,0,1.76,.02,2);crownCore.scale.set(.52,1.45,.48);
+      const emberDots=[];
+      for(let i=0;i<6;i++){
+        const mote=sphere(.035+i%2*.018,i%2?gold:orange,g,(i-2.5)*.2,1.35+(i%3)*.32,-.3-(i%2)*.08,1);
+        emberDots.push(mote);
       }
       const arms=[];
       for(const side of [-1,1]){
@@ -506,7 +521,7 @@ export default function Amargenta3D({ onExit }) {
         setDialogue({title:"Incontro · Flame",text:"Flame sprigiona un aroma intenso di peperoncino. L'aria intorno a lui pizzica il naso. Vuoi convincerlo a unirsi alla tua avventura?",confirm:()=>{recruitAmargenta("flame");setDialogue(null);}});
       }};
       interactables.push(interaction);
-      npcActors.push({group:g,phase:5.1,wild:true,legs,tailPivot,headPivot,ears:[],bodyPivot,aroma,interaction,homeX:32,homeZ:-28,roamRadius:2.1,walkSpeed:.36,flameTips});
+      npcActors.push({group:g,phase:5.1,wild:true,legs,tailPivot,headPivot,ears:[],bodyPivot,aroma,interaction,homeX:32,homeZ:-28,roamRadius:2.1,walkSpeed:.36,flameTips,emberDots});
       return g;
     };
     // Albero di peperoncino: piccolo albero ornamentale accanto a Flame.
@@ -1838,6 +1853,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
             actor.ears.forEach((ear,j)=>{ear.rotation.z=(j===0?-.18:.18)+Math.sin(idle*1.8+j)*.07;});
             actor.aroma.children.forEach((puff,j)=>{puff.position.y=1.45+j*.17+Math.sin(clock.elapsedTime*1.7+puff.userData.phase)*.09;puff.visible=Math.sin(clock.elapsedTime*1.7+puff.userData.phase)>.0;});
             if(actor.flameTips)actor.flameTips.forEach((tip,j)=>{tip.scale.y=1.35+Math.sin(idle*2.8+j*.9)*.35;tip.rotation.z=Math.sin(idle*2+j)*.16;});
+            if(actor.emberDots)actor.emberDots.forEach((mote,j)=>{mote.position.y=1.35+(j%3)*.32+Math.sin(idle*2+j*1.7)*.16;mote.position.x=Math.sin(idle*1.3+j*2)*.48;mote.scale.setScalar(.7+(.5+.5*Math.sin(idle*3+j))*1.0);});
             actor.interaction.x=actor.group.position.x;actor.interaction.z=actor.group.position.z;
           }else{
             const breath=Math.sin(idle)*.035;
