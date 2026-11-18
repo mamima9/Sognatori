@@ -1254,8 +1254,8 @@ export default function Amargenta3D({ onExit }) {
       }
       for(const [x,z] of [[-15,-8],[-15,8],[15,-8],[15,8],[-5,-18],[5,18],[25,-14],[25,18]])makeVillageLantern(x,z);
       makeCherryTree(-31,-12,1.15);makeCherryTree(31,12,1.05);makeCherryTree(-31,22,.9);
-      makeVillageFence(-28,-2,12,Math.PI/2);makeVillageFence(29,-3,12,Math.PI/2);
-      makeVillageFence(-28,15,10,Math.PI/2);makeVillageFence(29,17,10,Math.PI/2);
+      makeVillageFence(-28,-2,12,Math.PI/2);
+      makeVillageFence(-28,15,10,Math.PI/2);
       makeBench(-20,-15,.2);makeBench(20,18,-.2);
       makeFlowerBed(-24,9,.2);makeFlowerBed(24,-10,-.2);
       makeBanner(-18,26,"#b9824d",Math.PI/2);makeBanner(20,-23,"#9b4936",Math.PI/2);
