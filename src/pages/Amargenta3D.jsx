@@ -1,4 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
+impo
+  const answerFirstDay = (starter) => {
+    const next=[...firstDayAnswers,starter];
+    setFirstDayAnswers(next);
+    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
+    const scores={flame:0,zibelle:0,lattelo:0};
+    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
+    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+    setFirstDayStarter(chosen);
+    setFirstDayDone(true);
+    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
+    recruitAmargenta(chosen);
+    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
+  };
+rt React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
@@ -6,6 +20,18 @@ import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
+const AMARGENTA_FIRST_DAY_QUESTIONS = [
+  {q:"Quando arrivi in un posto nuovo, cosa fai per primo?",a:[["Esploro e mi metto subito all'opera","flame"],["Osservo, annuso e studio l'ambiente","zibelle"],["Cerco gli altri e faccio amicizia","lattelo"]]},
+  {q:"Quale luogo ti attira di più?",a:[["Un campo pieno di peperoncini","flame"],["Una piantagione di caffè","zibelle"],["Un prato tranquillo con animali","lattelo"]]},
+  {q:"Come affronti un problema?",a:[["Con energia e coraggio","flame"],["Con attenzione e strategia","zibelle"],["Chiedendo aiuto e collaborando","lattelo"]]},
+  {q:"Quale attività ti dà più soddisfazione?",a:[["Coltivare qualcosa con le mie mani","flame"],["Creare una miscela perfetta","zibelle"],["Prendermi cura di qualcuno","lattelo"]]},
+  {q:"Scegli un momento della giornata.",a:[["Alba, quando tutto ricomincia","flame"],["Pomeriggio, con il profumo del caffè","zibelle"],["Tramonto, in compagnia","lattelo"]]},
+  {q:"Quale qualità ti rappresenta?",a:[["Determinazione","flame"],["Curiosità","zibelle"],["Gentilezza","lattelo"]]},
+  {q:"Se trovi un ingrediente raro?",a:[["Lo uso per creare qualcosa di nuovo","flame"],["Ne studio aroma e caratteristiche","zibelle"],["Lo condivido con il gruppo","lattelo"]]},
+  {q:"Come vorresti essere ricordato?",a:[["Come chi ha fatto fiorire Amargenta","flame"],["Come chi ha scoperto nuovi sapori","zibelle"],["Come un amico fidato","lattelo"]]},
+  {q:"Quale regalo sceglieresti?",a:[["Semi di peperoncino","flame"],["Chicchi di caffè profumati","zibelle"],["Una bottiglia di latte fresco","lattelo"]]},
+  {q:"Qual è il tuo modo di vivere Amargenta?",a:[["Con passione e iniziativa","flame"],["Con calma e curiosità","zibelle"],["Insieme agli altri Sognatori","lattelo"]]}
+];
 
 
 /**
@@ -19,6 +45,11 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
+  const [firstDayDone,setFirstDayDone] = useState(()=>{try{return window.localStorage.getItem("sognatori:amargenta:first-day:v1")==="done";}catch{return false;}});
+  const [firstDayStep,setFirstDayStep] = useState(0);
+  const [firstDayAnswers,setFirstDayAnswers] = useState([]);
+  const [firstDayStarter,setFirstDayStarter] = useState("");
+
   const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
@@ -151,8 +182,8 @@ export default function Amargenta3D({ onExit }) {
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
-  }, [dialogue, panel, dungeonBattleOpen]);
+    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen || !firstDayDone);
+  }, [dialogue, panel, dungeonBattleOpen, firstDayDone]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -1990,7 +2021,7 @@ export default function Amargenta3D({ onExit }) {
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · AMARGENTA</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
-        {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
+        {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
       {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div></div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
@@ -2038,6 +2069,18 @@ export default function Amargenta3D({ onExit }) {
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕"],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
+    </div>}
+    {!firstDayDone&&<div role="dialog" aria-modal="true" style={{position:"absolute",inset:0,zIndex:60,display:"grid",placeItems:"center",padding:20,background:"rgba(12,22,18,.88)",backdropFilter:"blur(10px)"}}>
+      <div style={{width:"min(620px,100%)",maxHeight:"90vh",overflowY:"auto",padding:24,borderRadius:22,background:"linear-gradient(145deg,#f2e4c8,#d9c39c)",border:"2px solid #b58a55",color:"#493522",boxShadow:"0 25px 90px #000b"}}>
+        <div style={{fontSize:10,letterSpacing:3,fontWeight:900,color:"#94683c"}}>AMARGENTA · GIORNO 1</div>
+        <div style={{fontFamily:"Georgia,serif",fontSize:27,fontWeight:900,margin:"8px 0"}}>{firstDayStep===0?"Benvenuto ad Amargenta!":"Scopriamo che Sognatore sei"}</div>
+        <div style={{fontSize:13,lineHeight:1.6,marginBottom:16}}>{firstDayStep===0?"I Sognatori ti hanno trovato all'ingresso. Prima di accoglierti nella comunità vogliono conoscerti: rispondi a dieci domande e scopri con chi stringerai il tuo primo legame.":"Domanda "+(firstDayStep+1)+" di 10 · Scegli la risposta che ti rappresenta di più."}</div>
+        {firstDayStep===0&&<div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>{[["Flame","#ed4b24"],["Zibelle","#713b28"],["Lattelo","#ffd92e"]].map(([n,c])=><span key={n} style={{padding:"5px 10px",borderRadius:20,background:c,color:"#fff",fontWeight:900,fontSize:11}}>{n}</span>)}</div>}
+        <div style={{fontSize:18,fontWeight:900,marginBottom:12}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].q}</div>
+        <div style={{display:"grid",gap:9}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].a.map(([label,id])=><button key={id} onClick={()=>answerFirstDay(id)} style={{textAlign:"left",padding:"13px 15px",borderRadius:12,border:"1px solid #a9855b",background:"#fff8e8",color:"#493522",fontWeight:800,cursor:"pointer"}}>{label}</button>)}</div>
+        <div style={{marginTop:15,height:6,borderRadius:9,background:"#c8b18e",overflow:"hidden"}}><div style={{height:"100%",width:((firstDayStep+1)/10*100)+"%",background:"#68824e",transition:"width .2s"}}/></div>
+        <div style={{marginTop:7,fontSize:10,color:"#806344",fontWeight:800}}>DOMANDA {firstDayStep+1}/10</div>
+      </div>
     </div>}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
