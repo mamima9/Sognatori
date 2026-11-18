@@ -12,7 +12,7 @@ const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)
  * La scena è isolata dal renderer Canvas di Avventura: non modifica Arcade/Multiplayer.
  * Gli asset GLB definitivi di Scenario potranno sostituire progressivamente i moduli procedurali.
  */
-export default function Amargenta3D({ onExit }) {
+function Amargenta3DContent({ onExit }) {
   const hostRef = useRef(null);
   const [hint, setHint] = useState("");
   const [zone, setZone] = useState("Ingresso di Amargenta");
@@ -2552,4 +2552,20 @@ export default function Amargenta3D({ onExit }) {
       {dialogue.confirm&&<button onClick={dialogue.confirm} style={{marginTop:15,marginRight:8,border:"1px solid #a8d4a2",borderRadius:9,padding:"8px 18px",background:"#315b42",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>Convincilo a unirsi</button>}<button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
     </div>}
   </div>;
+}
+
+class Amargenta3DErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error("Amargenta render error:", error, info); }
+  render() {
+    if (this.state.error) {
+      const message = this.state.error?.message || String(this.state.error);
+      return <div style={{position:"fixed",inset:0,zIndex:99999,background:"#18221e",color:"#f4ead8",display:"grid",placeItems:"center",padding:24,fontFamily:"system-ui,sans-serif"}}><div style={{width:"min(620px,100%)",padding:24,border:"1px solid #d8b77d",borderRadius:18,background:"#243229"}}><div style={{fontSize:12,letterSpacing:3,color:"#e7c28c",fontWeight:900}}>SOGNATORI · DIAGNOSTICA AMARGENTA</div><h1 style={{fontSize:24,fontWeight:900,margin:"12px 0"}}>Errore durante l'avvio della città</h1><p style={{fontSize:14,lineHeight:1.6,overflowWrap:"anywhere"}}>{message}</p><p style={{fontSize:12,opacity:.75,marginTop:14}}>Mandami uno screenshot di questa schermata: mostra l'errore reale.</p><button onClick={()=>window.location.reload()} style={{marginTop:18,padding:"10px 16px",borderRadius:10,background:"#c39455",color:"#18221e",fontWeight:900}}>Ricarica</button></div></div>;
+    }
+    return this.props.children;
+  }
+}
+export default function Amargenta3D(props) {
+  return <Amargenta3DErrorBoundary><Amargenta3DContent {...props} /></Amargenta3DErrorBoundary>;
 }
