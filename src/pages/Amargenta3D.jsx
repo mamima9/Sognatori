@@ -768,142 +768,73 @@ export default function Amargenta3D({ onExit }) {
       const index = interactables.findIndex(item => item.id === id);
       if (index >= 0) interactables.splice(index, 1);
     };
+    // Ogni abitante è un Sognatore: niente esseri umani generici ad Amargenta.
+    // Le professioni sono accessori/attività, non NPC separati.
     const makeNpc = (id,name,job,x,z,shirt,lines,scale=1,options={}) => {
       const g=new THREE.Group();(options.parent||scene).add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
-      const skinToneById={barista:"#d9ad83",merchant:"#bd8868",archivist:"#e2c29b",guard:"#a96f50",farmer:"#d9a477","town-cook":"#e0b58c","town-carpenter":"#b77c58","town-gardener":"#e4c19b",roaster:"#bd8a68",keeper:"#d7a77d","cafe-host":"#edc9a2"};
-      const hairToneById={barista:"#4b2b24",merchant:"#30231f",archivist:"#a7a39a",guard:"#382b29",farmer:"#6b4329","town-cook":"#a94a35","town-carpenter":"#6d4934","town-gardener":"#72523a",roaster:"#39251f",keeper:"#6b527c","cafe-host":"#75452e"};
-      const skin=mat(skinToneById[id]||"#d9ad83"), dark=mat(hairToneById[id]||"#302a2a"), trousers=mat(id==="guard"?"#35483f":id==="farmer"?"#596044":"#4b5860"), cloth=mat(shirt), boot=mat("#49372d");
-      const trim=mat(id==="guard"?"#d8c18c":id==="archivist"?"#b9c6c4":id==="town-gardener"?"#c6d49b":"#ead4a9");
-      // Linguaggio visivo Sognatori: proporzioni chibi, testa ampia, corpo compatto e silhouette leggibile.
-      const torso=cylinder(.3,.39,.72,cloth,g,0,.96,0,10);torso.scale.z=.86;
-      sphere(.39,skin,g,0,1.57,.015,2);
-      const hair=sphere(.405,dark,g,0,1.78,-.035,2);hair.scale.set(1,.55,.95);
-      // Ogni abitante ha una silhouette dei capelli distinta.
-      if(["barista","cafe-host"].includes(id)){
-        const fringe=sphere(.28,dark,g,0,1.82,.29,1);fringe.scale.set(1.35,.48,.62);
-        for(let k=-1;k<=1;k++)sphere(.11,dark,g,k*.2,1.92,.22,1);
-      }else if(id==="merchant"){
-        const hood=sphere(.47,dark,g,0,1.82,-.08,2);hood.scale.set(1.12,.72,1);
-        sphere(.2,dark,g,-.34,1.54,.03,1);sphere(.2,dark,g,.34,1.54,.03,1);
-      }else if(id==="archivist"){
-        sphere(.18,dark,g,-.37,1.66,-.02,1);sphere(.18,dark,g,.37,1.66,-.02,1);
-        box(.48,.08,.18,dark,g,0,1.98,-.04);
-      }else if(id==="guard"){
-        sphere(.17,dark,g,0,1.98,-.02,1);
-        for(let k=-1;k<=1;k++)sphere(.09,dark,g,k*.18,1.88,.2,1);
-      }else if(id==="farmer"||id==="town-gardener"){
-        const bun=sphere(.2,dark,g,0,1.92,-.3,1);bun.scale.set(1,1,.85);
-        sphere(.1,dark,g,-.35,1.64,0,1);sphere(.1,dark,g,.35,1.64,0,1);
-      }else if(id==="town-cook"){
-        sphere(.14,dark,g,-.36,1.62,.02,1);sphere(.14,dark,g,.36,1.62,.02,1);
-      }else if(id==="town-carpenter"){
-        for(let k=-1;k<=1;k++)sphere(.12,dark,g,k*.2,1.95,.06,1);
-      }else if(id==="roaster"){
-        sphere(.22,dark,g,0,1.95,-.04,1);
-      }else if(id==="keeper"){
-        sphere(.2,dark,g,0,1.98,-.04,1);sphere(.12,dark,g,-.34,1.67,.02,1);sphere(.12,dark,g,.34,1.67,.02,1);
-      }
-      box(.1,.07,.045,mat("#241f20"),g,-.105,1.64,.255);
-      box(.1,.07,.045,mat("#241f20"),g,.105,1.64,.255);
-      const leftArm=box(.17,.55,.18,cloth,g,-.39,.98,0);leftArm.rotation.z=-.16;
-      const rightArm=box(.17,.55,.18,cloth,g,.39,.98,0);rightArm.rotation.z=.16;
-      box(.22,.53,.22,trousers,g,-.14,.38,0);
-      box(.22,.53,.22,trousers,g,.14,.38,0);
-      box(.27,.15,.36,boot,g,-.14,.1,.08);
-      box(.24,.13,.34,boot,g,.14,.12,.08);
-const badge=sphere(.09,gold,g,0,1.12,.3,1);
-      badge.scale.set(1,.8,.3);
-      if(id==="barista"||id==="roaster"){
-        box(.34,.46,.055,mat("#e8d7bd"),g,0,1.12,.405);
-        box(.38,.08,.06,mat("#8c5036"),g,0,.91,.42);
-      }
-      if(id==="merchant"){cylinder(.34,.08,.16,mat("#8b5735"),g,0,1.95,0,10);box(.16,.22,.16,gold,g,0,2.08,0);}
-      if(id==="archivist"){box(.32,.42,.09,mat("#8a6749"),g,.48,1.05,.02);box(.25,.32,.035,mat("#e7d2a8"),g,.48,1.05,.08);}
-      if(id==="guard"){const spear=cylinder(.035,.05,2.2,gold,g,.62,1.35,0,6);spear.rotation.z=-.08;sphere(.1,stoneLight,g,.62,2.48,0,1);}
-      if(id==="farmer"){box(.34,.28,.3,mat("#98633e"),g,-.48,.76,-.05);for(let i=0;i<3;i++)sphere(.09,coffeeRed,g,-.58+i*.1,.94,-.05,1);}
-      if(id==="roaster"){cylinder(.28,.28,.12,mat("#4a3028"),g,0,2.03,0,10);box(.4,.08,.18,gold,g,0,2.08,0);}
-      // Volti più leggibili: occhi, sopracciglia, naso, sorriso e acconciature individuali.
-      const eyeWhite=mat("#fff5df"), pupil=mat("#211b19"), warmSkin=mat("#b97859");
-      const iris=mat(({barista:"#6b8f88",merchant:"#8a603b",archivist:"#71879a",guard:"#586b55",farmer:"#78904f","town-cook":"#7b604a","town-carpenter":"#6c7f8a","town-gardener":"#71945e",roaster:"#95633d",keeper:"#8a6a9d","cafe-host":"#6d8e9a"})[id]||"#6b8f88");
-      for(const ex of [-.145,.145]){
-        sphere(.075,eyeWhite,g,ex,1.62,.34,1);
-        sphere(.043,iris,g,ex,1.62,.386,1);
-        sphere(.025,pupil,g,ex,1.62,.414,1);
-        sphere(.018,mat("#ffffff"),g,ex-.012,1.645,.435,1);
-        box(.12,.035,.035,dark,g,ex,1.735,.31);
-      }
-      sphere(.052,warmSkin,g,0,1.52,.365,1);
-      box(.13,.025,.02,mat("#704238"),g,0,1.455,.35);
-      // Colletto, bordi delle maniche, cintura e fibbia.
-      const collar=addMesh(new THREE.ConeGeometry(.19,.22,4),trim,g,0,1.37,.02);collar.rotation.y=Math.PI/4;
-      box(.59,.075,.32,dark,g,0,.72,0);
-      box(.13,.14,.055,gold,g,0,.72,.19);
+      const palettes={
+        barista:["#713b28","#9b5634","#f0c982","#d88c62"],
+        merchant:["#d99b70","#4b2d24","#f1e8d6","#278ed0"],
+        archivist:["#4a3025","#79513a","#d8c6a7","#d6a64f"],
+        guard:["#e8ad19","#ffd34a","#f2d7a1","#aebbc1"],
+        farmer:["#ed4b24","#ff842e","#ffd45c","#fff0b5"],
+        "town-cook":["#d99b70","#4b2d24","#f1e8d6","#a94a35"],
+        "town-carpenter":["#e8ad19","#ffd34a","#f2d7a1","#8a5938"],
+        "town-gardener":["#e8ad19","#ffd34a","#f2d7a1","#4d8b38"],
+        roaster:["#713b28","#9b5634","#f0c982","#b47a3c"],
+        keeper:["#4a3025","#79513a","#d8c6a7","#a9d7c2"],
+        "cafe-host":["#d99b70","#4b2d24","#f1e8d6","#278ed0"]
+      };
+      const [baseColor,lightColor,bellyColor,accentColor]=palettes[id]||palettes.barista;
+      const base=mat(baseColor),light=mat(lightColor),belly=mat(bellyColor),accent=mat(accentColor);
+      const dark=mat("#241b1a"),white=mat("#fff8e9");
+      const bodyPivot=new THREE.Group();g.add(bodyPivot);
+      const body=sphere(.56,base,bodyPivot,0,.82,0,2);body.scale.set(1.12,1.02,.92);
+      sphere(.34,belly,bodyPivot,0,.68,.39,2).scale.set(1.05,.72,.48);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.48,.12);
+      sphere(.46,light,headPivot,0,.12,.08,2).scale.set(1.08,1,.9);
+      sphere(.23,belly,headPivot,0,-.12,.47,2).scale.set(1.2,.72,.6);
       for(const side of [-1,1]){
-        sphere(.105,skin,g,side*.37,.72,.02,1);
-        box(.2,.11,.19,trim,g,side*.36,1.28,.015);
+        sphere(.105,white,headPivot,side*.17,.18,.43,2);
+        sphere(.052,dark,headPivot,side*.17,.18,.49,2);
+        sphere(.025,white,headPivot,side*.15,.21,.515,1);
+        const ear=sphere(id==="guard"?.2:.16,base,headPivot,side*.34,.52,-.02,2);
+        ear.scale.set(.72,id==="guard"?1.35:1.7,.55);
       }
-      // Firma visiva distinta per ogni mestiere.
-      if(id==="barista"||id==="cafe-host"){
-        cylinder(.23,.25,.12,mat("#eee0c5"),g,0,1.98,0,12);
-        cylinder(.12,.12,.19,mat("#8e4937"),g,0,2.12,0,10);
-        box(.42,.42,.045,mat("#eee0c5"),g,0,1.08,.43);
-        box(.34,.055,.05,mat("#a94a35"),g,0,1.23,.46);
+      sphere(.07,dark,headPivot,0,-.12,.56,1);
+      const smile=box(.15,.025,.018,dark,headPivot,0,-.23,.52);
+      const tuft=sphere(.2,accent,headPivot,0,.55,.16,2);tuft.scale.set(.75,1.35,.55);
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();g.add(arm);arm.position.set(side*.48,1.12,0);
+        const limb=sphere(.13,base,arm,0,-.18,.02,1);limb.scale.set(.8,1.6,.8);
+        sphere(.13,light,arm,0,-.38,.08,1);
+        arms.push(arm);
       }
-      if(id==="merchant"){
-        const hood=sphere(.34,mat("#8b5735"),g,0,1.91,-.03,1);hood.scale.set(1.05,.5,1);
-        box(.32,.07,.07,gold,g,0,1.94,.25);
+      for(const side of [-1,1]){
+        const leg=sphere(.16,base,g,side*.24,.25,0,1);leg.scale.set(.9,1.35,.95);
+        sphere(.17,dark,g,side*.24,.09,.07,1);
       }
-      if(id==="archivist"){
-        box(.78,.12,.72,mat("#4c6574"),g,0,1.94,0);
-        box(.86,.1,.78,mat("#b28a54"),g,0,2.02,0);
-        box(.1,.23,.08,mat("#b28a54"),g,0,2.14,0);
+      // Attrezzo distintivo del mestiere, sempre integrato nel design del Sognatore.
+      if(["barista","roaster","cafe-host"].includes(id)){
+        cylinder(.13,.16,.28,belly,g,.62,.76,.12,10);
+        cylinder(.11,.11,.025,accent,g,.62,.915,.12,10);
+        const handle=addMesh(new THREE.TorusGeometry(.09,.018,6,12,Math.PI),belly,g,.76,.78,.12);handle.rotation.z=Math.PI/2;
+      }else if(id==="merchant"||id==="town-cook"){
+        box(.38,.38,.08,accent,g,-.52,.76,.12);
+        sphere(.12,belly,g,-.52,.98,.12,1);
+      }else if(id==="archivist"||id==="keeper"){
+        box(.34,.42,.1,mat("#8a6749"),g,.56,.76,.05);
+        box(.25,.31,.035,mat("#ead9b7"),g,.56,.76,.11);
+        for(let k=0;k<3;k++)box(.18,.025,.02,accent,g,.56,.84-k*.08,.14);
+      }else if(id==="guard"||id==="town-carpenter"){
+        const tool=cylinder(.035,.045,.9,mat("#8a5938"),g,.62,.85,.04,7);tool.rotation.z=-.25;
+        box(.28,.16,.1,mat("#aebbc1"),g,.62,1.3,.04);
+      }else{
+        for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
-      if(id==="guard"){
-        cylinder(.31,.34,.18,mat("#7e8d78"),g,0,1.98,0,8);
-        box(.5,.1,.12,gold,g,0,1.9,.05);
-        box(.1,.35,.09,mat("#9a4c37"),g,0,2.18,-.02);
-      }
-      if(id==="farmer"){
-        cylinder(.39,.4,.09,mat("#b58a4c"),g,0,1.91,0,10);
-        cylinder(.22,.25,.27,mat("#8b643b"),g,0,2.08,0,10);
-        for(let k=0;k<3;k++)sphere(.075,coffeeRed,g,-.16+k*.16,1.91,.2,1);
-      }
-      if(id==="roaster"){
-        cylinder(.31,.33,.1,mat("#4a3028"),g,0,2.02,0,10);
-        box(.46,.07,.19,gold,g,0,2.1,0);
-        const scarf=box(.5,.13,.12,mat("#e1a34d"),g,0,1.43,.19);scarf.rotation.z=-.08;
-        // Occhiali protettivi da torrefazione.
-        for(const ex of [-.15,.15]){const lens=sphere(.105,mat("#d7c39a",.75,{transparent:true,opacity:.65}),g,ex,1.63,.39,1);lens.scale.set(1,.72,.3);}
-        box(.18,.035,.035,mat("#4a3028"),g,0,1.63,.4);
-      }
-      if(id==="town-cook"){
-        // Cappello alto da cucina e grembiule.
-        cylinder(.27,.3,.12,mat("#fff0dc"),g,0,2.02,0,10);
-        sphere(.22,mat("#fff0dc"),g,-.12,2.2,0,1);sphere(.22,mat("#fff0dc"),g,.12,2.2,0,1);
-        box(.42,.48,.055,mat("#f0e4d1"),g,0,1.02,.38);
-        box(.44,.07,.07,mat("#a94a35"),g,0,.8,.41);
-      }
-      if(id==="town-carpenter"){
-        // Bretelle, martello e cappello da lavoro.
-        box(.08,.6,.08,gold,g,-.22,1.08,.17);box(.08,.6,.08,gold,g,.22,1.08,.17);
-        const hammer=cylinder(.045,.045,.48,mat("#70482f"),g,.55,1.05,.04,6);hammer.rotation.z=-.18;
-        box(.25,.12,.14,mat("#77736b"),g,.55,1.3,.04);
-        box(.72,.1,.62,mat("#8b6948"),g,0,1.99,0);
-      }
-      if(id==="town-gardener"){
-        // Corona di foglie e borsa di semi.
-        for(let k=0;k<5;k++){const leafBit=sphere(.12,mat("#718b59"),g,Math.cos(k*1.25)*.34,1.91+Math.sin(k*1.25)*.1,.02,1);leafBit.scale.set(.7,1.4,.4);leafBit.rotation.z=-Math.cos(k*1.25)*.5;}
-        box(.28,.3,.18,mat("#98633e"),g,-.48,.85,-.04);
-        for(let k=0;k<3;k++)sphere(.045,mat("#d8b65c"),g,-.48+k*.08,1.03,.05,1);
-      }
-      if(id==="keeper"){
-        // Mantellina e pendente della custode.
-        const cape=addMesh(new THREE.ConeGeometry(.48,.72,5),mat("#645071"),g,0,.96,-.16);cape.rotation.x=Math.PI;
-        sphere(.13,mat("#a9d7c2"),g,0,1.34,.36,1);
-        for(let k=0;k<3;k++)sphere(.07,mat("#a9d7c2"),g,-.2+k*.2,1.88,.2,1);
-      }
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm,rightArm,kind:id});
-      if(!options.detached){addCollider(x,z,.42*scale);addInteraction(id,name,lines.join("\n"),x,z,null,3.6);}
+      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
+      if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
       return g;
     };
     // Cardinero: piccoli custodi dei giardini di Amargenta. Sono abitanti pacifici, non combattenti.
@@ -1442,15 +1373,15 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         setDialogue({title:"Cuore del Retrogusto",text:"Hai ottenuto una reliquia unica di Amargenta. Il suo aroma cambia con la luce."});
       },3.2);
       // Personaggi con dialoghi contestuali.
-      makeNpc("barista","Mira","Barista",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
-      makeNpc("merchant","Nerio","Mercante di fave",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
-      makeNpc("archivist","Orma","Archivista", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
-      makeNpc("guard","Bruno","Guardiano del ponte",18,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
-      makeNpc("farmer","Lina","Coltivatrice", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
+      makeNpc("barista","Zibelle","Custode del caffè",2,5,"#a94a35",["Benvenuto ad Amargenta!","La fontana segna il cuore della città.","La torrefazione lavora anche dopo il tramonto."]);
+      makeNpc("merchant","Muccanza","Mercante del borgo",-10,12,"#b47b43",["Cerchi qualcosa di speciale?","Le fave d'ambra crescono solo sulle terrazze alte."]);
+      makeNpc("archivist","Belligonghi-umami","Custode delle ricette", -10,-19,"#526d78",["Ogni chicco conserva una storia.","Nell'archivio trovi le ricette più antiche della fazione Amaro."]);
+      makeNpc("guard","Cardinero","Custode delle condotte",18,-7,"#68745a",["Il ponte è sicuro, ma non oltrepassare le gole senza prepararti."]);
+      makeNpc("farmer","Flame","Custode delle piante di peperoncino", -24,-31,"#6b8a57",["Queste piante richiedono ombra e acqua fresca.","Raccogliere le bacche mature è un'arte."]);
       // Abitanti di servizio: danno vita alla piazza senza introdurre nuove missioni.
-      makeNpc("town-cook","Tessa","Cuoca del borgo",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
-      makeNpc("town-carpenter","Ruvo","Falegname",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
-      makeNpc("town-gardener","Nemi","Giardiniera",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
+      makeNpc("town-cook","Muccanza","Preparatore di bevande",-13,5,"#b65a43",["La zuppa di fave è il piatto preferito dei viaggiatori.","Quando il mercato apre, qui profuma di pane caldo."]);
+      makeNpc("town-carpenter","Cardinero","Manutentore dei sentieri",14,19,"#8b6948",["Ogni trave di Amargenta è lavorata a mano.","Il legno migliore arriva dai boschi sopra il fiume."]);
+      makeNpc("town-gardener","Cardinero","Giardiniere",-34,16,"#718b59",["Le aiuole della piazza cambiano colore con le stagioni.","Non calpestare i germogli appena piantati!"]);
       // I Cardinero curano le aiuole e i giardini: sono NPC pacifici, senza statistiche e senza battaglie.
       // Cardinero #43: custode pacifico dei giardini, reclutabile senza battaglia.
       makeCardinero("Cardinero",-41,22,.92);
@@ -1592,7 +1523,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
           if(valvesRef.current===3)setToast("Le tre condotte sono di nuovo attive: torna da Bruno");
         },3.1);
       });
-      makeNpc("roaster","Tostino","Maestro torrefattore",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
+      makeNpc("roaster","Zibelle","Esperto del caffè",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       const roasterInteraction=interactables.find(item=>item.id==="roaster");
       if(roasterInteraction)roasterInteraction.action=()=>{
         const beans=inventoryRef.current.amberBeans;
@@ -1607,7 +1538,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         setInventory(old=>({...old,amberBeans:old.amberBeans-1,citrus:old.citrus-1,herbalTea:old.herbalTea+1}));
         setDialogue({title:"Tisana del Retrogusto",text:"Nerio ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
       };
-      makeNpc("keeper","Ada","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
+      makeNpc("keeper","Belligonghi-umami","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       const adaInteraction=interactables.find(item=>item.id==="keeper");
       if(adaInteraction)adaInteraction.action=()=>{
         if(blendDoneRef.current){setDialogue({title:"Ada · Custode delle ricette",text:"La Miscela delle Tre Foglie è custodita nella memoria di Amargenta. Hai dimostrato di saper rispettare ogni ingrediente."});return;}
@@ -1626,7 +1557,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         setToast("Ricetta segreta completata · Reliquia ottenuta");
         setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Ada ti affida una Reliquia delle Tre Foglie."});
       };
-      makeNpc("cafe-host","Elia","Proprietario del Caffè",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
+      makeNpc("cafe-host","Muccanza","Gestore della caffetteria",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       const eliaInteraction=interactables.find(item=>item.id==="cafe-host");
       if(eliaInteraction)eliaInteraction.action=()=>{
         if(bellsDoneRef.current){setDialogue({title:"Elia · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
