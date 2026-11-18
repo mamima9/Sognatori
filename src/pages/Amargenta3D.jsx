@@ -1108,7 +1108,7 @@ export default function Amargenta3D({ onExit }) {
     };
 
     try {
-      scene=new THREE.Scene();scene.background=new THREE.Color("#b7cbd0");scene.fog=new THREE.Fog("#b7cbd0",78,210);
+      scene=new THREE.Scene();scene.background=new THREE.Color("#c7dfdf");scene.fog=new THREE.Fog("#c7dfdf",92,235);
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
       const width=Math.max(1,host.clientWidth||window.innerWidth||800);
       const height=Math.max(1,host.clientHeight||window.innerHeight||600);
@@ -1134,9 +1134,10 @@ export default function Amargenta3D({ onExit }) {
       renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("La scheda grafica ha sospeso WebGL. Ricarica Amargenta; se continua, aggiorna i driver grafici.");});
       renderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica ripristinata. Ricarica Amargenta per riprendere l'esplorazione."));
       host.appendChild(renderer.domElement);
-      scene.add(new THREE.HemisphereLight("#e8f3ff","#64513b",1.65));
-      const sun=new THREE.DirectionalLight("#fff0d6",2.65);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
-      const warmFill=new THREE.DirectionalLight("#f4c98d",.45);warmFill.position.set(35,18,-30);scene.add(warmFill);
+      scene.add(new THREE.HemisphereLight("#f2fbff","#52664b",1.9));
+      const sun=new THREE.DirectionalLight("#fff1d7",2.35);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
+      const warmFill=new THREE.DirectionalLight("#ffd6a0",.62);warmFill.position.set(35,18,-30);scene.add(warmFill);
+      const skyFill=new THREE.DirectionalLight("#b9dfff",.34);skyFill.position.set(-8,22,48);scene.add(skyFill);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
       // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
       const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
@@ -1254,6 +1255,49 @@ export default function Amargenta3D({ onExit }) {
       for(let i=0;i<12;i++){
         const a=i*Math.PI/6,rr=31+(i%3)*2;
         makeCherryTree(Math.cos(a)*rr,Math.sin(a)*rr,.72+(i%2)*.16);
+      }
+      // Passata artistica: sottobosco a più livelli, bordi morbidi e dettagli ravvicinati.
+      // La distribuzione è deterministica per mantenere identica la scena ad ogni caricamento.
+      const meadowMats=["#e7c96f","#f1e6c2","#e99a9a","#d8b7e8","#f4a65e"].map(color=>mat(color,.82));
+      const grassMats=["#718e50","#8da85d","#a5b96d","#587b49"].map(color=>mat(color,1));
+      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);
+      const seeded=(n)=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
+      for(let i=0;i<210;i++){
+        const a=seeded(i+11)*Math.PI*2, r=13+seeded(i+91)*43;
+        const x=Math.cos(a)*r,z=Math.sin(a)*r;
+        if(Math.abs(x-28)<9&&Math.abs(z)<48)continue;
+        const patch=new THREE.Group();scene.add(patch);patch.position.set(x,0,z);
+        const blades=3+(i%4);
+        for(let j=0;j<blades;j++){
+          const angle=seeded(i*7+j)*Math.PI*2;
+          const blade=addMesh(new THREE.ConeGeometry(.055+seeded(i+j)*.035,.38+seeded(i+j+4)*.24,5),grassMats[(i+j)%grassMats.length],patch,Math.cos(angle)*.12,.19,Math.sin(angle)*.12);
+          blade.rotation.z=Math.cos(angle)*.28;blade.rotation.x=Math.sin(angle)*.28;
+        }
+        if(i%3===0){
+          const flower=sphere(.105,meadowMats[i%meadowMats.length],patch,0,.43,0,2);
+          flower.scale.set(1,.55,1);
+          sphere(.045,mat("#f7d56c"),patch,0,.49,0,1);
+        }
+        if(i%9===0){
+          cylinder(.09,.12,.22,mushroomStem,patch,.24,.11,.12,7);
+          const cap=sphere(.18,mushroomCap,patch,.24,.27,.12,2);cap.scale.set(1,.48,1);
+        }
+      }
+      // Pietre piatte irregolari lungo il sentiero principale: leggibilità senza effetto griglia.
+      for(let i=0;i<74;i++){
+        const t=i/73,side=(seeded(i+501)-.5)*1.9;
+        const x=-18+t*39+side,z=10+Math.sin(t*Math.PI*2)*2.2+(seeded(i+601)-.5)*1.4;
+        const stoneMesh=addMesh(new THREE.DodecahedronGeometry(.28+seeded(i+701)*.18,0),detailRock,scene,x,.09,z);
+        stoneMesh.scale.set(1.35,.28,.9);stoneMesh.rotation.y=seeded(i+801)*Math.PI;
+      }
+      // Piccoli gruppi di fiori vicino agli ingressi delle case.
+      for(const [cx,cz] of [[-18,-12],[8,-18],[18,8],[-34,4],[35,-10]]){
+        for(let j=0;j<7;j++){
+          const a=j/7*Math.PI*2,rr=1.1+(j%2)*.45;
+          const flower=sphere(.12,meadowMats[j%meadowMats.length],scene,cx+Math.cos(a)*rr,.38,cz+Math.sin(a)*rr,2);
+          flower.scale.set(1,.62,1);
+          sphere(.045,mat("#f8d76a"),scene,cx+Math.cos(a)*rr,.45,cz+Math.sin(a)*rr,1);
+        }
       }
       // Piccolo bosco sacro ai margini del villaggio: rocce, cespugli e pietre votive.
       makeRockGarden(-42,-26,3);makeRockGarden(43,27,5);makeRockGarden(-43,39,7);
