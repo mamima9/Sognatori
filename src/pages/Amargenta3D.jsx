@@ -16,6 +16,7 @@ export default function Amargenta3D({ onExit }) {
   const hostRef = useRef(null);
   const [hint, setHint] = useState("");
   const [zone, setZone] = useState("Ingresso di Amargenta");
+  const [worldTransition, setWorldTransition] = useState(null);
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
   const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
@@ -1582,10 +1583,12 @@ export default function Amargenta3D({ onExit }) {
       const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
-        arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");
+        setWorldTransition("arabnite");controlsLockedRef.current=true;
+        window.setTimeout(()=>{arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
-        arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");
+        setWorldTransition("amargenta");controlsLockedRef.current=true;
+        window.setTimeout(()=>{arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
@@ -2542,7 +2545,7 @@ export default function Amargenta3D({ onExit }) {
       <button aria-label="Scava con Talpitrippa" disabled={characterState?.active!=="talpitrippa"} onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current&&characterState?.active==="talpitrippa")window.dispatchEvent(new KeyboardEvent("keydown",{code:"KeyF"}));}} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:characterState?.active==="talpitrippa"?"linear-gradient(145deg,#a87843,#694327)":"#55504a",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:characterState?.active==="talpitrippa"?"pointer":"not-allowed",opacity:characterState?.active==="talpitrippa"?1:.55}}>⛏<br/>SCAVA</button>
       <button aria-label="Salta" onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current)window.dispatchEvent(new KeyboardEvent("keydown",{code:"Space"}));}} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>↑<br/>SALTO</button>
     </div>
-    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
+<div>{worldTransition&&<div role="status" aria-live="polite" style={{position:"absolute",inset:0,zIndex:100,display:"grid",placeItems:"center",background:worldTransition==="arabnite"?"radial-gradient(ellipse at center,#56351b 0%,#130f18 72%)":"radial-gradient(ellipse at center,#254a38 0%,#101a19 72%)",color:"#fff1d5",fontFamily:"inherit",pointerEvents:"all"}}><div style={{textAlign:"center",padding:24}}><div style={{fontSize:11,letterSpacing:5,fontWeight:900,color:"#e6bd75",marginBottom:18}}>S O G N A T O R I</div><div style={{fontSize:30,fontWeight:950,letterSpacing:2}}>{worldTransition==="arabnite"?"ARABNITE":"AMARGENTA"}</div><div style={{marginTop:12,fontSize:13,color:"#ead8bb"}}>{worldTransition==="arabnite"?"Il portale si apre sulle terre di Arabnite…":"Il varco ti riporta tra i profumi di Amargenta…"}</div><div style={{width:150,height:3,background:"#ffffff30",borderRadius:9,margin:"24px auto 0",overflow:"hidden"}}><div style={{height:"100%",width:"42%",background:"#e6bd75",borderRadius:9,animation:"arabniteLoad 1s ease-in-out infinite alternate"}}/></div></div><style>{"@keyframes arabniteLoad{from{transform:translateX(-35%)}to{transform:translateX(190%)}}"}</style></div>}</div>    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
