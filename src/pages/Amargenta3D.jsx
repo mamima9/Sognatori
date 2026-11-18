@@ -1368,17 +1368,30 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         const g=new THREE.Group();scene.add(g);g.position.set(42,0,38);
         const coat=mat("#ffd92e"), blue=mat("#087df0"), cream=mat("#f5d8a1"), muzzle=mat("#f5b99a"), hoof=mat("#75452b"), dark=mat("#171717"), metal=mat("#c8d4df",.35,{metalness:.55});
         const body=sphere(.72,coat,g,0,.86,0,2);body.scale.set(1.05,1.08,.82);
-        sphere(.58,coat,g,0,1.72,.12,2);
+        const head=sphere(.58,coat,g,0,1.72,.12,2);head.scale.set(1.02,1.05,.92);
         sphere(.34,muzzle,g,0,1.53,.62,2).scale.set(1.2,.72,.55);
-        sphere(.09,dark,g,-.22,1.83,.61,1);sphere(.09,dark,g,.22,1.83,.61,1);
+        sphere(.09,dark,g,-.22,1.83,.61,2);sphere(.09,dark,g,.22,1.83,.61,2);
+        // Macchie tonde sul manto e ciuffo frontale per una silhouette più riconoscibile.
+        for(const [x,y,z,scale] of [[-.48,1.02,.28,.19],[.43,.68,.3,.16],[-.28,1.35,-.25,.13],[.3,1.15,-.34,.14]]){
+          const patch=sphere(scale,mat("#fff0b2"),g,x,y,z,2);patch.scale.set(1.25,.82,.42);
+        }
         sphere(.23,blue,g,0,2.19,.08,2).scale.set(1.1,.48,.75);
+        const forelock=sphere(.2,cream,g,0,2.02,.47,2);forelock.scale.set(1.3,.45,.45);
         for(const side of [-1,1]){
           const horn=sphere(.18,cream,g,side*.32,2.35,.02,2);horn.scale.set(.65,1.25,.65);
           const ear=sphere(.25,coat,g,side*.58,1.95,0,2);ear.scale.set(1.2,.48,.5);
-          sphere(.17,blue,g,side*.35,.48,0,1);
-          const leg=sphere(.19,coat,g,side*.34,.25,.05,1);leg.scale.set(.9,1.2,.9);
-          sphere(.2,hoof,g,side*.34,.08,.12,1);
+          const innerEar=sphere(.12,muzzle,g,side*.58,1.96,.09,1);innerEar.scale.set(1.1,.55,.35);
         }
+        // Quattro zampette corte e robuste, con zoccoli ben visibili.
+        for(const side of [-1,1])for(const front of [-1,1]){
+          const x=side*.34,z=front*.39;
+          const leg=sphere(.17,coat,g,x,.32,z,2);leg.scale.set(.9,1.45,.92);
+          sphere(.18,hoof,g,x,.1,z+.035,2).scale.set(1,.62,1.15);
+        }
+        // Mammella e campanellino blu: richiami al latte fresco di Lattelo.
+        sphere(.24,muzzle,g,0,.48,.34,2).scale.set(1.15,.72,.9);
+        for(const side of [-1,1])sphere(.045,muzzle,g,side*.1,.31,.39,1);
+        const collar=cylinder(.34,.34,.09,blue,g,0,1.28,.02,12);collar.rotation.x=Math.PI/2;
         sphere(.18,blue,g,.62,.76,-.4,2);
         const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
         const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,6,16,Math.PI),metal);handle.position.set(-.58,.52,.22);g.add(handle);
