@@ -217,7 +217,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
-    const playerMotion = { leftArm:null, rightArm:null, leftLeg:null, rightLeg:null, torso:null };
+    const playerMotion = { sprite:null };
     const colliders = [];
     let jumpHeight = 0;
     let jumpVelocity = 0;
@@ -230,7 +230,7 @@ export default function Amargenta3D({ onExit }) {
     const amberPickups = [];
     const fireflies = [];
     const bellActors = [];
-    let yaw = Math.PI * 0.22, pitch = 0.34, distance = 12;
+    let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -1675,46 +1675,32 @@ export default function Amargenta3D({ onExit }) {
         setInventory(old=>({...old,citrus:old.citrus+1}));
         setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Muccanza potrebbe scambiarlo con te."});
       },4.5);
-      // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
-      const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
-      // Protagonista: silhouette da eroe Sognatori, proporzioni chibi e outfit iconico da esploratore.
-      const torso=cylinder(.39,.46,.96,jacket,player,0,1.12,0,12);torso.scale.z=.86;playerMotion.torso=torso;
-      sphere(.46,skinTone,player,0,1.92,.015,2);
-      // Collo, colletto e dettagli della giacca.
-      cylinder(.15,.16,.2,skinTone,player,0,1.68,0,10);
-      box(.55,.16,.13,jacketLight,player,0,1.68,.27);
-      box(.09,.72,.07,leather,player,0,1.2,.36);
-      for(let i=0;i<3;i++)sphere(.035,gold,player,0,1.42+i*.2,.405,1);
-      // Cappellino rosso con visiera frontale.
-      sphere(.47,redCap,player,0,2.16,-.005,2).scale.set(1,.38,1);
-      box(.72,.11,.48,capShade,player,0,2.1,.23);
-      // Emblema a stella, marchio distintivo del protagonista.
-      const heroEmblem=sphere(.105,gold,player,0,2.2,.385,1);heroEmblem.scale.set(1,.72,.28);
-      sphere(.035,mat("#fff0b8"),player,0,2.2,.42,1);
-      // Zaino in cuoio, fibbie e tasca esterna.
-      box(.68,.82,.34,leather,player,0,1.25,-.36);
-      box(.56,.28,.08,mat("#9b7048"),player,0,1.08,-.56);
-      box(.58,.09,.08,gold,player,0,1.47,-.56);
-      box(.2,.24,.08,wood,player,0,1.28,-.58);
-      // Arti costruiti attorno a vere articolazioni: oscillano dalla spalla e dall'anca.
-      for(const side of [-1,1]){
-        const armPivot=new THREE.Group();player.add(armPivot);armPivot.position.set(side*.5,1.43,0);
-        box(.2,.62,.22,jacket,armPivot,0,-.29,0);
-        box(.22,.13,.23,gold,armPivot,0,-.58,.015);
-        sphere(.15,skinTone,armPivot,0,-.68,.035,2);
-        if(side<0)playerMotion.leftArm=armPivot;else playerMotion.rightArm=armPivot;
-        const legPivot=new THREE.Group();player.add(legPivot);legPivot.position.set(side*.2,.68,0);
-        box(.25,.55,.27,pants,legPivot,0,-.275,0);
-        box(.31,.2,.46,bootMat,legPivot,0,-.62,.13);
-        // Piccola punta e cucitura dello stivale.
-        box(.23,.045,.025,mat("#8a6747"),legPivot,0,-.59,.355);
-        if(side<0)playerMotion.leftLeg=legPivot;else playerMotion.rightLeg=legPivot;
-      }
-      // Fibbia frontale a stella e sciarpa corta: dettagli riconoscibili anche da lontano.
-      const beltBuckle=sphere(.105,gold,player,0,.83,.32,1);beltBuckle.scale.set(1,1,.35);
-      const scarf=box(.56,.12,.16,mat("#e3a34d"),player,0,1.57,.27);scarf.rotation.z=-.04;
-      // Spallacci e fibbie dello zaino.
-      for(const side of [-1,1]){const strap=box(.09,.72,.09,mat("#b58a58"),player,side*.28,1.32,.25);strap.rotation.z=side*.2;}
+      // Protagonista Amargenta: Talpitrippa, fedele all'illustrazione originale.
+      // Sprite billboard: mantiene silhouette e dettagli senza deformazioni da arti procedurali.
+      const talpitrippaTexture = new THREE.TextureLoader().load("data:image/webp;base64,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");
+      talpitrippaTexture.colorSpace = THREE.SRGBColorSpace;
+      talpitrippaTexture.magFilter = THREE.NearestFilter;
+      talpitrippaTexture.minFilter = THREE.LinearMipmapLinearFilter;
+      talpitrippaTexture.generateMipmaps = true;
+      const talpitrippaMaterial = new THREE.SpriteMaterial({
+        map: talpitrippaTexture, transparent: true, alphaTest: 0.025,
+        depthWrite: false, sizeAttenuation: true
+      });
+      const talpitrippaSprite = new THREE.Sprite(talpitrippaMaterial);
+      talpitrippaSprite.scale.set(2.85, 2.65, 1);
+      talpitrippaSprite.position.set(0, 1.34, 0);
+      talpitrippaSprite.renderOrder = 4;
+      player.add(talpitrippaSprite);
+      playerMotion.sprite = talpitrippaSprite;
+      // Ombra morbida separata: il personaggio resta leggibile sul terreno.
+      const talpitrippaShadow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.78, 32),
+        new THREE.MeshBasicMaterial({ color: "#211b20", transparent: true, opacity: 0.28, depthWrite: false })
+      );
+      talpitrippaShadow.rotation.x = -Math.PI / 2;
+      talpitrippaShadow.position.set(-44, 0.035, 2);
+      talpitrippaShadow.scale.set(1.25, 0.62, 1);
+      scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
@@ -1806,24 +1792,26 @@ export default function Amargenta3D({ onExit }) {
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
           yaw+=yawDelta*(1-Math.exp(-2.1*dt));
         }
-        // Ciclo passi proporzionale alla velocità, con ampiezza che sfuma durante la frenata.
+        // Animazione leggera dello sprite: passo elastico senza stirare la grafica originale.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
-        const gait=clock.elapsedTime*(sprint?12.2:8.8);
-        const armSwing=Math.sin(gait)*.34*walkBlend;
-        const legSwing=Math.sin(gait)*.43*walkBlend;
-        playerMotion.leftArm.rotation.x=THREE.MathUtils.damp(playerMotion.leftArm.rotation.x,armSwing,11,dt);
-        playerMotion.rightArm.rotation.x=THREE.MathUtils.damp(playerMotion.rightArm.rotation.x,-armSwing,11,dt);
-        playerMotion.leftLeg.rotation.x=THREE.MathUtils.damp(playerMotion.leftLeg.rotation.x,-legSwing,12,dt);
-        playerMotion.rightLeg.rotation.x=THREE.MathUtils.damp(playerMotion.rightLeg.rotation.x,legSwing,12,dt);
-        // Peso del corpo e lieve inclinazione in corsa: evita l'effetto marionetta.
-        playerMotion.torso.position.y=THREE.MathUtils.damp(playerMotion.torso.position.y,1.12+Math.abs(Math.sin(gait*2))*.035*walkBlend,9,dt);
-        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.055*walkBlend),7,dt);
+        const gait=clock.elapsedTime*(sprint?10.5:7.8);
+        const stepBounce=Math.abs(Math.sin(gait))*.075*walkBlend;
+        if(playerMotion.sprite){
+          playerMotion.sprite.position.y=1.34+stepBounce+(jumpHeight>0?jumpHeight*.10:0);
+          playerMotion.sprite.material.rotation=THREE.MathUtils.damp(
+            playerMotion.sprite.material.rotation, -activeSide*.035*walkBlend, 7, dt
+          );
+        }
+        player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
+        talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
+        talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
+        talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
         const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
-        const cameraEase=1-Math.exp(-7.5*dt);
+        const cameraEase=1-Math.exp(-5.8*dt);
         camera.position.lerp(cp,cameraEase);
-        cameraLookTarget.lerp(target,1-Math.exp(-9*dt));
+        cameraLookTarget.lerp(target,1-Math.exp(-7.2*dt));
         camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
