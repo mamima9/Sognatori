@@ -1874,14 +1874,11 @@ export default function Amargenta3D({ onExit }) {
       ]);
       const hook=new THREE.Mesh(new THREE.TubeGeometry(hookCurve,24,.025,8,false),mat("#9da1a6",.25,{metalness:.8}));
       hook.castShadow=true;rippleBody.add(hook);
-      const cord=new THREE.Mesh(new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)
-      ]).getPoints(16).length?new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)
-      ]),12,.018,6,false):new THREE.BufferGeometry(),rippleRed);
+      const cordCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.60,2.04,.76),new THREE.Vector3(-.69,1.96,.78),new THREE.Vector3(-.68,1.86,.80)]);
+      const cord=new THREE.Mesh(new THREE.TubeGeometry(cordCurve,12,.018,6,false),rippleRed);
       rippleBody.add(cord);
       ripple.visible=false;player.add(ripple);
-      playerMotion.model=talpitrippa;playerMotion.arms=arms;playerMotion.feet=feet;
+      playerMotion.model=talpitrippa;playerMotion.arms=arms;playerMotion.feet=feet;playerMotion.eyes=eyeMeshes;
       const characterState={active:"talpitrippa",talpitrippa,ripple,arms,feet,rippleArms,rippleFeet};
       const switchCharacter=()=>{
         characterState.active=characterState.active==="talpitrippa"?"ripple":"talpitrippa";
@@ -1914,7 +1911,8 @@ export default function Amargenta3D({ onExit }) {
           const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
-        if(e.code==="Escape"){setDialogue(null);setPanel(null);}\n        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
+        if(e.code==="Escape"){setDialogue(null);setPanel(null);}
+        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
         if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
         if(!e.repeat&&e.code==="KeyI")setPanel(old=>old==="inventory"?null:"inventory");
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
