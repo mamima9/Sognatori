@@ -993,6 +993,7 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       if(!renderer) throw new Error("WebGL non disponibile: "+(rendererError?.message||"impossibile creare il contesto grafico"));
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactDevice?1:1.35));
       renderer.setSize(width,height,false);
+      camera = new THREE.PerspectiveCamera(58, width / height, 0.1, 260);
       renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
       // Ombre più leggere: riducono consumo GPU e rischio di perdita del contesto.
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -1544,7 +1545,15 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       renderer.domElement.addEventListener("pointermove",onPointerMove);
       renderer.domElement.addEventListener("wheel",onWheel,{passive:true});
       window.addEventListener("keydown",onKeyDown);window.addEventListener("keyup",onKeyUp);window.addEventListener("blur",onWindowBlur);
-      const resize=()=>{if(!host.clientWidth||!host.clientHeight)return;camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();renderer.setSize(host.clientWidth,host.clientHeight);};
+      const resize = () => {
+        if (disposed || !camera || !renderer) return;
+        const resizeWidth = host.clientWidth;
+        const resizeHeight = host.clientHeight;
+        if (!resizeWidth || !resizeHeight) return;
+        camera.aspect = resizeWidth / resizeHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(resizeWidth, resizeHeight);
+      };
       observer=new ResizeObserver(resize);observer.observe(host);
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
@@ -1567,10 +1576,18 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         movementVelocity.lerp(desiredMovement,1-Math.exp(-acceleration*dt));
         const move=movementVelocity.clone().multiplyScalar(dt);
 
-        if(Math.abs(move.x)>.0001&&!isBlockedAt(nx,player.position.z))player.position.x=nx;
-        else if(isBlockedAt(nx,player.position.z))movementVelocity.x=0;
-        if(Math.abs(move.z)>.0001&&!isBlockedAt(player.position.x,nz))player.position.z=nz;
-        else if(isBlockedAt(player.position.x,nz))movementVelocity.z=0;
+        const nx = player.position.x + move.x;
+        const nz = player.position.z + move.z;
+        if (Math.abs(move.x) > 0.0001 && !isBlockedAt(nx, player.position.z)) {
+          player.position.x = nx;
+        } else if (isBlockedAt(nx, player.position.z)) {
+          movementVelocity.x = 0;
+        }
+        if (Math.abs(move.z) > 0.0001 && !isBlockedAt(player.position.x, nz)) {
+          player.position.z = nz;
+        } else if (isBlockedAt(player.position.x, nz)) {
+          movementVelocity.z = 0;
+        }
         player.position.y=getWalkHeight(player.position.x,player.position.z);
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
         if(horizontalSpeed>.18){
