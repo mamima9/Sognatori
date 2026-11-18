@@ -509,6 +509,59 @@ export default function Amargenta3D({ onExit }) {
       npcActors.push({group:g,phase:5.1,wild:true,legs,tailPivot,headPivot,ears:[],bodyPivot,aroma,interaction,homeX:32,homeZ:-28,roamRadius:2.1,walkSpeed:.36,flameTips});
       return g;
     };
+    // Albero di peperoncino: piccolo albero ornamentale accanto a Flame.
+    const makeChiliTree = (x,z) => {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+      const trunk=mat("#68412b"), foliage=mat("#47713c"), foliageLight=mat("#6f9148");
+      const pepperRed=mat("#c92f25",.48), pepperBright=mat("#ed5635",.42), stem=mat("#54743b");
+      cylinder(.2,.29,2.15,trunk,g,0,1.075,0,9);
+      for(let side of [-1,1]){
+        const branch=cylinder(.075,.12,1.25,trunk,g,side*.42,1.9,0,7);
+        branch.rotation.z=side*-.55;
+      }
+      for(let i=0;i<9;i++){
+        const a=i*2.399,ring=i%3;
+        const crown=sphere(.72+(i%2)*.1,i%3?foliage:foliageLight,g,Math.cos(a)*(.5+ring*.12),2.45+ring*.28,Math.sin(a)*(.48+ring*.12),2);
+        crown.scale.set(1.12,.78,.95);
+      }
+      // Peperoncini pendenti, rossi e ben visibili tra le foglie.
+      for(let i=0;i<11;i++){
+        const a=i*2.4,rr=.62+(i%3)*.16;
+        const px=Math.cos(a)*rr, pz=Math.sin(a)*rr, py=1.9+(i%4)*.22;
+        const pepper=new THREE.Group();g.add(pepper);pepper.position.set(px,py,pz);
+        const pod=sphere(.13,i%3?pepperRed:pepperBright,pepper,0,-.19,0,2);
+        pod.scale.set(.72,1.9,.72);pod.rotation.z=(i%2?-.12:.12);
+        const tip=addMesh(new THREE.ConeGeometry(.065,.2,7),pepperRed,pepper,0,-.39,0);
+        tip.rotation.x=Math.PI;
+        cylinder(.035,.045,.16,stem,pepper,0,-.015,0,6);
+      }
+      addCollider(x,z,.48,3.35);
+    };
+    // Terreno morbido da tartufi per Umami: zolle, foglie e tartufi affioranti.
+    const makeTrufflePatch = (x,z) => {
+      const soil=mat("#594532"), soilLight=mat("#806344"), truffleMat=mat("#30231d",.72), leafMat=mat("#66794a");
+      const patch=addMesh(new THREE.CircleGeometry(5.4,40),soil,scene,x,.035,z);
+      patch.rotation.x=-Math.PI/2;patch.scale.set(1.18,.82,1);
+      for(let i=0;i<19;i++){
+        const a=i*2.399,rr=1.1+(i%5)*.72,px=x+Math.cos(a)*rr,pz=z+Math.sin(a)*rr*.78;
+        const mound=sphere(.42+(i%3)*.08,i%2?soilLight:soil,scene,px,.12,pz,1);
+        mound.scale.set(1.35,.34,1.08);
+        if(i%2===0){
+          const truffle=sphere(.16+(i%3)*.025,truffleMat,scene,px+.12,.22,pz-.08,2);
+          truffle.scale.set(1.2,.72,.92);
+        }
+        for(let j=0;j<3;j++){
+          const blade=sphere(.12,leafMat,scene,px+(j-1)*.13,.24,pz+.18,1);
+          blade.scale.set(.45,1.5,.35);blade.rotation.z=(j-1)*.35;
+        }
+      }
+      // Piccoli tartufi in evidenza intorno al cane, come tracce da fiutare.
+      for(let i=0;i<5;i++){
+        const a=i*1.257,rr=2.5+(i%2)*.55;
+        const truffle=sphere(.19,truffleMat,scene,x+Math.cos(a)*rr,.18,z+Math.sin(a)*rr*.8,2);
+        truffle.scale.set(1.25,.7,.9);
+      }
+    };
     const makeCoffeePlant = (x,z,s=1) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(s);
       cylinder(.045,.07,.72,wood,g,0,.36,0,6);
@@ -1413,7 +1466,9 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
+      makeTrufflePatch(-48,30);
       makeFlame();
+      makeChiliTree(36,-28);
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
