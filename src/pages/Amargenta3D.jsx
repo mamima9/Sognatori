@@ -1584,11 +1584,11 @@ export default function Amargenta3D({ onExit }) {
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
-        window.setTimeout(()=>{arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{amargentaScene.remove(player);amargentaScene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="rullino";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
         setWorldTransition("amargenta");controlsLockedRef.current=true;
-        window.setTimeout(()=>{arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);amargentaScene.add(player);amargentaScene.add(talpitrippaShadow);arabniteActive=false;characterState.active="piocino";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
       // Arabnite vive in una scena Three.js indipendente: la scena Amargenta resta separata.
@@ -2095,8 +2095,8 @@ export default function Amargenta3D({ onExit }) {
       talpitrippaShadow.rotation.x=-Math.PI/2;
       talpitrippaShadow.position.set(-44,.035,2);
       talpitrippaShadow.scale.set(1.25,.62,1);
-      amargentaScene.add(talpitrippaShadow);arabniteScene.add(talpitrippaShadow);
-      amargentaScene.add(player);arabniteScene.add(player);player.position.set(-44,0,2);
+      amargentaScene.add(talpitrippaShadow);
+      amargentaScene.add(player);player.position.set(-44,0,2);
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       const onKeyDown=e=>{
