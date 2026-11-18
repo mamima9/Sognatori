@@ -814,7 +814,7 @@ export default function Amargenta3D({ onExit }) {
         "town-gardener":["#e8ad19","#ffd34a","#f2d7a1","#4d8b38"],
         roaster:["#713b28","#9b5634","#f0c982","#b47a3c"],
         keeper:["#4a3025","#79513a","#d8c6a7","#a9d7c2"],
-        "cafe-host":["#d99b70","#4b2d24","#f1e8d6","#278ed0"]
+        "cafe-host":["#d99b70","#4b2d24","#f1e8d6","#278ed0"],\n        milkkeeper:["#ffd92e","#fff0b2","#f5d8a1","#087df0"]
       };
       const [baseColor,lightColor,bellyColor,accentColor]=palettes[id]||palettes.barista;
       const base=mat(baseColor),light=mat(lightColor),belly=mat(bellyColor),accent=mat(accentColor);
@@ -847,7 +847,7 @@ export default function Amargenta3D({ onExit }) {
         sphere(.17,dark,g,side*.24,.09,.07,1);
       }
       // Attrezzo distintivo del mestiere, sempre integrato nel design del Sognatore.
-      if(["barista","roaster","cafe-host"].includes(id)){
+      if(id==="milkkeeper"){\n        cylinder(.16,.19,.42,mat("#c8d4df",.35,{metalness:.45}),g,.62,.72,.12,10);\n        cylinder(.12,.12,.035,accent,g,.62,.95,.12,10);\n        sphere(.09,belly,g,.62,.72,.34,1);\n      }else if(["barista","roaster","cafe-host"].includes(id)){
         cylinder(.13,.16,.28,belly,g,.62,.76,.12,10);
         cylinder(.11,.11,.025,accent,g,.62,.915,.12,10);
         const handle=addMesh(new THREE.TorusGeometry(.09,.018,6,12,Math.PI),belly,g,.76,.78,.12);handle.rotation.z=Math.PI/2;
@@ -1462,7 +1462,7 @@ export default function Amargenta3D({ onExit }) {
       }
       // Solo i Sognatori esclusivi di Amargenta sono collocati in questa città.
       // Muccanza è un Umano fan del latte di Lattelo: non una seconda mucca.
-      makeMuccanza();
+      makeMuccanza();\n      // Piccolo branco di Lattelo: pascolo e imbottigliamento del latte.\n      makeNpc("milkkeeper","Lattelo","Pascolo e raccolta del latte",45,43,"#ffd92e",["Il latte fresco viene imbottigliato qui ogni mattina.","I Lattelo pascolano tranquilli tra i filari."]);\n      makeNpc("milkkeeper","Lattelo","Addetto all’imbottigliamento",51,47,"#ffd92e",["Ogni bottiglia viene chiusa e conservata al fresco.","Il latte di Amargenta è pronto per il mercato."]);
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
@@ -1473,31 +1473,31 @@ export default function Amargenta3D({ onExit }) {
       if(linaInteraction)linaInteraction.action=()=>{
         if(questCountRef.current>=3){
           if(!questDoneRef.current){questDoneRef.current=true;setQuestDone(true);setToast("Missione completata · Fave d'Ambra");}
-          setDialogue({title:"Lina · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
+          setDialogue({title:"Flame · Coltivatrice",text:"Hai riportato tutte e tre le Fave d'Ambra! Le terrazze ti riconoscono come raccoglitore esperto."});
         } else if(!questActiveRef.current){
           questActiveRef.current=true;setQuestStarted(true);
-          setDialogue({title:"Lina · La raccolta delle Fave d'Ambra",text:"Tre fave speciali sono cadute tra le terrazze. Le riconosci dal bagliore dorato. Raccoglile e torna da me."});
-        } else setDialogue({title:"Lina · Coltivatrice",text:"Te ne mancano ancora "+(3-questCountRef.current)+". Cerca tra i filari delle terrazze."});
+          setDialogue({title:"Flame · La raccolta delle Fave d'Ambra",text:"Tre fave speciali sono cadute tra le terrazze. Le riconosci dal bagliore dorato. Raccoglile e torna da me."});
+        } else setDialogue({title:"Flame · Coltivatrice",text:"Te ne mancano ancora "+(3-questCountRef.current)+". Cerca tra i filari delle terrazze."});
       };
       const ormaInteraction=interactables.find(item=>item.id==="archivist");
       if(ormaInteraction)ormaInteraction.action=()=>{
         if(recipePagesRef.current>=4){
           if(!recipeDoneRef.current){recipeDoneRef.current=true;setRecipeDone(true);setToast("Missione completata · Ricetta Perduta");}
-          setDialogue({title:"Orma · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
+          setDialogue({title:"Belligonghi-umami · Archivista",text:"Hai ricomposto la Ricetta delle Sette Tostature. La custodirò nell'archivio della città."});
         } else if(!recipeStartedRef.current){
           recipeStartedRef.current=true;setRecipeStarted(true);
-          setDialogue({title:"Orma · La Ricetta Perduta",text:"Quattro pagine della ricetta originale sono state disperse per Amargenta. Recuperale: la quinta tostatura non deve andare perduta."});
-        } else setDialogue({title:"Orma · Archivista",text:"Pagine recuperate: "+recipePagesRef.current+"/4. Cerca nei luoghi antichi, vicino ai ponti e alle botteghe."});
+          setDialogue({title:"Belligonghi-umami · La Ricetta Perduta",text:"Quattro pagine della ricetta originale sono state disperse per Amargenta. Recuperale: la quinta tostatura non deve andare perduta."});
+        } else setDialogue({title:"Belligonghi-umami · Archivista",text:"Pagine recuperate: "+recipePagesRef.current+"/4. Cerca nei luoghi antichi, vicino ai ponti e alle botteghe."});
       };
       const brunoInteraction=interactables.find(item=>item.id==="guard");
       if(brunoInteraction)brunoInteraction.action=()=>{
         if(valvesRef.current>=3){
           if(!waterDoneRef.current){waterDoneRef.current=true;setWaterDone(true);setInventory(old=>({...old,waterCrystals:old.waterCrystals+1}));setToast("Missione completata · Condotte Riattivate");}
-          setDialogue({title:"Bruno · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
+          setDialogue({title:"Cardinero · Guardiano del ponte",text:"L'acqua è tornata a scorrere in tutte le condotte. Amargenta ti deve un favore."});
         } else if(!waterStartedRef.current){
           waterStartedRef.current=true;setWaterStarted(true);
-          setDialogue({title:"Bruno · Le Condotte Antiche",text:"Tre valvole sono bloccate lungo il fiume. Riattivale per riportare acqua ai giardini e alle cascate."});
-        } else setDialogue({title:"Bruno · Guardiano del ponte",text:"Condotte riattivate: "+valvesRef.current+"/3. Cerca le valvole vicino ai ponti e alla torrefazione."});
+          setDialogue({title:"Cardinero · Le Condotte Antiche",text:"Tre valvole sono bloccate lungo il fiume. Riattivale per riportare acqua ai giardini e alle cascate."});
+        } else setDialogue({title:"Cardinero · Guardiano del ponte",text:"Condotte riattivate: "+valvesRef.current+"/3. Cerca le valvole vicino ai ponti e alla torrefazione."});
       };
       [[-34,-37],[-12,-45],[-4,-28]].forEach((p,i)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(p[0],.8,p[1]);
@@ -1507,13 +1507,13 @@ export default function Amargenta3D({ onExit }) {
         g.userData.amberPickup=true;
         amberPickups.push(g);
         if(!collectedAmberRef.current.has(i)) addInteraction("amber-bean-"+i,"Fava d'Ambra","Una fava rara raccolta sulle terrazze.",p[0],p[1],()=>{
-          if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Lina potrebbe sapere cosa farne."});return;}
+          if(!questActiveRef.current){setDialogue({title:"Fava d'Ambra",text:"È una fava rara. Flame potrebbe sapere cosa farne."});return;}
           if(g.userData.collected||collectedAmberRef.current.has(i))return;
           g.userData.collected=true;g.visible=false;removeInteraction("amber-bean-"+i);collectedAmberRef.current.add(i);
           const nextCollected=[...collectedAmberRef.current];setCollectedAmber(nextCollected);
           questCountRef.current+=1;setQuestCount(questCountRef.current);
           setInventory(old=>({...old,amberBeans:old.amberBeans+1}));
-          if(questCountRef.current===3)setDialogue({title:"Raccolta completata",text:"Hai trovato tutte e tre le Fave d'Ambra. Torna da Lina per concludere la missione."});
+          if(questCountRef.current===3)setDialogue({title:"Raccolta completata",text:"Hai trovato tutte e tre le Fave d'Ambra. Torna da Flame per concludere la missione."});
           else setDialogue({title:"Fava d'Ambra raccolta",text:"Fave trovate: "+questCountRef.current+"/3."});
         },2.8);
       });
@@ -1526,14 +1526,14 @@ export default function Amargenta3D({ onExit }) {
         box(.34,.025,.04,mat("#9d7048"),page,0,.055,.15);
         if(collectedPagesRef.current.has(i))page.visible=false;
         if(!collectedPagesRef.current.has(i)) addInteraction("recipe-page-"+i,"Pagina della Ricetta Perduta","Una pagina antica della Ricetta delle Sette Tostature.",p[0],p[1],()=>{
-          if(!recipeStartedRef.current){setDialogue({title:"Pagina della Ricetta",text:"Una pagina preziosa. Orma saprà cosa farne."});return;}
+          if(!recipeStartedRef.current){setDialogue({title:"Pagina della Ricetta",text:"Una pagina preziosa. Belligonghi-umami saprà cosa farne."});return;}
           if(collectedPagesRef.current.has(i))return;
           collectedPagesRef.current.add(i);removeInteraction("recipe-page-"+i);setCollectedPages([...collectedPagesRef.current]);
           recipePagesRef.current+=1;setRecipePages(recipePagesRef.current);
           setInventory(old=>({...old,recipeFragments:old.recipeFragments+1}));
           page.visible=false;
           setDialogue({title:"Pagina recuperata",text:"Pagine della ricetta: "+recipePagesRef.current+"/4."});
-          if(recipePagesRef.current===4)setToast("Hai recuperato tutte le pagine: torna da Orma");
+          if(recipePagesRef.current===4)setToast("Hai recuperato tutte le pagine: torna da Belligonghi-umami");
         },2.8);
       });
       // Tre valvole interattive lungo le condotte: ogni attivazione cambia davvero lo stato.
@@ -1545,62 +1545,62 @@ export default function Amargenta3D({ onExit }) {
         addCollider(p[0],p[1],.38);
         if(activatedValvesRef.current.has(i)){wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");}
         if(!activatedValvesRef.current.has(i)) addInteraction("water-valve-"+i,"Valvola delle Condotte","Una valvola antica collegata alle cascate.",p[0],p[1],()=>{
-          if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Bruno al ponte dovrebbe sapere come riattivare le condotte."});return;}
+          if(!waterStartedRef.current){setDialogue({title:"Valvola bloccata",text:"Cardinero al ponte dovrebbe sapere come riattivare le condotte."});return;}
           if(activatedValvesRef.current.has(i))return;
           activatedValvesRef.current.add(i);removeInteraction("water-valve-"+i);setActivatedValves([...activatedValvesRef.current]);
           valvesRef.current+=1;setValves(valvesRef.current);
           wheel.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});handle.material=mat("#80b99a");
           setDialogue({title:"Condotta riattivata",text:"Valvole attivate: "+valvesRef.current+"/3."});
-          if(valvesRef.current===3)setToast("Le tre condotte sono di nuovo attive: torna da Bruno");
+          if(valvesRef.current===3)setToast("Le tre condotte sono di nuovo attive: torna da Cardinero");
         },3.1);
       });
       makeNpc("roaster","Zibelle","Esperto del caffè",69,66,"#9c5738",["Qui trasformiamo le fave in aroma.","Ascolta il ritmo dei tamburi di tostatura: ogni fase ha il suo tempo."]);
       const roasterInteraction=interactables.find(item=>item.id==="roaster");
       if(roasterInteraction)roasterInteraction.action=()=>{
         const beans=inventoryRef.current.amberBeans;
-        if(beans<3){setDialogue({title:"Tostino · Banco di tostatura",text:"Per preparare una Miscela d'Autore servono 3 Fave d'Ambra.\nIn borsa: "+beans+"."});return;}
+        if(beans<3){setDialogue({title:"Zibelle · Banco di tostatura",text:"Per preparare una Miscela d'Autore servono 3 Fave d'Ambra.\nIn borsa: "+beans+"."});return;}
         setInventory(old=>({...old,amberBeans:old.amberBeans-3,coffeeBlend:old.coffeeBlend+1}));
-        setDialogue({title:"Miscela d'Autore",text:"Tostino ha tostato tre Fave d'Ambra e preparato una Miscela d'Autore. La miscela è stata aggiunta alla tua borsa."});
+        setDialogue({title:"Miscela d'Autore",text:"Zibelle ha tostato tre Fave d'Ambra e preparato una Miscela d'Autore. La miscela è stata aggiunta alla tua borsa."});
       };
       const nerioInteraction=interactables.find(item=>item.id==="merchant");
       if(nerioInteraction)nerioInteraction.action=()=>{
         const beans=inventoryRef.current.amberBeans, citrusCount=inventoryRef.current.citrus;
-        if(beans<1||citrusCount<1){setDialogue({title:"Nerio · Banco degli scambi",text:"Per preparare una Tisana del Retrogusto servono 1 Fava d'Ambra e 1 agrume.\nIn borsa: "+beans+" fave e "+citrusCount+" agrumi."});return;}
+        if(beans<1||citrusCount<1){setDialogue({title:"Muccanza · Banco degli scambi",text:"Per preparare una Tisana del Retrogusto servono 1 Fava d'Ambra e 1 agrume.\nIn borsa: "+beans+" fave e "+citrusCount+" agrumi."});return;}
         setInventory(old=>({...old,amberBeans:old.amberBeans-1,citrus:old.citrus-1,herbalTea:old.herbalTea+1}));
-        setDialogue({title:"Tisana del Retrogusto",text:"Nerio ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
+        setDialogue({title:"Tisana del Retrogusto",text:"Muccanza ha preparato una tisana aromatica usando la tua Fava d'Ambra e il tuo agrume. La tisana è nella tua borsa."});
       };
       makeNpc("keeper","Belligonghi-umami","Custode delle ricette",72,72,"#76618b",["Le ricette si tramandano, non si comprano.","La miscela perfetta nasce dall'equilibrio."]);
       const adaInteraction=interactables.find(item=>item.id==="keeper");
       if(adaInteraction)adaInteraction.action=()=>{
-        if(blendDoneRef.current){setDialogue({title:"Ada · Custode delle ricette",text:"La Miscela delle Tre Foglie è custodita nella memoria di Amargenta. Hai dimostrato di saper rispettare ogni ingrediente."});return;}
+        if(blendDoneRef.current){setDialogue({title:"Belligonghi-umami · Custode delle ricette",text:"La Miscela delle Tre Foglie è custodita nella memoria di Amargenta. Hai dimostrato di saper rispettare ogni ingrediente."});return;}
         const blends=inventoryRef.current.coffeeBlend, teas=inventoryRef.current.herbalTea;
         if(!blendStartedRef.current){
           blendStartedRef.current=true;setBlendStarted(true);
-          setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Vorrei ricreare la miscela cerimoniale della città. Portami una Miscela d'Autore preparata da Tostino e una Tisana del Retrogusto preparata da Nerio. Solo unendo tostatura e infusione si rivela il suo aroma."});
+          setDialogue({title:"Belligonghi-umami · La Miscela delle Tre Foglie",text:"Vorrei ricreare la miscela cerimoniale della città. Portami una Miscela d'Autore preparata da Zibelle e una Tisana del Retrogusto preparata da Muccanza. Solo unendo tostatura e infusione si rivela il suo aroma."});
           return;
         }
         if(blends<1||teas<1){
-          setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Ci siamo quasi. Servono 1 Miscela d'Autore e 1 Tisana del Retrogusto. Nella tua borsa: "+blends+" miscele e "+teas+" tisane. Tostino usa 3 Fave d'Ambra; Nerio usa 1 Fava e 1 agrume."});
+          setDialogue({title:"Belligonghi-umami · La Miscela delle Tre Foglie",text:"Ci siamo quasi. Servono 1 Miscela d'Autore e 1 Tisana del Retrogusto. Nella tua borsa: "+blends+" miscele e "+teas+" tisane. Zibelle usa 3 Fave d'Ambra; Muccanza usa 1 Fava e 1 agrume."});
           return;
         }
         setInventory(old=>({...old,coffeeBlend:old.coffeeBlend-1,herbalTea:old.herbalTea-1,relics:old.relics+1}));
         blendDoneRef.current=true;setBlendDone(true);
         setToast("Ricetta segreta completata · Reliquia ottenuta");
-        setDialogue({title:"Ada · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Ada ti affida una Reliquia delle Tre Foglie."});
+        setDialogue({title:"Belligonghi-umami · La Miscela delle Tre Foglie",text:"Tostatura e infusione si sono unite in un aroma antico. Hai ricreato la miscela cerimoniale di Amargenta! Belligonghi-umami ti affida una Reliquia delle Tre Foglie."});
       };
       makeNpc("cafe-host","Muccanza","Gestore della caffetteria",-68,66,"#8b6849",["Questo locale esiste da prima della grande piazza.","Ogni tavolo ha ascoltato una storia diversa."]);
       const eliaInteraction=interactables.find(item=>item.id==="cafe-host");
       if(eliaInteraction)eliaInteraction.action=()=>{
-        if(bellsDoneRef.current){setDialogue({title:"Elia · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
+        if(bellsDoneRef.current){setDialogue({title:"Muccanza · Le campane del borgo",text:"Le tre campane hanno ritrovato la loro voce. Quando suonano insieme, tutta Amargenta ricorda le sue origini. Tieni questa piccola reliquia: te la sei meritata."});return;}
         if(bellCountRef.current>=3){
           bellsDoneRef.current=true;setBellsDone(true);
           setInventory(old=>({...old,relics:old.relics+1}));
           setToast("Attività completata · Le campane del borgo");
-          setDialogue({title:"Elia · Il canto ritrovato",text:"Hai risvegliato tutte e tre le campane! Il loro suono si è propagato tra le terrazze e la piazza. Elia ti affida una Reliquia di Amargenta."});
+          setDialogue({title:"Muccanza · Il canto ritrovato",text:"Hai risvegliato tutte e tre le campane! Il loro suono si è propagato tra le terrazze e la piazza. Muccanza ti affida una Reliquia di Amargenta."});
         } else if(!bellsStartedRef.current){
           bellsStartedRef.current=true;setBellsStarted(true);
-          setDialogue({title:"Elia · Le campane del borgo",text:"Un tempo le tre campane annunciavano l'apertura del mercato. Ora sono mute. Raggiungile nella città e interagisci con ognuna: vorrei sentire di nuovo il loro canto."});
-        } else setDialogue({title:"Elia · Le campane del borgo",text:"Hai risvegliato "+bellCountRef.current+"/3 campane. Le trovi nella piazza e lungo la strada del mercato."});
+          setDialogue({title:"Muccanza · Le campane del borgo",text:"Un tempo le tre campane annunciavano l'apertura del mercato. Ora sono mute. Raggiungile nella città e interagisci con ognuna: vorrei sentire di nuovo il loro canto."});
+        } else setDialogue({title:"Muccanza · Le campane del borgo",text:"Hai risvegliato "+bellCountRef.current+"/3 campane. Le trovi nella piazza e lungo la strada del mercato."});
       };
       // Piccola attività secondaria: riattiva le tre campane storiche di Amargenta.
       [[-30,4],[-2,18],[16,-2]].forEach((p,i)=>{
@@ -1613,13 +1613,13 @@ export default function Amargenta3D({ onExit }) {
         const clapper=sphere(.09,wood,bell,0,1.55,0,1);
         bellActors.push({group:bell,body,clapper,index:i});
         if(!activatedBellsRef.current.has(i))addInteraction("town-bell-"+i,"Campana del borgo","Una delle tre campane storiche di Amargenta.",p[0],p[1],()=>{
-          if(!bellsStartedRef.current){setDialogue({title:"Campana silenziosa",text:"La campana è ancora bloccata. Elia, al Caffè delle Tre Foglie, conosce la storia delle tre campane."});return;}
+          if(!bellsStartedRef.current){setDialogue({title:"Campana silenziosa",text:"La campana è ancora bloccata. Muccanza, al Caffè delle Tre Foglie, conosce la storia delle tre campane."});return;}
           if(activatedBellsRef.current.has(i))return;
           activatedBellsRef.current.add(i);removeInteraction("town-bell-"+i);setActivatedBells([...activatedBellsRef.current]);
           bellCountRef.current+=1;setBellCount(bellCountRef.current);
           body.material=mat("#80b99a",.3,{emissive:"#2e7755",emissiveIntensity:.6});
           setToast("Campana risvegliata · "+bellCountRef.current+"/3");
-          if(bellCountRef.current===3)setDialogue({title:"Il canto di Amargenta",text:"La terza campana ha risposto alle altre. Torna da Elia al Caffè delle Tre Foglie."});
+          if(bellCountRef.current===3)setDialogue({title:"Il canto di Amargenta",text:"La terza campana ha risposto alle altre. Torna da Muccanza al Caffè delle Tre Foglie."});
           else setDialogue({title:"Campana risvegliata",text:"Il bronzo ha vibrato dopo anni di silenzio. Campane attivate: "+bellCountRef.current+"/3."});
         },3.2);
       });
@@ -1654,7 +1654,7 @@ export default function Amargenta3D({ onExit }) {
         if(citrusHarvestedRef.current){setDialogue({title:"Agrumeto",text:"Hai già raccolto gli agrumi maturi di questo filare."});return;}
         citrusHarvestedRef.current=true;removeInteraction("citrus-harvest");setCitrusHarvested(true);
         setInventory(old=>({...old,citrus:old.citrus+1}));
-        setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Nerio potrebbe scambiarlo con te."});
+        setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Muccanza potrebbe scambiarlo con te."});
       },4.5);
       // Avatar 3D completo: abiti da esploratore, cappellino, zaino e arti animabili.
       const jacket=mat("#334d61"), jacketLight=mat("#557186"), skinTone=mat("#d7ae89"), pants=mat("#35404a"), leather=mat("#70482f"), redCap=mat("#a8322b"), capShade=mat("#702923"), bootMat=mat("#342b29");
@@ -1927,13 +1927,13 @@ export default function Amargenta3D({ onExit }) {
   }, []);
 
   const activeObjective = !questDone
-    ? (questCount >= 3 ? "Torna da Lina per concludere le Fave d'Ambra" : questStarted ? "Raccogli le tre Fave d'Ambra sulle terrazze" : "Parla con Lina nell'agrumeto")
+    ? (questCount >= 3 ? "Torna da Flame per concludere le Fave d'Ambra" : questStarted ? "Raccogli le tre Fave d'Ambra sulle terrazze" : "Parla con Flame tra le piante di peperoncino")
     : !recipeDone
-      ? (recipePages >= 4 ? "Torna da Orma per ricomporre la Ricetta Perduta" : recipeStarted ? "Recupera le quattro pagine della ricetta" : "Parla con Orma nell'archivio")
+      ? (recipePages >= 4 ? "Torna da Belligonghi-umami per ricomporre la Ricetta Perduta" : recipeStarted ? "Recupera le quattro pagine della ricetta" : "Parla con Belligonghi-umami vicino alla raccolta")
       : !waterDone
-        ? (valves >= 3 ? "Torna da Bruno per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Bruno vicino al ponte")
-        : bellsStarted && !bellsDone ? (bellCount >= 3 ? "Torna da Elia per ricevere la ricompensa" : "Risveglia le tre campane del borgo")
-          : blendStarted && !blendDone ? "Completa la Miscela delle Tre Foglie da Ada"
+        ? (valves >= 3 ? "Torna da Cardinero per completare le Condotte Antiche" : waterStarted ? "Riattiva le tre valvole lungo il fiume" : "Parla con Cardinero vicino alle condotte")
+        : bellsStarted && !bellsDone ? (bellCount >= 3 ? "Torna da Muccanza per ricevere la ricompensa" : "Risveglia le tre campane del borgo")
+          : blendStarted && !blendDone ? "Completa la Miscela delle Tre Foglie da Belligonghi-umami"
           : !secretUnlocked ? "Raggiungi la porta della Cripta delle Miscele" : dungeonSigils.length < 3 ? "Risolvi la sequenza dei tre sigilli nella Cripta" : !dungeonBossDefeated ? "Affronta il Guardiano del Retrogusto" : !vaultClaimed ? "Apri lo scrigno nel cuore della Cripta" : "Amargenta è stata completata: esplora liberamente";
 
   const nearestWaypoint = (points) => points
@@ -1943,28 +1943,28 @@ export default function Amargenta3D({ onExit }) {
   let objectiveWaypoint = null;
   if (!questDone) {
     objectiveWaypoint = questCount >= 3
-      ? { name:"Lina", x:-24, z:-31 }
+      ? { name:"Flame", x:-24, z:-31 }
       : questStarted
         ? nearestWaypoint([[-34,-37],[-12,-45],[-4,-28]].map(([x,z],i)=>({name:"Fava d'Ambra",x,z,done:collectedAmber.includes(i)})))
-        : { name:"Lina", x:-24, z:-31 };
+        : { name:"Flame", x:-24, z:-31 };
   } else if (!recipeDone) {
     objectiveWaypoint = recipePages >= 4
-      ? { name:"Orma", x:-10, z:-19 }
+      ? { name:"Belligonghi-umami", x:-10, z:-19 }
       : recipeStarted
         ? nearestWaypoint([[-35,-16],[28,-30],[-61,62],[48,45]].map(([x,z],i)=>({name:"Pagina della ricetta",x,z,done:collectedPages.includes(i)})))
-        : { name:"Orma", x:-10, z:-19 };
+        : { name:"Belligonghi-umami", x:-10, z:-19 };
   } else if (!waterDone) {
     objectiveWaypoint = valves >= 3
-      ? { name:"Bruno", x:18, z:-7 }
+      ? { name:"Cardinero", x:18, z:-7 }
       : waterStarted
         ? nearestWaypoint([[19,-18],[37,18],[13,38]].map(([x,z],i)=>({name:"Valvola",x,z,done:activatedValves.includes(i)})))
-        : { name:"Bruno", x:18, z:-7 };
+        : { name:"Cardinero", x:18, z:-7 };
   } else if (bellsStarted && !bellsDone) {
     objectiveWaypoint = bellCount >= 3
-      ? { name:"Elia", x:-68, z:66 }
+      ? { name:"Muccanza", x:-68, z:66 }
       : nearestWaypoint([[-30,4],[-2,18],[16,-2]].map(([x,z],i)=>({name:"Campana",x,z,done:activatedBells.includes(i)})));
   } else if (blendStarted && !blendDone) {
-    objectiveWaypoint = { name:"Ada", x:72, z:72 };
+    objectiveWaypoint = { name:"Belligonghi-umami", x:72, z:72 };
   } else if (!secretUnlocked) objectiveWaypoint = { name:"Porta della Cripta", x:-70, z:-43 };
   else if (!vaultClaimed) objectiveWaypoint = { name:"Scrigno delle Miscele", x:68, z:-68 };
   const waypointDirection = objectiveWaypoint
@@ -2035,8 +2035,8 @@ export default function Amargenta3D({ onExit }) {
           <div style={{position:"absolute",left:"17%",top:"49%",width:"47%",height:7,background:"#c7a47a",transform:"rotate(-2deg)"}}/>
           <div style={{position:"absolute",left:"48%",top:"50%",width:"23%",height:6,background:"#c7a47a",transform:"rotate(24deg)"}}/>
           {[
-            ["Ingresso",-44,2,"#f1d18b"],["Piazza",0,0,"#e5b66b"],["Lina",-24,-31,"#d9d58b"],
-            ["Orma",-10,-19,"#c7a5df"],["Bruno",18,-7,"#78b6c1"],["Torrefazione",16,28,"#a64c36"],
+            ["Ingresso",-44,2,"#f1d18b"],["Piazza",0,0,"#e5b66b"],["Flame",-24,-31,"#d9d58b"],
+            ["Belligonghi-umami",-10,-19,"#c7a5df"],["Cardinero",18,-7,"#78b6c1"],["Torrefazione",16,28,"#a64c36"],
             ["Caffè",-22,-1,"#a64c36"],["Campana Ovest",-30,4,"#f0d28a"],["Campana Mercato",-2,18,"#f0d28a"],["Campana Est",16,-2,"#f0d28a"],["Cripta",-70,-43,"#d4b3ff"]
           ].map(([name,x,z,color])=><div key={name} title={name} style={{position:"absolute",left:Math.max(2,Math.min(98,(x+72)/144*100))+"%",top:Math.max(2,Math.min(98,(z+72)/144*100))+"%",width:8,height:8,borderRadius:8,background:color,border:"1px solid #33271f",transform:"translate(-50%,-50%)"}}/>)}
           <div style={{position:"absolute",left:Math.max(3,Math.min(97,(playerCoords.x+72)/144*100))+"%",top:Math.max(3,Math.min(97,(playerCoords.z+72)/144*100))+"%",width:12,height:12,borderRadius:12,background:"#fff",border:"3px solid #a64c36",boxShadow:"0 0 12px #fff",transform:"translate(-50%,-50%)"}}/>
@@ -2046,7 +2046,7 @@ export default function Amargenta3D({ onExit }) {
       </div>}
       {panel==="journal"&&<div style={{padding:14,borderRadius:12,background:"linear-gradient(145deg,#f3e5c8,#e6d2ad)",border:"2px solid #9b7950",boxShadow:"inset 0 0 0 4px #ffffff55",color:"#493522"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:8,borderBottom:"1px solid #9b795077",fontSize:10,letterSpacing:2,fontWeight:900,color:"#8a603c"}}><span>DIARIO DI VIAGGIO</span><span>PAGINA {journalPage+1} / 2</span></div>
-        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Parla con Lina, raccogli tre fave dorate e riportale alla coltivatrice."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Parla con Orma e recupera quattro pagine disperse in città."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Parla con Bruno e riattiva le tre valvole lungo il fiume."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Elia al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."]].slice(journalPage*3,journalPage*3+3).map(([name,started,count,total,done,desc],index)=><div key={name} style={{minHeight:112,padding:"12px 2px",borderBottom:"1px dashed #a98b65"}}>
+        {[["Le Fave d'Ambra",questStarted,questCount,3,questDone,"Aiuta Flame a controllare le piante e raccogli tre fave dorate."],["La Ricetta Perduta",recipeStarted,recipePages,4,recipeDone,"Aiuta Belligonghi-umami a ricomporre la ricetta perduta."],["Le Condotte Antiche",waterStarted,valves,3,waterDone,"Aiuta Cardinero a riattivare le tre condotte."],["Le campane del borgo",bellsStarted,bellCount,3,bellsDone,"Parla con Muccanza al Caffè delle Tre Foglie, risveglia le tre campane e torna da lui."]].slice(journalPage*3,journalPage*3+3).map(([name,started,count,total,done,desc],index)=><div key={name} style={{minHeight:112,padding:"12px 2px",borderBottom:"1px dashed #a98b65"}}>
           <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}><strong style={{fontFamily:"Georgia,serif",fontSize:15}}>{journalPage*3+index+1}. {name}</strong><span style={{fontSize:9,fontWeight:900,color:done?"#287345":"#94622e",whiteSpace:"nowrap"}}>{done?"COMPLETATA":started?count+"/"+total:"DA INIZIARE"}</span></div>
           <div style={{fontFamily:"Georgia,serif",fontSize:12,lineHeight:1.5,color:"#654c35",marginTop:7}}>{desc}</div>
           <div style={{marginTop:7,height:4,borderRadius:5,background:"#c8b18e",overflow:"hidden"}}><div style={{height:"100%",width:(done?100:started?Math.min(100,count/total*100):0)+"%",background:"#668052"}}/></div>
