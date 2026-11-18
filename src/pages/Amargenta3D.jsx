@@ -497,8 +497,7 @@ export default function Amargenta3D({ onExit }) {
       }};
       interactables.push(interaction);
       npcActors.push({group:g,phase:x*.13+z*.07,wild:true,legs,tailPivot,headPivot,ears,bodyPivot:{position:{y:0}},aroma,interaction,homeX:x,homeZ:z,roamRadius:1.8,walkSpeed:.32});
-      return g;
-    };
+      return g;    };
     // Flame #45: creatura ardente che diffonde nell'aria il profumo pungente del peperoncino.
     const makeFlame = () => {
       const g=new THREE.Group();scene.add(g);g.position.set(32,0,-28);
@@ -997,8 +996,7 @@ export default function Amargenta3D({ onExit }) {
       box(.78,.18,.78,stone,g,0,1.48,0);
       const light=sphere(.18,mat("#ffd58b",.2,{emissive:"#d58c35",emissiveIntensity:.65}),g,0,1.72,0,2);
       addCollider(x,z,.32);
-    };
-    const makeNoren = (x,z,color="#a64c36") => {
+    };    const makeNoren = (x,z,color="#a64c36") => {
       const fabric=mat(color,.95,{side:THREE.DoubleSide});
       for(let i=0;i<3;i++){const panel=box(.52,.88,.07,fabric,scene,x-.54+i*.54,2.35,z);panel.rotation.z=(i-1)*-.035;}
       box(1.8,.12,.14,wood,scene,x,2.85,z);
@@ -1285,7 +1283,8 @@ export default function Amargenta3D({ onExit }) {
       // La distribuzione è deterministica per mantenere identica la scena ad ogni caricamento.
       const meadowMats=["#e7c96f","#f1e6c2","#e99a9a","#d8b7e8","#f4a65e"].map(color=>mat(color,.82));
       const grassMats=["#718e50","#8da85d","#a5b96d","#587b49"].map(color=>mat(color,1));
-      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);\n      const flowerCenterMat=mat("#f7d56c",.72), flowerPetalMats=meadowMats;
+      const detailRock=mat("#a9a18b",.96), mushroomCap=mat("#d77b58",.8), mushroomStem=mat("#eee0c4",1);
+      const flowerCenterMat=mat("#f7d56c",.72), flowerPetalMats=meadowMats;
       const seeded=(n)=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
       for(let i=0;i<210;i++){
         const a=seeded(i+11)*Math.PI*2, r=13+seeded(i+91)*43;
@@ -1497,8 +1496,7 @@ export default function Amargenta3D({ onExit }) {
         sphere(.24,muzzle,g,0,.48,.34,2).scale.set(1.15,.72,.9);
         for(const side of [-1,1])sphere(.045,muzzle,g,side*.1,.31,.39,1);
         const collar=cylinder(.34,.34,.09,blue,g,0,1.28,.02,12);collar.rotation.x=Math.PI/2;
-        sphere(.18,blue,g,.62,.76,-.4,2);
-        const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
+        sphere(.18,blue,g,.62,.76,-.4,2);        const bucket=cylinder(.19,.24,.35,metal,g,-.58,.3,.22,10);
         const handle=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,6,16,Math.PI),metal);handle.position.set(-.58,.52,.22);g.add(handle);
         const interaction={id:"wild-lattelo-41",title:"Lattelo · Natura",text:"Un Lattelo selvatico ti osserva tra i filari.",x:42,z:38,radius:4.2,action:()=>{
           if(ownedAmargentaIdsRef.current.includes("lattelo")){setDialogue({title:"Lattelo",text:"Lattelo è già parte della tua collezione. Nessun doppione."});return;}
@@ -1997,8 +1995,7 @@ export default function Amargenta3D({ onExit }) {
         if(playerMotion.model){
           const idleBreath=Math.sin(clock.elapsedTime*2.1)*.018;
           const idleSway=Math.sin(clock.elapsedTime*1.05)*.012;
-          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10+idleBreath*(1-walkBlend);
-          playerMotion.model.scale.y=1+idleBreath*.32;
+          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10+idleBreath*(1-walkBlend);          playerMotion.model.scale.y=1+idleBreath*.32;
           playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend+idleSway*(1-walkBlend),7,dt);
           playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16+Math.sin(clock.elapsedTime*1.7+i)*.025*(1-walkBlend),9,dt);});
           playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
