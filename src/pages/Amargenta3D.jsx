@@ -279,6 +279,58 @@ export default function Amargenta3D({ onExit }) {
       if(berries) for(let i=0;i<18;i++){const a=i*2.399, rr=.52+(i%3)*.18; sphere(.09,coffeeRed,g,Math.cos(a)*rr,1.85+(i%5)*.24,Math.sin(a)*rr,2);}
       addCollider(x,z,.55*s);
     };
+    // Muccanza #42 — giovane fan umano del latte di Lattelo, con bottiglia e tazza da caffellatte.
+    const makeMuccanza = () => {
+      const g=new THREE.Group();scene.add(g);g.position.set(-28,0,-30);
+      const skin=mat("#d99b70"), hair=mat("#4b2d24"), shirt=mat("#f1e8d6"), shirtShade=mat("#d5c5a8");
+      const denim=mat("#344b64"), shoes=mat("#49352d"), milk=mat("#fff8e9",.28), blue=mat("#278ed0",.35), gold=mat("#e5b64f");
+      const torso=new THREE.Group();g.add(torso);
+      const body=sphere(.48,shirt,torso,0,1.15,0,2);body.scale.set(.9,1.12,.72);
+      // Maglia con un piccolo simbolo a goccia blu.
+      sphere(.19,blue,torso,0,1.2,.405,2).scale.set(.72,1.05,.24);
+      sphere(.075,milk,torso,0,1.24,.47,2);
+      const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,2.02,.04);
+      sphere(.43,skin,headPivot,0,.05,.08,2).scale.set(.95,1.08,.88);
+      const hairCap=sphere(.44,hair,headPivot,0,.31,-.015,2);hairCap.scale.set(1.04,.58,.95);
+      sphere(.22,hair,headPivot,-.29,.12,.05,1).scale.set(.65,1.1,.8);
+      sphere(.22,hair,headPivot,.29,.12,.05,1).scale.set(.65,1.1,.8);
+      const eyes=[];
+      for(const side of [-1,1]){
+        sphere(.095,milk,headPivot,side*.16,.08,.79,1);
+        sphere(.047,hair,headPivot,side*.16,.08,.835,1);
+        sphere(.025,mat("#ffffff"),headPivot,side*.14,.105,.86,1);
+      }
+      const smile=box(.16,.035,.025,hair,headPivot,0,-.14,.82);
+      const legs=[];
+      for(const side of [-1,1]){
+        const leg=new THREE.Group();g.add(leg);leg.position.set(side*.19,.68,0);
+        box(.22,.58,.24,denim,leg,0,-.28,0);
+        box(.3,.18,.4,shoes,leg,0,-.62,.1);
+        legs.push(leg);
+      }
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();g.add(arm);arm.position.set(side*.43,1.48,0);
+        box(.17,.52,.19,shirt,arm,0,-.24,0);
+        sphere(.12,skin,arm,0,-.53,.04,1);
+        arms.push(arm);
+      }
+      // Bottiglia del latte Lattelo nella mano sinistra, tazza di caffellatte nella destra.
+      const bottle=cylinder(.13,.16,.48,milk,g,-.65,.98,.16,12);
+      cylinder(.07,.075,.12,blue,g,-.65,1.28,.16,10);
+      const label=box(.2,.16,.025,blue,g,-.65,.98,.295);
+      const mug=cylinder(.13,.15,.22,shirt,g,.65,.91,.18,12);
+      cylinder(.125,.125,.025,mat("#7b4b2d"),g,.65,1.035,.18,12);
+      const handle=new THREE.Mesh(new THREE.TorusGeometry(.1,.025,7,14,Math.PI*1.6),shirt);
+      handle.position.set(.8,.93,.18);handle.rotation.z=Math.PI/2;g.add(handle);
+      const interaction={id:"recruit-muccanza",title:"Muccanza · Fan del Lattelo",text:"Muccanza è un fan sfegatato del latte di Lattelo. Lo beve sempre mischiato al caffè.",x:g.position.x,z:g.position.z,radius:4.1,action:()=>{
+        if(ownedAmargentaIdsRef.current.includes("muccanza")){setDialogue({title:"Muccanza",text:"Muccanza è già nella tua collezione."});return;}
+        setDialogue({title:"Incontro · Muccanza",text:"«Il latte di Lattelo è il migliore di tutta Amargenta! Vuoi assaggiare il mio caffellatte?» Muccanza sembra disposto a seguirti se condividi la sua passione.",confirm:()=>{recruitAmargenta("muccanza");setDialogue(null);}});
+      }};
+      interactables.push(interaction);
+      npcActors.push({group:g,phase:1.8,kind:"muccanza",leftArm:arms[0],rightArm:arms[1],headPivot,legs,homeX:-28,homeZ:-30});
+      return g;
+    };
     const makeZibelle = (x,z,index=0) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
       const fur=mat("#713b28"), furLight=mat("#9b5634"), furDark=mat("#48251d"), cream=mat("#f0c982"), innerEar=mat("#d88c62"), dark=mat("#241510"), eye=mat("#fff8e9"), coffee=mat("#b47a3c");
@@ -324,10 +376,23 @@ export default function Amargenta3D({ onExit }) {
       const bodyPivot=new THREE.Group();g.add(bodyPivot);
       const body=sphere(.62,coat,bodyPivot,0,.7,0,2);body.scale.set(1.28,.82,.82);
       const chest=sphere(.38,cream,bodyPivot,0,.53,.43,2);chest.scale.set(.9,.8,.6);
+      // Ciuffi e macchie del mantello: il profilo è più soffice e leggibile.
+      for(let i=0;i<9;i++){
+        const a=i*2.399, side=Math.cos(a), front=Math.sin(a);
+        const tuft=sphere(.16+(i%3)*.025,i%2?coatLight:cream,bodyPivot,side*.48,.72+(i%4)*.12,front*.34,1);
+        tuft.scale.set(1.25,.72,.82);
+      }
+      sphere(.12,coat,bodyPivot,-.42,.94,.39,1).scale.set(1.2,.7,.45);
+      sphere(.12,coat,bodyPivot,.42,.94,.39,1).scale.set(1.2,.7,.45);
       const headPivot=new THREE.Group();g.add(headPivot);headPivot.position.set(0,1.03,.48);
       const head=sphere(.43,coatLight,headPivot,0,.05,.12,2);head.scale.set(1.08,.9,1.05);
       const muzzle=sphere(.27,cream,headPivot,0,-.17,.48,2);muzzle.scale.set(1.2,.7,.85);
-      sphere(.09,nose,headPivot,0,-.12,.69,1);
+      sphere(.09,nose,headPivot,0,-.12,.69,2);
+      // Tartufo ampio e lucido, guance morbide e sopracciglia espressive.
+      sphere(.18,coatLight,headPivot,0,-.22,.49,2).scale.set(1.18,.55,.62);
+      for(const side of [-1,1]){
+        const brow=sphere(.105,coat,headPivot,side*.19,.28,.43,1);brow.scale.set(1.35,.48,.55);
+      }
       const ears=[];
       for(const side of [-1,1]){
         const ear=new THREE.Group();headPivot.add(ear);ear.position.set(side*.31,.31,-.02);ear.rotation.z=side*-.28;
@@ -404,9 +469,17 @@ export default function Amargenta3D({ onExit }) {
       }
       box(.15,.035,.025,dark,headPivot,0,-.12,.35);
       const flameTips=[];
-      for(let i=0;i<5;i++){
-        const tip=sphere(.19-i*.018,i%2?orange:gold,bodyPivot,(i-2)*.16,1.55+(i%2)*.12,-.02,1);
-        tip.scale.set(.48,1.7,.5);tip.rotation.z=(i-2)*-.18;flameTips.push(tip);
+      // Cresta a fiamma con punte affusolate e sfumature alternate.
+      for(let i=0;i<7;i++){
+        const tip=sphere(.2-i*.014,i%2?orange:gold,bodyPivot,(i-3)*.145,1.55+(i%2)*.13,-.02,2);
+        tip.scale.set(.48,1.95,.52);tip.rotation.z=(i-3)*-.2;flameTips.push(tip);
+      }
+      // Lingue di fuoco laterali, come piccole foglie incandescenti.
+      for(const side of [-1,1]){
+        const petal=sphere(.22,orange,bodyPivot,side*.42,1.26,-.03,2);
+        petal.scale.set(.48,1.65,.58);petal.rotation.z=side*-.55;
+        const inner=sphere(.11,gold,bodyPivot,side*.43,1.27,.12,1);
+        inner.scale.set(.5,1.45,.45);
       }
       const arms=[];
       for(const side of [-1,1]){
@@ -1316,8 +1389,8 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
         interactables.push(interaction);
       }
       // Solo i Sognatori esclusivi di Amargenta sono collocati in questa città.
-      // I personaggi dal #39 in giù restano nelle rispettive undici città.
-      makeRecruitableCreature("muccanza","Muccanza",-28,-30,["#eee6d2","#a77b4d","#49352b","#f8f2e5"],"bull");
+      // Muccanza è un Umano fan del latte di Lattelo: non una seconda mucca.
+      makeMuccanza();
       // Test di stabilità: una sola Zibelle selvatica attiva in città.
       makeZibelle(-43,-54,0);
       makeUmami();
@@ -1708,6 +1781,10 @@ const badge=sphere(.09,gold,g,0,1.12,.3,1);
               actor.leftArm.rotation.x=-.12+Math.sin(idle*.72)*.11;
               actor.rightArm.rotation.x=.12-Math.sin(idle*.72)*.11;
               actor.group.rotation.z=Math.sin(idle*.5)*.012;
+            }else if(actor.kind==="muccanza"){
+              actor.rightArm.rotation.x=-.72+Math.sin(idle*1.2)*.12;
+              actor.leftArm.rotation.x=.16+Math.sin(idle*.8)*.06;
+              actor.headPivot.rotation.z=Math.sin(idle*.7)*.045;
             }else if(actor.kind==="town-cook"){
               actor.rightArm.rotation.x=-.48+Math.sin(idle*1.65)*.2;
               actor.rightArm.rotation.z=.2+Math.sin(idle*1.65)*.06;
