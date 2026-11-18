@@ -6,19 +6,6 @@ import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
-const AMARGENTA_FIRST_DAY_QUESTIONS = [
-  {q:"Quando arrivi in un posto nuovo, cosa fai per primo?",a:[["Esploro e mi metto subito all'opera","flame"],["Osservo, annuso e studio l'ambiente","zibelle"],["Cerco gli altri e faccio amicizia","lattelo"]]},
-  {q:"Quale luogo ti attira di più?",a:[["Un campo pieno di peperoncini","flame"],["Una piantagione di caffè","zibelle"],["Un prato tranquillo con animali","lattelo"]]},
-  {q:"Come affronti un problema?",a:[["Con energia e coraggio","flame"],["Con attenzione e strategia","zibelle"],["Chiedendo aiuto e collaborando","lattelo"]]},
-  {q:"Quale attività ti dà più soddisfazione?",a:[["Coltivare qualcosa con le mie mani","flame"],["Creare una miscela perfetta","zibelle"],["Prendermi cura di qualcuno","lattelo"]]},
-  {q:"Scegli un momento della giornata.",a:[["Alba, quando tutto ricomincia","flame"],["Pomeriggio, con il profumo del caffè","zibelle"],["Tramonto, in compagnia","lattelo"]]},
-  {q:"Quale qualità ti rappresenta?",a:[["Determinazione","flame"],["Curiosità","zibelle"],["Gentilezza","lattelo"]]},
-  {q:"Se trovi un ingrediente raro?",a:[["Lo uso per creare qualcosa di nuovo","flame"],["Ne studio aroma e caratteristiche","zibelle"],["Lo condivido con il gruppo","lattelo"]]},
-  {q:"Come vorresti essere ricordato?",a:[["Come chi ha fatto fiorire Amargenta","flame"],["Come chi ha scoperto nuovi sapori","zibelle"],["Come un amico fidato","lattelo"]]},
-  {q:"Quale regalo sceglieresti?",a:[["Semi di peperoncino","flame"],["Chicchi di caffè profumati","zibelle"],["Una bottiglia di latte fresco","lattelo"]]},
-  {q:"Qual è il tuo modo di vivere Amargenta?",a:[["Con passione e iniziativa","flame"],["Con calma e curiosità","zibelle"],["Insieme agli altri Sognatori","lattelo"]]}
-];
-
 
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
@@ -31,11 +18,6 @@ export default function Amargenta3D({ onExit }) {
   const [zone, setZone] = useState("Ingresso di Amargenta");
   const [dialogue, setDialogue] = useState(null);
   const [nearby, setNearby] = useState(null);
-  const [firstDayDone,setFirstDayDone] = useState(()=>{try{return window.localStorage.getItem("sognatori:amargenta:first-day:v1")==="done";}catch{return false;}});
-  const [firstDayStep,setFirstDayStep] = useState(0);
-  const [firstDayAnswers,setFirstDayAnswers] = useState([]);
-  const [firstDayStarter,setFirstDayStarter] = useState("");
-
   const [ownedAmargentaIds, setOwnedAmargentaIds] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:amargenta:roster:v1") || "{}");
@@ -67,19 +49,6 @@ export default function Amargenta3D({ onExit }) {
     setAmargentaBoxIds((ids) => ids.includes(id) ? ids : [...ids, id]);
     setToast((AMARGENTA_ROSTER.find((s) => s.id === id)?.nome || "Il Sognatore") + " si è unito ad Amargenta!");
     return true;
-  };
-  const answerFirstDay = (starter) => {
-    const next=[...firstDayAnswers,starter];
-    setFirstDayAnswers(next);
-    if(firstDayStep+1<AMARGENTA_FIRST_DAY_QUESTIONS.length){setFirstDayStep(step=>step+1);return;}
-    const scores={flame:0,zibelle:0,lattelo:0};
-    next.forEach(id=>{scores[id]=(scores[id]||0)+1;});
-    const chosen=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
-    setFirstDayStarter(chosen);
-    setFirstDayDone(true);
-    try{window.localStorage.setItem("sognatori:amargenta:first-day:v1","done");}catch{}
-    recruitAmargenta(chosen);
-    setToast("Il tuo primo legame ad Amargenta: "+({flame:"Flame",zibelle:"Zibelle",lattelo:"Lattelo"}[chosen])+"!");
   };
   const moveAmargentaToParty = (id) => {
     if (!ownedAmargentaIds.includes(id) || amargentaPartyIds.includes(id) || amargentaPartyIds.length >= 4) return;
@@ -217,7 +186,7 @@ export default function Amargenta3D({ onExit }) {
     const keys = new Set();
     const clock = new THREE.Clock();
     const player = new THREE.Group();
-    const playerMotion = { sprite:null };
+    const playerMotion = { model:null, arms:[], feet:[] };
     const colliders = [];
     let jumpHeight = 0;
     let jumpVelocity = 0;
@@ -1675,31 +1644,105 @@ export default function Amargenta3D({ onExit }) {
         setInventory(old=>({...old,citrus:old.citrus+1}));
         setDialogue({title:"Raccolta di Agrumi",text:"Hai raccolto un agrume profumato dai giardini di Amargenta. Muccanza potrebbe scambiarlo con te."});
       },4.5);
-      // Protagonista Amargenta: Talpitrippa, fedele all'illustrazione originale.
-      // Sprite billboard: mantiene silhouette e dettagli senza deformazioni da arti procedurali.
-      const talpitrippaTexture = new THREE.TextureLoader().load("data:image/webp;base64,UklGRj4VAABXRUJQVlA4WAoAAAAQAAAAjwAAhQAAQUxQSCYHAAABoIb/nyE5+v2rejar5Gxbe7Zt27Zt27at6Gzb9t3eBWdzs6iq/+/FzO4l1f/O64iYAJTVOQCQP6gcsLKrBfXOoVq9B1a+9OJLrw/83+nmSy+7+NIOAE6qQwToWOhaTshLF1oEFSrAKhv9RQ0hhPER6sm43KzTQSqhaMLML3KCK9kTngC8rwDgmq+Z4oRq2P3RI4AYJ2jb74Ax7GOWSvK4NeBt8zIjycRcUx8faXOmeSzxWU9QZtw7bmTzIGeXoOUuJmYevlsOhVXOL/I+I3NXPrYwCqM8VmIf84/87lg4k8Sd8XafloA9HDpTs0keTzCwlLHnt6kgBslkH8ZUDmXXtL4wR8R/wMSSavpqEjhz0Pp9icg9VhFjBIPfC8ryBn5ridSj+W+WKcWPYGcBACId32gqEztnFiMKDy9TCfABE8ucdEwLxATgyA8/++fzjz7uZbkTvxMbil2OpI2JP8zVZICgeRwbaiobGXq3QFE6QObpWGyR/bq7Ag3gjmJB41lmPJuhfLoNTHDOeQ8cagH3bDYB8A7zvPUttXSM/94PZ0EN0zz5Hk2MfMOEAqe/QKqaoC95Axz27GJfjDbwBUjpnBzezcgT5riJsXyqf4yYBFI2vNDz2MKLteNWhvJRyalKB0w6XTswqHanDfrHNAYAKDD4k79VLeBfhQHinJt0F1JpgXYf0ypSNsBja1qp5Bxw5XNYatjQj6g2jJvOgoaHM9gQlq+ZIIP8ATaQ7OsQZwC87MxoBOeBBYLJf6UaoatNYkPxhxmx50G40ok0b/6PHXzeACezkUor9GkDPNq67KD+9+oQSLkEzWdF2qkcN6Url7hJtqWlqr8IylX4ndltCv/ebmGREvlB2E2DJWTkLVKUxwFXjU1qS4iXozTicNQ9NFfjL2eJLwkwxSfsU2sYeH9RK4X45pnGxj7aG/QWlNIBz/9JkxM7b5wTLjuPFZ8OTCbVry8+u5a5TmBQGh3DkshNgB810GzVy2Z0kpWg/ewuWh65NYq8/PSkmha3KDJD699qG9dEVk42vSHSdNWhB2RVYDiDbUz8qwbJSG6K5sXOvHAjzePoIqtph1ZBU074ICZaH8PIrL5gBfCDrD6thDey+qwS3pzoeMvl9LFWwavIaSztSzpmOZF8bulRtY6RT8JnIxgWon06MiPn5iDVPD7g8xEZclSPqnnDkA8Etb+SdZpGbS+Sj8xAhmgbI9+BywZoXnUHMqlt+nRWQMvQF2h75HN5eY9px/48MQF4317cwzARAY8l30rJNMmswAKjmGjZs8jLYbZnGWjaS81ZyaApD2UfTU99T0Ay8hiqvTSOH0lG0rTX15rMewv5iAzpodK8j6fKCE3fqXmMej98Jg4zv95H+yMfycZjBVZh5EMZLRW1Eh7OaHlWQnogF4fpRlcDX8hnDlZBSk9t7lwus3ZXQeCBKJDLHKyGY30uItM8laogHYNcIGj7l2pe4rbw+Uz7ZwX0frQ8XEY0L+knyFlaj/wnGhf5Q15AN9U0Zc9Bklf7GU+rGqap6yhkBXgsymRY0jHwGblCnK9NehiTYfx0EPIR1NewLKNZkZ0zeeec5CBFDdNvO90CS3/wwEgms1L34sjSOecATHIv/6L1PXdcMfccc8wxBeCKwo+/+ikvueZD9pGaYrSMZIo98Sw4AJDxJJi9o2P6qdddb5W3GGl+jCT528efPH3+qTvjf3sHQKR5DPnfj52d33SzElWpbPh20VQURSEDAJwDgNFMrFhNKYbw5zcHYOCy7bzAmR+8+8Q/1IYV0v8rx5904aWLOAfAF0XTA1+/8OLfrPJE8tarF0CTFwGA2o8kU4paWYzhl5VWX2Q+ALjhnkcf/5ExKicC/7njxMHtC2144sF/BGX1p0Dyj7deBXAxGYNWnvLMgzdvnWIK51v2PvFaTgzq5otggNud2FtlMcaoJDm3eAHgCw/Mv9CiC90Re2OMWhkppRgTG1692qILdSzQhP4LDwBXsoqT/vfcc88OOwr/2znvOtZfb/311xnGoKoVED9/790L1x9Ofo5655wbWP/zP/Y560NIdqUQQk94FfVTLLbY/M45EYxX5ws/6UJzHPnjdz/+QjLWq0WNfz9y/5orkGdbW9tkR5z0FW1OveHl404+6cRLRzx9a01EnHMTSJxD4yOefOzJJx/8IfbFeu0nxhg1K00ppX5CCIHkHsheRKQoUD/rV+w3NVTWJ00ppRBCiDr+NKWUNLFeQ30iyScOPeXcdWpNReG9z6exeF+4BXbYYquGv7PxK/c/cH8XB5zqtR8dKBv/+tnnn3/Gxueeftrps8HKhZdfbvnll1tuaQC4a1TnqFGjPjtojz33ffhvjvefR40eNapz1A7wwMZ7nHHUwZcej/qi8FImV/SL/r33RXN9DfULbrLxJptt8hJTgzGdA1y4ubW5ubnZY6BFrag5TGhWUDgg8g0AANA3AJ0BKpAAhgA+tUacSicjoqGzWcrA4BaJZADQylDdn2h9AkVpHPcDIftzeinbr89L51W+p+gB+mfW6/4GwScTvT2E6cj2W/7jvz+Y+UXzmH3jgv3O+v8Wem2yB+rR/teWDUN6aHo3N9i5y/E04YAG1ztxejA38l8g1ChZzgnOHH32eLhaF4wouTs/KaPibZASrsYj8kwPNC9S/S+LJn7pjDwOIZDHudh/Bx5a10t4bW40h4+aGhtmDGJciU/LEh8bbkabn/8JWT64SmS/MCSxPcutHe1fFX25DjkAsbbnR0EbaoevcW3JUiIuwq4pZYUNnFmLFbJdHXxB7zfmLs54zy34Kv1qp5ZmCYLI+2bhJP9kDyDQHvAu8/cndLta9N5tJComF8DKmep++cNr3PoKxtFJtt8GSzbKVSM6cufkVyw9mUstPAnA3iAzjgxZupa+9XwvvazoRMRmYpnYgEZZ3z37pBDnHHKiZfYL3Ql+mTvIcWHd07s5LrmATPb6anxmtROkLyDrvFHHdYO+C1sVAJ/or0vcPd1SifHbdXxIl0ebcGe9tysPAb6jPKn2j0Sl++95NFZ58oP2EF2UdzFhJEWhipYAAP78+EDjwqwvRP2Gt/FrXsnWVd23gmFS7MDW1aRZv3zdQhCJXWmPpBY+gF7ZDbF1zUIqm8QBvUfKBj39huEt6ihebpDVVGRF+f3umsiLZ8AbgPKD9oMgLjRX6Ziyfy6L050IO76QrJ+vUROi/8CIo+CjkJXEmYGY4V6MrDIlWnrVMcscUJzDDwAnlRjCa48/iSCH2mERIEfwIjrHH8YptGuk+yVQBbVxQuh1gAnISWbgdTkeuJFGpyGWBhtUm7O8pdh7l43yu356/Exb/7ABT8l/SrlBj1VYuG4Yl1OoZ1AGwgQwY1Tpa4PbUHm89r7dNRUevYrZeUFVO/WLUbUunDpaviQUXCfbS0jlEtmK9Caj5XED/sWe/camPxFaxkGpklaVNEE2htYgXOQUV+OicE0cjqPGVo6jeyoQR6A5qR/pgFdeiUaCXxDYntQE3ZZ/AbpxTPNUsdcDczUPe+JSrfWr0oRdA25ofkhPlvsEeQAoYClMkHx/Lis0Obotds+sAnC/floVAYaqbrwNlvgO03Rc8Fz4PK97ZCTFaNPf9e0B+IeMjZmRrEofFNajDt2ZvLjeSJMxxzEj4trME2GzLR7PMlvSNg78t8lQ0XcjY8WjSCDRCyMgjOkX+0nYzl1BN+R7j9T7hkbeVYu6cxbLkG11P9+mXHgUzGn+9OamCLA+GLjqjZFTyUf3H6Nc6PutNx9tUgxtqfKx0lakc78g2Q1FBxQhuLZHDZBlArXQaUDd+op6qdSZuN7dDX+z7USL6SYxxCBxiNhwWsDl2isT17ZyJcUkgkOISzb4WCskZnWB39D/yqKGfaEwmawZrFAiP23Bpo+rCJEoA3EOn9mkkF+nI2BLQwW+G97MF+Sn9AKQBSUmfWZmYXltat+ePcUhRc8I8IZPYEAJZFJLnpvZbJa/305rmgC3TXo7csQsXICIyKnvlfh9eTkksacdtA/33x/TRiBB9A1FM2LCZlCITnOY//ZiYO6ycBwqTWRDiG2hk6qShvSYr5WOTfkoQVzjsxJMzaLp545h9Id9PptLQIJs4NVQjGFKEel0pR9LUdgVfjUBKCvIpFYkb5RXqBw1T0hbfxTJTL7a7uz0DAflXH+X963urg4ega37sI79jQtnEzG0vr6sOB6jTYi2f6gqUgRS65jWf7zUYqB0unabpjDyBbl6MCsfGjFMf3lQMMc3HxOe6blgPkDXeNRkbBtcM7nxIyhxuLmB0hg6/bp0tde7j+J+1OTpX+ODtHkwSrU/m/K1MCyv9PsDEERhHTDJwjbtZLeXSAMsgl+qLrRUiX28wkdLcA5OUurZ2XGD8lFSTnVs6eg0F5Mr1EsboHhrqPOZz/MM6mRNhR9unlp6Bir9xVbGrWseUjTo2qAesKyr8BDM1NClOx+S2Svp8qTpE0M+phk8DcQejA5P6/BqcaBDtJc0tuJXulRKrQoj2EG6OThd/iyhqCmsywg5T9aKZcaZ+AaHUvBX4tl8P4Jm9+oYYdQdCuCXonxxDNsjlf9QSRpN+TdDwHdNSFysbgEQeZCC5nZzBDGyPgMUDyEEBOgyhG1Eqeh7hPnkebbpKGmvnktdDYE5bcNG2e1qPERtHe2uIj1c1fzgZW+bv9qMzNq5ePvh0tRdHtc2DBuJo7Jy5NzL529L1Ah6lkAUVtF07HclXitDNorUSyX8q0ISYJ6NIw/8JUJhkAcGcjt0WdZaGXB1BGgLDxhz6DYtDe9BJvH9ObpxS9+4obK+8DNNSU/45c0GIsXA7l+gg6AVvjhak4yZLtQh7wZgWgRXpVcxd89R24oDJlWghGM0EKw7L0926vjtA0+f26fmUewoPWF6ldMRBioGkd31VUju4+t57ZwbJpcbpocLkTBkh2VcX7hnVOFz8OzU9DRbuB3/JTwSvRx48UvKyn9jBundbxeMB3NfInylQqhqxgjLdb1riMS1EjCAbexLfYzjF506051HfpCzIeJV6jX3TXs8aPDs/h8k6e1tb+s0jqmzg8RZjH4tF7K7msvOgA1OBzXqTAyv71HZ8d5qNuS+o/Me2roXeXMjcPy8epO3bxQi+utfnXIw4UZdIhLci7W08qZTP+YYZLxyBD7Qd3e73gdNuLC76gcsqfeMhtK1qBvrgs69Y+zBDGTwMjbyaT7wov48xoPQYQICh1v4Vp5hQSXRvq95E2xrL/2vNp0uRLOhoxRpaHY/sxKBwdSx+vv6mHwcORLNNU0MUsHsZ5PKy28IVHEs+zmXFwDEBTE5UU/7p7sdaENLrxXiqZZNL6FDegTAc4rCQPmWrRc8nB4qj9OXWjBHzZliawWTOh7k2SKFmebyYAVZOIsbE4J1pm4ZkgNYCRo9VKAgIE5NV9u6fkTK0qpR5tptf4thB8D5tELy8Ej8p5NK4ZJWqdzXO5vVTTC6yQx4Hl5j6bN9YJUAUtZN043Dkcwq2pP7bkgACYVJuzabFQjZYXwc65grWFKrchxtpvvZRuh8q4yKCbpkLtmm1loc/wubLA+mWnoR7XjtT9ozDqPOwox5A05fBLJRMiYqLc3iyx4tnkhPt1wYAyqZIral/BjZPtLzcWogBLQkmcsq4dQ1Bi46dqsojSxcDOmn7eunTqYTARHyk+TQuyzkLjpr/Di3hZJ8gg9t9xL8FDAo3fW2FCQUB3MEq1g1irxob0mzlH+NOgmz8qnED5G/pc257xp8qvtt/3yEzLCuABAjZvVr5bvaTdAEs5dFHb6McN67PVovfDvQGrUTFJLMgX2cKn/r7EgSB5md8GaeCIWlS7qrPPmiKJNWpxohIUPszn3by0UXe5dWMpaPRtbK4Oyt8PRbjqew2/T0JAP/aUU6nngv62KR42j4fLiWeLVUdfIZ9yih4OFLdny6hdcBsgFiSQU/0HPFWOtQAVjmGtNdZ52MeRfiWAEyD3bUSQTIebeqLTPMWsyFOSL59+QA1ICJlajhYabbvd9xaqII6JiRgGb/ozQmQbPRz8zmKuiVKvnmbySuNDWreDsUv8ShqoaAjxjHIAb7vYS3nwfGRqgYKeapKildHl/fF7Z7Bb6WejyWlWvp3nEIRlN71XAcTLLabhaP1f5TIO9kSJxfMGAEmpcQA7ShNb/oDEdsur2bz5+2S5VTluGRyHe78eFrObkVILinNlW2FInBwwZRTZccmEse5aoYK4yF5H1/fgIPa7SdZ2sODkUx2g8SQdhspc+MSLBqkINKXE8iwC8cyktrn3zaaCU6NBOK3BeK9lD3kA6J/vQx6P0rXN+tKvIbT2YbU4QM4cSbfqX8onQtpgW6WtnUNTOO5/Hzdp3FGideJCKbgryZ4zES1+SmpSe5Rh0GtHVvdXhfSmdu8H7O04LnRHKrD80gZ1wl/4PDohaJtE6xLlyVceHfEFSgd3p66My0sFLUDdLkQbwV/zJPXn1o07hLYP4I0b81dcIctPW8KTSMwFSs5N/LSvpksWVn5XprAoTx2siIou6i/m6u6hCAC45OyBWlqJGgeZZGq+5c3+pWt8NkZD8hhSwlxFxR39hfChsvJ8jVS3IMKxPVgziRkPyTmUC064JSegnLTjm7kJbUAAbcATjSTifhhZeXWVpNObDVn4JhMKz6ZqyE6rp060xYzEa1SidewnBbu+ktCFMTWmJB4gsqeP3OwRKV0YqHbh+2AJKDtwsYyIx0mwWShLxnV23UX1OhklH1gZdv05pAGwZ0760J3j6k2MstFB2YLgCDom0ltROoYVE5bk+AVgYvzVxfeZFkTL4yPSC/iPGfjKONkrnlDjFItrA6a7QMhv7qh9tUq+A9LNDjH4jy06i4DJ7/M0HV2bVMaanYz//RElYEEsjNjbTg5VdArT52G4csqFL3aNtB8lT5sBldoufX5muB/USS+duLTpctTOUKp57arP+I7RhShVHHfSmhNPLiIovPIdP/LM2rmqZnOy1H+xxiBkdgRbVj+H+xAql7YUg1FmOz5560nJC1WdqJDe+aIX7lx+Us4uae6Cb53BYntcMDQedwkfc66Fcqm8kUhkaOBymwimj056gbttq4tjBWHp0+dlmIUfi7TFIKoDkqqzj8aMopl5UCKqmB04XomVoqvuo/znSNAc8mlFzO3/OlhCf8vnFVUMv89/bn7Yv/9DnrOhJQ2lOlZOldVTZ2uw4yMLReOgAAAA==");
-      talpitrippaTexture.colorSpace = THREE.SRGBColorSpace;
-      talpitrippaTexture.magFilter = THREE.NearestFilter;
-      talpitrippaTexture.minFilter = THREE.LinearMipmapLinearFilter;
-      talpitrippaTexture.generateMipmaps = true;
-      const talpitrippaMaterial = new THREE.SpriteMaterial({
-        map: talpitrippaTexture, transparent: true, alphaTest: 0.025,
-        depthWrite: false, sizeAttenuation: true
-      });
-      const talpitrippaSprite = new THREE.Sprite(talpitrippaMaterial);
-      talpitrippaSprite.scale.set(2.85, 2.65, 1);
-      talpitrippaSprite.position.set(0, 1.34, 0);
-      talpitrippaSprite.renderOrder = 4;
-      player.add(talpitrippaSprite);
-      playerMotion.sprite = talpitrippaSprite;
-      // Ombra morbida separata: il personaggio resta leggibile sul terreno.
+      // TALPITRIPPA 3D — modello volumetrico originale, non billboard.
+      // Proporzioni: corpo tozzo, testa ampia, ventre crema, naso rosa, baffi dorati e artigli.
+      const talpitrippa = new THREE.Group();
+      const makePixelFur = (base, palette, seed=7) => {
+        const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+        const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
+        ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
+        let v=seed;const rand=()=>{v=(v*16807)%2147483647;return(v-1)/2147483646;};
+        for(let i=0;i<2100;i++){
+          const x=Math.floor(rand()*64)*4,y=Math.floor(rand()*64)*4;
+          ctx.globalAlpha=.22+rand()*.42;ctx.fillStyle=palette[Math.floor(rand()*palette.length)];
+          const s=2+Math.floor(rand()*2)*2;ctx.fillRect(x,y,s,s);
+        }
+        ctx.globalAlpha=1;
+        const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+        tex.magFilter=THREE.NearestFilter;tex.minFilter=THREE.NearestMipmapLinearFilter;tex.generateMipmaps=true;
+        return tex;
+      };
+      const furTex=makePixelFur("#382437",["#513449","#68465b","#241a2c","#7a5266","#30202f"],11);
+      const bellyTex=makePixelFur("#f4d58a",["#ffe9a8","#e9bd69","#fff0bd","#dcae62"],23);
+      const furMat=new THREE.MeshStandardMaterial({map:furTex,color:"#ffffff",roughness:1});
+      const bellyMat=new THREE.MeshStandardMaterial({map:bellyTex,color:"#ffffff",roughness:1});
+      const darkFur=mat("#30202f"), pawFur=mat("#493044"), clawMat=mat("#ffe09a",.62), noseMat=mat("#ef6672",.34);
+      const eyeMat=new THREE.MeshPhysicalMaterial({color:"#08070c",roughness:.08,clearcoat:1,clearcoatRoughness:.03});
+      const eyeGlint= new THREE.MeshBasicMaterial({color:"#ffffff"});
+      const whiskerMat=mat("#f3c66e",.52,{metalness:.08});
+      const ellipsoid=(parent,material,pos,scale,segments=32)=>{
+        const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,segments,Math.max(16,Math.floor(segments*.7))),material);
+        mesh.position.set(...pos);mesh.scale.set(...scale);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+      };
+      // Massa principale e testa: forme sovrapposte con raccordo morbido.
+      ellipsoid(talpitrippa,furMat,[0,1.03,0],[.88,1.02,.72],48);
+      ellipsoid(talpitrippa,furMat,[0,2.02,.02],[.82,.79,.70],48);
+      // Ventre chiaro in primo piano.
+      ellipsoid(talpitrippa,bellyMat,[0,1.10,.575],[.62,.72,.205],40);
+      // Guance e muso.
+      ellipsoid(talpitrippa,darkFur,[-.43,1.99,.51],[.25,.20,.18],28);
+      ellipsoid(talpitrippa,darkFur,[.43,1.99,.51],[.25,.20,.18],28);
+      // Occhi neri lucidi con riflessi.
+      for(const side of [-1,1]){
+        ellipsoid(talpitrippa,eyeMat,[side*.285,2.28,.625],[.145,.19,.095],32);
+        ellipsoid(talpitrippa,eyeGlint,[side*.325,2.355,.708],[.045,.052,.018],16);
+        ellipsoid(talpitrippa,eyeGlint,[side*.245,2.24,.713],[.018,.022,.012],12);
+      }
+      // Naso rosa prominente, con luce superiore.
+      ellipsoid(talpitrippa,noseMat,[0,2.04,.77],[.265,.225,.17],40);
+      ellipsoid(talpitrippa,new THREE.MeshBasicMaterial({color:"#ffb0a5"}),[-.075,2.145,.91],[.105,.045,.018],20);
+      // Baffi dorati a ciuffi curvi, su entrambi i lati del muso.
+      const whiskerCurve=(points,r=.025)=>{
+        const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+        const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,16,r,7,false),whiskerMat);
+        mesh.castShadow=true;talpitrippa.add(mesh);
+      };
+      for(const side of [-1,1]){
+        for(let j=0;j<3;j++){
+          const y=2.03+(j-1)*.105;
+          whiskerCurve([[side*.18,y,.79],[side*.42,y+(j-1)*.055,.83],[side*.67,y+(j-1)*.12,.76]],.027);
+        }
+      }
+      // Braccia corte e zampe anteriori appoggiate al ventre.
+      const arms=[];
+      for(const side of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(side*.57,1.32,.24);talpitrippa.add(arm);arms.push(arm);
+        ellipsoid(arm,furMat,[0,0,0],[.28,.48,.30],32);
+        ellipsoid(arm,pawFur,[0,-.30,.12],[.22,.19,.22],24);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.065,.22,12),clawMat);
+          claw.position.set(k*.115,-.43,.28);claw.rotation.x=-.48;claw.rotation.z=-k*.12;claw.castShadow=true;arm.add(claw);
+        }
+      }
+      // Piedi larghi, con tre unghiette ciascuno.
+      const feet=[];
+      for(const side of [-1,1]){
+        const foot=new THREE.Group();foot.position.set(side*.43,.19,.17);talpitrippa.add(foot);feet.push(foot);
+        ellipsoid(foot,pawFur,[0,0,.06],[.39,.20,.43],32);
+        for(let k=-1;k<=1;k++){
+          const claw=new THREE.Mesh(new THREE.ConeGeometry(.085,.25,12),clawMat);
+          claw.position.set(k*.19,-.015,.39);claw.rotation.x=-.58;claw.rotation.z=-k*.16;claw.castShadow=true;foot.add(claw);
+        }
+      }
+      // Piccole ciocche in rilievo lungo la silhouette per evitare l'effetto gommoso.
+      for(let i=0;i<17;i++){
+        const a=(i/17)*Math.PI*2;
+        const tuft=ellipsoid(talpitrippa,darkFur,[Math.cos(a)*.76,1.45+Math.sin(a)*.68,Math.sin(a)*.52],[.075,.12,.07],12);
+        tuft.rotation.z=-Math.cos(a)*.35;
+      }
+      talpitrippa.position.set(0,0,0);
+      talpitrippa.rotation.y=Math.PI;
+      player.add(talpitrippa);
+      playerMotion.model=talpitrippa;
+      playerMotion.arms=arms;
+      playerMotion.feet=feet;
       const talpitrippaShadow = new THREE.Mesh(
-        new THREE.CircleGeometry(0.78, 32),
-        new THREE.MeshBasicMaterial({ color: "#211b20", transparent: true, opacity: 0.28, depthWrite: false })
+        new THREE.CircleGeometry(.78,32),
+        new THREE.MeshBasicMaterial({color:"#211b20",transparent:true,opacity:.28,depthWrite:false})
       );
-      talpitrippaShadow.rotation.x = -Math.PI / 2;
-      talpitrippaShadow.position.set(-44, 0.035, 2);
-      talpitrippaShadow.scale.set(1.25, 0.62, 1);
+      talpitrippaShadow.rotation.x=-Math.PI/2;
+      talpitrippaShadow.position.set(-44,.035,2);
+      talpitrippaShadow.scale.set(1.25,.62,1);
       scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
 
@@ -1792,15 +1835,15 @@ export default function Amargenta3D({ onExit }) {
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
           yaw+=yawDelta*(1-Math.exp(-2.1*dt));
         }
-        // Animazione leggera dello sprite: passo elastico senza stirare la grafica originale.
+        // Ciclo di movimento del modello 3D: rimbalzo del corpo e alternanza di braccia/piedi.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
         const gait=clock.elapsedTime*(sprint?10.5:7.8);
-        const stepBounce=Math.abs(Math.sin(gait))*.075*walkBlend;
-        if(playerMotion.sprite){
-          playerMotion.sprite.position.y=1.34+stepBounce+(jumpHeight>0?jumpHeight*.10:0);
-          playerMotion.sprite.material.rotation=THREE.MathUtils.damp(
-            playerMotion.sprite.material.rotation, -activeSide*.035*walkBlend, 7, dt
-          );
+        const step=Math.sin(gait)*walkBlend;
+        if(playerMotion.model){
+          playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10;
+          playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend,7,dt);
+          playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16,9,dt);});
+          playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
         }
         player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
@@ -2076,18 +2119,6 @@ export default function Amargenta3D({ onExit }) {
         {[[ "Fave d'Ambra",inventory.amberBeans,"☕",["Peperoncini",inventory.peppers,"🌶️"],["Tartufi",inventory.truffles,"🍄"],["Latte imbottigliato",inventory.milk,"🥛"],["Chicchi di caffè",inventory.coffeeBeans,"🫘"]],["Frammenti di ricetta",inventory.recipeFragments,"📜"],["Cristalli d'acqua",inventory.waterCrystals,"💧"],["Agrumi",inventory.citrus,"🍊"],["Miscele d'Autore",inventory.coffeeBlend,"☕"],["Tisane del Retrogusto",inventory.herbalTea,"🍵"],["Reliquie",inventory.relics,"✦"]].map(([name,count,emoji])=><div key={name} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #ffffff18"}}><span>{emoji} {name}</span><strong>{count}</strong></div>)}
         <div style={{marginTop:10,color:"#d7c5a5"}}>Le risorse e i progressi vengono salvati su questo dispositivo.</div>
       </div>}
-    </div>}
-    {!firstDayDone&&<div role="dialog" aria-modal="true" style={{position:"absolute",inset:0,zIndex:60,display:"grid",placeItems:"center",padding:20,background:"rgba(12,22,18,.88)",backdropFilter:"blur(10px)"}}>
-      <div style={{width:"min(620px,100%)",maxHeight:"90vh",overflowY:"auto",padding:24,borderRadius:22,background:"linear-gradient(145deg,#f2e4c8,#d9c39c)",border:"2px solid #b58a55",color:"#493522",boxShadow:"0 25px 90px #000b"}}>
-        <div style={{fontSize:10,letterSpacing:3,fontWeight:900,color:"#94683c"}}>AMARGENTA · GIORNO 1</div>
-        <div style={{fontFamily:"Georgia,serif",fontSize:27,fontWeight:900,margin:"8px 0"}}>{firstDayStep===0?"Benvenuto ad Amargenta!":"Scopriamo che Sognatore sei"}</div>
-        <div style={{fontSize:13,lineHeight:1.6,marginBottom:16}}>{firstDayStep===0?"I Sognatori ti hanno trovato all'ingresso. Prima di accoglierti nella comunità vogliono conoscerti: rispondi a dieci domande e scopri con chi stringerai il tuo primo legame.":"Domanda "+(firstDayStep+1)+" di 10 · Scegli la risposta che ti rappresenta di più."}</div>
-        {firstDayStep===0&&<div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>{[["Flame","#ed4b24"],["Zibelle","#713b28"],["Lattelo","#ffd92e"]].map(([n,c])=><span key={n} style={{padding:"5px 10px",borderRadius:20,background:c,color:"#fff",fontWeight:900,fontSize:11}}>{n}</span>)}</div>}
-        <div style={{fontSize:18,fontWeight:900,marginBottom:12}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].q}</div>
-        <div style={{display:"grid",gap:9}}>{AMARGENTA_FIRST_DAY_QUESTIONS[firstDayStep].a.map(([label,id])=><button key={id} onClick={()=>answerFirstDay(id)} style={{textAlign:"left",padding:"13px 15px",borderRadius:12,border:"1px solid #a9855b",background:"#fff8e8",color:"#493522",fontWeight:800,cursor:"pointer"}}>{label}</button>)}</div>
-        <div style={{marginTop:15,height:6,borderRadius:9,background:"#c8b18e",overflow:"hidden"}}><div style={{height:"100%",width:((firstDayStep+1)/10*100)+"%",background:"#68824e",transition:"width .2s"}}/></div>
-        <div style={{marginTop:7,fontSize:10,color:"#806344",fontWeight:800}}>DOMANDA {firstDayStep+1}/10</div>
-      </div>
     </div>}
     {latteloBattleOpen&&<AdventureBattle
       opponentName="Lattelo"
