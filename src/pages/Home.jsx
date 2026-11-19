@@ -10,7 +10,7 @@ import ArcadeWorld from "@/components/game/ArcadeWorld";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase/client";
-import { ROSTER } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AVVENTURA } from "@/lib/sognatoriData";
 import { ADVENTURE_CITIES } from "@/lib/adventureCampaignData";
 
 export default function Home() {
@@ -50,14 +50,16 @@ export default function Home() {
   const adventureCityCount = adventureSave.completedCities.filter((id) =>
     STANDARD_ADVENTURE_CITIES.some((city) => city.id === id)
   ).length;
+  // La Missione 6 considera soltanto i 39 Sognatori dell’Avventura standard.
+  // Amargenta (40-54) e Arabnite (55-64) restano escluse.
   const adventureBondCount = adventureSave.ownedIds.filter((id) =>
-    ROSTER.some((s) => s.id === id)
+    ROSTER_AVVENTURA.some((s) => s.id === id)
   ).length;
   const adventureDefeatedLeaderCount = new Set(
     adventureSave.conqueredLeaders.filter((id) => STANDARD_ADVENTURE_CITIES.some((city) => city.id === id))
   ).size;
   const mission5Complete = adventureDefeatedLeaderCount === STANDARD_ADVENTURE_CITIES.length;
-  const mission6Complete = ROSTER.length > 0 && adventureBondCount === ROSTER.length;
+  const mission6Complete = ROSTER_AVVENTURA.length > 0 && adventureBondCount === ROSTER_AVVENTURA.length;
 
   const groupedLog = (entries) => {
     const groups = [];
@@ -649,8 +651,8 @@ export default function Home() {
               </div>
               <h2 className="text-xl font-black text-white">{lang === "en" ? "Unbreakable Bonds" : "Legami indissolubili"}</h2>
               <p className="text-sm text-slate-300 mt-1">{lang === "en" ? "Bond with every Dreamer in Adventure mode." : "Stringi un legame con ogni Sognatore presente nell'Avventura."}</p>
-              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Bonds formed" : "Legami stretti"}</span><span className="text-amber-300">{adventureBondCount}/{ROSTER.length}</span></div>
-              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-300 transition-all" style={{ width: `${ROSTER.length ? adventureBondCount / ROSTER.length * 100 : 0}%` }} /></div>
+              <div className="mt-4 flex justify-between text-xs font-bold"><span className="text-slate-300">{lang === "en" ? "Bonds formed" : "Legami stretti"}</span><span className="text-amber-300">{adventureBondCount}/{ROSTER_AVVENTURA.length}</span></div>
+              <div className="h-3 mt-2 rounded-full bg-black/40 overflow-hidden border border-white/10"><div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-300 transition-all" style={{ width: `${ROSTER_AVVENTURA.length ? adventureBondCount / ROSTER_AVVENTURA.length * 100 : 0}%` }} /></div>
               <div className="mt-4 border-t border-white/10 pt-3 space-y-2">
                 <div className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">{lang === "en" ? "Lore rewards" : "Ricompensa · Lore"}</div>
                 <div className="rounded-xl bg-black/25 p-3"><b className="text-sm text-white">Ginza</b><p className="mt-1 text-xs leading-5 text-slate-300">{mission6Complete ? "Ginza è una ballerina che girovaga per tutte le città, allestendo spettacoli anche con maschere e marionette." : (lang === "en" ? "Lore entry locked: complete the mission to unlock it." : "Voce di Lore bloccata: completa la missione per sbloccarla.")}</p></div>
