@@ -237,11 +237,17 @@ function Amargenta3DContent({ onExit }) {
   const dungeonBossDefeatedRef = useRef(Boolean(savedProgress.dungeonBossDefeated));
   const zoneRef = useRef("Ingresso di Amargenta");
   const controlsLockedRef = useRef(false);
+  const menuOpenRef = useRef(false);
 
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
-    controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
-  }, [dialogue, panel, dungeonBattleOpen]);
+    menuOpenRef.current = Boolean(menuOpen);
+    controlsLockedRef.current = Boolean(menuOpen || dialogue || panel || dungeonBattleOpen);
+    if (menuOpen) {
+      touchStickRef.current = { x: 0, y: 0 };
+      setTouchStick({ x: 0, y: 0 });
+    }
+  }, [menuOpen, dialogue, panel, dungeonBattleOpen]);
   useEffect(() => {
     arabniteCollectionRef.current = arabniteCollection;
     try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); }
@@ -2574,7 +2580,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         if(document.hidden)return;
-        const dt=Math.min(clock.getDelta(),.04);
+        if(menuOpenRef.current){
+           keys.clear();
+           renderer.render(arabniteActive?arabniteScene:scene,camera);
+           return;
+         }
+         const dt=Math.min(clock.getDelta(),.04);
         if(clock.elapsedTime-lastSessionSave>1.5){lastSessionSave=clock.elapsedTime;saveCurrentWorld();}
         if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
          const piocinoFlying=characterState.active==="piocino"&&keys.has("Space");
