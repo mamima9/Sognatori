@@ -964,7 +964,8 @@ function Amargenta3DContent({ onExit }) {
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
       // In Arabnite i sette Sognatori principali non usano più modelli 3D: restano attive le interazioni e i collider.
-      if (["Biglia","Brama","Lumen","Ponce","Sanlegno","Trix","Vudele"].includes(name)) g.visible=false;
+      if (["Biglia","Brama","Ponce","Sanlegno","Vudele","Lumen","Trix"].includes(name)) g.visible=false;
+      g.userData.npcName=name;
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
       if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
       return g;
@@ -1695,7 +1696,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
                 if(pixel==="1"){
                   box(.088,.088,.055,arabGold,g,
                     left+index*(5*cell+letterGap)+col*cell+.044,
-                    9.05+(3-row)*cell,
+                    3.55+(3-row)*cell,
                     .72);
                 }
               });
@@ -1708,7 +1709,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeSpyroPortal(67,2,-Math.PI/2,"Arabnite");
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
-        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="talpitrippa";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · Talpitrippa attivo per prova");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
         setWorldTransition("amargenta");controlsLockedRef.current=true;
@@ -1720,7 +1721,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(Boolean(arabniteActive)===toArabnite)return;
         setWorldTransition(toArabnite?"arabnite":"amargenta");controlsLockedRef.current=true;
         window.setTimeout(()=>{
-          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;setToast("Arabnite · sei arrivato accanto al portale");}
+          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="talpitrippa";switchCharacter();player.position.set(178,0,12);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;setToast("Arabnite · Talpitrippa attivo per prova");}
           else{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;setToast("Sei tornato ad Amargenta");}
           movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);
         },950);
@@ -2495,6 +2496,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
+          const npcName=actor.group.userData.npcName;
+          if(npcName==="Lumen"||npcName==="Trix") actor.group.visible=period===3;
           const idle=clock.elapsedTime*1.7+actor.phase;
           if(actor.wild){
             const t=clock.elapsedTime*actor.walkSpeed+actor.phase;
