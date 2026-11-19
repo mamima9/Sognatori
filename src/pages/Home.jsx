@@ -310,27 +310,16 @@ export default function Home() {
                 );
               })()}
 
-              {/* MONDI 3D PRIVATI — accesso riservato a Bibito */}
+              {/* Arabnite è pubblico; Amargenta resta riservata agli sviluppatori. */}
               <div className="w-full flex flex-wrap justify-center gap-3 mt-1">
-                {isDev ? (
-                  <>
-                    <Link to="/amargenta-3d" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-200/30 font-black text-base shadow-lg shadow-emerald-900/30 hover:brightness-110 transition">
-                      🌿 AMARGENTA
-                    </Link>
-                    <Link to="/amargenta-3d?world=arabnite" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-gradient-to-r from-violet-700 to-indigo-600 border border-violet-200/30 font-black text-base shadow-lg shadow-indigo-900/30 hover:brightness-110 transition">
-                      ✨ ARABNITE
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" disabled aria-disabled="true" title="Accesso riservato a Bibito" className="px-7 py-3.5 rounded-full bg-slate-800/80 border border-white/10 text-slate-500 font-black text-base cursor-not-allowed">
-                      🔒 AMARGENTA
-                    </button>
-                    <button type="button" disabled aria-disabled="true" title="Accesso riservato a Bibito" className="px-7 py-3.5 rounded-full bg-slate-800/80 border border-white/10 text-slate-500 font-black text-base cursor-not-allowed">
-                      🔒 ARABNITE
-                    </button>
-                  </>
+                {isDev && (
+                  <Link to="/amargenta-3d" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-200/30 font-black text-base shadow-lg shadow-emerald-900/30 hover:brightness-110 transition">
+                    🌿 AMARGENTA
+                  </Link>
                 )}
+                <Link to="/amargenta-3d?world=arabnite" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-gradient-to-r from-violet-700 to-indigo-600 border border-violet-200/30 font-black text-base shadow-lg shadow-indigo-900/30 hover:brightness-110 transition">
+                  ✨ ARABNITE
+                </Link>
               </div>
 
               {/* MULTIPLAYER */}
