@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -30,6 +30,9 @@ import TelegramAuthGate from '@/components/TelegramAuthGate';
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const location = useLocation();
+  // Arabnite è pubblica; Amargenta resta riservata all'account sviluppatore.
+  const isArabnitePublicEntry = new URLSearchParams(location.search).get("world") === "arabnite";
   // I due mondi 3D sono riservati esclusivamente all'account Bibito.
   const canAccessAmargenta3D = String(user?.user_metadata?.username || "").trim().toLowerCase() === "bibito";
   const { lang, setLang, t } = useLanguage();
@@ -67,7 +70,7 @@ const AuthenticatedApp = () => {
            <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="/avventura" element={<Avventura />} />
-        <Route path="/amargenta-3d" element={canAccessAmargenta3D ? <Amargenta3D /> : (
+        <Route path="/amargenta-3d" element={isArabnitePublicEntry || canAccessAmargenta3D ? <Amargenta3D /> : (
           <div className="min-h-screen flex items-center justify-center bg-[#18221e] text-[#f4ead8] p-6">
             <div className="max-w-md text-center rounded-2xl border border-[#d8b77d66] bg-[#243229] p-8 shadow-2xl">
               <div className="text-4xl mb-4">🔒</div>
