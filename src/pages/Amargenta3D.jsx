@@ -1669,20 +1669,36 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
         const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
         sphere(.24,gem,g,0,8.05,.35,2);
-        // Nome della destinazione al centro del nucleo del portale, come inciso nella luce.
+        // Scritta costruita con piccoli blocchi 3D: niente canvas, texture o Sprite.
         if(worldName){
-          const signCanvas=document.createElement("canvas");signCanvas.width=1024;signCanvas.height=256;
-          const signCtx=signCanvas.getContext("2d");
-          signCtx.clearRect(0,0,1024,256);
-          signCtx.font="900 116px Georgia, serif";signCtx.textAlign="center";signCtx.textBaseline="middle";
-          signCtx.lineJoin="round";signCtx.lineWidth=22;signCtx.strokeStyle="#34251d";
-          signCtx.shadowColor="#ffe08a";signCtx.shadowBlur=28;
-          signCtx.strokeText(worldName.toUpperCase(),512,128);
-          signCtx.fillStyle="#fff4c8";signCtx.fillText(worldName.toUpperCase(),512,128);
-          signCtx.shadowBlur=0;signCtx.lineWidth=5;signCtx.strokeStyle="#b98235";signCtx.strokeText(worldName.toUpperCase(),512,128);
-          const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;
-          const signMaterial=new THREE.SpriteMaterial({map:signTexture,transparent:true,depthTest:false,depthWrite:false});
-          const sign=new THREE.Sprite(signMaterial);sign.position.set(0,3.55,.72);sign.scale.set(5.4,1.35,1);g.add(sign);
+          const glyphs={
+            A:["01110","10001","10001","11111","10001","10001","10001"],
+            B:["11110","10001","10001","11110","10001","10001","11110"],
+            E:["11111","10000","10000","11110","10000","10000","11111"],
+            G:["01111","10000","10000","10111","10001","10001","01111"],
+            I:["11111","00100","00100","00100","00100","00100","11111"],
+            M:["10001","11011","10101","10101","10001","10001","10001"],
+            N:["10001","11001","10101","10011","10001","10001","10001"],
+            R:["11110","10001","10001","11110","10100","10010","10001"],
+            T:["11111","00100","00100","00100","00100","00100","00100"]
+          };
+          const letters=worldName.toUpperCase().split("");
+          const cell=.105, letterGap=.13, totalWidth=letters.length*(5*cell+letterGap)-letterGap;
+          const left=-totalWidth/2;
+          letters.forEach((letter,index)=>{
+            const pattern=glyphs[letter];
+            if(!pattern)return;
+            pattern.forEach((line,row)=>{
+              [...line].forEach((pixel,col)=>{
+                if(pixel==="1"){
+                  box(.088,.088,.055,arabGold,g,
+                    left+index*(5*cell+letterGap)+col*cell+.044,
+                    3.55+(3-row)*cell,
+                    .72);
+                }
+              });
+            });
+          });
         }
         arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
         return g;
