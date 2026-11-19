@@ -274,6 +274,7 @@ function Amargenta3DContent({ onExit }) {
     const ambientCreatures = [];
     const harvestableTrees = [];
     const candyShots = [];
+    const arabniteCandyTargets = [];
     let climbHeight = 0;
     let climbingWall = null;
     let arabniteActive = false;
@@ -1923,6 +1924,15 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         },3.1);
       };
       [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
+      [[174,-28],[216,-18],[224,30],[151,39],[185,55]].forEach(([x,z],index)=>{
+        const jar=new THREE.Group();arabniteWorld.add(jar);jar.position.set(x,0,z);
+        const glass=mat("#e8b4dc",.24,{transparent:true,opacity:.82,roughness:.25});
+        cylinder(.32,.38,.72,glass,jar,0,.42,0,10);
+        cylinder(.38,.38,.12,mat("#f2c66d"),jar,0,.82,0,10);
+        const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(index%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
+        arabniteCandyTargets.push({group:jar,x,z,active:true});
+      });
       arabniteReady=true;
       } catch(error) {
         arabniteReady=false;
@@ -2557,6 +2567,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           const tree=harvestableTrees.find(t=>t.berries.length&&!t.harvested&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<2.4&&shot.mesh.position.y<5.2);
           if(tree){tree.harvested=true;tree.berries.forEach((berry,j)=>{berry.visible=false;});setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Le bacche sono cadute dall’albero! +5 bacche.");shot.life=0;}
+          if(arabniteActive){
+            const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
+            if(target){target.active=false;target.group.visible=false;const current=arabniteCollectionRef.current;const next={...current,coins:Number(current.coins??120)+15};arabniteCollectionRef.current=next;setArabniteCollection(next);setToast("Bersaglio colpito! +15 monete del bazar.");shot.life=0;}
+          }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
         const horizontalSpeed=Math.hypot(movementVelocity.x,movementVelocity.z);
