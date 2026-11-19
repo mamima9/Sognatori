@@ -853,6 +853,19 @@ function Amargenta3DContent({ onExit }) {
       for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);smokePuffs.push(puff);}
     };
 
+    // Medaglione illustrato: collega i residenti 3D all'artwork ufficiale della loro carta.
+    // Non sostituisce né altera i modelli avatar principali.
+    const addSognatoreCrest = (parent, rosterId, y=1.55, z=.58) => {
+      const entry = ROSTER.find((item) => item.id === rosterId);
+      if (!entry?.img) return null;
+      const texture = new THREE.TextureLoader().load(entry.img);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const crest = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+      crest.position.set(0, y, z);
+      crest.scale.set(.72, .82, 1);
+      parent.add(crest);
+      return crest;
+    };
     const addInteraction = (id, title, text, x, z, action=null, radius=3.2) => {
       interactables.push({id,title,text,x,z,action,radius});
     };
@@ -893,6 +906,12 @@ function Amargenta3DContent({ onExit }) {
         milkkeeper:["#ffd92e","#fff0b2","#f5d8a1","#087df0"]
       };
       const [baseColor,lightColor,bellyColor,accentColor]=palettes[id]||palettes.barista;
+      const rosterIdByName = {
+        Zibelle:"zibelle", Muccanza:"muccanza", "Belligonghi-umami":"belligonghi-umami",
+        Cardinero:"cardinero", Flame:"flame", Biglia:"biglia", Brama:"brama",
+        Lumen:"lumen", Ponce:"ponce", Sanlegno:"sanlegno", Trix:"trix", Vudele:"vudele"
+      };
+      addSognatoreCrest(g, rosterIdByName[name] || ({ "town-cook":"muccanza", "town-carpenter":"cardinero", "town-gardener":"cardinero", milkkeeper:"lattelo" })[id]);
       const base=mat(baseColor),light=mat(lightColor),belly=mat(bellyColor),accent=mat(accentColor);
       const dark=mat("#241b1a"),white=mat("#fff8e9");
       const bodyPivot=new THREE.Group();g.add(bodyPivot);
@@ -1608,6 +1627,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const makeCompanion=(id,x,z,color)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
         const body=sphere(.72,mat(color),g,0,.78,0,2);body.scale.set(1.05,.9,.95);
+        addSognatoreCrest(g, id, 1.45, .62);
         sphere(.48,mat(color),g,0,1.42,.28,2);
         for(const side of [-1,1]){sphere(.12,mat("#fff8e9"),g,side*.19,1.48,.68,2);sphere(.055,mat("#211820"),g,side*.19,1.48,.77,2);}
         const feet=[];for(const side of [-1,1]){const foot=sphere(.2,mat("#a66a42"),g,side*.28,.18,.12,1);foot.scale.set(1,.55,1.3);feet.push(foot);}
@@ -1619,6 +1639,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const makeFlyer=(id,x,y,z,color)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);
         const body=sphere(.48,mat(color),g,0,0,0,2);body.scale.set(1.25,.72,.85);sphere(.28,mat(color),g,0,.08,.38,2);
+        addSognatoreCrest(g, id, .12, .52);
         const wingMat=mat("#eee2f5",.65),left=sphere(.38,wingMat,g,-.52,.12,0,1),right=sphere(.38,wingMat,g,.52,.12,0,1);left.scale.set(1.3,.2,.7);right.scale.set(1.3,.2,.7);
         ambientCreatures.push({id,group:g,homeX:x,homeZ:z,baseY:y,phase:ambientCreatures.length*2.1,fly:true,leftWing:left,rightWing:right});
       };
