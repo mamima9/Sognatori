@@ -1912,7 +1912,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
       const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));arabniteWorld.add(starField);
        // Unico grande tendone di Arabnite: arena aperta dedicata ai duelli 1 contro 1.
-       const arenaX=190,arenaZ=8,arenaWood=mat("#593a2b"),arenaGold=mat("#e8bd68",.24,{metalness:.35}),arenaCloth=mat("#713d58"),arenaLight=mat("#f6d58a",.25,{emissive:"#c98736",emissiveIntensity:.6});
+       const arenaX=208,arenaZ=-12,arenaWood=mat("#593a2b"),arenaGold=mat("#e8bd68",.24,{metalness:.35}),arenaCloth=mat("#713d58"),arenaLight=mat("#f6d58a",.25,{emissive:"#c98736",emissiveIntensity:.6});
        const arenaTent=new THREE.Group();arabniteWorld.add(arenaTent);arenaTent.position.set(arenaX,0,arenaZ);
        for(const sx of [-12.5,12.5])for(const sz of [-8.5,8.5]){
          cylinder(.2,.27,7.2,arenaWood,arenaTent,sx,3.6,sz,10);
@@ -1940,7 +1940,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08,{parent:arabniteWorld});
       makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{parent:arabniteWorld});
       makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08,{parent:arabniteWorld});
-      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05,{parent:arabniteWorld});
+      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",[],1.05,{parent:arabniteWorld});
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{parent:arabniteWorld});
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1,{parent:arabniteWorld});
       // Cervio, Gunvallo e Rullino sono i tre personaggi giocabili: non esistono copie-NPC.
@@ -1949,9 +1949,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
+      // Ponce e Sanlegno sono presenti come abitanti, ma senza interazioni o dialoghi.
+      removeInteraction("farmer");
       // Lumen resta visibile nell'overworld, ma senza dialogo né interazione.
       removeInteraction("keeper");
-       addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell’arena e sfida un avversario in un duello 1 contro 1.",190,18,()=>{setCardDuel(null);setCardDuelOpen(true);},7.5);
+       addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell’arena e sfida un avversario in un duello 1 contro 1.",208,-12,()=>{setCardDuel(null);setCardDuelOpen(true);},7.5);
       // I bazar sono interazioni integrate con i rispettivi NPC: nessun punto di interazione sovrapposto.
       const setArabniteNpcAction=(name,description,action,radius=7.2)=>{
         const entry=interactables.find(item=>item.title.startsWith(name+" ·"));
@@ -2693,7 +2695,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Barattolo colpito! +5 bacche.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;const reward={...arabniteCollectionRef.current,coins:Number(arabniteCollectionRef.current.coins??120)+5};arabniteCollectionRef.current=reward;setArabniteCollection(reward);setToast("Barattolo colpito! +5 monete.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
