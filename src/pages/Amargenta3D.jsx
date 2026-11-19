@@ -14,6 +14,9 @@ const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)
  */
 function Amargenta3DContent({ onExit }) {
   const hostRef = useRef(null);
+  const travelToWorldRef = useRef(null);
+  const [flightMode, setFlightMode] = useState(false);
+  const flightModeRef = useRef(false);
   const [hint, setHint] = useState("");
   const [activeCharacter, setActiveCharacter] = useState("talpitrippa");
   const [zone, setZone] = useState("Ingresso di Amargenta");
@@ -262,7 +265,7 @@ function Amargenta3DContent({ onExit }) {
       return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
     };
     const isBlockedAt = (x,z,radius=.55) => {
-      if(isWaterAt(x,z)&&characterState?.active!=="ripple")return true;
+      if(isWaterAt(x,z)&&jumpHeight<1.45&&!flightModeRef.current&&characterState?.active!=="ripple")return true;
       return colliders.some(collider => {
       if (jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
@@ -1602,6 +1605,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;cameraReady=false;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
+      travelToWorldRef.current=(target)=>{
+        const toArabnite=target==="arabnite";
+        if(Boolean(arabniteActive)===toArabnite)return;
+        setWorldTransition(toArabnite?"arabnite":"amargenta");controlsLockedRef.current=true;
+        window.setTimeout(()=>{
+          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;setToast("Arabnite · sei arrivato accanto al portale");}
+          else{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;setToast("Sei tornato ad Amargenta");}
+          movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);
+        },950);
+      };
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
       // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
@@ -2193,10 +2206,15 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
-        if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
+        const flightActive=flightModeRef.current;
+        if(flightActive){
+          jumpVelocity=0;
+          const verticalInput=(keys.has("Space")?1:0)-((keys.has("ControlLeft")||keys.has("ControlRight"))?1:0);
+          jumpHeight=THREE.MathUtils.clamp(jumpHeight+verticalInput*7*dt,0,9);
+        }else if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
         const fluttering=characterState.active==="piocino"&&keys.has("Space")&&jumpHeight>.05;
         jumpRequested=false;
-        if(jumpHeight>0||jumpVelocity>0){
+        if(!flightActive&&(jumpHeight>0||jumpVelocity>0)){
           jumpVelocity-=(fluttering?5.2:18)*dt;
           if(fluttering)jumpVelocity=Math.max(jumpVelocity,1.8);
           jumpHeight+=jumpVelocity*dt;
@@ -2510,14 +2528,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
     
     <div className="amargenta-title" style={{position:"absolute",top:18,left:18,display:"flex",alignItems:"center",gap:16,pointerEvents:"none",textShadow:"0 2px 12px #17201d",zIndex:20}}>
       <div className="amargenta-brand" style={{fontSize:22,letterSpacing:3,color:"#f2c94c",fontWeight:1000}}>SOGNATORI</div>
-      <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>AMARGENTA</div>
+      <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>{zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</div>
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
     <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></div>
     {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · AMARGENTA</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · {zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
+      <button onClick={()=>travelToWorldRef.current?.(zone?.toLowerCase().includes("arabnite")?"amargenta":"arabnite")} style={{width:"100%",marginBottom:10,border:"1px solid #e8c47e",borderRadius:10,background:"linear-gradient(135deg,#9b713e,#65452d)",color:"#fff2d8",padding:"12px 10px",fontSize:12,fontWeight:900,cursor:"pointer"}}>{zone?.toLowerCase().includes("arabnite")?"✦ TORNA AD AMARGENTA":"✦ RAGGIUNGI IL PORTALE DI ARABNITE"}</button>
+      <button onClick={()=>{flightModeRef.current=!flightModeRef.current;setFlightMode(flightModeRef.current);setToast(flightModeRef.current?"Volo attivato · tieni premuto ↑ per salire, CTRL per scendere":"Volo disattivato");}} style={{width:"100%",marginBottom:10,border:"1px solid #9ec9d1",borderRadius:10,background:flightMode?"#276a72":"#29414a",color:"#e9fbff",padding:"10px",fontSize:11,fontWeight:900,cursor:"pointer"}}>{flightMode?"🪽 VOLO ATTIVO":"🪽 ATTIVA VOLO LIBERO"}</button>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
         {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
