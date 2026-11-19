@@ -1818,7 +1818,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       try { makeSpyroPortal(132,12,Math.PI/2,"Amargenta",arabniteWorld); }
       catch (error) { console.error("Portale di ritorno non inizializzato: Arabnite resta caricabile", error); }
       const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,arabniteWorld,x,h*.22,z,20);const d=sphere(r,mat(color),arabniteWorld,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,arabniteWorld,x,h*.95,z,12);sphere(r*.12,lantern,arabniteWorld,x,h*1.1,z,1);};
-      const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
+       const hangLantern=(x,z,y=3)=>{
+         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,y,z);
+         const poleHeight=Math.max(.55,y-.25);
+         cylinder(.075,.11,poleHeight,arabWood,g,0,-poleHeight/2,0,8);
+         cylinder(.28,.38,.7,arabGold,g,0,0,0,8);
+         sphere(.25,lantern,g,0,0,0,1);
+         sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;
+       };
       const arabWall=mat("#d8bd91"),arabWallLight=mat("#ead5ad"),arabRoof=mat("#8e5542"),arabWood=mat("#62432f"),arabCloth=mat("#9f3f48");
       const makeArabHouse=(x,z,w=11,d=8,h=4.4,accent="#9f3f48")=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);
@@ -1871,7 +1878,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
       const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));arabniteWorld.add(starField);
-      for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,arabniteWorld,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),arabniteWorld,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,arabniteWorld,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
+       for(let i=0;i<7;i++){
+         const x=146+i*10,z=12+(i%2)*7;
+         // Pali portanti dal terreno al banco e alla copertura dei tendoni.
+         for(const sx of [-2.45,2.45])for(const sz of [-1.5,1.5])cylinder(.11,.14,2.9,arabWood,arabniteWorld,x+sx,1.45,z+sz,8);
+         box(6,.35,4,arabRed,arabniteWorld,x,2.7,z);
+         const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),arabniteWorld,x,3.8,z);canopy.rotation.y=Math.PI/4;
+         box(4,.75,1.3,sand,arabniteWorld,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);
+       }
       const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),arabniteWorld,190,.04,48);oasis.rotation.x=-Math.PI/2;
       for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,arabniteWorld,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),arabniteWorld,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
       for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,arabniteWorld,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
@@ -1891,8 +1905,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{parent:arabniteWorld});
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1,{parent:arabniteWorld});
       // Cervio, Gunvallo e Rullino sono i tre personaggi giocabili: non esistono copie-NPC.
-      for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
-      for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),arabniteWorld,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
+       // Rimossi i filari di lanterne sospese nel cielo e quelle senza sostegno vicino ai cespugli.
+       for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),arabniteWorld,x,.48,z,1);shrub.scale.set(1.25,.62,1);}
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
@@ -2874,6 +2888,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         .amargenta-title .amargenta-city{font-size:21px!important}
         .amargenta-menu-button{padding:8px 10px!important;font-size:10px}
         .amargenta-status{top:64px;left:10px;right:auto;padding:7px 10px;font-size:9px}
+         .arabnite-coins{top:104px!important;right:10px!important;padding:7px 10px!important;font-size:10px!important}
         .amargenta-objective{right:10px;bottom:12px;width:min(245px,calc(100vw - 145px));padding:11px 12px}
         .amargenta-objective-title{font-size:11px}
         .amargenta-objective-waypoint{font-size:9px;margin-top:6px;padding-top:6px}
@@ -2892,8 +2907,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       <div className="amargenta-city" style={{fontSize:30,fontWeight:900,lineHeight:1.15,color:"#ffffff"}}>{zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</div>
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
-    <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></div>
-    {!menuOpen&&!dialogue&&!zone?.toLowerCase().includes("arabnite")&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
+     <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span>{!zone?.toLowerCase().includes("arabnite")&&<><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></>}</div>
+     {!menuOpen&&zone?.toLowerCase().includes("arabnite")&&<div aria-label="Monete del bazar" className="amargenta-glass arabnite-coins" style={{position:"absolute",top:64,right:18,zIndex:22,display:"flex",alignItems:"center",gap:9,padding:"9px 14px",borderRadius:14,color:"#fff1d5",fontSize:13,fontWeight:900,boxShadow:"0 8px 24px #0008",pointerEvents:"none"}}><span style={{fontSize:17,color:"#f2c94c"}}>◈</span><span>MONETE</span><strong style={{fontSize:17,color:"#f5cf72",fontVariantNumeric:"tabular-nums"}}>{arabniteCollection.coins??120}</strong></div>}
+     {!menuOpen&&!dialogue&&!zone?.toLowerCase().includes("arabnite")&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · {zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
