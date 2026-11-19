@@ -345,7 +345,7 @@ function Amargenta3DContent({ onExit }) {
       return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
     };
     const isBlockedAt = (x,z,radius=.55) => {
-      if(isWaterAt(x,z)&&!(characterState?.active==="piocino"&&jumpHeight>=1.45)&&characterState?.active!=="ripple")return true;
+      if(isWaterAt(x,z)&&!(characterState?.active==="piocino"&&jumpHeight>=1.35)&&characterState?.active!=="ripple")return true;
       return colliders.some(collider => {
       if (jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
@@ -898,19 +898,8 @@ function Amargenta3DContent({ onExit }) {
       for(let i=0;i<4;i++){const puff=sphere(.45+i*.1,mat("#c8c6bd",1,{transparent:true,opacity:.48}),scene,x+3.7+Math.sin(i*2)*.4,10+i*.65,z-2.2,1);smokePuffs.push(puff);}
     };
 
-    // Medaglione illustrato: collega i residenti 3D all'artwork ufficiale della loro carta.
-    // Non sostituisce né altera i modelli avatar principali.
-    const addSognatoreCrest = (parent, rosterId, y=.88, z=.57) => {
-      const entry = ROSTER.find((item) => item.id === rosterId);
-      if (!entry?.img) return null;
-      const texture = new THREE.TextureLoader().load(entry.img);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      const crest = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
-      crest.position.set(0, y, z);
-      crest.scale.set(.58, .66, 1);
-      parent.add(crest);
-      return crest;
-    };
+    // Modelli 3D autonomi: nessuna illustrazione 2D incollata sulla superficie.
+    const addSognatoreCrest = () => null;
     const addInteraction = (id, title, text, x, z, action=null, radius=3.2) => {
       interactables.push({id,title,text,x,z,action,radius});
     };
@@ -1749,6 +1738,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         addMesh(new THREE.TorusGeometry(3.25,.12,8,40,Math.PI),arabGold,g,0,3.9,.16);
         const coreMaterial=new THREE.MeshBasicMaterial({color:"#53cfe0",transparent:true,opacity:.58,side:THREE.DoubleSide});
         const core=addMesh(new THREE.CircleGeometry(2.48,48),coreMaterial,g,0,3.55,.28);
+        // Nome della destinazione centrato e leggibile nel cerchio del portale.
+        if(worldName){
+          const labelCanvas=document.createElement("canvas");labelCanvas.width=1024;labelCanvas.height=192;
+          const ctx=labelCanvas.getContext("2d");
+          if(ctx){
+            ctx.clearRect(0,0,1024,192);ctx.fillStyle="rgba(30,20,34,.78)";
+            ctx.beginPath();ctx.roundRect(28,22,968,148,38);ctx.fill();
+            ctx.strokeStyle="#f3d28a";ctx.lineWidth=8;ctx.stroke();
+            ctx.fillStyle="#fff1c7";ctx.textAlign="center";ctx.textBaseline="middle";
+            ctx.font="900 92px Georgia,serif";ctx.shadowColor="#6a3b13";ctx.shadowBlur=18;
+            ctx.fillText(worldName.toUpperCase(),512,98);
+            const labelTexture=new THREE.CanvasTexture(labelCanvas);labelTexture.colorSpace=THREE.SRGBColorSpace;
+            const labelMaterial=new THREE.MeshBasicMaterial({map:labelTexture,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+            addMesh(new THREE.PlaneGeometry(4.65,.88),labelMaterial,g,0,3.55,.62);
+          }
+        }
         const ring=addMesh(new THREE.TorusGeometry(2.62,.22,12,48),arabGold,g,0,3.55,.35);
         const innerRing=addMesh(new THREE.TorusGeometry(2.27,.065,8,48),gem,g,0,3.55,.38);
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
@@ -2481,14 +2486,17 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
         if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
-        const fluttering=characterState.active==="piocino"&&keys.has("Space")&&jumpHeight>.05;
-        jumpRequested=false;
-        if(jumpHeight>0||jumpVelocity>0){
-          jumpVelocity-=(fluttering?5.2:18)*dt;
-          if(fluttering)jumpVelocity=Math.max(jumpVelocity,1.8);
-          jumpHeight+=jumpVelocity*dt;
-          if(jumpHeight<=0){jumpHeight=0;jumpVelocity=0;}
-        }
+         const piocinoFlying=characterState.active==="piocino"&&keys.has("Space");
+         jumpRequested=false;
+         if(piocinoFlying){
+           // Volo sostenuto: Piocino mantiene una quota sicura anche sopra i fiumi.
+           jumpVelocity=0;
+           jumpHeight=THREE.MathUtils.damp(jumpHeight,2.35,7.5,dt);
+         }else if(jumpHeight>0||jumpVelocity>0){
+           jumpVelocity-=18*dt;
+           jumpHeight+=jumpVelocity*dt;
+           if(jumpHeight<=0){jumpHeight=0;jumpVelocity=0;}
+         }
         const forward=(keys.has("KeyW")||keys.has("ArrowUp")?1:0)-(keys.has("KeyS")||keys.has("ArrowDown")?1:0)-touchStickRef.current.y;
         const side=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0)+touchStickRef.current.x;
         if(controlsLockedRef.current) keys.clear();
