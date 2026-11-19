@@ -1256,7 +1256,7 @@ function Amargenta3DContent({ onExit }) {
 
     try {
       scene=new THREE.Scene();scene.background=new THREE.Color("#c7dfdf");scene.fog=new THREE.Fog("#c7dfdf",92,235);
-arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#171326");arabniteScene.fog=new THREE.FogExp2("#171326",0.0065);
+arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#171326");arabniteScene.fog=new THREE.FogExp2("#171326",0.0065); const arabniteWorld=new THREE.Group();arabniteWorld.name="ArabniteWorld";arabniteScene.add(arabniteWorld);
       const compactDevice=window.matchMedia("(max-width: 720px)").matches;
       const width=Math.max(1,host.clientWidth||window.innerWidth||800);
       const height=Math.max(1,host.clientHeight||window.innerHeight||600);
@@ -1673,8 +1673,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
       // Portali monumentali gemelli: pietra antica, archi, gemme e un nucleo magico pulsante.
       const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
-      const makeSpyroPortal=(x,z,rotation=0,worldName="")=>{
-        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+      const makeSpyroPortal=(x,z,rotation=0,worldName="",parent=scene)=>{
+        const g=new THREE.Group();parent.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
         const carvedStone=mat("#b99a70",.82),shadowStone=mat("#70523e",.9),gem=mat("#63d8dc",.24,{metalness:.28,emissive:"#1a8fbd",emissiveIntensity:.72});
         box(8.8,.42,3.8,shadowStone,g,0,.22,0);box(7.8,.34,3.1,arabStone,g,0,.58,0); 
         for(const side of [-1,1]){
@@ -1751,22 +1751,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         },950);
       };
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
-      addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),scene,178,-.02,12).rotation.x=-Math.PI/2;
+      addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),arabniteWorld,178,-.02,12).rotation.x=-Math.PI/2;
       // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
       const arabIce=mat("#a8e8f2",.22,{metalness:.28,roughness:.2,transparent:true,opacity:.92});
-      const icePatch=addMesh(new THREE.PlaneGeometry(27,19),arabIce,scene,164,.035,-13);
+      const icePatch=addMesh(new THREE.PlaneGeometry(27,19),arabIce,arabniteWorld,164,.035,-13);
       icePatch.rotation.x=-Math.PI/2;
-      const iceEdge=addMesh(new THREE.RingGeometry(12.8,13.35,64),mat("#e2fbff",.28,{metalness:.18}),scene,164,.07,-13);
+      const iceEdge=addMesh(new THREE.RingGeometry(12.8,13.35,64),mat("#e2fbff",.28,{metalness:.18}),arabniteWorld,164,.07,-13);
       iceEdge.rotation.x=-Math.PI/2;
       const isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
-      try { makeSpyroPortal(132,12,Math.PI/2,"Amargenta"); }
+      try { makeSpyroPortal(132,12,Math.PI/2,"Amargenta",arabniteWorld); }
       catch (error) { console.error("Portale di ritorno non inizializzato: Arabnite resta caricabile", error); }
-      const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
-      const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
+      const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,arabniteWorld,x,h*.22,z,20);const d=sphere(r,mat(color),arabniteWorld,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,arabniteWorld,x,h*.95,z,12);sphere(r*.12,lantern,arabniteWorld,x,h*1.1,z,1);};
+      const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
       const arabWall=mat("#d8bd91"),arabWallLight=mat("#ead5ad"),arabRoof=mat("#8e5542"),arabWood=mat("#62432f"),arabCloth=mat("#9f3f48");
       const makeArabHouse=(x,z,w=11,d=8,h=4.4,accent="#9f3f48")=>{
-        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);
         const cloth=mat(accent),door=mat("#55362c"),windowGlow=mat("#f8c76d",.3,{emissive:"#c9782e",emissiveIntensity:.55});
         box(w,h,d,arabWall,g,0,h/2,0);box(w+.7,.28,d+.7,arabStone,g,0,h+.08,0);box(w+.25,.16,d+.25,arabRoof,g,0,h+.3,0);
         for(const side of [-1,1]){
@@ -1786,7 +1786,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         box(2.1,.16,.7,arabStone,g,0,.12,d/2+.25);addBoxCollider(x,z,w+.7,d+.8,0,h+1.8);return g;
       };
       const makeArabMinaret=(x,z)=>{
-        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);
         cylinder(1.12,1.55,11.5,arabWall,g,0,5.75,0,16);cylinder(1.85,1.85,.35,arabGold,g,0,7.2,0,16);
         cylinder(1.45,1.65,2.1,arabWallLight,g,0,8.35,0,16);cylinder(1.95,1.95,.28,arabGold,g,0,9.55,0,16);
         const roofCap=addMesh(new THREE.ConeGeometry(1.65,2.1,8),arabRoof,g,0,10.75,0);roofCap.rotation.y=Math.PI/8;sphere(.18,arabGold,g,0,12,0,2);
@@ -1799,51 +1799,51 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // Cupole e tronchi dell'oasi sono ostacoli solidi, non attraversabili.
       [[158,-8,6.2,7.2],[193,-8,4.9,5.8],[176,31,5.6,6.5],[211,25,4.2,5.2],[144,31,4.2,5.2]].forEach(([x,z,r,h])=>addCollider(x,z,r,h));
       // Sentieri chiari tra portale, bazar e oasi: leggibili senza tagliare le bancarelle.
-      const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,scene,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
-      const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,scene,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
+      const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,arabniteWorld,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
+      const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
       // Dune morbide e rocce ai margini, senza invadere i passaggi principali.
       const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
-      [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,scene,x,h*.34,z,2);dune.scale.set(w,h,d);});
-      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,scene,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
+      [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
+      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
       // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
-      const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));scene.add(starField);
-      for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,scene,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),scene,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,scene,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
-      const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),scene,190,.04,48);oasis.rotation.x=-Math.PI/2;
-      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
-      for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,scene,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
+      const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));arabniteWorld.add(starField);
+      for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,arabniteWorld,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),arabniteWorld,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,arabniteWorld,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
+      const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),arabniteWorld,190,.04,48);oasis.rotation.x=-Math.PI/2;
+      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,arabniteWorld,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),arabniteWorld,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
+      for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,arabniteWorld,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
 
       // Piazzetta accogliente: sedute, fioriere, tappeti e indicazioni per i visitatori.
       const welcomeWood=mat("#70482f"),welcomeGold=mat("#f6d58a",.28,{metalness:.25,emissive:"#9b6428",emissiveIntensity:.18}),welcomeTile=mat("#d8bd91");
-      const makeWelcomeRug=(x,z,w,d,color)=>{const border=addMesh(new THREE.PlaneGeometry(w+.34,d+.34),welcomeGold,scene,x,.035,z);border.rotation.x=-Math.PI/2;const rug=addMesh(new THREE.PlaneGeometry(w,d),mat(color),scene,x,.045,z);rug.rotation.x=-Math.PI/2;};
-      const makeBench=(x,z,rotation=0)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;box(2.5,.18,.72,welcomeWood,g,0,.72,0);box(2.5,.16,.72,welcomeWood,g,0,1.05,-.28);for(const sx of [-.92,.92]){box(.16,.68,.16,welcomeWood,g,sx,.34,-.18);box(.16,.68,.16,welcomeWood,g,sx,.34,.22);}addCollider(x,z,.9,1.35);};
-      const makePlanter=(x,z,color)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);cylinder(.62,.78,.55,arabRoof,g,0,.28,0,10);cylinder(.55,.62,.08,welcomeGold,g,0,.58,0,10);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const leaf=sphere(.28,mat("#477c54"),g,Math.cos(a)*.24,.9,Math.sin(a)*.24,1);leaf.scale.set(.55,1.7,.5);}sphere(.16,mat(color),g,0,1.18,0,1);};
+      const makeWelcomeRug=(x,z,w,d,color)=>{const border=addMesh(new THREE.PlaneGeometry(w+.34,d+.34),welcomeGold,arabniteWorld,x,.035,z);border.rotation.x=-Math.PI/2;const rug=addMesh(new THREE.PlaneGeometry(w,d),mat(color),arabniteWorld,x,.045,z);rug.rotation.x=-Math.PI/2;};
+      const makeBench=(x,z,rotation=0)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);g.rotation.y=rotation;box(2.5,.18,.72,welcomeWood,g,0,.72,0);box(2.5,.16,.72,welcomeWood,g,0,1.05,-.28);for(const sx of [-.92,.92]){box(.16,.68,.16,welcomeWood,g,sx,.34,-.18);box(.16,.68,.16,welcomeWood,g,sx,.34,.22);}addCollider(x,z,.9,1.35);};
+      const makePlanter=(x,z,color)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);cylinder(.62,.78,.55,arabRoof,g,0,.28,0,10);cylinder(.55,.62,.08,welcomeGold,g,0,.58,0,10);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const leaf=sphere(.28,mat("#477c54"),g,Math.cos(a)*.24,.9,Math.sin(a)*.24,1);leaf.scale.set(.55,1.7,.5);}sphere(.16,mat(color),g,0,1.18,0,1);};
       makeWelcomeRug(178,15,13,8,"#315f68");makeWelcomeRug(195,7,8,5,"#8e4e55");makeBench(169,22,.12);makeBench(188,24,-.22);makeBench(207,17,Math.PI);
       [[168,8],[185,17],[201,12],[213,2],[173,34],[207,34]].forEach((p,i)=>makePlanter(p[0],p[1],i%2?"#e6a7bd":"#f0ca72"));
-      const welcomeBoard=new THREE.Group();scene.add(welcomeBoard);welcomeBoard.position.set(151,0,12);welcomeBoard.rotation.y=-Math.PI/2;box(4.8,2.25,.24,welcomeWood,welcomeBoard,0,2.35,0);box(4.45,1.92,.08,welcomeTile,welcomeBoard,0,2.36,.16);
+      const welcomeBoard=new THREE.Group();arabniteWorld.add(welcomeBoard);welcomeBoard.position.set(151,0,12);welcomeBoard.rotation.y=-Math.PI/2;box(4.8,2.25,.24,welcomeWood,welcomeBoard,0,2.35,0);box(4.45,1.92,.08,welcomeTile,welcomeBoard,0,2.36,.16);
       for(const sx of [-2.05,2.05])cylinder(.12,.15,3.2,welcomeGold,welcomeBoard,sx,1.6,0,8);
       const boardCanvas=document.createElement("canvas");boardCanvas.width=1024;boardCanvas.height=512;const boardCtx=boardCanvas.getContext("2d");boardCtx.clearRect(0,0,1024,512);boardCtx.textAlign="center";boardCtx.fillStyle="#563a2a";boardCtx.font="900 92px Georgia";boardCtx.fillText("BENVENUTO",512,145);boardCtx.font="bold 52px Georgia";boardCtx.fillText("BAZAR  ·  OASI  ·  PIAZZA",512,245);boardCtx.font="42px Georgia";boardCtx.fillText("Esplora, riposati, incontra i Sognatori",512,330);
       const boardTexture=new THREE.CanvasTexture(boardCanvas);boardTexture.colorSpace=THREE.SRGBColorSpace;const boardFace=new THREE.Sprite(new THREE.SpriteMaterial({map:boardTexture,transparent:true,depthWrite:false}));boardFace.position.set(0,2.36,.23);boardFace.scale.set(4.25,2.12,1);welcomeBoard.add(boardFace);
       addInteraction("arabnite-welcome","Benvenuto ad Arabnite","La piazza è il tuo punto di riferimento. A ovest trovi il bazar, a sud-est l'Oasi della Luna. Le bustine dei Sognatori brillano lungo i sentieri.",151,12,()=>setDialogue({title:"Benvenuto ad Arabnite!",text:"Prenditi il tuo tempo: esplora il bazar, riposati nella piazza, raggiungi l'oasi e cerca le bustine dei Sognatori. Di notte la città cambia volto e alcuni abitanti escono solo allora."}),4.8);
 
-      makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15);
-      makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08);
-      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1);
-      makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08);
-      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05);
-      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
-      makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
-      makeNpc("guard","Cervio","Corridore delle Dune",148,62,"#55c9f4",["Corro più veloce di chiunque ad Arabnite.","Seguimi tra le dune!"],.92);
-      makeNpc("town-carpenter","Gunvallo","Pistolero delle Caramelle",190,64,"#9b4d20",["La mia caramella centra sempre il bersaglio.","Pronto a sparare? È solo una prova!"],.92);
-      makeNpc("keeper","Rullino","Pattinatore della Pista Gelata",169,-20,"#236de8",["Sul ghiaccio sono imbattibile.","Prova a seguire le mie curve!"],.92);
+      makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15,{parent:arabniteWorld});
+      makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08,{parent:arabniteWorld});
+      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{parent:arabniteWorld});
+      makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08,{parent:arabniteWorld});
+      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05,{parent:arabniteWorld});
+      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{parent:arabniteWorld});
+      makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1,{parent:arabniteWorld});
+      makeNpc("guard","Cervio","Corridore delle Dune",148,62,"#55c9f4",["Corro più veloce di chiunque ad Arabnite.","Seguimi tra le dune!"],.92,{parent:arabniteWorld});
+      makeNpc("town-carpenter","Gunvallo","Pistolero delle Caramelle",190,64,"#9b4d20",["La mia caramella centra sempre il bersaglio.","Pronto a sparare? È solo una prova!"],.92,{parent:arabniteWorld});
+      makeNpc("keeper","Rullino","Pattinatore della Pista Gelata",169,-20,"#236de8",["Sul ghiaccio sono imbattibile.","Prova a seguire le mie curve!"],.92,{parent:arabniteWorld});
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
-      for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),scene,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
+      for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),arabniteWorld,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
       const makeArabnitePack=(id,x,z)=>{
-        const g=new THREE.Group();scene.add(g);g.position.set(x,.62,z);
+        const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
         const foil=mat("#6d3c8f",.3,{metalness:.42}),foilLight=mat("#b98be0",.28,{metalness:.32}),seal=mat("#f5cf72",.25,{metalness:.45});
         box(.92,.96,.16,foil,g,0,0,0);box(.98,.13,.2,seal,g,0,.5,0);box(.72,.08,.19,foilLight,g,0,.25,.1);
         const crest=addMesh(new THREE.OctahedronGeometry(.2),seal,g,0,.03,.12);crest.rotation.z=Math.PI/4;
