@@ -2493,9 +2493,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
          const piocinoFlying=characterState.active==="piocino"&&keys.has("Space");
          jumpRequested=false;
          if(piocinoFlying){
-           // Volo sostenuto: Piocino mantiene una quota sicura anche sopra i fiumi.
+           // Volo alto e sostenuto: Piocino raggiunge la quota di esplorazione originale e supera agevolmente i fiumi.
            jumpVelocity=0;
-           jumpHeight=THREE.MathUtils.damp(jumpHeight,2.35,7.5,dt);
+           jumpHeight=THREE.MathUtils.damp(jumpHeight,5.0,5.5,dt);
          }else if(jumpHeight>0||jumpVelocity>0){
            jumpVelocity-=18*dt;
            jumpHeight+=jumpVelocity*dt;
