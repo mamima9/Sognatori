@@ -956,7 +956,6 @@ function Amargenta3DContent({ onExit }) {
         Cardinero:"cardinero", Flame:"flame", Biglia:"biglia", Brama:"brama",
         Lumen:"lumen", Ponce:"ponce", Sanlegno:"sanlegno", Trix:"trix", Vudele:"vudele"
       };
-      addSognatoreCrest(g, rosterIdByName[name] || ({ "town-cook":"muccanza", "town-carpenter":"cardinero", "town-gardener":"cardinero", milkkeeper:"lattelo" })[id]);
       const base=mat(baseColor),light=mat(lightColor),belly=mat(bellyColor),accent=mat(accentColor);
       const dark=mat("#241b1a"),white=mat("#fff8e9");
       const bodyPivot=new THREE.Group();g.add(bodyPivot);
@@ -1061,8 +1060,6 @@ function Amargenta3DContent({ onExit }) {
         }
         // Piccolo ritratto ufficiale integrato nel modello 3D: conserva la silhouette
         // personalizzata e rende immediatamente riconoscibile il Sognatore.
-        const officialPortrait=addSognatoreCrest(mini,rosterIdByName[name],1.12,.39);
-        if(officialPortrait)officialPortrait.scale.set(.42,.48,1);
         mini.userData.isLightweightArabniteNpc=true;
       }
       g.userData.npcName=name;
@@ -1544,9 +1541,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // Tubature, valvole e depositi esterni della torrefazione.
       for(let i=0;i<4;i++){const p=cylinder(.12,.12,5,gold,scene,10+i*1.6,3.4,32,10);p.rotation.z=Math.PI/2;box(.45,.45,.45,wood,scene,9+i*2, .4,35);}
       // Interni accessibili: laboratorio della torrefazione e caffetteria storica.
-      makeInterior(68,68);
-      makeCafeInterior(-68,68);
-      makeInterior(68,-68,"south");
       // Le condotte sono invalicabili fuori dai due ponti in pietra.
       addBoxCollider(28,-42,12,12);
       addBoxCollider(28,-16,12,27);
@@ -1569,9 +1563,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       box(.18,3,.25,gold,scene,66.4,1.5,-62);
       box(.18,3,.25,gold,scene,69.6,1.5,-62);
       box(3.4,.18,.25,gold,scene,68,3,-62);
-      addInteraction("roastery-door","Torrefazione di Amargenta","La porta conduce al laboratorio della torrefazione.",16,33,()=>{player.position.set(68,0,59.5);setZone("Interno della Torrefazione");},4.2);
-      addInteraction("roastery-exit","Uscita della torrefazione","Tornare alla piazza del borgo?",68,62,()=>{player.position.set(16,0,33.5);setZone("Distretto della Torrefazione");},4.2);
-      addInteraction("cafe-door","Caffè delle Tre Foglie","Entra nella caffetteria più antica di Amargenta.",-22,-1.5,()=>{player.position.set(-68,0,59.5);setZone("Caffè delle Tre Foglie");},6.4);
       addInteraction("cafe-exit","Uscita del Caffè delle Tre Foglie","Tornare alle terrazze della città?",-68,62,()=>{player.position.set(-22,1,-.5);setZone("Piazza del Chicco");},4.2);
       addInteraction("vault-door","Cripta delle Miscele","Una porta sigillata da tre prove.",-70,-43,()=>{
         if(!(questDoneRef.current&&recipeDoneRef.current&&waterDoneRef.current)){
@@ -1920,12 +1911,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const makePlanter=(x,z,color)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);cylinder(.62,.78,.55,arabRoof,g,0,.28,0,10);cylinder(.55,.62,.08,welcomeGold,g,0,.58,0,10);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const leaf=sphere(.28,mat("#477c54"),g,Math.cos(a)*.24,.9,Math.sin(a)*.24,1);leaf.scale.set(.55,1.7,.5);}sphere(.16,mat(color),g,0,1.18,0,1);};
       makeWelcomeRug(178,15,13,8,"#315f68");makeWelcomeRug(195,7,8,5,"#8e4e55");makeBench(169,22,.12);makeBench(188,24,-.22);makeBench(207,17,Math.PI);
       [[168,8],[185,17],[201,12],[213,2],[173,34],[207,34]].forEach((p,i)=>makePlanter(p[0],p[1],i%2?"#e6a7bd":"#f0ca72"));
-      const welcomeBoard=new THREE.Group();arabniteWorld.add(welcomeBoard);welcomeBoard.position.set(151,0,12);welcomeBoard.rotation.y=-Math.PI/2;box(4.8,2.25,.24,welcomeWood,welcomeBoard,0,2.35,0);box(4.45,1.92,.08,welcomeTile,welcomeBoard,0,2.36,.16);
-      for(const sx of [-2.05,2.05])cylinder(.12,.15,3.2,welcomeGold,welcomeBoard,sx,1.6,0,8);
-      const boardCanvas=document.createElement("canvas");boardCanvas.width=1024;boardCanvas.height=512;const boardCtx=boardCanvas.getContext("2d");boardCtx.clearRect(0,0,1024,512);boardCtx.textAlign="center";boardCtx.fillStyle="#563a2a";boardCtx.font="900 92px Georgia";boardCtx.fillText("BENVENUTO",512,145);boardCtx.font="bold 52px Georgia";boardCtx.fillText("BAZAR  ·  OASI  ·  PIAZZA",512,245);boardCtx.font="42px Georgia";boardCtx.fillText("Esplora, riposati, incontra i Sognatori",512,330);
-      const boardTexture=new THREE.CanvasTexture(boardCanvas);boardTexture.colorSpace=THREE.SRGBColorSpace;const boardFace=new THREE.Sprite(new THREE.SpriteMaterial({map:boardTexture,transparent:true,depthWrite:false}));boardFace.position.set(0,2.36,.23);boardFace.scale.set(4.25,2.12,1);welcomeBoard.add(boardFace);
-      addInteraction("arabnite-welcome","Benvenuto ad Arabnite","La piazza è il tuo punto di riferimento. A ovest trovi il bazar, a sud-est l'Oasi della Luna. Le bustine dei Sognatori brillano lungo i sentieri.",151,12,()=>setDialogue({title:"Benvenuto ad Arabnite!",text:"Prenditi il tuo tempo: esplora il bazar, riposati nella piazza, raggiungi l'oasi e cerca le bustine dei Sognatori. Di notte la città cambia volto e alcuni abitanti escono solo allora."}),4.8);
-
       makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15,{parent:arabniteWorld});
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08,{parent:arabniteWorld});
       makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{parent:arabniteWorld});
@@ -2791,7 +2776,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         arabnitePackMeshes.forEach(({group,baseY,phase})=>{if(group.visible){group.position.y=baseY+Math.sin(clock.elapsedTime*2.1+phase)*.16;group.rotation.y=clock.elapsedTime*.55+phase*.08;}});
         arabPortalEffects.forEach(({ring,innerRing,core,crest,phase})=>{ring.rotation.z+=dt*.22;innerRing.rotation.z-=dt*.3;core.material.opacity=.42+Math.sin(clock.elapsedTime*2.2+phase)*.13;crest.rotation.y+=dt*.5;crest.rotation.z+=dt*.22;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
-        const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Giardino dei Sigilli" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Terrazza delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Piazzale della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(arabniteActive?arabniteScene:scene,camera);
       };
