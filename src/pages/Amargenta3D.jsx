@@ -1861,7 +1861,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           if(arabniteCollectionRef.current.collectedPackIds.includes(id))return;g.visible=false;collectArabnitePack(id);
         },3.1);
       };
-      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64),["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       arabniteReady=true;
       } catch(error) {
         arabniteReady=false;
