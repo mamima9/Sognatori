@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
-import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AMARGENTA, ROSTER_ARABNITE } from "@/lib/sognatoriData";
 
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
+const ARABNITE_ROSTER = ROSTER_ARABNITE;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
 
 /**
@@ -1627,7 +1628,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const makeCompanion=(id,x,z,color)=>{
         const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
         const body=sphere(.72,mat(color),g,0,.78,0,2);body.scale.set(1.05,.9,.95);
-        addSognatoreCrest(g, id, 1.45, .62);
+        addSognatoreCrest(g, id === "patato" ? "patatos" : id, 1.45, .62);
         sphere(.48,mat(color),g,0,1.42,.28,2);
         for(const side of [-1,1]){sphere(.12,mat("#fff8e9"),g,side*.19,1.48,.68,2);sphere(.055,mat("#211820"),g,side*.19,1.48,.77,2);}
         const feet=[];for(const side of [-1,1]){const foot=sphere(.2,mat("#a66a42"),g,side*.28,.18,.12,1);foot.scale.set(1,.55,1.3);feet.push(foot);}
