@@ -963,8 +963,31 @@ function Amargenta3DContent({ onExit }) {
       }else{
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
-      // In Arabnite i sette Sognatori principali non usano più modelli 3D: restano attive le interazioni e i collider.
-      if (["Biglia","Brama","Ponce","Sanlegno","Vudele","Lumen","Trix"].includes(name)) g.visible=false;
+      // Arabnite usa NPC low-poly leggeri per ridurre il carico della scena.
+      const lightweightArabnite=["Biglia","Brama","Lumen","Ponce","Sanlegno","Trix","Vudele","Cervio","Gunvallo","Rullino"];
+      if(lightweightArabnite.includes(name)){
+        g.children.forEach(child=>{child.visible=false;});
+        const mini=new THREE.Group();g.add(mini);
+        const miniBody=mat(({Biglia:"#b72c25",Brama:"#a98251",Lumen:"#7564bd",Ponce:"#d9a34c",Sanlegno:"#8b633f",Trix:"#45347d",Vudele:"#e85b9b",Cervio:"#55c9f4",Gunvallo:"#9b4d20",Rullino:"#236de8"})[name]||baseColor);
+        const miniLight=mat(({Biglia:"#f2bd8b",Brama:"#f1d2a2",Lumen:"#d8d0ff",Ponce:"#ffe0a1",Sanlegno:"#c9a078",Trix:"#d8caff",Vudele:"#ffd1e8",Cervio:"#e8f8ff",Gunvallo:"#d58a45",Rullino:"#43dcb2"})[name]||lightColor);
+        const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.48,2,5),miniBody);body.position.y=.72;mini.add(body);
+        const head=new THREE.Mesh(new THREE.SphereGeometry(.31,7,5),miniLight);head.position.set(0,1.42,.035);mini.add(head);
+        const face=new THREE.Mesh(new THREE.SphereGeometry(.19,6,4),belly);face.scale.set(1,.65,.5);face.position.set(0,1.34,.27);mini.add(face);
+        for(const side of [-1,1]){
+          const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);
+          const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.24,1,4),miniBody);leg.position.set(side*.17,.2,.015);mini.add(leg);
+        }
+        if(name==="Cervio"){
+          for(const side of [-1,1]){const antler=new THREE.Mesh(new THREE.ConeGeometry(.075,.48,5),miniLight);antler.position.set(side*.19,1.88,-.01);antler.rotation.z=side*-.2;mini.add(antler);}
+        }else if(name==="Gunvallo"){
+          const hat=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.09,7),dark);hat.position.set(0,1.72,.02);mini.add(hat);
+        }else if(name==="Rullino"){
+          const beak=new THREE.Mesh(new THREE.ConeGeometry(.12,.22,5),mat("#ff861c"));beak.position.set(0,1.3,.38);beak.rotation.x=Math.PI/2;mini.add(beak);
+        }else{
+          const crest=new THREE.Mesh(new THREE.ConeGeometry(.13,.25,5),accent);crest.position.y=1.78;mini.add(crest);
+        }
+        mini.userData.isLightweightArabniteNpc=true;
+      }
       g.userData.npcName=name;
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
       if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
@@ -1809,6 +1832,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05);
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
+      makeNpc("guard","Cervio","Corridore delle Dune",148,62,"#55c9f4",["Corro più veloce di chiunque ad Arabnite.","Seguimi tra le dune!"],.92);
+      makeNpc("town-carpenter","Gunvallo","Pistolero delle Caramelle",190,64,"#9b4d20",["La mia caramella centra sempre il bersaglio.","Pronto a sparare? È solo una prova!"],.92);
+      makeNpc("keeper","Rullino","Pattinatore della Pista Gelata",169,-20,"#236de8",["Sul ghiaccio sono imbattibile.","Prova a seguire le mie curve!"],.92);
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
       for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),scene,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
