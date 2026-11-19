@@ -1015,8 +1015,12 @@ function Amargenta3DContent({ onExit }) {
         const mini=new THREE.Group();g.add(mini);
         const miniBody=mat(({Biglia:"#b72c25",Brama:"#a98251",Lumen:"#7564bd",Ponce:"#d9a34c",Sanlegno:"#8b633f",Trix:"#45347d",Vudele:"#e85b9b",Cervio:"#55c9f4",Gunvallo:"#9b4d20",Rullino:"#236de8"})[name]||baseColor);
         const miniLight=mat(({Biglia:"#f2bd8b",Brama:"#f1d2a2",Lumen:"#d8d0ff",Ponce:"#ffe0a1",Sanlegno:"#c9a078",Trix:"#d8caff",Vudele:"#ffd1e8",Cervio:"#e8f8ff",Gunvallo:"#d58a45",Rullino:"#43dcb2"})[name]||lightColor);
-        const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.48,2,5),miniBody);body.position.y=.72;mini.add(body);
-        const head=new THREE.Mesh(new THREE.SphereGeometry(.31,7,5),miniLight);head.position.set(0,1.42,.035);mini.add(head);
+        const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.48,2,5),miniBody);body.position.y=.72;
+        const bodyShapes={Biglia:[1.22,1.02,.92],Brama:[1.02,1.12,.9],Lumen:[.82,1.3,.78],Ponce:[1.18,1.02,.92],Sanlegno:[1.16,1.22,1.02],Trix:[.86,1.18,.82],Vudele:[1.28,.92,1.05]};
+        const bodyShape=bodyShapes[name]||[1,1,1];body.scale.set(...bodyShape);mini.add(body);
+        const head=new THREE.Mesh(new THREE.SphereGeometry(.31,7,5),miniLight);head.position.set(0,1.42,.035);
+        const headShapes={Biglia:[1.12,1.02,.9],Brama:[1.18,.88,1],Lumen:[.92,1.12,.92],Ponce:[1.15,.96,1],Sanlegno:[1.02,1.08,.95],Trix:[.92,1.02,.92],Vudele:[1.12,1.04,1.08]};
+        head.scale.set(...(headShapes[name]||[1,1,1]));mini.add(head);
         const face=new THREE.Mesh(new THREE.SphereGeometry(.19,6,4),belly);face.scale.set(1,.65,.5);face.position.set(0,1.34,.27);mini.add(face);
         for(const side of [-1,1]){
           const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);
