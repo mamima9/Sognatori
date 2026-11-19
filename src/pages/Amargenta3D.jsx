@@ -963,6 +963,16 @@ function Amargenta3DContent({ onExit }) {
       }else{
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
+      const arabniteArtworkIds=new Set(["biglia","brama","lumen","ponce","sanlegno","trix","vudele"]);
+      const artworkSognatore=ROSTER.find((s)=>s.id===rosterIdByName[name]);
+      if(arabniteArtworkIds.has(rosterIdByName[name])&&artworkSognatore?.img){
+        // Solo i residenti di Arabnite adottano la silhouette dell artwork ufficiale.
+        g.children.forEach((child)=>{child.visible=false;});
+        const texture=new THREE.TextureLoader().load(artworkSognatore.img);
+        texture.colorSpace=THREE.SRGBColorSpace;
+        const artwork=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,alphaTest:.035,depthWrite:false}));
+        artwork.position.set(0,1.42,.08);artwork.scale.set(2.05,2.75,1);g.add(artwork);
+      }
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
       if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
       return g;
@@ -2763,7 +2773,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         </div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
           {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
-            {discovered?<img src={card.img} alt={card.nome} style={{width:"100%",height:72,objectFit:"contain",borderRadius:6,background:"#ffffff12"}}/>:<div style={{height:72,display:"grid",placeItems:"center",fontSize:28,color:"#b5a6c5"}}>?</div>}
+            <div style={{height:92,position:"relative",overflow:"hidden",borderRadius:7,background:"linear-gradient(145deg,#221b35,#5a4773)",border:"1px solid "+(discovered?"#f1cb7b88":"#ffffff20")}}><img src={card.img} alt={card.nome} loading="lazy" onError={(e)=>{e.currentTarget.style.visibility="hidden";}} style={{width:"100%",height:"100%",objectFit:"contain",opacity:discovered?1:.28,filter:discovered?"none":"grayscale(1) brightness(.72)"}}/>{!discovered&&<div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:23,fontWeight:1000,color:"#f1dba9",textShadow:"0 2px 8px #171126"}}>?</div>}</div>
             <strong style={{display:"block",fontSize:9,marginTop:4,overflowWrap:"anywhere"}}>{discovered?card.nome:card?"???":"Carta "+(index+1)}</strong>
             <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span>
           </div>;})}
