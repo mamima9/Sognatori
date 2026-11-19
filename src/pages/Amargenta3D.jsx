@@ -1922,19 +1922,28 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         saveCurrentWorld();
         setWorldTransition(toArabnite?"arabnite":"amargenta");controlsLockedRef.current=true;
         window.setTimeout(()=>{
-          const destinationKey=toArabnite?"arabnite":"amargenta";
-          const destination=sessionWorlds[destinationKey];
-          if(toArabnite){scene.remove(player);arabniteScene.add(player);arabniteActive=true;}
-          else{arabniteScene.remove(player);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;}
-          const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:61,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
-          const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)?destination:defaults;
-          player.position.set(state.x,0,state.z);
-          yaw=Number.isFinite(state.yaw)?state.yaw:defaults.yaw;
-          pitch=Number.isFinite(state.pitch)?THREE.MathUtils.clamp(state.pitch,.2,.88):defaults.pitch;
-          distance=Number.isFinite(state.distance)?THREE.MathUtils.clamp(state.distance,7,18):defaults.distance;
-          switchCharacter(state.character||defaults.character,true);
-          movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;climbHeight=0;climbingWall=null;
-          zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);saveCurrentWorld();
+          try {
+            const destinationKey=toArabnite?"arabnite":"amargenta";
+            const destination=sessionWorlds[destinationKey];
+            if(player.parent)player.parent.remove(player);
+            (toArabnite?arabniteScene:scene).add(player);
+            arabniteActive=toArabnite;
+            const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:61,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
+            const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)?destination:defaults;
+            player.position.set(state.x,0,state.z);
+            yaw=Number.isFinite(state.yaw)?state.yaw:defaults.yaw;
+            pitch=Number.isFinite(state.pitch)?THREE.MathUtils.clamp(state.pitch,.2,.88):defaults.pitch;
+            distance=Number.isFinite(state.distance)?THREE.MathUtils.clamp(state.distance,7,18):defaults.distance;
+            switchCharacter(state.character||defaults.character,true);
+            movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;climbHeight=0;climbingWall=null;
+            zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;setMenuOpen(false);setPanel(null);saveCurrentWorld();
+          } catch(error) {
+            console.error("Cambio mondo non riuscito:",error);
+            setToast("Impossibile completare il viaggio. Riprova dal portale.");
+          } finally {
+            controlsLockedRef.current=false;
+            setWorldTransition(null);
+          }
         },420);
       };
       // L'ingresso diretto in Arabnite viene applicato dopo la costruzione completa del mondo.
