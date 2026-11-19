@@ -1775,6 +1775,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);
         },950);
       };
+      // L'accesso diretto dal pulsante Arabnite apre subito il mondo corretto.
+      if(new URLSearchParams(window.location.search).get("world")==="arabnite"){
+        window.setTimeout(()=>travelToWorldRef.current?.("arabnite"),250);
+      }
       const arabniteBuildSnapshot={interactables:interactables.length,colliders:colliders.length,npcActors:npcActors.length,packs:arabnitePackMeshes.length,portalEffects:arabPortalEffects.length};
       try {
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
