@@ -1669,20 +1669,20 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
         const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
         sphere(.24,gem,g,0,8.05,.35,2);
-        // Nome della destinazione inciso su un'insegna luminosa sopra l'arco.
+        // Nome della destinazione al centro del nucleo del portale, come inciso nella luce.
         if(worldName){
-          const signCanvas=document.createElement("canvas");signCanvas.width=1024;signCanvas.height=192;
+          const signCanvas=document.createElement("canvas");signCanvas.width=1024;signCanvas.height=256;
           const signCtx=signCanvas.getContext("2d");
-          signCtx.clearRect(0,0,1024,192);
-          signCtx.font="900 112px Georgia, serif";signCtx.textAlign="center";signCtx.textBaseline="middle";
-          signCtx.lineJoin="round";signCtx.lineWidth=18;signCtx.strokeStyle="#3b2418";
-          signCtx.shadowColor="#f4c66b";signCtx.shadowBlur=24;
-          signCtx.strokeText(worldName,512,98);
-          signCtx.fillStyle="#fff0bd";signCtx.fillText(worldName,512,98);
-          signCtx.shadowBlur=0;signCtx.lineWidth=3;signCtx.strokeStyle="#b47a32";signCtx.strokeText(worldName,512,98);
+          signCtx.clearRect(0,0,1024,256);
+          signCtx.font="900 116px Georgia, serif";signCtx.textAlign="center";signCtx.textBaseline="middle";
+          signCtx.lineJoin="round";signCtx.lineWidth=22;signCtx.strokeStyle="#34251d";
+          signCtx.shadowColor="#ffe08a";signCtx.shadowBlur=28;
+          signCtx.strokeText(worldName.toUpperCase(),512,128);
+          signCtx.fillStyle="#fff4c8";signCtx.fillText(worldName.toUpperCase(),512,128);
+          signCtx.shadowBlur=0;signCtx.lineWidth=5;signCtx.strokeStyle="#b98235";signCtx.strokeText(worldName.toUpperCase(),512,128);
           const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;
-          const signMaterial=new THREE.SpriteMaterial({map:signTexture,transparent:true,depthTest:true,depthWrite:false});
-          const sign=new THREE.Sprite(signMaterial);sign.position.set(0,9.35,.15);sign.scale.set(8.2,1.54,1);g.add(sign);
+          const signMaterial=new THREE.SpriteMaterial({map:signTexture,transparent:true,depthTest:false,depthWrite:false});
+          const sign=new THREE.Sprite(signMaterial);sign.position.set(0,3.55,.72);sign.scale.set(5.4,1.35,1);g.add(sign);
         }
         arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
         return g;
