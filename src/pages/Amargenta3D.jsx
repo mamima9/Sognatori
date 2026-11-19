@@ -1937,10 +1937,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);saveCurrentWorld();
         },420);
       };
-      // L'accesso diretto dal pulsante Arabnite apre subito il mondo corretto.
-      if(new URLSearchParams(window.location.search).get("world")==="arabnite"){
-        window.setTimeout(()=>travelToWorldRef.current?.("arabnite"),250);
-      }
+      // L'ingresso diretto in Arabnite viene applicato dopo la costruzione completa del mondo.
       const arabniteBuildSnapshot={interactables:interactables.length,colliders:colliders.length,npcActors:npcActors.length,packs:arabnitePackMeshes.length,portalEffects:arabPortalEffects.length};
       try {
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
@@ -2617,19 +2614,28 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
 
       // Riprende mondo, posizione, camera e personaggio dopo la sospensione del browser mobile.
-      const requestedWorld=new URLSearchParams(window.location.search).get("world")==="arabnite"
-        ?"arabnite":(restoredSession?.activeWorld==="arabnite"?"arabnite":"amargenta");
+      const directArabniteEntry=new URLSearchParams(window.location.search).get("world")==="arabnite";
+      const requestedWorld=directArabniteEntry?"arabnite":(restoredSession?.activeWorld==="arabnite"?"arabnite":"amargenta");
       const restoredWorld=restoredSession?.worlds?.[requestedWorld];
-      if(restoredSession&&restoredWorld&&Number.isFinite(restoredWorld.x)&&Number.isFinite(restoredWorld.z)){
-        if(requestedWorld==="arabnite"&&arabniteReady){
-          scene.remove(player);arabniteScene.add(player);arabniteActive=true;
-        }
+      const hasRestoredPosition=Boolean(restoredWorld&&Number.isFinite(restoredWorld.x)&&Number.isFinite(restoredWorld.z));
+      if(requestedWorld==="arabnite"&&arabniteReady){
+        // La URL pubblica deve aprire Arabnite anche al primo accesso, senza un salvataggio precedente.
+        scene.remove(player);arabniteScene.add(player);arabniteActive=true;
+        const defaults={x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"};
+        const state=hasRestoredPosition?restoredWorld:defaults;
+        player.position.set(state.x,0,state.z);
+        if(Number.isFinite(state.yaw))yaw=state.yaw;
+        if(Number.isFinite(state.pitch))pitch=THREE.MathUtils.clamp(state.pitch,.2,.88);
+        if(Number.isFinite(state.distance))distance=THREE.MathUtils.clamp(state.distance,7,18);
+        switchCharacter(state.character||restoredSession?.activeCharacter||defaults.character,true);
+        zoneRef.current="Arabnite · Piazza delle Lanterne";setZone(zoneRef.current);
+      }else if(hasRestoredPosition){
         player.position.set(restoredWorld.x,0,restoredWorld.z);
         if(Number.isFinite(restoredWorld.yaw))yaw=restoredWorld.yaw;
         if(Number.isFinite(restoredWorld.pitch))pitch=THREE.MathUtils.clamp(restoredWorld.pitch,.2,.88);
         if(Number.isFinite(restoredWorld.distance))distance=THREE.MathUtils.clamp(restoredWorld.distance,7,18);
-        switchCharacter(restoredWorld.character||restoredSession.activeCharacter,true);
-        zoneRef.current=requestedWorld==="arabnite"?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);
+        switchCharacter(restoredWorld.character||restoredSession?.activeCharacter,true);
+        zoneRef.current="Ingresso di Amargenta";setZone(zoneRef.current);
       }else switchCharacter(characterState.active,true);
       if(Number.isFinite(restoredSession?.elapsedTime)){clock.start();clock.elapsedTime=Math.max(0,restoredSession.elapsedTime);}
 
