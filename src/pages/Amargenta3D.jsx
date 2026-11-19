@@ -1137,15 +1137,12 @@ function Amargenta3DContent({ onExit }) {
     };
     const makeMarketStall = (x,z,accent) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
-      box(4,.22,2.3,wood,g,0,1.05,0);
-      box(.16,2.1,.16,wood,g,-1.8,1.9,-.85);box(.16,2.1,.16,wood,g,1.8,1.9,-.85);
-      box(4,.14,2.3,mat(accent),g,0,3,-.1);
-      for(let i=0;i<5;i++) box(.72,.09,2.32,i%2?mat("#f1dfbd"):mat(accent),g,-1.44+i*.72,2.93,-.1);
-      // Bordo della tenda, frange e sostegni del banco.
-      box(4,.12,.16,wood,g,0,2.82,1.08);
-      for(let i=0;i<9;i++)box(.12,.22,.12,i%2?mat("#f1dfbd"):mat(accent),g,-1.92+i*.48,2.72,1.08);
-      for(let i=0;i<7;i++){const bean=sphere(.13,i%2?gold:wood,g,-1.4+(i%4)*.85,1.32+(i%2)*.12,.35+Math.floor(i/4)*.45,1);bean.scale.set(.8,1.25,.65);}
-      addBoxCollider(x,z,4,2.3);
+      const fabric=mat(accent,.96,{side:THREE.DoubleSide}),cream=mat("#f3dfbd",.96,{side:THREE.DoubleSide});
+      box(5.8,.2,3.4,wood,g,0,.9,0);
+      for(const sx of [-2.55,2.55])for(const sz of [-1.35,1.35])cylinder(.09,.12,3.45,wood,g,sx,1.72,sz,8);
+      const canopy=addMesh(new THREE.ConeGeometry(3.65,1.15,4),fabric,g,0,3.55,0);canopy.rotation.y=Math.PI/4;canopy.scale.set(1.2,.8,.78);
+      for(let side=0;side<4;side++){const angle=side*Math.PI/2;const stripe=box(1.65,.08,.035,side%2?cream:fabric,g,Math.cos(angle)*1.7,3.25,Math.sin(angle)*1.7);stripe.rotation.y=angle;}
+      for(let i=0;i<8;i++){const goods=sphere(.16,i%2?gold:wood,g,-2.1+(i%4)*1.35,1.16+(i%2)*.12,.35+Math.floor(i/4)*.65,1);goods.scale.set(.9,1.2,.7);}
     };
     const makeVillageLantern = (x,z) => {
       const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
@@ -1424,8 +1421,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeWalkRamp([-18,43.5],[-18,49],6,.175,1.625);
       makeWalkRamp([-18,53.5],[-18,59],6,1.625,3.075);
       // Borgo superiore: torre, case, vicoli e piazzetta alta
-      makeHouse(-22,-5,7,6,4,0);makeHouse(-12,-13,6,5,3.5,1);makeHouse(-18,13,6,5,3.5,0);
-      cylinder(1.7,2,13,stone,scene,-8,6.5,-25,12);const towerRoof=addMesh(new THREE.ConeGeometry(2.2,2.2,4),roof,scene,-8,14,-25);towerRoof.rotation.y=Math.PI/4;
       for(let y=0;y<3;y++)box(.6,1.2,.1,darkStone,scene,-8,3+y*3,-23.35);
       // Piazza centrale: pavimentazione in pietra, fontana e lanterne tradizionali.
       const plaza=addMesh(new THREE.CylinderGeometry(13,13,.4,48),pathMat,scene,0,.05,0);plaza.scale.z=.72;
@@ -1438,7 +1433,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeWoodPergola(0,13,0);makeRockGarden(-15,-16,1);makeRockGarden(16,17,2);
       makeBanner(-13,-12,"#a64c36",Math.PI/2);makeBanner(13,12,"#526d58",Math.PI/2);
       // Piccolo padiglione civico: edificio simbolo visibile dalla piazza.
-      makeHouse(-1,-23,10,7,4.6,1);
       makeNoren(-1,-19.35,"#536d58");
       makeVillageSign(7,-22,"Piazza del Chicco",Math.PI/2);
       makeStoneLantern(-7,-22);makeStoneLantern(7,-22);
@@ -1449,7 +1443,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const pebble=sphere(.42, i%2?stoneLight:stone,scene,px,.2,pz,1);pebble.scale.set(1.4,.55,.8);
         if(i%2===0)makeCoffeePlant(px*1.08,pz*1.08,.72);
       }
-      makeHouse(12,-13,6,5,3.7,1);makeHouse(15,13,6,5,3.7,0);
       makeNoren(12,-10.35,"#567b68");makeNoren(15,15.65,"#a64c36");
       // Dettagli da villaggio di Hisui: vialetti, lanterne, recinti e alberi in fiore.
       const villagePath=mat("#b89b75");
@@ -1467,13 +1460,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeVillageSign(31,5,"Fiume",Math.PI/2);
       makeVillageSign(-31,29,"Terrazze",Math.PI/2);
       // Distretto produttivo e magazzini a sud-est
-      makeRoastery(16,28);makeHouse(7,39,6,5,3.3,0);makeHouse(25,42,5,5,3,1);
       // Muretti, scale e terrazzamenti di collegamento.
       for(let i=0;i<5;i++){makeWall(-12+i*5,22+i*3,9,.9,-.45);for(let s=0;s<4;s++)box(2.1,.32,1.3,stoneLight,scene,-18+i*4+s*1.1,1.1+s*.35,24+i*3);}
       makeStoneSteps(-18,35,7,-.1);makeStoneSteps(-22,-31,6,Math.PI);
       // Giardini agrumati e serre della corporazione del caffè.
       for(let i=0;i<9;i++)makeCitrusTree(-48+(i%3)*7,18+Math.floor(i/3)*7,.85+(i%2)*.12);
-      makeGreenhouse(-52,-16);
       makeWoodPergola(-49,4,Math.PI/2);makeFlowerBed(-57,10,.4);makeFlowerBed(-39,10,-.4);
       // Sentiero panoramico, rocce e vegetazione: alternanza di pini e alberi in fiore.
       for(let i=0;i<48;i++){const a=i*2.399,rr=38+(i%5)*4;makeTree(Math.cos(a)*rr,Math.sin(a)*rr,.7+(i%3)*.18,i%4===0);}
@@ -1857,19 +1848,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let row=0;row<3;row++)box(w+.08,.055,.08,row%2?arabGold:arabWood,g,0,.55+row*.58,d/2+.08);
         box(2.1,.16,.7,arabStone,g,0,.12,d/2+.25);addBoxCollider(x,z,w+.7,d+.8,0,h+1.8);return g;
       };
-      const makeArabMinaret=(x,z)=>{
-        const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);
-        cylinder(1.12,1.55,11.5,arabWall,g,0,5.75,0,16);cylinder(1.85,1.85,.35,arabGold,g,0,7.2,0,16);
-        cylinder(1.45,1.65,2.1,arabWallLight,g,0,8.35,0,16);cylinder(1.95,1.95,.28,arabGold,g,0,9.55,0,16);
-        const roofCap=addMesh(new THREE.ConeGeometry(1.65,2.1,8),arabRoof,g,0,10.75,0);roofCap.rotation.y=Math.PI/8;sphere(.18,arabGold,g,0,12,0,2);
-        for(let i=0;i<4;i++){const a=i*Math.PI/2;box(.16,2.1,.16,arabWood,g,Math.cos(a)*1.12,5.4,Math.sin(a)*1.12);}addCollider(x,z,1.5,12.8);
-      };
-      makeArabHouse(145,-29,12,9,4.4,"#9f3f48");makeArabHouse(180,-34,13,10,4.8,"#416f78");
-      makeArabHouse(218,-25,12,9,4.2,"#b17a3f");makeArabHouse(221,59,13,9,4.5,"#74518e");
-      makeArabHouse(143,59,11,9,4.1,"#3e7568");makeArabMinaret(229,-4);
-      [[158,-8,9,13,"#e6c17b"],[193,-8,7,10,"#d9ad69"],[176,31,8,12,"#b78bd0"],[211,25,6,9,"#e6c17b"],[144,31,6,9,"#d7a35e"]].forEach(v=>dome(...v));
+            makeArabHouse(143,59,11,9,4.1,"#3e7568");makeArabMinaret(229,-4);
       // Cupole e tronchi dell'oasi sono ostacoli solidi, non attraversabili.
-      [[158,-8,6.2,7.2],[193,-8,4.9,5.8],[176,31,5.6,6.5],[211,25,4.2,5.2],[144,31,4.2,5.2]].forEach(([x,z,r,h])=>addCollider(x,z,r,h));
       // Sentieri chiari tra portale, bazar e oasi: leggibili senza tagliare le bancarelle.
       const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,arabniteWorld,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
       const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
@@ -1925,14 +1905,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
       // I bazar sono interazioni integrate con i rispettivi NPC: nessun punto di interazione sovrapposto.
-      const setArabniteNpcAction=(name,description,action)=>{
+      const setArabniteNpcAction=(name,description,action,radius=7.2)=>{
         const entry=interactables.find(item=>item.title.startsWith(name+" ·"));
-        if(entry){entry.text=description;entry.action=action;}
+        if(entry){entry.text=description;entry.action=action;entry.radius=radius;}
       };
-      setArabniteNpcAction("Brama","Bazar standard · 30 monete · scambi di carte doppie.",()=>setDialogue({title:"Brama · Bazar e Banco degli Scambi",text:"«Posso venderti le bustine del bazar oppure scambiare un tuo doppione con una carta che ti manca.»",actions:[{label:"Compra bustina · 30 monete",run:()=>{if(buyArabnitePack("standard"))setDialogue(null);}},{label:"Compra 3 bustine · 90 monete",run:()=>{if(buyArabnitePack("standard")&&buyArabnitePack("standard")&&buyArabnitePack("standard"))setDialogue(null);}},{label:"Scambia un doppione",run:()=>tradeArabniteCard("Brama")}]}));
-      setArabniteNpcAction("Lumen","Scambi speciali con il custode della luna.",()=>setDialogue({title:"Lumen · Scambi della Luna",text:"«Posso cercarti una carta Luce, Mago o Nuvola in cambio di un doppione.»",actions:[{label:"Scambia un doppione",run:()=>tradeArabniteCard("Lumen")}]}));
-      setArabniteNpcAction("Ponce","Bustine premium · 65 monete.",()=>setDialogue({title:"Ponce · Bazar delle Lanterne",text:"«Le mie bustine premium garantiscono almeno una carta di fascia epica o leggendaria.»",actions:[{label:"Compra premium · 65 monete",run:()=>{if(buyArabnitePack("premium"))setDialogue(null);}}]}));
-      setArabniteNpcAction("Trix","Emporio del Collezionista · bustine rare.",()=>setDialogue({title:"Trix · Emporio del Collezionista",text:"«Qui puoi investire nelle bustine più pregiate: tre carte epiche o leggendarie.»",actions:[{label:"Compra rara · 110 monete",run:()=>{if(buyArabnitePack("rare"))setDialogue(null);}}]}));
+       setArabniteNpcAction("Brama","BUSTINE STANDARD · 30 monete · scambia doppioni.",()=>setDialogue({title:"Brama · Bazar delle Bustine",text:"«Ehi viaggiatore! Qui trovi le bustine standard dei Sognatori. Ogni bustina contiene 3 carte: puoi anche scambiare un doppione con una carta che ti manca.»",actions:[{label:"Compra 1 bustina · 30 monete",run:()=>{buyArabnitePack("standard");}},{label:"Compra 3 bustine · 90 monete",run:()=>{if(buyArabnitePack("standard")&&buyArabnitePack("standard")&&buyArabnitePack("standard"))setDialogue(null);}},{label:"Scambia un doppione",run:()=>tradeArabniteCard("Brama")}]}),7.2);
+       setArabniteNpcAction("Lumen","SCAMBI SPECIALI · Luce, Mago e Nuvola.",()=>setDialogue({title:"Lumen · Scambi della Luna",text:"«Portami un doppione: cercherò per te una carta Luce, Mago o Nuvola.»",actions:[{label:"Scambia un doppione",run:()=>tradeArabniteCard("Lumen")}]}),7.2);
+       setArabniteNpcAction("Ponce","BUSTINE PREMIUM · 65 monete.",()=>setDialogue({title:"Ponce · Bazar Premium",text:"«Le bustine premium contengono 3 carte e garantiscono almeno una carta epica o leggendaria.»",actions:[{label:"Compra premium · 65 monete",run:()=>{buyArabnitePack("premium");}}]}),7.2);
+       setArabniteNpcAction("Trix","BUSTINE RARE · 110 monete.",()=>setDialogue({title:"Trix · Emporio Raro",text:"«Le mie bustine rare contengono soltanto carte epiche o leggendarie: tre tesori per i collezionisti.»",actions:[{label:"Compra rara · 110 monete",run:()=>{buyArabnitePack("rare");}}]}),7.2);
       // Adli accoglie chi arriva ad Arabnite: è l'inventore del gioco di carte dei Sognatori.
       const adli=makeNpc("archivist","Adli","Inventore del Gioco di Carte",151,7,"#c68b42",[
         "Benvenuto ad Arabnite! Qui le carte dei Sognatori sono una vera passione.",
@@ -2899,7 +2879,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       {panel===null&&!zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
       {panel===null&&zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#e8d7bd"}}>
         <strong style={{color:"#f1cb7b"}}>Arabnite · Città delle Lanterne</strong>
-        <div style={{marginTop:7}}>Esplorazione libera tra bazar, palazzi, cortili e oasi. Nessuna quest è attiva in questa città.</div>
+        <div style={{marginTop:7}}>Esplora i tendoni aperti e l’oasi. Avvicinati a Brama, Ponce o Trix e premi E per parlare e comprare le bustine; con Lumen puoi scambiare i doppioni.</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
