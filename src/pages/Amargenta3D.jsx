@@ -1679,7 +1679,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
         const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
         sphere(.24,gem,g,0,8.05,.35,2);
-        // Nome del mondo al centro del varco, come nella versione precedente.
+        // Nome del mondo sopra l’arco, nello stile classico dei portali.
         if(worldName){
           const glyphs={
             A:["01110","10001","10001","11111","10001","10001","10001"],
@@ -1703,7 +1703,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
                 if(pixel==="1"){
                   box(.088,.088,.055,arabGold,g,
                     left+index*(5*cell+letterGap)+col*cell+.044,
-                    3.55+(3-row)*cell,
+                    9.05+(3-row)*cell,
                     .72);
                 }
               });
