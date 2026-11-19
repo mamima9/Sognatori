@@ -274,6 +274,13 @@ function Amargenta3DContent({ onExit }) {
     let disposed = false;
     const keys = new Set();
     const clock = new THREE.Clock();
+    const sessionStorageKey = "sognatori:world-session:v1";
+    let restoredSession = null;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(sessionStorageKey) || "null");
+      if (stored && stored.version === 1 && stored.worlds && typeof stored.worlds === "object") restoredSession = stored;
+    } catch { restoredSession = null; }
+    let sessionWorlds = restoredSession?.worlds || {};
     const player = new THREE.Group();
     const playerMotion = { model:null, arms:[], feet:[] };
     const colliders = [];
@@ -1773,12 +1780,23 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const toArabnite=target==="arabnite";
         if(toArabnite&&!arabniteReady){setToast("Arabnite non è disponibile in questo momento. Amargenta resta esplorabile.");return;}
         if(Boolean(arabniteActive)===toArabnite)return;
+        saveCurrentWorld();
         setWorldTransition(toArabnite?"arabnite":"amargenta");controlsLockedRef.current=true;
         window.setTimeout(()=>{
-          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="talpitrippa";switchCharacter();player.position.set(178,0,12);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;setToast("Arabnite · Talpitrippa attivo per prova");}
-          else{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;setToast("Sei tornato ad Amargenta");}
-          movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);
-        },950);
+          const destinationKey=toArabnite?"arabnite":"amargenta";
+          const destination=sessionWorlds[destinationKey];
+          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;}
+          else{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;}
+          const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:61,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
+          const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)?destination:defaults;
+          player.position.set(state.x,0,state.z);
+          yaw=Number.isFinite(state.yaw)?state.yaw:defaults.yaw;
+          pitch=Number.isFinite(state.pitch)?THREE.MathUtils.clamp(state.pitch,.2,.88):defaults.pitch;
+          distance=Number.isFinite(state.distance)?THREE.MathUtils.clamp(state.distance,7,18):defaults.distance;
+          switchCharacter(state.character||defaults.character,true);
+          movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;climbHeight=0;climbingWall=null;
+          zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);saveCurrentWorld();
+        },420);
       };
       // L'accesso diretto dal pulsante Arabnite apre subito il mondo corretto.
       if(new URLSearchParams(window.location.search).get("world")==="arabnite"){
@@ -1787,7 +1805,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const arabniteBuildSnapshot={interactables:interactables.length,colliders:colliders.length,npcActors:npcActors.length,packs:arabnitePackMeshes.length,portalEffects:arabPortalEffects.length};
       try {
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
-      addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),arabniteWorld,178,-.02,12).rotation.x=-Math.PI/2;
+      // La sabbia continua sotto tutta la cintura di dune, senza fessure o bordi neri.
+      addMesh(new THREE.PlaneGeometry(190,190,32,32),mat("#c29a63"),arabniteWorld,178,-.02,12).rotation.x=-Math.PI/2;
       // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
       const arabIce=mat("#a8e8f2",.22,{metalness:.28,roughness:.2,transparent:true,opacity:.92});
       const icePatch=addMesh(new THREE.PlaneGeometry(27,19),arabIce,arabniteWorld,164,.035,-13);
@@ -1877,13 +1896,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
+      // Lumen resta visibile nell'overworld, ma senza dialogo né interazione.
+      removeInteraction("keeper");
       // I bazar sono interazioni integrate con i rispettivi NPC: nessun punto di interazione sovrapposto.
       const setArabniteNpcAction=(name,description,action,radius=7.2)=>{
         const entry=interactables.find(item=>item.title.startsWith(name+" ·"));
         if(entry){entry.text=description;entry.action=action;entry.radius=radius;}
       };
        setArabniteNpcAction("Brama","BUSTINE STANDARD · 30 monete · scambia doppioni.",()=>setDialogue({title:"Brama · Bazar delle Bustine",text:"«Ehi viaggiatore! Qui trovi le bustine standard dei Sognatori. Ogni bustina contiene 3 carte: puoi anche scambiare un doppione con una carta che ti manca.»",actions:[{label:"Compra 1 bustina · 30 monete",run:()=>{buyArabnitePack("standard");}},{label:"Compra 3 bustine · 90 monete",run:()=>{if(buyArabnitePack("standard")&&buyArabnitePack("standard")&&buyArabnitePack("standard"))setDialogue(null);}},{label:"Scambia un doppione",run:()=>tradeArabniteCard("Brama")}]}),7.2);
-       setArabniteNpcAction("Lumen","SCAMBI SPECIALI · Luce, Mago e Nuvola.",()=>setDialogue({title:"Lumen · Scambi della Luna",text:"«Portami un doppione: cercherò per te una carta Luce, Mago o Nuvola.»",actions:[{label:"Scambia un doppione",run:()=>tradeArabniteCard("Lumen")}]}),7.2);
        setArabniteNpcAction("Ponce","BUSTINE PREMIUM · 65 monete.",()=>setDialogue({title:"Ponce · Bazar Premium",text:"«Le bustine premium contengono 3 carte e garantiscono almeno una carta epica o leggendaria.»",actions:[{label:"Compra premium · 65 monete",run:()=>{buyArabnitePack("premium");}}]}),7.2);
        setArabniteNpcAction("Trix","BUSTINE RARE · 110 monete.",()=>setDialogue({title:"Trix · Emporio Raro",text:"«Le mie bustine rare contengono soltanto carte epiche o leggendarie: tre tesori per i collezionisti.»",actions:[{label:"Compra rara · 110 monete",run:()=>{buyArabnitePack("rare");}}]}),7.2);
       // Adli accoglie chi arriva ad Arabnite: è l'inventore del gioco di carte dei Sognatori.
@@ -2384,9 +2404,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       Object.entries(arabniteCompanions).forEach(([id,model])=>{model.name="ArabniteCompanion-"+id;model.scale.setScalar(.48);model.visible=false;arabniteWorld.add(model);});
       const regularOrder=["talpitrippa","ripple","moci-moci","piocino"];
       const arabniteOrder=["cervio","gunvallo","rullino"];
-      const switchCharacter=()=>{
+      const switchCharacter=(requestedCharacter=null,silent=false)=>{
         const order=arabniteActive?arabniteOrder:regularOrder;
-        if(!order.includes(characterState.active))characterState.active=order[0];
+        if(requestedCharacter&&order.includes(requestedCharacter))characterState.active=requestedCharacter;
+        else if(!order.includes(characterState.active))characterState.active=order[0];
         else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
         const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
         Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
@@ -2404,7 +2425,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         setActiveCharacter(characterState.active);
         playerMotion.model=config.model;playerMotion.arms=config.arms;playerMotion.feet=config.feet;playerMotion.eyes=config.eyes;
         const labels={"talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino","cervio":"Cervio","gunvallo":"Gunvallo","rullino":"Rullino"};
-        setToast(labels[characterState.active]+" · personaggio attivo");
+        if(!silent)setToast(labels[characterState.active]+" · personaggio attivo");
       };
       const talpitrippaShadow = new THREE.Mesh(
         new THREE.CircleGeometry(.78,32),
@@ -2415,6 +2436,36 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       talpitrippaShadow.scale.set(1.25,.62,1);
       scene.add(talpitrippaShadow);
       scene.add(player);player.position.set(-44,0,2);
+
+      const saveCurrentWorld=()=>{
+        try{
+          const worldKey=arabniteActive?"arabnite":"amargenta";
+          sessionWorlds={...sessionWorlds,[worldKey]:{
+            x:player.position.x,z:player.position.z,yaw,pitch,distance,character:characterState.active
+          }};
+          window.localStorage.setItem(sessionStorageKey,JSON.stringify({
+            version:1,savedAt:Date.now(),activeWorld:worldKey,
+            activeCharacter:characterState.active,worlds:sessionWorlds,elapsedTime:clock.elapsedTime
+          }));
+        }catch(error){console.warn("Salvataggio sessione overworld non disponibile",error);}
+      };
+
+      // Riprende mondo, posizione, camera e personaggio dopo la sospensione del browser mobile.
+      const requestedWorld=new URLSearchParams(window.location.search).get("world")==="arabnite"
+        ?"arabnite":(restoredSession?.activeWorld==="arabnite"?"arabnite":"amargenta");
+      const restoredWorld=restoredSession?.worlds?.[requestedWorld];
+      if(restoredSession&&restoredWorld&&Number.isFinite(restoredWorld.x)&&Number.isFinite(restoredWorld.z)){
+        if(requestedWorld==="arabnite"&&arabniteReady){
+          scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;
+        }
+        player.position.set(restoredWorld.x,0,restoredWorld.z);
+        if(Number.isFinite(restoredWorld.yaw))yaw=restoredWorld.yaw;
+        if(Number.isFinite(restoredWorld.pitch))pitch=THREE.MathUtils.clamp(restoredWorld.pitch,.2,.88);
+        if(Number.isFinite(restoredWorld.distance))distance=THREE.MathUtils.clamp(restoredWorld.distance,7,18);
+        switchCharacter(restoredWorld.character||restoredSession.activeCharacter,true);
+        zoneRef.current=requestedWorld==="arabnite"?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);
+      }else switchCharacter(characterState.active,true);
+      if(Number.isFinite(restoredSession?.elapsedTime)){clock.start();clock.elapsedTime=Math.max(0,restoredSession.elapsedTime);}
 
       // La città usa geometrie procedurali native: nessuna richiesta a modelli GLB mancanti.
       // Arabnite vive in una scena autonoma: sposta qui tutti gli oggetti del suo settore
@@ -2470,7 +2521,15 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
       };
       const onKeyUp=e=>keys.delete(e.code);
-      const onWindowBlur=()=>keys.clear();
+      const onWindowBlur=()=>{keys.clear();saveCurrentWorld();};
+      const onVisibilityChange=()=>{
+        if(document.hidden){keys.clear();saveCurrentWorld();return;}
+        resize();cameraReady=false;
+      };
+      const onPageShow=()=>{if(!document.hidden){resize();cameraReady=false;}};
+      document.addEventListener("visibilitychange",onVisibilityChange);
+      window.addEventListener("pagehide",saveCurrentWorld);
+      window.addEventListener("pageshow",onPageShow);
       const onPointerDown=e=>{if(e.button!==0)return;dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
       const onPointerUp=()=>{dragging=false;};
       const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*(compactDevice ? 0.005 : 0.0036);pitch=Math.max(.20,Math.min(.88,pitch+dy*.0034));};
@@ -2491,9 +2550,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         renderer.setSize(resizeWidth, resizeHeight);
       };
       observer=new ResizeObserver(resize);observer.observe(host);
+      let lastSessionSave=0;
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
+        if(document.hidden)return;
         const dt=Math.min(clock.getDelta(),.04);
+        if(clock.elapsedTime-lastSessionSave>1.5){lastSessionSave=clock.elapsedTime;saveCurrentWorld();}
         if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
          const piocinoFlying=characterState.active==="piocino"&&keys.has("Space");
          jumpRequested=false;
@@ -2724,7 +2786,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         renderer.render(arabniteActive?arabniteScene:scene,camera);
       };
       animate();
-      return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();[scene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
+      return ()=>{saveCurrentWorld();cancelAnimationFrame(frame);observer?.disconnect();document.removeEventListener("visibilitychange",onVisibilityChange);window.removeEventListener("pagehide",saveCurrentWorld);window.removeEventListener("pageshow",onPageShow);window.removeEventListener("keydown",onKeyDown);window.removeEventListener("keyup",onKeyUp);window.removeEventListener("blur",onWindowBlur);renderer.domElement.removeEventListener("pointerdown",onPointerDown);renderer.domElement.removeEventListener("pointerup",onPointerUp);renderer.domElement.removeEventListener("pointercancel",onPointerUp);renderer.domElement.removeEventListener("pointermove",onPointerMove);renderer.domElement.removeEventListener("wheel",onWheel);renderer.dispose();[scene,arabniteScene].filter(Boolean).forEach(world=>world.traverse(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}));if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement);};
     } catch (error) {
       console.error("Amargenta 3D init error",error);
       setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
@@ -2842,11 +2904,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       {panel===null&&!zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
       {panel===null&&zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#e8d7bd"}}>
         <strong style={{color:"#f1cb7b"}}>Arabnite · Città delle Lanterne</strong>
-        <div style={{marginTop:7}}>Esplora i tendoni aperti e l’oasi. Avvicinati a Brama, Ponce o Trix e premi E per parlare e comprare le bustine; con Lumen puoi scambiare i doppioni.</div>
+        <div style={{marginTop:7}}>Esplora i tendoni aperti e l’oasi. Avvicinati a Brama, Ponce o Trix e premi E per parlare e comprare le bustine.</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
-        <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Brama vende bustine standard, Ponce quelle premium e Trix quelle rare. Brama e Lumen accettano scambi di doppioni.</div>
+        <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Brama vende bustine standard, Ponce quelle premium e Trix quelle rare. Brama accetta scambi di doppioni.</div>
         <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
       </div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
