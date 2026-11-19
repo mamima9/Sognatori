@@ -336,6 +336,8 @@ function Amargenta3DContent({ onExit }) {
     let climbingWall = null;
     let arabniteActive = false;
     let arabniteReady = false;
+    let portalTriggerArmed = true;
+    let portalCooldownUntil = 0;
     let isArabniteIceAt = () => false;
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 9.2;
     const movementVelocity = new THREE.Vector3();
@@ -1873,20 +1875,25 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // Portali monumentali gemelli: pietra antica, archi, gemme e un nucleo magico pulsante.
       const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
       const makeSpyroPortal=(x,z,rotation=0,worldName="",parent=scene)=>{
+        const toArabnite=worldName.toLowerCase()==="arabnite";
+        const palette=toArabnite
+          ? {stone:"#b99a70",shadow:"#70523e",gold:"#d9a63c",gem:"#63d8dc",glow:"#53cfe0",red:"#8f2731",label:"#3a241d"}
+          : {stone:"#c6d9c0",shadow:"#405b49",gold:"#9ac7a2",gem:"#b9ead0",glow:"#91d9ad",red:"#52765a",label:"#203c30"};
+        const portalGold=mat(palette.gold,.42,{metalness:.48});
         const g=new THREE.Group();parent.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
-        const carvedStone=mat("#b99a70",.82),shadowStone=mat("#70523e",.9),gem=mat("#63d8dc",.24,{metalness:.28,emissive:"#1a8fbd",emissiveIntensity:.72});
+        const carvedStone=mat(palette.stone,.82),shadowStone=mat(palette.shadow,.9),gem=mat(palette.gem,.24,{metalness:.28,emissive:palette.glow,emissiveIntensity:.72});
         box(8.8,.42,3.8,shadowStone,g,0,.22,0);box(7.8,.34,3.1,arabStone,g,0,.58,0); 
         for(const side of [-1,1]){
           cylinder(.48,.7,6.35,carvedStone,g,side*3.15,3.75,0,12);
-          cylinder(.72,.72,.34,arabGold,g,side*3.15,6.78,0,12);
+          cylinder(.72,.72,.34,portalGold,g,side*3.15,6.78,0,12);
           cylinder(.62,.62,.22,shadowStone,g,side*3.15,.98,0,12);
-          box(.18,3.9,.16,arabGold,g,side*3.15,3.65,.52);sphere(.38,gem,g,side*3.15,4.45,.12,2);
+          box(.18,3.9,.16,portalGold,g,side*3.15,3.65,.52);sphere(.38,gem,g,side*3.15,4.45,.12,2);
           const crystal=addMesh(new THREE.OctahedronGeometry(.55),gem,g,side*4.05,4.15,.18);crystal.rotation.z=side*.22;
-          const cap=addMesh(new THREE.ConeGeometry(.72,.85,4),arabRed,g,side*3.15,7.2,0);cap.rotation.y=Math.PI/4;
+          const cap=addMesh(new THREE.ConeGeometry(.72,.85,4),mat(palette.red),g,side*3.15,7.2,0);cap.rotation.y=Math.PI/4;
         }
         box(7.8,.62,1.1,carvedStone,g,0,7.1,0);
         addMesh(new THREE.TorusGeometry(3.25,.42,10,40,Math.PI),carvedStone,g,0,3.9,0);
-        addMesh(new THREE.TorusGeometry(3.25,.12,8,40,Math.PI),arabGold,g,0,3.9,.16);
+        addMesh(new THREE.TorusGeometry(3.25,.12,8,40,Math.PI),portalGold,g,0,3.9,.16);
         const coreMaterial=new THREE.MeshBasicMaterial({color:"#53cfe0",transparent:true,opacity:.58,side:THREE.DoubleSide});
         const core=addMesh(new THREE.CircleGeometry(2.48,48),coreMaterial,g,0,3.55,.28);
         // Nome della destinazione centrato e leggibile nel cerchio del portale.
@@ -1894,21 +1901,21 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const labelCanvas=document.createElement("canvas");labelCanvas.width=1024;labelCanvas.height=192;
           const ctx=labelCanvas.getContext("2d");
           if(ctx){
-            ctx.clearRect(0,0,1024,192);ctx.fillStyle="rgba(30,20,34,.78)";
+            ctx.clearRect(0,0,1024,192);ctx.fillStyle=palette.label;
             ctx.beginPath();ctx.roundRect(28,22,968,148,38);ctx.fill();
-            ctx.strokeStyle="#f3d28a";ctx.lineWidth=8;ctx.stroke();
-            ctx.fillStyle="#fff1c7";ctx.textAlign="center";ctx.textBaseline="middle";
-            ctx.font="900 92px Georgia,serif";ctx.shadowColor="#6a3b13";ctx.shadowBlur=18;
+            ctx.strokeStyle=palette.gold;ctx.lineWidth=8;ctx.stroke();
+            ctx.fillStyle=toArabnite?"#fff1c7":"#effff0";ctx.textAlign="center";ctx.textBaseline="middle";
+            ctx.font="900 92px Georgia,serif";ctx.shadowColor=toArabnite?"#6a3b13":"#24543a";ctx.shadowBlur=18;
             ctx.fillText(worldName.toUpperCase(),512,98);
             const labelTexture=new THREE.CanvasTexture(labelCanvas);labelTexture.colorSpace=THREE.SRGBColorSpace;
             const labelMaterial=new THREE.MeshBasicMaterial({map:labelTexture,transparent:true,depthWrite:false,side:THREE.DoubleSide});
             addMesh(new THREE.PlaneGeometry(4.65,.88),labelMaterial,g,0,3.55,.62);
           }
         }
-        const ring=addMesh(new THREE.TorusGeometry(2.62,.22,12,48),arabGold,g,0,3.55,.35);
+        const ring=addMesh(new THREE.TorusGeometry(2.62,.22,12,48),portalGold,g,0,3.55,.35);
         const innerRing=addMesh(new THREE.TorusGeometry(2.27,.065,8,48),gem,g,0,3.55,.38);
-        for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
-        const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
+        for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),portalGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
+        const crest=addMesh(new THREE.OctahedronGeometry(.78),portalGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
         sphere(.24,gem,g,0,8.05,.35,2);
         arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
         return g;
@@ -1928,14 +1935,17 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             if(player.parent)player.parent.remove(player);
             (toArabnite?arabniteScene:scene).add(player);
             arabniteActive=toArabnite;
-            const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:61,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
-            const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)?destination:defaults;
+            const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:48,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
+            const portalX=toArabnite?132:67,portalZ=toArabnite?12:2;
+            const savedIsInsidePortal=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)&&Math.hypot(destination.x-portalX,destination.z-portalZ)<10;
+            const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)&&!savedIsInsidePortal?destination:defaults;
             player.position.set(state.x,0,state.z);
             yaw=Number.isFinite(state.yaw)?state.yaw:defaults.yaw;
             pitch=Number.isFinite(state.pitch)?THREE.MathUtils.clamp(state.pitch,.2,.88):defaults.pitch;
             distance=Number.isFinite(state.distance)?THREE.MathUtils.clamp(state.distance,7,18):defaults.distance;
             switchCharacter(state.character||defaults.character,true);
             movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;climbHeight=0;climbingWall=null;
+            portalTriggerArmed=false;portalCooldownUntil=Date.now()+1200;
             zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;setMenuOpen(false);setPanel(null);saveCurrentWorld();
           } catch(error) {
             console.error("Cambio mondo non riuscito:",error);
@@ -2624,14 +2634,15 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
       // Riprende mondo, posizione, camera e personaggio dopo la sospensione del browser mobile.
       const directArabniteEntry=new URLSearchParams(window.location.search).get("world")==="arabnite";
-      const requestedWorld=directArabniteEntry?"arabnite":(restoredSession?.activeWorld==="arabnite"?"arabnite":"amargenta");
+      const requestedWorld=directArabniteEntry?"arabnite":(onExit?"amargenta":(restoredSession?.activeWorld==="arabnite"?"arabnite":"amargenta"));
       const restoredWorld=restoredSession?.worlds?.[requestedWorld];
       const hasRestoredPosition=Boolean(restoredWorld&&Number.isFinite(restoredWorld.x)&&Number.isFinite(restoredWorld.z));
       if(requestedWorld==="arabnite"&&arabniteReady){
         // La URL pubblica deve aprire Arabnite anche al primo accesso, senza un salvataggio precedente.
         scene.remove(player);arabniteScene.add(player);arabniteActive=true;
         const defaults={x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"};
-        const state=hasRestoredPosition?restoredWorld:defaults;
+        const savedNearReturnPortal=hasRestoredPosition&&Math.hypot(restoredWorld.x-132,restoredWorld.z-12)<10;
+        const state=hasRestoredPosition&&!savedNearReturnPortal?restoredWorld:defaults;
         player.position.set(state.x,0,state.z);
         if(Number.isFinite(state.yaw))yaw=state.yaw;
         if(Number.isFinite(state.pitch))pitch=THREE.MathUtils.clamp(state.pitch,.2,.88);
@@ -2639,7 +2650,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         switchCharacter(state.character||restoredSession?.activeCharacter||defaults.character,true);
         zoneRef.current="Arabnite · Piazza delle Lanterne";setZone(zoneRef.current);
       }else if(hasRestoredPosition){
-        player.position.set(restoredWorld.x,0,restoredWorld.z);
+        const savedNearArabnitePortal=Math.hypot(restoredWorld.x-67,restoredWorld.z-2)<10;
+        player.position.set(savedNearArabnitePortal?48:restoredWorld.x,0,savedNearArabnitePortal?2:restoredWorld.z);
         if(Number.isFinite(restoredWorld.yaw))yaw=restoredWorld.yaw;
         if(Number.isFinite(restoredWorld.pitch))pitch=THREE.MathUtils.clamp(restoredWorld.pitch,.2,.88);
         if(Number.isFinite(restoredWorld.distance))distance=THREE.MathUtils.clamp(restoredWorld.distance,7,18);
@@ -2869,7 +2881,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         // Attraversare fisicamente il cerchio del portale cambia mondo in automatico.
         if(!controlsLockedRef.current){
           const portalDistance=arabniteActive?Math.hypot(p.x-132,p.z-12):Math.hypot(p.x-67,p.z-2);
-          if(portalDistance<3.9)travelToWorldRef.current?.(arabniteActive?"amargenta":"arabnite");
+          if(!portalTriggerArmed&&portalDistance>10)portalTriggerArmed=true;
+          if(portalTriggerArmed&&Date.now()>=portalCooldownUntil&&portalDistance<3.9){
+            portalTriggerArmed=false;
+            travelToWorldRef.current?.(arabniteActive?"amargenta":"arabnite");
+          }
         }
         if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
         const period=Math.floor((clock.elapsedTime%240)/60);
