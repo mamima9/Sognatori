@@ -114,6 +114,8 @@ drop policy if exists "card definitions readable" on public.sognatore_card_defin
 create policy "card definitions readable" on public.sognatore_card_definitions for select to authenticated using (true);
 drop policy if exists "owned cards readable" on public.sognatore_card_instances;
 create policy "owned cards readable" on public.sognatore_card_instances for select to authenticated using (owner_id = auth.uid());
+drop policy if exists "listed cards readable" on public.sognatore_card_instances;
+create policy "listed cards readable" on public.sognatore_card_instances for select to authenticated using (exists (select 1 from public.sognatore_market_listings l where l.card_instance_id = id and l.status = 'ACTIVE'));
 drop policy if exists "wallet owner readable" on public.sognatore_wallets;
 create policy "wallet owner readable" on public.sognatore_wallets for select to authenticated using (user_id = auth.uid());
 drop policy if exists "active listings readable" on public.sognatore_market_listings;
@@ -130,6 +132,17 @@ revoke insert, update, delete on public.sognatore_market_listings from anon, aut
 revoke insert, update, delete on public.sognatore_trade_offers from anon, authenticated;
 revoke insert, update, delete on public.sognatore_card_transactions from anon, authenticated;
 
+create or replace function public.sognatore_get_wallet()
+returns bigint language plpgsql security definer set search_path = public, pg_temp
+as $
+declare v_user uuid := auth.uid(); v_coins bigint;
+begin
+  if v_user is null then raise exception 'AUTH_REQUIRED'; end if;
+  insert into public.sognatore_wallets(user_id) values(v_user) on conflict do nothing;
+  select coins into v_coins from public.sognatore_wallets where user_id=v_user;
+  return v_coins;
+end $;
+
 create or replace function public.sognatore_open_pack(p_kind text default 'standard')
 returns table(card_instance_id uuid, card_id text, serial_number smallint, rarity text)
 language plpgsql security definer set search_path = public, pg_temp
@@ -142,6 +155,13 @@ begin
   insert into public.sognatore_wallets(user_id) values(v_user) on conflict do nothing;
   select coins into v_wallet from public.sognatore_wallets where user_id=v_user for update;
   if v_wallet < v_price then raise exception 'INSUFFICIENT_COINS'; end if;
+  -- Verifica la disponibilità prima di addebitare: una bustina deve contenere sempre 3 carte.
+  if (select count(*) from public.sognatore_card_instances i where i.owner_id is null and case p_kind
+        when 'standard' then i.rarity in ('COMUNE','RARA')
+        when 'premium' then i.rarity in ('RARA','EPICA','LEGGENDA')
+        else i.rarity in ('EPICA','LEGGENDA') end) < 3 then
+    raise exception 'PACK_POOL_EXHAUSTED';
+  end if;
   update public.sognatore_wallets set coins=coins-v_price, updated_at=now() where user_id=v_user;
   for v_card in
     select i.id, i.card_id, i.serial_number, i.rarity
@@ -251,12 +271,14 @@ begin
     (v_trade.requested_card_id,v_user,v_trade.proposer_id,'TRADE',p_trade_id);
 end $$;
 
+revoke all on function public.sognatore_get_wallet() from public;
 revoke all on function public.sognatore_open_pack(text) from public;
 revoke all on function public.sognatore_list_card(uuid,bigint) from public;
 revoke all on function public.sognatore_cancel_listing(uuid) from public;
 revoke all on function public.sognatore_buy_listing(uuid) from public;
 revoke all on function public.sognatore_propose_trade(uuid,uuid,uuid) from public;
 revoke all on function public.sognatore_respond_trade(uuid,boolean) from public;
+grant execute on function public.sognatore_get_wallet() to authenticated;
 grant execute on function public.sognatore_open_pack(text) to authenticated;
 grant execute on function public.sognatore_list_card(uuid,bigint) to authenticated;
 grant execute on function public.sognatore_cancel_listing(uuid) to authenticated;
