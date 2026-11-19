@@ -944,6 +944,11 @@ function Amargenta3DContent({ onExit }) {
       const index = interactables.findIndex(item => item.id === id);
       if (index >= 0) interactables.splice(index, 1);
     };
+    const removeNpcInteraction = (name) => {
+      for(let i=interactables.length-1;i>=0;i--){
+        if(interactables[i].title.startsWith(name+" ·")) interactables.splice(i,1);
+      }
+    };
     const makeGroundEdit=(kind,x,z)=>{
       const g=new THREE.Group();scene.add(g);g.position.set(x,.06,z);
       if(kind==="hole"){
@@ -1040,16 +1045,38 @@ function Amargenta3DContent({ onExit }) {
         const mini=new THREE.Group();g.add(mini);
         const miniBody=mat(({Biglia:"#b72c25",Brama:"#a98251",Lumen:"#7564bd",Ponce:"#d9a34c",Sanlegno:"#8b633f",Trix:"#45347d",Vudele:"#e85b9b",Cervio:"#55c9f4",Gunvallo:"#9b4d20",Rullino:"#236de8"})[name]||baseColor);
         const miniLight=mat(({Biglia:"#f2bd8b",Brama:"#f1d2a2",Lumen:"#d8d0ff",Ponce:"#ffe0a1",Sanlegno:"#c9a078",Trix:"#d8caff",Vudele:"#ffd1e8",Cervio:"#e8f8ff",Gunvallo:"#d58a45",Rullino:"#43dcb2"})[name]||lightColor);
-        const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.48,2,5),miniBody);body.position.y=.72;
-        const bodyShapes={Biglia:[1.22,1.02,.92],Brama:[1.02,1.12,.9],Lumen:[.82,1.3,.78],Ponce:[1.18,1.02,.92],Sanlegno:[1.16,1.22,1.02],Trix:[.86,1.18,.82],Vudele:[1.28,.92,1.05]};
-        const bodyShape=bodyShapes[name]||[1,1,1];body.scale.set(...bodyShape);mini.add(body);
-        const head=new THREE.Mesh(new THREE.SphereGeometry(.31,7,5),miniLight);head.position.set(0,1.42,.035);
-        const headShapes={Biglia:[1.12,1.02,.9],Brama:[1.18,.88,1],Lumen:[.92,1.12,.92],Ponce:[1.15,.96,1],Sanlegno:[1.02,1.08,.95],Trix:[.92,1.02,.92],Vudele:[1.12,1.04,1.08]};
-        head.scale.set(...(headShapes[name]||[1,1,1]));mini.add(head);
-        const face=new THREE.Mesh(new THREE.SphereGeometry(.19,6,4),belly);face.scale.set(1,.65,.5);face.position.set(0,1.34,.27);mini.add(face);
-        for(const side of [-1,1]){
-          const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);
-          const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.24,1,4),miniBody);leg.position.set(side*.17,.2,.015);mini.add(leg);
+        if(name==="Ponce"){
+          // Ponce è un cammello 3D: corpo robusto, gobba, collo arcuato e quattro zampe.
+          const camelBody=new THREE.Mesh(new THREE.SphereGeometry(.62,10,8),miniBody);camelBody.position.set(0,.91,-.02);camelBody.scale.set(1.55,.88,.94);mini.add(camelBody);
+          const hump=new THREE.Mesh(new THREE.SphereGeometry(.38,9,7),mat("#b98238"));hump.position.set(0,1.55,-.12);hump.scale.set(1.02,1.35,.92);mini.add(hump);
+          const neck=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.62,3,7),miniBody);neck.position.set(0,1.55,.43);neck.rotation.x=-.28;neck.rotation.z=-.12;mini.add(neck);
+          const camelHead=new THREE.Mesh(new THREE.SphereGeometry(.2,8,7),miniLight);camelHead.position.set(0,2.03,.62);camelHead.scale.set(1.05,.9,1.28);mini.add(camelHead);
+          const muzzle=new THREE.Mesh(new THREE.SphereGeometry(.19,8,6),mat("#e8bd83"));muzzle.position.set(0,1.91,.86);muzzle.scale.set(.88,.62,1.1);mini.add(muzzle);
+          for(const side of [-1,1]){
+            const ear=new THREE.Mesh(new THREE.ConeGeometry(.075,.25,5),miniLight);ear.position.set(side*.2,2.27,.52);ear.rotation.z=side*-.28;mini.add(ear);
+            const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),dark);eye.position.set(side*.18,2.08,.76);mini.add(eye);
+            const frontLeg=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.42,2,5),miniBody);frontLeg.position.set(side*.38,.34,.31);mini.add(frontLeg);
+            const rearLeg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.4,2,5),miniBody);rearLeg.position.set(side*.38,.34,-.38);mini.add(rearLeg);
+            const hoof=new THREE.Mesh(new THREE.BoxGeometry(.2,.11,.24),mat("#4b3428"));hoof.position.set(side*.38,.09,.34);mini.add(hoof);
+            const rearHoof=new THREE.Mesh(new THREE.BoxGeometry(.2,.11,.24),mat("#4b3428"));rearHoof.position.set(side*.38,.09,-.35);mini.add(rearHoof);
+          }
+          const tail=new THREE.Mesh(new THREE.CapsuleGeometry(.035,.34,2,5),miniBody);tail.position.set(0,.72,-.88);tail.rotation.x=-.35;mini.add(tail);
+          const tailTuft=new THREE.Mesh(new THREE.SphereGeometry(.09,6,5),dark);tailTuft.position.set(0,.5,-1.02);mini.add(tailTuft);
+          const saddle=new THREE.Mesh(new THREE.BoxGeometry(.78,.16,.72),mat("#8d3e32"));saddle.position.set(0,1.48,-.08);mini.add(saddle);
+          const saddleTrim=new THREE.Mesh(new THREE.BoxGeometry(.84,.055,.76),mat("#e8bd68"));saddleTrim.position.set(0,1.56,-.08);mini.add(saddleTrim);
+          const bridle=new THREE.Mesh(new THREE.TorusGeometry(.25,.025,5,16),mat("#6b3b2a"));bridle.position.set(0,1.96,.78);mini.add(bridle);
+        }else{
+          const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.48,2,5),miniBody);body.position.y=.72;
+          const bodyShapes={Biglia:[1.22,1.02,.92],Brama:[1.02,1.12,.9],Lumen:[.82,1.3,.78],Sanlegno:[1.16,1.22,1.02],Trix:[.86,1.18,.82],Vudele:[1.28,.92,1.05]};
+          const bodyShape=bodyShapes[name]||[1,1,1];body.scale.set(...bodyShape);mini.add(body);
+          const head=new THREE.Mesh(new THREE.SphereGeometry(.31,7,5),miniLight);head.position.set(0,1.42,.035);
+          const headShapes={Biglia:[1.12,1.02,.9],Brama:[1.18,.88,1],Lumen:[.92,1.12,.92],Sanlegno:[1.02,1.08,.95],Trix:[.92,1.02,.92],Vudele:[1.12,1.04,1.08]};
+          head.scale.set(...(headShapes[name]||[1,1,1]));mini.add(head);
+          const face=new THREE.Mesh(new THREE.SphereGeometry(.19,6,4),belly);face.scale.set(1,.65,.5);face.position.set(0,1.34,.27);mini.add(face);
+          for(const side of [-1,1]){
+            const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);
+            const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.24,1,4),miniBody);leg.position.set(side*.17,.2,.015);mini.add(leg);
+          }
         }
         if(name==="Cervio"){
           for(const side of [-1,1]){const antler=new THREE.Mesh(new THREE.ConeGeometry(.075,.48,5),miniLight);antler.position.set(side*.19,1.88,-.01);antler.rotation.z=side*-.2;mini.add(antler);}
@@ -1069,9 +1096,7 @@ function Amargenta3DContent({ onExit }) {
           const halo=new THREE.Mesh(new THREE.TorusGeometry(.42,.075,7,18),mat("#d9d0ff"));halo.position.set(0,1.82,-.08);mini.add(halo);
           const moon=new THREE.Mesh(new THREE.SphereGeometry(.12,7,6),mat("#fff0b2"));moon.position.set(.36,1.9,.02);mini.add(moon);
         }else if(name==="Ponce"){
-          const turban=new THREE.Mesh(new THREE.SphereGeometry(.36,8,6),mat("#f0c56b"));turban.scale.set(1.15,.62,1);turban.position.y=1.7;mini.add(turban);
-          const plume=new THREE.Mesh(new THREE.ConeGeometry(.09,.42,5),mat("#b34d37"));plume.position.set(.12,2.02,-.02);plume.rotation.z=-.22;mini.add(plume);
-          const scroll=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.56,7),mat("#f3dfb6"));scroll.position.set(.4,.95,.05);scroll.rotation.z=Math.PI/2;mini.add(scroll);
+          // Il modello del cammello è completo nel ramo dedicato sopra.
         }else if(name==="Sanlegno"){
           for(let k=0;k<3;k++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.14,.48,5),mat(k%2?"#e1a14d":"#6f9b4e"));leaf.position.set((k-1)*.23,1.87,-.04);leaf.rotation.z=(k-1)*-.25;mini.add(leaf);}
           const ember=new THREE.Mesh(new THREE.OctahedronGeometry(.12),mat("#f08a36",0,{emissive:"#d45c20",emissiveIntensity:.3}));ember.position.set(0,.78,.36);mini.add(ember);
@@ -1906,7 +1931,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         duneWall(x,-66,20,18,i+1);
         duneWall(x,91,20,18,i);
       }
-      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
+      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15||(Math.abs(x-208)<17&&Math.abs(z+12)<13))continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
       // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
@@ -1950,9 +1975,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
       // Ponce e Sanlegno sono presenti come abitanti, ma senza interazioni o dialoghi.
-      removeInteraction("farmer");
+      removeNpcInteraction("Ponce");
+       removeNpcInteraction("Sanlegno");
       // Lumen resta visibile nell'overworld, ma senza dialogo né interazione.
-      removeInteraction("keeper");
+      removeNpcInteraction("Lumen");
        addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell’arena e sfida un avversario in un duello 1 contro 1.",208,-12,()=>{setCardDuel(null);setCardDuelOpen(true);},7.5);
       // I bazar sono interazioni integrate con i rispettivi NPC: nessun punto di interazione sovrapposto.
       const setArabniteNpcAction=(name,description,action,radius=7.2)=>{
@@ -1976,7 +2002,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       adliArtwork.position.set(0,1.28,.12);
       adli.add(adliArtwork);
       adli.userData.isArabniteFounder=true;
-      removeInteraction("archivist");
+      removeNpcInteraction("Adli");
       addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
         title:"Adli · L'inventore del gioco",
         text:"«Benvenuto ad Arabnite! Forse non lo sai, ma sono stato io a inventare il Gioco di Carte dei Sognatori. All'inizio era solo un modo per raccogliere le storie e le abilità dei Sognatori. Poi sono nate le bustine, i bazar e la voglia di completare la collezione. Qui puoi comprare nuove bustine, trovare carte rare e scambiarle con altri collezionisti. La tua avventura comincia proprio da qui!»"
