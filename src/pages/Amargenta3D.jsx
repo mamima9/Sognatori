@@ -1940,7 +1940,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08,{parent:arabniteWorld});
       makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{parent:arabniteWorld});
       makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08,{parent:arabniteWorld});
-      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",[],1.05,{parent:arabniteWorld});
+      makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",146,14,"#8b633f",[],1.05,{parent:arabniteWorld});
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{parent:arabniteWorld});
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1,{parent:arabniteWorld});
       // Cervio, Gunvallo e Rullino sono i tre personaggi giocabili: non esistono copie-NPC.
@@ -1994,7 +1994,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           if(arabniteCollectionRef.current.collectedPackIds.includes(id))return;g.visible=false;collectArabnitePack(id);
         },3.1);
       };
-      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12],["north-west-terrace",151,-50],["north-market-roof",180,-48],["north-east-arch",214,-46],["eastern-dune",239,-4],["east-lantern",240,22],["south-east-courtyard",232,67],["south-oasis-edge",204,75],["south-garden",172,69],["south-west-gate",133,35],["west-crescent",136,-2]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
       [[174,-28],[216,-18],[224,30],[151,39],[185,55]].forEach(([x,z],index)=>{
         const jar=new THREE.Group();arabniteWorld.add(jar);jar.position.set(x,0,z);
@@ -3055,7 +3055,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span><span style={{display:"block",fontSize:7,color:"#e9c58d",marginTop:2}}>{discovered?(Number(card.costo)>=40?"LEGGENDA":Number(card.costo)>=28?"EPICA":Number(card.costo)>=18?"RARA":"COMUNE"):""}</span>
           </div>;})}
         </div>
-        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}>Il catalogo si aggiorna automaticamente con i Sognatori ufficiali. Le 19 carte non ancora presenti nel roster restano riservate finché non vengono aggiunte al gioco.</div>
+        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}></div>
       </div>}
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
