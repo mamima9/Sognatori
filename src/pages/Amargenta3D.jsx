@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
-import { ROSTER, ROSTER_AMARGENTA, ROSTER_ARABNITE } from "@/lib/sognatoriData";
+import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
-const ARABNITE_ROSTER = ROSTER_ARABNITE;
 const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)));
 
 /**
