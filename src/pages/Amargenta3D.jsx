@@ -1351,7 +1351,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const skyFill=new THREE.DirectionalLight("#b9dfff",.34);skyFill.position.set(-8,22,48);scene.add(skyFill);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
       // Il dislivello resta concentrato nelle terrazze, collegate dalle rampe percorribili.
-      const terrainGeo=new THREE.PlaneGeometry(150,150,90,90);terrainGeo.rotateX(-Math.PI/2);
+      const terrainGeo=new THREE.PlaneGeometry(240,240,120,120);terrainGeo.rotateX(-Math.PI/2);
       const pos=terrainGeo.attributes.position;
       for(let i=0;i<pos.count;i++)pos.setY(i,0);
       terrainGeo.computeVertexNormals();addMesh(terrainGeo,groundMat,scene,0,0,0);
@@ -1520,6 +1520,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       for(const [x,z] of [[-5,4],[5,4],[18,-5],[-20,-18]]){cylinder(.08,.1,1.1,wood,scene,x,.55,z,8);box(1.6,.12,.55,wood,scene,x,.95,z);}
       // Tubature, valvole e depositi esterni della torrefazione.
       for(let i=0;i<4;i++){const p=cylinder(.12,.12,5,gold,scene,10+i*1.6,3.4,32,10);p.rotation.z=Math.PI/2;box(.45,.45,.45,wood,scene,9+i*2, .4,35);}
+      // Interni ricostruiti: caffetteria, laboratorio e Cripta. Gli ambienti
+      // poggiano sul piano del borgo e mantengono gli ingressi allineati ai passaggi.
+      makeCafeInterior(-68,62);
+      makeInterior(68,68,"north");
+      makeInterior(68,-68,"south");
       // Interni accessibili: laboratorio della torrefazione e caffetteria storica.
       // Le condotte sono invalicabili fuori dai due ponti in pietra.
       addBoxCollider(28,-42,12,12);
