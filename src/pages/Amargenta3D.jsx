@@ -1055,6 +1055,10 @@ function Amargenta3DContent({ onExit }) {
         }else{
           const crest=new THREE.Mesh(new THREE.ConeGeometry(.13,.25,5),accent);crest.position.y=1.78;mini.add(crest);
         }
+        // Piccolo ritratto ufficiale integrato nel modello 3D: conserva la silhouette
+        // personalizzata e rende immediatamente riconoscibile il Sognatore.
+        const officialPortrait=addSognatoreCrest(mini,rosterIdByName[name],1.12,.39);
+        if(officialPortrait)officialPortrait.scale.set(.42,.48,1);
         mini.userData.isLightweightArabniteNpc=true;
       }
       g.userData.npcName=name;
@@ -2921,7 +2925,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       </div>}
       {panel==="cards"&&<div style={{color:"#f2e4cc"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
-          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div></div>
+          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>Bustine: {(arabniteCollection.packInventory||[]).filter(p=>p==="standard").length} standard · {(arabniteCollection.packInventory||[]).filter(p=>p==="premium").length} premium · {(arabniteCollection.packInventory||[]).filter(p=>p==="rare").length} rare</div></div>
           <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.packs} ✦</div>
         </div>
         <button disabled={arabniteCollection.packs<=0} onClick={openArabnitePack} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:arabniteCollection.packs>0?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:arabniteCollection.packs>0?"pointer":"not-allowed",opacity:arabniteCollection.packs>0?1:.55}}>✦ SBUSTA UNA BUSTINA · 3 CARTE</button>
@@ -2929,14 +2933,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
             <img src={card.img} alt={card.nome} style={{width:"100%",height:76,objectFit:"contain",background:"#ffffff16",borderRadius:8}}/><strong style={{display:"block",fontSize:10,marginTop:4}}>{card.nome}</strong>
-            <span style={{fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
+            <span style={{fontSize:9,color:card.rarity==="LEGGENDA"?"#ffd36b":card.rarity==="EPICA"?"#e0a5ff":card.rarity==="RARA"?"#8bd8ff":"#c9c1b7"}}>{card.rarity||"COMUNE"}</span><span style={{display:"block",fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
           </div>)}</div><button onClick={()=>setCardReveal([])} style={{marginTop:8,border:0,background:"transparent",color:"#f1dfbd",fontSize:10,textDecoration:"underline"}}>Nascondi risultato</button>
         </div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
           {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
             <div style={{height:92,position:"relative",overflow:"hidden",borderRadius:7,background:"linear-gradient(145deg,#221b35,#5a4773)",border:"1px solid "+(discovered?"#f1cb7b88":"#ffffff20")}}><img src={card.img} alt={card.nome} loading="lazy" onError={(e)=>{e.currentTarget.style.visibility="hidden";}} style={{width:"100%",height:"100%",objectFit:"contain",opacity:discovered?1:.28,filter:discovered?"none":"grayscale(1) brightness(.72)"}}/>{!discovered&&<div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:23,fontWeight:1000,color:"#f1dba9",textShadow:"0 2px 8px #171126"}}>?</div>}</div>
             <strong style={{display:"block",fontSize:9,marginTop:4,overflowWrap:"anywhere"}}>{discovered?card.nome:card?"???":"Carta "+(index+1)}</strong>
-            <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span>
+            <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span><span style={{display:"block",fontSize:7,color:"#e9c58d",marginTop:2}}>{discovered?(Number(card.costo)>=40?"LEGGENDA":Number(card.costo)>=28?"EPICA":Number(card.costo)>=18?"RARA":"COMUNE"):""}</span>
           </div>;})}
         </div>
         <div style={{fontSize:9,color:"#bfae98",marginTop:9}}>Il catalogo si aggiorna automaticamente con i Sognatori ufficiali. Le 19 carte non ancora presenti nel roster restano riservate finché non vengono aggiunte al gioco.</div>
