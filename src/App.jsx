@@ -30,13 +30,8 @@ import TelegramAuthGate from '@/components/TelegramAuthGate';
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
-  const amargentaEmails = [
-    user?.email,
-    user?.user_metadata?.email,
-    user?.app_metadata?.email,
-    ...(Array.isArray(user?.identities) ? user.identities.map((identity) => identity?.identity_data?.email) : []),
-  ].filter(Boolean).map((email) => String(email).trim().toLowerCase());
-  const canAccessAmargenta3D = amargentaEmails.some((email) => ["bibitoeuro@gmail.com", "manuelylari@gmail.com"].includes(email));
+  // I due mondi 3D sono riservati esclusivamente all'account Bibito.
+  const canAccessAmargenta3D = String(user?.user_metadata?.username || "").trim().toLowerCase() === "bibito";
   const { lang, setLang, t } = useLanguage();
 
   // Show loading spinner while checking app public settings or auth
