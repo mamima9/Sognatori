@@ -1626,7 +1626,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
       // Portali monumentali gemelli: pietra antica, archi, gemme e un nucleo magico pulsante.
       const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
-      const makeSpyroPortal=(x,z,rotation=0)=>{
+      const makeSpyroPortal=(x,z,rotation=0,worldName="")=>{
         const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
         const carvedStone=mat("#b99a70",.82),shadowStone=mat("#70523e",.9),gem=mat("#63d8dc",.24,{metalness:.28,emissive:"#1a8fbd",emissiveIntensity:.72});
         box(8.8,.42,3.8,shadowStone,g,0,.22,0);box(7.8,.34,3.1,arabStone,g,0,.58,0); 
@@ -1647,10 +1647,26 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const innerRing=addMesh(new THREE.TorusGeometry(2.27,.065,8,48),gem,g,0,3.55,.38);
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
         const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
-        sphere(.24,gem,g,0,8.05,.35,2);arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
+        sphere(.24,gem,g,0,8.05,.35,2);
+        // Nome della destinazione inciso su un'insegna luminosa sopra l'arco.
+        if(worldName){
+          const signCanvas=document.createElement("canvas");signCanvas.width=1024;signCanvas.height=192;
+          const signCtx=signCanvas.getContext("2d");
+          signCtx.clearRect(0,0,1024,192);
+          signCtx.font="900 112px Georgia, serif";signCtx.textAlign="center";signCtx.textBaseline="middle";
+          signCtx.lineJoin="round";signCtx.lineWidth=18;signCtx.strokeStyle="#3b2418";
+          signCtx.shadowColor="#f4c66b";signCtx.shadowBlur=24;
+          signCtx.strokeText(worldName,512,98);
+          signCtx.fillStyle="#fff0bd";signCtx.fillText(worldName,512,98);
+          signCtx.shadowBlur=0;signCtx.lineWidth=3;signCtx.strokeStyle="#b47a32";signCtx.strokeText(worldName,512,98);
+          const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;
+          const signMaterial=new THREE.SpriteMaterial({map:signTexture,transparent:true,depthTest:true,depthWrite:false});
+          const sign=new THREE.Sprite(signMaterial);sign.position.set(0,9.35,.15);sign.scale.set(8.2,1.54,1);g.add(sign);
+        }
+        arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
         return g;
       };
-      makeSpyroPortal(67,2,-Math.PI/2);
+      makeSpyroPortal(67,2,-Math.PI/2,"Arabnite");
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
         window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
@@ -1680,7 +1696,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       iceEdge.rotation.x=-Math.PI/2;
       const isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
-      makeSpyroPortal(132,12,Math.PI/2);
+      makeSpyroPortal(132,12,Math.PI/2,"Amargenta");
       const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
       const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
       const arabWall=mat("#d8bd91"),arabWallLight=mat("#ead5ad"),arabRoof=mat("#8e5542"),arabWood=mat("#62432f"),arabCloth=mat("#9f3f48");
