@@ -264,12 +264,12 @@ function Amargenta3DContent({ onExit }) {
   useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   useEffect(() => {
     menuOpenRef.current = Boolean(menuOpen);
-    controlsLockedRef.current = Boolean(menuOpen || dialogue || panel || dungeonBattleOpen);
+    controlsLockedRef.current = Boolean(menuOpen || dialogue || panel || dungeonBattleOpen || cardDuelOpen);
     if (menuOpen) {
       touchStickRef.current = { x: 0, y: 0 };
       setTouchStick({ x: 0, y: 0 });
     }
-  }, [menuOpen, dialogue, panel, dungeonBattleOpen]);
+  }, [menuOpen, dialogue, panel, dungeonBattleOpen, cardDuelOpen]);
   useEffect(() => {
     arabniteCollectionRef.current = arabniteCollection;
     try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); }
@@ -1931,7 +1931,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
          const sigil=addMesh(new THREE.CircleGeometry(.75,6),arenaLight,arenaTent,side*5.4,.66,0);sigil.rotation.x=-Math.PI/2;
        }
        for(let i=0;i<6;i++){const lamp=new THREE.Group();arenaTent.add(lamp);lamp.position.set(-9+i*3.6,4.5,-8.2);cylinder(.18,.22,.42,arenaGold,lamp,0,0,0,8);sphere(.2,arenaLight,lamp,0,-.12,0,1);}
-       addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell'arena e sfida un avversario in un duello 1 contro 1.",arenaX,arenaZ+10,()=>{setCardDuel(null);setCardDuelOpen(true);},6.5);
 
       const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),arabniteWorld,190,.04,48);oasis.rotation.x=-Math.PI/2;
       for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,arabniteWorld,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),arabniteWorld,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
@@ -1952,6 +1951,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       });
       // Lumen resta visibile nell'overworld, ma senza dialogo né interazione.
       removeInteraction("keeper");
+       addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell’arena e sfida un avversario in un duello 1 contro 1.",190,18,()=>{setCardDuel(null);setCardDuelOpen(true);},7.5);
       // I bazar sono interazioni integrate con i rispettivi NPC: nessun punto di interazione sovrapposto.
       const setArabniteNpcAction=(name,description,action,radius=7.2)=>{
         const entry=interactables.find(item=>item.title.startsWith(name+" ·"));
@@ -3119,7 +3119,41 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       <button aria-label="Usa abilità del Sognatore attivo" onPointerDown={e=>{e.preventDefault();if(controlsLockedRef.current)return;window.dispatchEvent(new KeyboardEvent("keydown",{code:activeCharacter==="cervio"?"ShiftLeft":"KeyF"}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#a87843,#694327)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>{({"talpitrippa":"⛏|SCAVA","ripple":"🎣|PESCA","moci-moci":"🧗|SCALA","piocino":"🪽|VOLA","gunvallo":"🍬|SPARA","cervio":"💨|CORRI","rullino":"⛸|PATTINA"}[activeCharacter]||"✦|AZIONE").split("|")[0]}<br/>{({"talpitrippa":"SCAVA","ripple":"PESCA","moci-moci":"SCALA","piocino":"VOLA","gunvallo":"SPARA","cervio":"CORRI","rullino":"PATTINA"}[activeCharacter]||"AZIONE")}</button>
       <button aria-label="Salta o svolazza con Piocino" onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current)window.dispatchEvent(new KeyboardEvent("keydown",{code:"Space"}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>↑<br/>{activeCharacter==="piocino"?"VOLA":"SALTO"}</button>
     </div></>}
-<div>{worldTransition&&<div role="status" aria-live="polite" style={{position:"absolute",inset:0,zIndex:100,display:"grid",placeItems:"center",background:worldTransition==="arabnite"?"radial-gradient(ellipse at center,#56351b 0%,#130f18 72%)":"radial-gradient(ellipse at center,#254a38 0%,#101a19 72%)",color:"#fff1d5",fontFamily:"inherit",pointerEvents:"all"}}><div style={{textAlign:"center",padding:24}}><div style={{fontSize:11,letterSpacing:5,fontWeight:900,color:"#e6bd75",marginBottom:18}}>S O G N A T O R I</div><div style={{fontSize:30,fontWeight:950,letterSpacing:2}}>{worldTransition==="arabnite"?"ARABNITE":"AMARGENTA"}</div><div style={{marginTop:12,fontSize:13,color:"#ead8bb"}}>{worldTransition==="arabnite"?"Il portale si apre sulle terre di Arabnite…":"Il varco ti riporta tra i profumi di Amargenta…"}</div><div style={{width:150,height:3,background:"#ffffff30",borderRadius:9,margin:"24px auto 0",overflow:"hidden"}}><div style={{height:"100%",width:"42%",background:"#e6bd75",borderRadius:9,animation:"arabniteLoad 1s ease-in-out infinite alternate"}}/></div></div><style>{"@keyframes arabniteLoad{from{transform:translateX(-35%)}to{transform:translateX(190%)}}"}</style></div>}</div>    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
+<div>{worldTransition&&<div role="status" aria-live="polite" style={{position:"absolute",inset:0,zIndex:100,display:"grid",placeItems:"center",background:worldTransition==="arabnite"?"radial-gradient(ellipse at center,#56351b 0%,#130f18 72%)":"radial-gradient(ellipse at center,#254a38 0%,#101a19 72%)",color:"#fff1d5",fontFamily:"inherit",pointerEvents:"all"}}><div style={{textAlign:"center",padding:24}}><div style={{fontSize:11,letterSpacing:5,fontWeight:900,color:"#e6bd75",marginBottom:18}}>S O G N A T O R I</div><div style={{fontSize:30,fontWeight:950,letterSpacing:2}}>{worldTransition==="arabnite"?"ARABNITE":"AMARGENTA"}</div><div style={{marginTop:12,fontSize:13,color:"#ead8bb"}}>{worldTransition==="arabnite"?"Il portale si apre sulle terre di Arabnite…":"Il varco ti riporta tra i profumi di Amargenta…"}</div><div style={{width:150,height:3,background:"#ffffff30",borderRadius:9,margin:"24px auto 0",overflow:"hidden"}}><div style={{height:"100%",width:"42%",background:"#e6bd75",borderRadius:9,animation:"arabniteLoad 1s ease-in-out infinite alternate"}}/></div></div><style>{"@keyframes arabniteLoad{from{transform:translateX(-35%)}to{transform:translateX(190%)}}"}</style></div>}</div>    {cardDuelOpen&&<div role="dialog" aria-modal="true" style={{position:"absolute",inset:0,zIndex:120,display:"grid",placeItems:"center",padding:14,background:"rgba(10,9,18,.88)",backdropFilter:"blur(8px)",color:"#fff1d5"}}>
+      <div style={{width:"min(820px,100%)",maxHeight:"92%",overflowY:"auto",padding:18,borderRadius:20,border:"2px solid #e6bd75",background:"linear-gradient(145deg,#3d2945,#211e31)",boxShadow:"0 20px 70px #000b"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+          <div><div style={{fontSize:10,letterSpacing:3,color:"#e6bd75",fontWeight:900}}>ARABNITE · ARENA</div><div style={{fontSize:23,fontWeight:1000}}>Duello 1 vs 1</div></div>
+          <button onClick={()=>{setCardDuelOpen(false);setCardDuel(null);}} style={{border:"1px solid #e6bd75",borderRadius:10,padding:"8px 12px",background:"#4a3547",color:"#fff1d5",fontWeight:900}}>ESCI ✕</button>
+        </div>
+        {!cardDuel&&<><div style={{color:"#e4d2b8",fontSize:13,marginBottom:12}}>Scegli una carta tra i 64 Sognatori. L'avversario ne schiererà una casuale. Ogni attacco consuma un turno e l'avversario contrattacca.</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(104px,1fr))",gap:8}}>
+            {ROSTER.map(card=><button key={card.id} onClick={()=>startCardDuel(card)} style={{minWidth:0,padding:7,borderRadius:11,border:"1px solid #d9b56b88",background:"#ffffff10",color:"#fff1d5",cursor:"pointer",textAlign:"center"}}>
+              <img src={card.img} alt={card.nome} loading="lazy" style={{width:"100%",height:82,objectFit:"contain"}}/>
+              <strong style={{display:"block",fontSize:11,overflowWrap:"anywhere"}}>{card.nome}</strong>
+              <span style={{display:"block",fontSize:9,color:"#e6bd75"}}>ATK {card.att} · DEF {card.dif}</span>
+            </button>)}
+          </div>
+        </>}
+        {cardDuel&&<div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {[{card:cardDuel.playerCard,hp:cardDuel.playerHp,max:cardDuel.maxPlayerHp,label:"LA TUA CARTA"},{card:cardDuel.opponentCard,hp:cardDuel.opponentHp,max:cardDuel.maxOpponentHp,label:"AVVERSARIO"}].map((side,i)=><div key={side.card.id} style={{padding:10,borderRadius:14,border:"1px solid #e6bd7588",background:"#ffffff0c",textAlign:"center"}}>
+              <div style={{fontSize:9,letterSpacing:2,color:"#e6bd75",fontWeight:900}}>{side.label}</div>
+              <img src={side.card.img} alt={side.card.nome} style={{height:130,maxWidth:"100%",objectFit:"contain"}}/>
+              <strong style={{display:"block",fontSize:14}}>{side.card.nome}</strong>
+              <div style={{fontSize:10,color:"#d8c5a8",margin:"4px 0 8px"}}>ATK {side.card.att} · DEF {side.card.dif} · SPE {side.card.vel}</div>
+              <div style={{height:9,borderRadius:9,background:"#ffffff20",overflow:"hidden"}}><div style={{height:"100%",width:Math.max(0,side.hp/side.max*100)+"%",background:i===0?"#79cf9a":"#e77c72"}}/></div>
+              <div style={{fontSize:12,fontWeight:900,marginTop:4}}>{side.hp} / {side.max} HP</div>
+            </div>)}
+          </div>
+          <div style={{marginTop:12,padding:12,borderRadius:12,background:"#100f1c",color:"#f3dfb9",lineHeight:1.5}}>{cardDuel.log}</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
+            {!cardDuel.done&&<button onClick={playCardDuelTurn} style={{flex:1,minWidth:140,padding:13,borderRadius:11,border:"1px solid #ffe08a",background:"linear-gradient(135deg,#b46a36,#80442d)",color:"#fff4dc",fontWeight:1000,cursor:"pointer"}}>⚔ ATTACCA</button>}
+            {cardDuel.done&&<button onClick={()=>setCardDuel(null)} style={{flex:1,minWidth:140,padding:13,borderRadius:11,border:"1px solid #ffe08a",background:"#68508b",color:"#fff4dc",fontWeight:1000,cursor:"pointer"}}>NUOVA SFIDA</button>}
+          </div>
+        </div>}
+      </div>
+    </div>}
+    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
