@@ -370,6 +370,8 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
     );
   };
 
+  // Player nascosto soltanto nelle due mappe 3D dedicate; il resto dell'esperienza resta invariato.
+  if (location.pathname === "/amargenta-3d") return null;
   if (location.pathname === "/avventura" && !insideAdventureMenu) return null;
 
   return (
