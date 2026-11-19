@@ -1087,9 +1087,21 @@ function Amargenta3DContent({ onExit }) {
         }else if(name==="Rullino"){
           const beak=new THREE.Mesh(new THREE.ConeGeometry(.12,.22,5),mat("#ff861c"));beak.position.set(0,1.3,.38);beak.rotation.x=Math.PI/2;mini.add(beak);
         }else if(name==="Biglia"){
-          const crest=new THREE.Mesh(new THREE.ConeGeometry(.2,.42,6),mat("#f4c64f"));crest.position.set(0,1.83,-.02);mini.add(crest);
-          const shield=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.1,8),mat("#f4c64f"));shield.position.set(.39,.88,.18);shield.rotation.x=Math.PI/2;mini.add(shield);
-          const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.13),mat("#b72c25"));gem.position.set(.39,.88,.25);mini.add(gem);
+          // Biglia: piccolo demone giallo e blu, corna e testa-lanterna con due occhi a biglia.
+          const yellow=mat("#f2c52d"),blue=mat("#2458bd"),gold=mat("#ffdf58"),redEye=mat("#d94335"),yellowEye=mat("#ffe64b"),black=mat("#171522");
+          const demonBody=new THREE.Mesh(new THREE.SphereGeometry(.48,9,7),yellow);demonBody.position.set(0,.82,0);demonBody.scale.set(1.05,1.18,.88);mini.add(demonBody);
+          const blueBelly=new THREE.Mesh(new THREE.SphereGeometry(.36,8,6),blue);blueBelly.position.set(0,.83,.34);blueBelly.scale.set(1,.92,.38);mini.add(blueBelly);
+          const lantern=new THREE.Mesh(new THREE.SphereGeometry(.39,10,8),gold);lantern.position.set(0,1.72,.04);lantern.scale.set(1,.94,.88);mini.add(lantern);
+          const lanternBase=new THREE.Mesh(new THREE.CylinderGeometry(.22,.29,.13,8),blue);lanternBase.position.set(0,1.39,.04);mini.add(lanternBase);
+          const lanternTop=new THREE.Mesh(new THREE.CylinderGeometry(.25,.19,.12,8),blue);lanternTop.position.set(0,2.07,.04);mini.add(lanternTop);
+          for(const side of [-1,1]){
+            const horn=new THREE.Mesh(new THREE.ConeGeometry(.13,.5,6),blue);horn.position.set(side*.3,2.27,-.02);horn.rotation.z=side*-.34;mini.add(horn);
+            const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,2,5),yellow);arm.position.set(side*.49,.91,.02);arm.rotation.z=side*-.42;mini.add(arm);
+            const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.25,2,5),blue);leg.position.set(side*.19,.2,.02);mini.add(leg);
+          }
+          const redMarble=new THREE.Mesh(new THREE.SphereGeometry(.135,10,8),redEye);redMarble.position.set(-.145,1.73,.385);mini.add(redMarble);
+          const yellowMarble=new THREE.Mesh(new THREE.SphereGeometry(.135,10,8),yellowEye);yellowMarble.position.set(.145,1.73,.385);mini.add(yellowMarble);
+          for(const eye of [redMarble,yellowMarble]){const glint=new THREE.Mesh(new THREE.SphereGeometry(.035,6,5),mat("#fff7d5"));glint.position.set(eye.position.x-.035,1.78,.49);mini.add(glint);}
         }else if(name==="Adli"){
           // Mago-albero: tronco di abete spoglio, testa nera tonda e cappello bianco/blu.
           const trunk=mat("#315c43"),black=mat("#101116"),blue=mat("#315bca"),white=mat("#f5f5f1");
@@ -1108,18 +1120,23 @@ function Amargenta3DContent({ onExit }) {
           const wand=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.62,7),mat("#6b4930"));wand.position.set(.94,1.57,.15);wand.rotation.z=-.2;mini.add(wand);
           const spark=new THREE.Mesh(new THREE.OctahedronGeometry(.07),white);spark.position.set(.94,1.91,.15);mini.add(spark);
         }else if(name==="Brama"){
-          // Demone-borsello di gemme: corpo blu/giallo, corna e testa a lanterna con occhi di biglia.
-          const sack=new THREE.Mesh(new THREE.SphereGeometry(.5,9,7),mat("#2458b9"));sack.position.set(0,.92,0);sack.scale.set(1.05,1.25,.86);mini.add(sack);
-          const bellyGem=new THREE.Mesh(new THREE.SphereGeometry(.39,9,7),mat("#f3cc35"));bellyGem.position.set(0,.94,.35);bellyGem.scale.set(1,.9,.35);mini.add(bellyGem);
-          for(let i=0;i<9;i++){const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.13+(i%3)*.025),mat(i%2?"#56b6ff":"#f6d447"));const a=i*2.399;gem.position.set(Math.cos(a)*.37,.72+(i%4)*.19,.46+Math.sin(a)*.08);mini.add(gem);}
-          const lantern=new THREE.Mesh(new THREE.SphereGeometry(.42,9,7),mat("#f3ca36",.12,{metalness:.15}));lantern.position.set(0,1.83,.04);lantern.scale.set(1,.96,.9);mini.add(lantern);
-          for(const side of [-1,1]){
-            const horn=new THREE.Mesh(new THREE.ConeGeometry(.13,.55,6),mat("#2458b9"));horn.position.set(side*.31,2.29,-.02);horn.rotation.z=side*-.32;mini.add(horn);
+          // Brama: un sacco pieno di gemme preziose, con occhi maligni che spuntano dal tessuto.
+          const sackMat=mat("#76513a"),seamMat=mat("#392b29"),gemColors=["#36c5d8","#5d83f5","#f3c83d","#d65a9b","#7bd46a","#b18aff"];
+          const sack=new THREE.Mesh(new THREE.SphereGeometry(.58,10,8),sackMat);sack.position.set(0,.96,0);sack.scale.set(1.02,1.25,.88);mini.add(sack);
+          const gatheredTop=new THREE.Mesh(new THREE.ConeGeometry(.25,.42,8),sackMat);gatheredTop.position.set(0,1.69,-.02);gatheredTop.rotation.x=Math.PI;mini.add(gatheredTop);
+          const tie=new THREE.Mesh(new THREE.TorusGeometry(.2,.045,6,12),mat("#d5ad62"));tie.position.set(0,1.58,.02);mini.add(tie);
+          for(let i=0;i<15;i++){
+            const angle=i*2.399, y=.55+(i%5)*.2, radius=.43;
+            const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.13+(i%3)*.025),mat(gemColors[i%gemColors.length]));
+            gem.position.set(Math.cos(angle)*radius,y,.39+Math.sin(angle)*.12);gem.rotation.set(i*.31,i*.47,i*.22);mini.add(gem);
           }
-          const eyeRed=new THREE.Mesh(new THREE.SphereGeometry(.145,8,7),mat("#d83a36"));eyeRed.position.set(-.16,1.86,.39);mini.add(eyeRed);
-          const eyeYellow=new THREE.Mesh(new THREE.SphereGeometry(.145,8,7),mat("#ffe45c"));eyeYellow.position.set(.16,1.86,.39);mini.add(eyeYellow);
-          for(const eye of [eyeRed,eyeYellow]){const pupil=new THREE.Mesh(new THREE.SphereGeometry(.05,6,5),mat("#171322"));pupil.position.set(eye.position.x,eye.position.y,.52);mini.add(pupil);}
-          const mouth=new THREE.Mesh(new THREE.BoxGeometry(.22,.055,.04),mat("#37212a"));mouth.position.set(0,1.61,.4);mini.add(mouth);
+          const evilEyeWhite=mat("#f0e8d5"),evilPupil=mat("#120d19");
+          for(const side of [-1,1]){
+            const eye=new THREE.Mesh(new THREE.SphereGeometry(.14,9,7),evilEyeWhite);eye.position.set(side*.17,1.25,.49);eye.scale.set(1.12,.78,.48);mini.add(eye);
+            const pupil=new THREE.Mesh(new THREE.SphereGeometry(.075,8,6),evilPupil);pupil.position.set(side*.17-.025,1.24,.56);mini.add(pupil);
+            const brow=new THREE.Mesh(new THREE.BoxGeometry(.27,.055,.055),seamMat);brow.position.set(side*.17,1.43,.48);brow.rotation.z=side*-.22;mini.add(brow);
+          }
+          const wickedGrin=new THREE.Mesh(new THREE.TorusGeometry(.13,.025,5,12,Math.PI),seamMat);wickedGrin.position.set(0,1.03,.51);wickedGrin.rotation.z=Math.PI;mini.add(wickedGrin);
         }else if(name==="Lumen"||name==="Trix"){
           // Lumen è la gatta blu bipede; Trix la sua piccola evoluzione quadrupede.
           const blueFur=mat("#2189df"),blueLight=mat("#75c8ff"),innerEar=mat("#f5a8ce"),darkEye=mat("#10223e"),catWhite=mat("#ffffff");
