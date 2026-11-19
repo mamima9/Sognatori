@@ -1862,9 +1862,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05,{parent:arabniteWorld});
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{parent:arabniteWorld});
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1,{parent:arabniteWorld});
-      makeNpc("guard","Cervio","Corridore delle Dune",148,62,"#55c9f4",["Corro più veloce di chiunque ad Arabnite.","Seguimi tra le dune!"],.92,{parent:arabniteWorld});
-      makeNpc("town-carpenter","Gunvallo","Pistolero delle Caramelle",190,64,"#9b4d20",["La mia caramella centra sempre il bersaglio.","Pronto a sparare? È solo una prova!"],.92,{parent:arabniteWorld});
-      makeNpc("keeper","Rullino","Pattinatore della Pista Gelata",169,-20,"#236de8",["Sul ghiaccio sono imbattibile.","Prova a seguire le mie curve!"],.92,{parent:arabniteWorld});
+      // Cervio, Gunvallo e Rullino sono i tre personaggi giocabili: non esistono copie-NPC.
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
       for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),arabniteWorld,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
@@ -2360,6 +2358,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const duckWings=[];for(const side of [-1,1]){const wing=new THREE.Group();wing.position.set(side*.58,1.42,-.03);rullino.add(wing);mEll(wing,duckLight,[side*.13,0,0],[.27,.44,.17],18);duckWings.push(wing);}
       
       const characterState={active:"talpitrippa",talpitrippa,ripple,mociMoci,piocino,cervio,gunvallo,rullino,arms,feet,rippleArms,rippleFeet,mociArms,birdFeet,birdWings,eyeMeshes,mociEyes,piocinoEyes};
+      // Cloni visivi dei due Sognatori di supporto: il modello controllato resta unico.
+      const arabniteCompanions={cervio:cervio.clone(true),gunvallo:gunvallo.clone(true),rullino:rullino.clone(true)};
+      Object.entries(arabniteCompanions).forEach(([id,model])=>{model.name="ArabniteCompanion-"+id;model.scale.setScalar(.48);model.visible=false;arabniteWorld.add(model);});
       const regularOrder=["talpitrippa","ripple","moci-moci","piocino"];
       const arabniteOrder=["cervio","gunvallo","rullino"];
       const switchCharacter=()=>{
@@ -2368,6 +2369,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
         const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
         Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
+        Object.entries(arabniteCompanions).forEach(([id,model])=>{model.visible=arabniteActive&&id!==characterState.active;});
         const configs={
           "talpitrippa":{model:talpitrippa,arms,feet,eyes:eyeMeshes},
           "ripple":{model:rippleBody,arms:rippleArms,feet:rippleFeet,eyes:[]},
@@ -2415,7 +2417,13 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         }
         if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
-          if(characterState.active==="talpitrippa"){
+          if(arabniteActive&&characterState.active==="cervio"){
+            movementVelocity.add(new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y)).multiplyScalar(13));
+            setToast("Cervio · Scatto delle Dune!");
+          } else if(arabniteActive&&characterState.active==="rullino"){
+            if(isArabniteIceAt(p.x,p.z)){movementVelocity.multiplyScalar(1.65);setToast("Rullino · Curva sul ghiaccio!");}
+            else {jumpRequested=true;setToast("Rullino · Salto pattinato!");}
+          } else if(characterState.active==="talpitrippa"){
             makeGroundEdit("hole",p.x+Math.sin(player.rotation.y)*1.15,p.z+Math.cos(player.rotation.y)*1.15);setToast("Talpitrippa ha scavato una buca!");
           } else if(characterState.active==="ripple"){
             if(isWaterAt(p.x,p.z)||Math.abs(p.x-(28+(p.z-2)*.08))<9){setInventory(old=>({...old,fish:(old.fish||0)+1}));setToast("Ripple ha pescato un pesce con il suo uncino!");playerMotion.arms.forEach((arm)=>{arm.rotation.x=-.85;});}
@@ -2557,6 +2565,19 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         }
         if(!(isRullino&&onIce))player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
         if(!isCervio)playerMotion.model?.scale.set(1,1,1);
+        if(arabniteActive){
+          const followers=arabniteOrder.filter(id=>id!==characterState.active);
+          followers.forEach((id,index)=>{
+            const follower=arabniteCompanions[id];if(!follower)return;
+            const side=index===0?-1:1,back=2.0+index*.35;
+            const tx=player.position.x+Math.sin(player.rotation.y+side*.52)*1.35-Math.sin(player.rotation.y)*back;
+            const tz=player.position.z+Math.cos(player.rotation.y+side*.52)*1.35-Math.cos(player.rotation.y)*back;
+            follower.position.x=THREE.MathUtils.damp(follower.position.x,tx,5.5,dt);
+            follower.position.z=THREE.MathUtils.damp(follower.position.z,tz,5.5,dt);
+            follower.position.y=player.position.y+Math.abs(Math.sin(clock.elapsedTime*4+index))*.06;
+            follower.rotation.y=player.rotation.y;
+          });
+        }else Object.values(arabniteCompanions).forEach(model=>{model.visible=false;});
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
         talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
         talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
