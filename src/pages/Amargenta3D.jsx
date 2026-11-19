@@ -141,30 +141,45 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteCollection, setArabniteCollection] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:arabnite:cards:v1") || "{}");
-      return { packs: Math.max(0, Number(saved.packs) || 0), coins: Math.max(0, Number(saved.coins ?? 120) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
-    } catch { return { packs: 0, coins: 120, collectedPackIds: [], cards: {} }; }
+      return { packs: Math.max(0, Number(saved.packs) || 0), packInventory: Array.isArray(saved.packInventory) ? saved.packInventory.filter(p=>["standard","premium","rare"].includes(p)) : Array(Math.max(0,Number(saved.packs)||0)).fill("standard"), coins: Math.max(0, Number(saved.coins ?? 120) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
+    } catch { return { packs: 0, packInventory: [], coins: 120, collectedPackIds: [], cards: {} }; }
   });
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
   const collectArabnitePack = (id) => {
     const current = arabniteCollectionRef.current;
     if (current.collectedPackIds.includes(id)) return;
-    const next = { ...current, coins: Number(current.coins ?? 120) + 5, packs: current.packs + 1, collectedPackIds: [...current.collectedPackIds, id] };
+    const next = { ...current, coins: Number(current.coins ?? 120) + 5, packs: current.packs + 1, packInventory: [...(current.packInventory||[]),"standard"], collectedPackIds: [...current.collectedPackIds, id] };
     arabniteCollectionRef.current = next; setArabniteCollection(next);
     setToast("Bustina raccolta! Puoi aprirla dall'Album dei Sognatori.");
   };
   const openArabnitePack = () => {
     const current = arabniteCollectionRef.current;
     if (current.packs <= 0) { setToast("Non hai bustine da aprire. Cercane altre ad Arabnite!"); return; }
-    const counts = { ...current.cards }, drawn = [];
+    const counts = { ...current.cards }, drawn = [], packKind=(current.packInventory||[])[0]||"standard";
+    const weightedPick = (pool) => {
+      const weighted=pool.map(card=>({card,weight:Math.max(1,Number(card.costo)||1)}));
+      const total=weighted.reduce((sum,item)=>sum+item.weight,0);let roll=Math.random()*total;
+      for(const item of weighted){roll-=item.weight;if(roll<=0)return item.card;}
+      return weighted[weighted.length-1]?.card;
+    };
+    const tier=(card)=>{const value=Number(card.costo)||1;return value>=40?"LEGGENDA":value>=28?"EPICA":value>=18?"RARA":"COMUNE";};
     for (let i = 0; i < 3; i++) {
-      const undiscovered = ROSTER.filter((card) => !counts[card.id]);
-      const pool = undiscovered.length ? undiscovered : ROSTER;
-      const card = pool[Math.floor(Math.random() * pool.length)];
-      counts[card.id] = (Number(counts[card.id]) || 0) + 1;
-      drawn.push({ ...card, isNew: counts[card.id] === 1, copies: counts[card.id] });
+      const remaining=ROSTER.filter(card=>!drawn.some(p=>p.id===card.id));
+      let pool=remaining.length?remaining:ROSTER;
+      if(packKind==="standard") pool=pool.filter(card=>tier(card)==="COMUNE"||tier(card)==="RARA");
+      if(packKind==="premium") pool=pool.filter(card=>tier(card)!=="COMUNE");
+      if(packKind==="rare") pool=pool.filter(card=>tier(card)==="EPICA"||tier(card)==="LEGGENDA");
+      if(!pool.length)pool=remaining.length?remaining:ROSTER;
+      const card=weightedPick(pool);
+      counts[card.id]=(Number(counts[card.id])||0)+1;
+      drawn.push({...card,rarity:tier(card),isNew:counts[card.id]===1,copies:counts[card.id]});
     }
-    const next = { ...current, coins: Number(current.coins ?? 120), packs: current.packs - 1, cards: counts };
+    if(packKind==="premium"&&!drawn.some(card=>card.rarity==="EPICA"||card.rarity==="LEGGENDA")){
+      const guaranteed=weightedPick(ROSTER.filter(card=>["EPICA","LEGGENDA"].includes(tier(card))));
+      if(guaranteed){const index=drawn.length-1,old=drawn[index];counts[old.id]=Math.max(0,counts[old.id]-1);counts[guaranteed.id]=(Number(counts[guaranteed.id])||0)+1;drawn[index]={...guaranteed,rarity:tier(guaranteed),isNew:counts[guaranteed.id]===1,copies:counts[guaranteed.id]};}
+    }
+    const next = { ...current, coins: Number(current.coins ?? 120), packs: Math.max(0,current.packs-1), packInventory:(current.packInventory||[]).slice(1), cards: counts };
     arabniteCollectionRef.current = next; setArabniteCollection(next);
     setCardReveal(drawn); setToast("Bustina aperta · hai trovato 3 carte!");
   };
@@ -172,7 +187,7 @@ function Amargenta3DContent({ onExit }) {
     const offers={standard:{label:"Bustina del Bazar",price:30},premium:{label:"Bustina delle Lanterne",price:65},rare:{label:"Bustina del Collezionista",price:110}};
     const offer=offers[kind]||offers.standard, current=arabniteCollectionRef.current;
     if(Number(current.coins??120)<offer.price){setToast("Monete insufficienti: cerca altre carte o tesori in città.");return false;}
-    const next={...current,coins:Number(current.coins??120)-offer.price,packs:current.packs+1};
+    const next={...current,coins:Number(current.coins??120)-offer.price,packs:current.packs+1,packInventory:[...(current.packInventory||[]),kind]};
     arabniteCollectionRef.current=next;setArabniteCollection(next);setToast(offer.label+" acquistata!");return true;
   };
   const tradeArabniteCard = (npcName) => {
@@ -181,13 +196,18 @@ function Amargenta3DContent({ onExit }) {
     if(!duplicates.length){setToast("Per scambiare serve almeno una carta doppia.");return false;}
     const missing=ROSTER.filter(card=>(Number(counts[card.id])||0)===0);
     if(!missing.length){setToast("Hai già completato l'album!");return false;}
-    const give=duplicates[Math.floor(Math.random()*duplicates.length)];
-    const receive=missing[Math.floor(Math.random()*missing.length)];
+    const npcRules={Brama:{wanted:["Dolce","Umano"],bonus:8},Lumen:{wanted:["Luce","Mago","Nuvola"],bonus:12}};
+    const rule=npcRules[npcName]||{wanted:[],bonus:5};
+    const wantedDuplicates=duplicates.filter(card=>rule.wanted.includes(card.tipo));
+    const givePool=wantedDuplicates.length?wantedDuplicates:duplicates;
+    const give=givePool.sort((a,b)=>(Number(a.costo)||0)-(Number(b.costo)||0))[0];
+    const receivePool=missing.filter(card=>rule.wanted.includes(card.tipo));
+    const receive=receivePool.length?receivePool[Math.floor(Math.random()*receivePool.length)]:missing[Math.floor(Math.random()*missing.length)];
     counts[give.id]-=1;counts[receive.id]=1;
-    const next={...current,cards:counts,coins:Number(current.coins??120)};
+    const next={...current,cards:counts,coins:Number(current.coins??120)+rule.bonus};
     arabniteCollectionRef.current=next;setArabniteCollection(next);
     setCardReveal([{...receive,isNew:true,copies:1}]);
-    setToast(npcName+" ha scambiato "+give.nome+" con "+receive.nome+".");return true;
+    setToast(npcName+" ha accettato "+give.nome+" e ti ha dato "+receive.nome+" · +"+rule.bonus+" monete.");return true;
   };
   useEffect(() => { try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); } catch (error) { console.warn("Impossibile salvare la collezione di Arabnite:",error); } }, [arabniteCollection]);
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
