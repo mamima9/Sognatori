@@ -15,8 +15,6 @@ const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)
 function Amargenta3DContent({ onExit }) {
   const hostRef = useRef(null);
   const travelToWorldRef = useRef(null);
-  const [flightMode, setFlightMode] = useState(false);
-  const flightModeRef = useRef(false);
   const [hint, setHint] = useState("");
   const [activeCharacter, setActiveCharacter] = useState("talpitrippa");
   const [zone, setZone] = useState("Ingresso di Amargenta");
@@ -265,7 +263,7 @@ function Amargenta3DContent({ onExit }) {
       return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
     };
     const isBlockedAt = (x,z,radius=.55) => {
-      if(isWaterAt(x,z)&&jumpHeight<1.45&&!flightModeRef.current&&characterState?.active!=="ripple")return true;
+      if(isWaterAt(x,z)&&!(characterState?.active==="piocino"&&jumpHeight>=1.45)&&characterState?.active!=="ripple")return true;
       return colliders.some(collider => {
       if (jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
@@ -2206,15 +2204,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         const dt=Math.min(clock.getDelta(),.04);
-        const flightActive=flightModeRef.current;
-        if(flightActive){
-          jumpVelocity=0;
-          const verticalInput=(keys.has("Space")?1:0)-((keys.has("ControlLeft")||keys.has("ControlRight"))?1:0);
-          jumpHeight=THREE.MathUtils.clamp(jumpHeight+verticalInput*7*dt,0,9);
-        }else if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
+        if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
         const fluttering=characterState.active==="piocino"&&keys.has("Space")&&jumpHeight>.05;
         jumpRequested=false;
-        if(!flightActive&&(jumpHeight>0||jumpVelocity>0)){
+        if(jumpHeight>0||jumpVelocity>0){
           jumpVelocity-=(fluttering?5.2:18)*dt;
           if(fluttering)jumpVelocity=Math.max(jumpVelocity,1.8);
           jumpHeight+=jumpVelocity*dt;
@@ -2537,7 +2530,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · {zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <button onClick={()=>travelToWorldRef.current?.(zone?.toLowerCase().includes("arabnite")?"amargenta":"arabnite")} style={{width:"100%",marginBottom:10,border:"1px solid #e8c47e",borderRadius:10,background:"linear-gradient(135deg,#9b713e,#65452d)",color:"#fff2d8",padding:"12px 10px",fontSize:12,fontWeight:900,cursor:"pointer"}}>{zone?.toLowerCase().includes("arabnite")?"✦ TORNA AD AMARGENTA":"✦ RAGGIUNGI IL PORTALE DI ARABNITE"}</button>
-      <button onClick={()=>{flightModeRef.current=!flightModeRef.current;setFlightMode(flightModeRef.current);setToast(flightModeRef.current?"Volo attivato · tieni premuto ↑ per salire, CTRL per scendere":"Volo disattivato");}} style={{width:"100%",marginBottom:10,border:"1px solid #9ec9d1",borderRadius:10,background:flightMode?"#276a72":"#29414a",color:"#e9fbff",padding:"10px",fontSize:11,fontWeight:900,cursor:"pointer"}}>{flightMode?"🪽 VOLO ATTIVO":"🪽 ATTIVA VOLO LIBERO"}</button>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
         {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
@@ -2651,7 +2643,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
     <div className="amargenta-mobile-actions" style={{position:"absolute",right:18,bottom:22,display:"flex",flexDirection:"column",alignItems:"center",gap:9,zIndex:16,pointerEvents:"none"}}>
       <button aria-label="Cambia personaggio" onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current)window.dispatchEvent(new KeyboardEvent("keydown",{code:"KeyC"}));}} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#426b83,#243c50)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>⇄<br/>CAMBIA</button>
       <button aria-label="Usa abilità del Sognatore attivo" onPointerDown={e=>{e.preventDefault();if(controlsLockedRef.current)return;window.dispatchEvent(new KeyboardEvent("keydown",{code:activeCharacter==="cervio"?"ShiftLeft":"KeyF"}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ShiftLeft"}))} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#a87843,#694327)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>{({"talpitrippa":"⛏|SCAVA","ripple":"🎣|PESCA","moci-moci":"🧗|SCALA","piocino":"🪽|VOLA","gunvallo":"🍬|SPARA","cervio":"💨|CORRI","rullino":"⛸|PATTINA"}[activeCharacter]||"✦|AZIONE").split("|")[0]}<br/>{({"talpitrippa":"SCAVA","ripple":"PESCA","moci-moci":"SCALA","piocino":"VOLA","gunvallo":"SPARA","cervio":"CORRI","rullino":"PATTINA"}[activeCharacter]||"AZIONE")}</button>
-      {flightMode&&<button aria-label="Scendi mentre voli" onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:"ControlLeft"}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ControlLeft"}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ControlLeft"}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"ControlLeft"}))} style={{pointerEvents:"auto",width:58,height:56,borderRadius:18,border:"2px solid #9ec9d1",background:"#29414a",color:"#e9fbff",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>↓<br/>SCENDI</button>}
       <button aria-label="Salta o svolazza con Piocino" onPointerDown={e=>{e.preventDefault();if(!controlsLockedRef.current)window.dispatchEvent(new KeyboardEvent("keydown",{code:"Space"}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:"Space"}))} style={{pointerEvents:"auto",width:68,height:56,borderRadius:18,border:"2px solid #f0d5a5",background:"linear-gradient(145deg,#c49a63,#76543a)",color:"#fff3dc",fontWeight:900,fontSize:11,boxShadow:"0 5px 18px #0009",touchAction:"none",cursor:"pointer"}}>↑<br/>{activeCharacter==="piocino"?"VOLA":"SALTO"}</button>
     </div>
 <div>{worldTransition&&<div role="status" aria-live="polite" style={{position:"absolute",inset:0,zIndex:100,display:"grid",placeItems:"center",background:worldTransition==="arabnite"?"radial-gradient(ellipse at center,#56351b 0%,#130f18 72%)":"radial-gradient(ellipse at center,#254a38 0%,#101a19 72%)",color:"#fff1d5",fontFamily:"inherit",pointerEvents:"all"}}><div style={{textAlign:"center",padding:24}}><div style={{fontSize:11,letterSpacing:5,fontWeight:900,color:"#e6bd75",marginBottom:18}}>S O G N A T O R I</div><div style={{fontSize:30,fontWeight:950,letterSpacing:2}}>{worldTransition==="arabnite"?"ARABNITE":"AMARGENTA"}</div><div style={{marginTop:12,fontSize:13,color:"#ead8bb"}}>{worldTransition==="arabnite"?"Il portale si apre sulle terre di Arabnite…":"Il varco ti riporta tra i profumi di Amargenta…"}</div><div style={{width:150,height:3,background:"#ffffff30",borderRadius:9,margin:"24px auto 0",overflow:"hidden"}}><div style={{height:"100%",width:"42%",background:"#e6bd75",borderRadius:9,animation:"arabniteLoad 1s ease-in-out infinite alternate"}}/></div></div><style>{"@keyframes arabniteLoad{from{transform:translateX(-35%)}to{transform:translateX(190%)}}"}</style></div>}</div>    {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
