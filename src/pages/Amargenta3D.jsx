@@ -376,8 +376,8 @@ function Amargenta3DContent({ onExit }) {
     const cylinder = (rt,rb,h,material,parent,x,y,z,segments=12) => addMesh(new THREE.CylinderGeometry(rt,rb,h,segments),material,parent,x,y,z);
     const sphere = (r,material,parent,x,y,z,detail=1) => addMesh(new THREE.IcosahedronGeometry(r,detail),material,parent,x,y,z);
     const addCollider = (x,z,r,height=2.2) => colliders.push({type:"circle",x,z,r,height});
-    const addBoxCollider = (x,z,w,d,rotation=0,height=3) => colliders.push({
-      type:"box",x,z,halfW:w/2,halfD:d/2,rotation,height
+    const addBoxCollider = (x,z,w,d,rotation=0,height=3,options={}) => colliders.push({
+      type:"box",x,z,halfW:w/2,halfD:d/2,rotation,height,...options
     });
     const isWaterAt = (x,z) => {
       const center=28+(z-2)*.08, bridge=Math.abs(z)<3.8||Math.abs(z+32)<3.8;
@@ -386,7 +386,7 @@ function Amargenta3DContent({ onExit }) {
     const isBlockedAt = (x,z,radius=(arabniteActive?.82:.62)) => {
       if(isWaterAt(x,z)&&!(characterState?.active==="piocino"&&jumpHeight>=1.35)&&characterState?.active!=="ripple")return true;
       return colliders.some(collider => {
-      if (jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
+      if (!collider.solid && jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
       if (collider.type !== "box") {
         return Math.hypot(x-collider.x,z-collider.z) < collider.r+radius;
       }
@@ -2011,12 +2011,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
       // Cintura di dune monumentali: Arabnite è un bacino chiuso, senza uscite oltre il deserto.
       const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
-      [[132,-20,15,3.4,10],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);addBoxCollider(x,z,w*.82,d*.82,0,h+1.2);});
+      [[132,-20,15,3.4,10],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);addBoxCollider(x,z,w*1.02,d*1.02,0,h+1.2,{solid:true,climbable:false});});
       // Quattro pareti di sabbia alte 22–30 unità, con collisioni solide e nessun varco attraversabile.
       const duneWall=(x,z,w,d,seed=0)=>{
         const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,3.4+((seed%3)*.35),z,2);
         wall.scale.set(w,4.6+(seed%3)*.45,d);
-        addBoxCollider(x,z,w*.88,d*.88,0,9);
+        addBoxCollider(x,z,w*1.02,d*1.02,0,9,{solid:true,climbable:false});
         const crest=sphere(1,seed%2?duneLight:duneMat,arabniteWorld,x-w*.12,6.2+((seed%2)*.35),z+d*.08,2);
         crest.scale.set(w*.72,2.2,d*.72);
       };
@@ -2691,7 +2691,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             if(isWaterAt(p.x,p.z)||Math.abs(p.x-(28+(p.z-2)*.08))<9){setInventory(old=>({...old,fish:(old.fish||0)+1}));setToast("Ripple ha pescato un pesce con il suo uncino!");playerMotion.arms.forEach((arm)=>{arm.rotation.x=-.85;});}
             else setToast("Avvicinati al fiume per pescare con Ripple.");
           } else if(characterState.active==="moci-moci"){
-            const wall=colliders.filter(c=>c.type==="box"&&c.height>=2.5).map(c=>({...c,distance:Math.hypot(p.x-c.x,p.z-c.z)})).filter(c=>c.distance<Math.max(c.halfW,c.halfD)+1.8).sort((a,b)=>a.distance-b.distance)[0];
+            const wall=colliders.filter(c=>c.type==="box"&&c.height>=2.5&&c.climbable!==false).map(c=>({...c,distance:Math.hypot(p.x-c.x,p.z-c.z)})).filter(c=>c.distance<Math.max(c.halfW,c.halfD)+1.8).sort((a,b)=>a.distance-b.distance)[0];
             if(wall){climbingWall=wall;climbHeight=Math.max(.2,climbHeight);setToast("Moci Moci si è appiccicato alla parete: tieni W per scalarla!");}
             else setToast("Avvicinati a una parete per scalarla con Moci Moci.");
           } else if(characterState.active==="piocino"){
