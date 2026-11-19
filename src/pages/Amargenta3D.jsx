@@ -3311,7 +3311,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       </div>
     </div>}
     {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
-      <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
+      <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>{zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"} · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
       {dialogue.actions?.map((action,index)=><button key={action.label+"-"+index} onClick={action.run} style={{marginTop:15,marginRight:8,border:"1px solid #e9c16d",borderRadius:9,padding:"8px 14px",background:"#59417a",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>{action.label}</button>)}{dialogue.confirm&&<button onClick={dialogue.confirm} style={{marginTop:15,marginRight:8,border:"1px solid #a8d4a2",borderRadius:9,padding:"8px 18px",background:"#315b42",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>Convincilo a unirsi</button>}<button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
