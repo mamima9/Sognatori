@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
+import ArabniteOnlineMarket from "@/components/game/ArabniteOnlineMarket";
 
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
