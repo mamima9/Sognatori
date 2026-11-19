@@ -1345,17 +1345,17 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       renderer.setSize(width,height,false);
       camera = new THREE.PerspectiveCamera(58, width / height, 0.1, 260);
       renderer.domElement.style.display="block";renderer.domElement.style.width="100%";renderer.domElement.style.height="100%";renderer.domElement.style.touchAction="none";
-      // Ombre più leggere: riducono consumo GPU e rischio di perdita del contesto.
-      renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+      // Ombre disattivate per una resa pulita e un rendering più leggero.
+      renderer.shadowMap.enabled=false;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor("#b7cbd0",1);
       renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("Sto ripristinando la grafica: la tua posizione e i progressi restano salvati.");});
       renderer.domElement.addEventListener("webglcontextrestored",()=>{setHint("");if(camera)cameraReady=false;});
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#f2fbff","#52664b",1.9));
       arabniteScene.add(new THREE.HemisphereLight("#c8c4ff","#4d2e28",2.15));
-      const arabMoon=new THREE.DirectionalLight("#ffe0ad",2.7);arabMoon.position.set(165,75,45);arabMoon.castShadow=true;arabMoon.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);arabMoon.shadow.camera.left=-65;arabMoon.shadow.camera.right=65;arabMoon.shadow.camera.top=65;arabMoon.shadow.camera.bottom=-65;arabniteScene.add(arabMoon);
+      const arabMoon=new THREE.DirectionalLight("#ffe0ad",2.7);arabMoon.position.set(165,75,45);arabniteScene.add(arabMoon);
       const arabFill=new THREE.PointLight("#8a72ff",95,95,2);arabFill.position.set(178,18,28);arabniteScene.add(arabFill);
-      const sun=new THREE.DirectionalLight("#fff1d7",2.35);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(compactDevice?1024:2048,compactDevice?1024:2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.bias=-.00018;sun.shadow.normalBias=.035;scene.add(sun);
+      const sun=new THREE.DirectionalLight("#fff1d7",2.35);sun.position.set(-35,55,25);scene.add(sun);
       const warmFill=new THREE.DirectionalLight("#ffd6a0",.62);warmFill.position.set(35,18,-30);scene.add(warmFill);
       const skyFill=new THREE.DirectionalLight("#b9dfff",.34);skyFill.position.set(-8,22,48);scene.add(skyFill);
       // Fondovalle stabile: personaggio, NPC e arredi condividono la stessa quota.
@@ -1787,8 +1787,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         window.setTimeout(()=>{
           const destinationKey=toArabnite?"arabnite":"amargenta";
           const destination=sessionWorlds[destinationKey];
-          if(toArabnite){scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;}
-          else{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;}
+          if(toArabnite){scene.remove(player);arabniteScene.add(player);arabniteActive=true;}
+          else{arabniteScene.remove(player);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;}
           const defaults=toArabnite?{x:178,z:12,yaw:Math.PI*.12,pitch:.38,distance:compactDevice?12.2:10.8,character:"cervio"}:{x:61,z:2,yaw:Math.PI*.22,pitch:.34,distance:compactDevice?10.2:8.9,character:"moci-moci"};
           const state=destination&&Number.isFinite(destination.x)&&Number.isFinite(destination.z)?destination:defaults;
           player.position.set(state.x,0,state.z);
@@ -1809,13 +1809,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       // La sabbia continua sotto tutta la cintura di dune, senza fessure o bordi neri.
       addMesh(new THREE.PlaneGeometry(190,190,32,32),mat("#c29a63"),arabniteWorld,178,-.02,12).rotation.x=-Math.PI/2;
-      // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
-      const arabIce=mat("#a8e8f2",.22,{metalness:.28,roughness:.2,transparent:true,opacity:.92});
-      const icePatch=addMesh(new THREE.PlaneGeometry(27,19),arabIce,arabniteWorld,164,.035,-13);
-      icePatch.rotation.x=-Math.PI/2;
-      const iceEdge=addMesh(new THREE.RingGeometry(12.8,13.35,64),mat("#e2fbff",.28,{metalness:.18}),arabniteWorld,164,.07,-13);
-      iceEdge.rotation.x=-Math.PI/2;
-      isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
+      // Pista da pattinaggio di Arabnite: ampia, a livello del terreno e con ingresso aperto a sud.
+       const arabIce=mat("#a8e8f2",.16,{metalness:.32,roughness:.12});
+       const icePatch=addMesh(new THREE.PlaneGeometry(38,28),arabIce,arabniteWorld,164,-.005,-13);
+       icePatch.rotation.x=-Math.PI/2;
+       // Bordo basso in ghiaccio, con un varco centrale sul lato sud.
+       const rinkRail=mat("#d9f8ff",.18,{metalness:.24,roughness:.16});
+       const rinkWall=(x,z,w,d)=>box(w,.42,d,rinkRail,arabniteWorld,x,.22,z);
+       rinkWall(164,-27,38,.48);rinkWall(145,-13,.48,28);rinkWall(183,-13,.48,28);
+       rinkWall(151,-0.2,10,.48);rinkWall(177,-0.2,10,.48);
+       isArabniteIceAt=(x,z)=>arabniteActive&&x>=145.5&&x<=182.5&&z>=-26.5&&z<=.2;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
       try { makeSpyroPortal(132,12,Math.PI/2,"Amargenta",arabniteWorld); }
       catch (error) { console.error("Portale di ritorno non inizializzato: Arabnite resta caricabile", error); }
@@ -2451,14 +2454,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const labels={"talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino","cervio":"Cervio","gunvallo":"Gunvallo","rullino":"Rullino"};
         if(!silent)setToast(labels[characterState.active]+" · personaggio attivo");
       };
-      const talpitrippaShadow = new THREE.Mesh(
-        new THREE.CircleGeometry(.78,32),
-        new THREE.MeshBasicMaterial({color:"#211b20",transparent:true,opacity:.28,depthWrite:false})
-      );
-      talpitrippaShadow.rotation.x=-Math.PI/2;
-      talpitrippaShadow.position.set(-44,.035,2);
-      talpitrippaShadow.scale.set(1.25,.62,1);
-      scene.add(talpitrippaShadow);
+      scene.add(player);
       scene.add(player);player.position.set(-44,0,2);
 
       const saveCurrentWorld=()=>{
@@ -2480,7 +2476,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const restoredWorld=restoredSession?.worlds?.[requestedWorld];
       if(restoredSession&&restoredWorld&&Number.isFinite(restoredWorld.x)&&Number.isFinite(restoredWorld.z)){
         if(requestedWorld==="arabnite"&&arabniteReady){
-          scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;
+          scene.remove(player);arabniteScene.add(player);arabniteActive=true;
         }
         player.position.set(restoredWorld.x,0,restoredWorld.z);
         if(Number.isFinite(restoredWorld.yaw))yaw=restoredWorld.yaw;
@@ -2535,7 +2531,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             shot.position.set(p.x,1.65,p.z);shot.castShadow=true;(arabniteActive?arabniteWorld:scene).add(shot);
             const dir=new THREE.Vector3(Math.sin(player.rotation.y),.08,Math.cos(player.rotation.y)).normalize();
             candyShots.push({mesh:shot,velocity:dir.multiplyScalar(22),life:2.2});
-            setToast("Gunvallo spara una caramella! Colpisci un albero per far cadere le bacche.");
+            setToast("Gunvallo spara una caramella! Colpisci un barattolo per far cadere le bacche.");
           }
         }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
@@ -2641,11 +2637,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         });
         for(let i=candyShots.length-1;i>=0;i--){
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
-          const tree=harvestableTrees.find(t=>t.berries.length&&!t.harvested&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<2.4&&shot.mesh.position.y<5.2);
-          if(tree){tree.harvested=true;tree.berries.forEach((berry,j)=>{berry.visible=false;});setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Le bacche sono cadute dall’albero! +5 bacche.");shot.life=0;}
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;const current=arabniteCollectionRef.current;const next={...current,coins:Number(current.coins??120)+15};arabniteCollectionRef.current=next;setArabniteCollection(next);setToast("Bersaglio colpito! +15 monete del bazar.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Barattolo colpito! Le bacche sono cadute · +5 bacche.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
@@ -2679,10 +2673,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         }
         if(!(isRullino&&onIce))player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
         if(!isCervio)playerMotion.model?.scale.set(1,1,1);
-        talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
-        talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
-        talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
-        const target=new THREE.Vector3(player.position.x,player.position.y+(arabniteActive?1.56:1.44),player.position.z);
+                const target=new THREE.Vector3(player.position.x,player.position.y+(arabniteActive?1.56:1.44),player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
         const cameraEase=1-Math.exp(-7.4*dt);
