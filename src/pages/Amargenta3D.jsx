@@ -148,6 +148,28 @@ function Amargenta3DContent({ onExit }) {
   });
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
+  const [cardDuelOpen, setCardDuelOpen] = useState(false);
+  const [cardDuel, setCardDuel] = useState(null);
+  const startCardDuel = (playerCard) => {
+    const pool=ROSTER.filter(card=>card.id!==playerCard.id);
+    const opponentCard=pool[Math.floor(Math.random()*pool.length)];
+    const playerHp=24+Math.max(0,Number(playerCard.dif)||0),opponentHp=24+Math.max(0,Number(opponentCard.dif)||0);
+    setCardDuel({playerCard,opponentCard,playerHp,opponentHp,maxPlayerHp:playerHp,maxOpponentHp:opponentHp,turn:"player",log:"La sfida comincia! Tocca ATTACCA per giocare la tua carta.",done:false});
+  };
+  const playCardDuelTurn = () => setCardDuel(current => {
+    if(!current||current.done)return current;
+    const damage=Math.max(2,(Number(current.playerCard.att)||5)-Math.floor((Number(current.opponentCard.dif)||0)*.28)+Math.floor(Math.random()*4));
+    const enemyHp=Math.max(0,current.opponentHp-damage);
+    if(enemyHp<=0){
+      const reward={...arabniteCollectionRef.current,coins:Number(arabniteCollectionRef.current.coins??120)+15};
+      arabniteCollectionRef.current=reward;setArabniteCollection(reward);setToast("Vittoria nell'Arena delle Carte · +15 monete");
+      return {...current,opponentHp:0,done:true,log:current.playerCard.nome+" infligge "+damage+" danni: hai vinto il duello!"};
+    }
+    const counter=Math.max(1,(Number(current.opponentCard.att)||5)-Math.floor((Number(current.playerCard.dif)||0)*.28)+Math.floor(Math.random()*3));
+    const playerHp=Math.max(0,current.playerHp-counter);
+    if(playerHp<=0){setToast("Sfida persa · puoi ritentare nell'Arena");return {...current,opponentHp:enemyHp,playerHp:0,done:true,log:current.opponentCard.nome+" contrattacca per "+counter+" danni. Hai perso il duello."};}
+    return {...current,opponentHp:enemyHp,playerHp,log:current.playerCard.nome+" infligge "+damage+" danni. "+current.opponentCard.nome+" contrattacca per "+counter+" danni."};
+  });
   const collectArabnitePack = (id) => {
     const current = arabniteCollectionRef.current;
     if (current.collectedPackIds.includes(id)) return;
@@ -1889,25 +1911,32 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
       const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));arabniteWorld.add(starField);
-       for(let i=0;i<7;i++){
-         const x=146+i*10,z=12+(i%2)*7;
-         // Pali portanti dal terreno al banco e alla copertura dei tendoni.
-         for(const sx of [-2.45,2.45])for(const sz of [-1.5,1.5])cylinder(.11,.14,2.9,arabWood,arabniteWorld,x+sx,1.45,z+sz,8);
-         box(6,.35,4,arabRed,arabniteWorld,x,2.7,z);
-         const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),arabniteWorld,x,3.8,z);canopy.rotation.y=Math.PI/4;
-         box(4,.75,1.3,sand,arabniteWorld,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);
+       // Unico grande tendone di Arabnite: arena aperta dedicata ai duelli 1 contro 1.
+       const arenaX=190,arenaZ=8,arenaWood=mat("#593a2b"),arenaGold=mat("#e8bd68",.24,{metalness:.35}),arenaCloth=mat("#713d58"),arenaLight=mat("#f6d58a",.25,{emissive:"#c98736",emissiveIntensity:.6});
+       const arenaTent=new THREE.Group();arabniteWorld.add(arenaTent);arenaTent.position.set(arenaX,0,arenaZ);
+       for(const sx of [-12.5,12.5])for(const sz of [-8.5,8.5]){
+         cylinder(.2,.27,7.2,arenaWood,arenaTent,sx,3.6,sz,10);
+         cylinder(.3,.34,.24,arenaGold,arenaTent,sx,.18,sz,10);
        }
+       const canopy=addMesh(new THREE.ConeGeometry(17.2,5.2,4),arenaCloth,arenaTent,0,8.2,0);canopy.rotation.y=Math.PI/4;
+       box(25.4,.38,17.4,arenaCloth,arenaTent,0,5.8,0);
+       for(const sx of [-12.5,12.5])box(.28,1.3,17.2,arenaCloth,arenaTent,sx,5.05,0);
+       for(const sz of [-8.5,8.5])box(25.2,1.3,.28,arenaCloth,arenaTent,0,5.05,sz);
+       const arenaRug=addMesh(new THREE.PlaneGeometry(20,13),mat("#512e4e"),arenaTent,0,.055,0);arenaRug.rotation.x=-Math.PI/2;
+       const arenaBorder=addMesh(new THREE.PlaneGeometry(21,14),arenaGold,arenaTent,0,.035,0);arenaBorder.rotation.x=-Math.PI/2;
+       box(8,.55,3.8,arenaWood,arenaTent,0,1.05,0);
+       box(8.25,.14,4.05,arenaGold,arenaTent,0,1.36,0);
+       for(const side of [-1,1]){
+         box(1.3,.16,2.4,arenaGold,arenaTent,side*5.4,.55,0);
+         const sigil=addMesh(new THREE.CircleGeometry(.75,6),arenaLight,arenaTent,side*5.4,.66,0);sigil.rotation.x=-Math.PI/2;
+       }
+       for(let i=0;i<6;i++){const lamp=new THREE.Group();arenaTent.add(lamp);lamp.position.set(-9+i*3.6,4.5,-8.2);cylinder(.18,.22,.42,arenaGold,lamp,0,0,0,8);sphere(.2,arenaLight,lamp,0,-.12,0,1);}
+       addInteraction("arabnite-card-arena","Arena delle Carte","Entra nell'arena e sfida un avversario in un duello 1 contro 1.",arenaX,arenaZ+10,()=>{setCardDuel(null);setCardDuelOpen(true);},6.5);
+
       const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),arabniteWorld,190,.04,48);oasis.rotation.x=-Math.PI/2;
       for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,arabniteWorld,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),arabniteWorld,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
       for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,arabniteWorld,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
-
-      // Piazzetta accogliente: sedute, fioriere, tappeti e indicazioni per i visitatori.
-      const welcomeWood=mat("#70482f"),welcomeGold=mat("#f6d58a",.28,{metalness:.25,emissive:"#9b6428",emissiveIntensity:.18}),welcomeTile=mat("#d8bd91");
-      const makeWelcomeRug=(x,z,w,d,color)=>{const border=addMesh(new THREE.PlaneGeometry(w+.34,d+.34),welcomeGold,arabniteWorld,x,.035,z);border.rotation.x=-Math.PI/2;const rug=addMesh(new THREE.PlaneGeometry(w,d),mat(color),arabniteWorld,x,.045,z);rug.rotation.x=-Math.PI/2;};
-      const makeBench=(x,z,rotation=0)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);g.rotation.y=rotation;box(2.5,.18,.72,welcomeWood,g,0,.72,0);box(2.5,.16,.72,welcomeWood,g,0,1.05,-.28);for(const sx of [-.92,.92]){box(.16,.68,.16,welcomeWood,g,sx,.34,-.18);box(.16,.68,.16,welcomeWood,g,sx,.34,.22);}addCollider(x,z,.9,1.35);};
-      const makePlanter=(x,z,color)=>{const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,0,z);cylinder(.62,.78,.55,arabRoof,g,0,.28,0,10);cylinder(.55,.62,.08,welcomeGold,g,0,.58,0,10);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const leaf=sphere(.28,mat("#477c54"),g,Math.cos(a)*.24,.9,Math.sin(a)*.24,1);leaf.scale.set(.55,1.7,.5);}sphere(.16,mat(color),g,0,1.18,0,1);};
-      makeWelcomeRug(178,15,13,8,"#315f68");makeWelcomeRug(195,7,8,5,"#8e4e55");makeBench(169,22,.12);makeBench(188,24,-.22);makeBench(207,17,Math.PI);
-      [[168,8],[185,17],[201,12],[213,2],[173,34],[207,34]].forEach((p,i)=>makePlanter(p[0],p[1],i%2?"#e6a7bd":"#f0ca72"));
+       // La piazza resta libera: nessun bancone, panchina o tendone secondario.
       makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15,{parent:arabniteWorld});
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08,{parent:arabniteWorld});
       makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{parent:arabniteWorld});
@@ -2940,11 +2969,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       {panel===null&&!zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
       {panel===null&&zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#e8d7bd"}}>
          <strong style={{color:"#f1cb7b"}}>Arabnite · Città delle Lanterne</strong>
-         <div style={{marginTop:7}}>Esplora i tendoni aperti e l’oasi. Brama e Trix gestiscono i bazar delle bustine.</div>
+         <div style={{marginTop:7}}>Un grande tendone ospita l’Arena delle Carte: entra e affronta duelli 1 contro 1.</div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
-         <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Brama vende bustine standard e accetta scambi di doppioni. Trix vende bustine rare.</div>
+         <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Adli custodisce l’Arena delle Carte. Raccogli le bustine sparse in città per ampliare la tua collezione.</div>
          <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
        </div>}
        {panel==="arabnitani"&&<div style={{color:"#f2e4cc"}}>
