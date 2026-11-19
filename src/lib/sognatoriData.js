@@ -962,4 +962,5 @@ export function getSognatoreNumero(sognatore, index = -1) {
 }
 
 export const ROSTER_AVVENTURA = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 1 && getSognatoreNumero(sognatore, index) <= 39);
-export const ROSTER_AMARGENTA = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 40);
+export const ROSTER_AMARGENTA = ROSTER.filter((sognatore, index) => { const n = getSognatoreNumero(sognatore, index); return n >= 40 && n <= 54; });
+export const ROSTER_ARABNITE = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 55 && getSognatoreNumero(sognatore, index) <= 64);
