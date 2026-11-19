@@ -2581,10 +2581,18 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(disposed)return;frame=requestAnimationFrame(animate);
         if(document.hidden)return;
         if(menuOpenRef.current){
-           keys.clear();
-           renderer.render(arabniteActive?arabniteScene:scene,camera);
-           return;
-         }
+
+          keys.clear();
+
+          const pausedDelta=clock.getDelta();
+
+          clock.elapsedTime-=pausedDelta;
+
+          renderer.render(arabniteActive?arabniteScene:scene,camera);
+
+          return;
+
+        }
          const dt=Math.min(clock.getDelta(),.04);
         if(clock.elapsedTime-lastSessionSave>1.5){lastSessionSave=clock.elapsedTime;saveCurrentWorld();}
         if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
