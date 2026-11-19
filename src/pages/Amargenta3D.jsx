@@ -963,6 +963,8 @@ function Amargenta3DContent({ onExit }) {
       }else{
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
+      // In Arabnite i sette Sognatori principali non usano più modelli 3D: restano attive le interazioni e i collider.
+      if (["Biglia","Brama","Lumen","Ponce","Sanlegno","Trix","Vudele"].includes(name)) g.visible=false;
       npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
       if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
       return g;
