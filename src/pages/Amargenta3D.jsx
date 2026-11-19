@@ -217,7 +217,7 @@ function Amargenta3DContent({ onExit }) {
     let climbHeight = 0;
     let climbingWall = null;
     let arabniteActive = false;
-    let yaw = Math.PI * 0.22, pitch = 0.30, distance = 9.6;
+    let yaw = Math.PI * 0.22, pitch = 0.34, distance = 9.2;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
     const cameraLookTarget = new THREE.Vector3();
@@ -1595,11 +1595,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
-        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
       addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
         setWorldTransition("amargenta");controlsLockedRef.current=true;
-        window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
+        window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;cameraReady=false;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
 
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
@@ -1615,9 +1615,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
       const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
       [[158,-8,9,13,"#e6c17b"],[193,-8,7,10,"#d9ad69"],[176,31,8,12,"#b78bd0"],[211,25,6,9,"#e6c17b"],[144,31,6,9,"#d7a35e"]].forEach(v=>dome(...v));
+      // Cupole e tronchi dell'oasi sono ostacoli solidi, non attraversabili.
+      [[158,-8,6.2,7.2],[193,-8,4.9,5.8],[176,31,5.6,6.5],[211,25,4.2,5.2],[144,31,4.2,5.2]].forEach(([x,z,r,h])=>addCollider(x,z,r,h));
+      // Sentieri chiari tra portale, bazar e oasi: leggibili senza tagliare le bancarelle.
+      const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,scene,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
+      const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,scene,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
+      // Dune morbide e rocce ai margini, senza invadere i passaggi principali.
+      const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
+      [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,scene,x,h*.34,z,2);dune.scale.set(w,h,d);});
+      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,scene,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
+      // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
+      const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
+      const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
+      const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:"#f6e7ff",size:.34,transparent:true,opacity:.82,sizeAttenuation:true}));scene.add(starField);
       for(let i=0;i<7;i++){const x=146+i*10,z=12+(i%2)*7;box(6,.35,4,arabRed,scene,x,2.7,z);const canopy=addMesh(new THREE.ConeGeometry(3.8,2.1,4),mat(i%2?"#743d78":"#d58b36"),scene,x,3.8,z);canopy.rotation.y=Math.PI/4;box(4,.75,1.3,sand,scene,x,.7,z+1.6);hangLantern(x,z+2.7,3.4);}
       const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),scene,190,.04,48);oasis.rotation.x=-Math.PI/2;
-      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
+      for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
       for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,scene,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
       makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15);
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08);
@@ -1627,6 +1640,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
+      for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),scene,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
 
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
@@ -1944,6 +1958,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       rEll(rippleBody,rippleIris,[-.49,2.47,.465],[.105,.12,.045],24);
       rEll(rippleBody,ripplePupil,[-.50,2.47,.502],[.055,.075,.025],20);
       rEll(rippleBody,rippleEye,[-.52,2.51,.523],[.025,.03,.012],12);
+      // Secondo occhio speculare, leggibile anche nelle inquadrature frontali.
+      rEll(rippleBody,rippleEye,[.47,2.47,.38],[.17,.19,.10],28);
+      rEll(rippleBody,rippleIris,[.49,2.47,.465],[.105,.12,.045],24);
+      rEll(rippleBody,ripplePupil,[.50,2.47,.502],[.055,.075,.025],20);
+      rEll(rippleBody,rippleEye,[.52,2.51,.523],[.025,.03,.012],12);
       // Corpo a righe bianco/nero e dettagli rossi sulla schiena.
       rEll(rippleBody,rippleBlack,[0,1.25,-.02],[.49,.77,.39],32);
       for(let i=0;i<4;i++){
@@ -2021,7 +2040,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const necklace=new THREE.Group();piocino.add(necklace);
       for(let i=0;i<9;i++){const a=Math.PI+(i/8)*Math.PI;const gem=mEll(necklace,birdPurple,[Math.cos(a)*.43,1.63+Math.sin(a)*.25,.48],[.13,.15,.12],12);gem.rotation.z=a*.2;mEll(necklace,mociWhite,[Math.cos(a)*.43-.035,1.68+Math.sin(a)*.25,.59],[.035,.04,.02],8);}
       const birdFeet=[];
-      for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.27,.57,.08);piocino.add(leg);cylinder(.045,.05,.32,birdPink,leg,0,-.12,0,8);const foot=mEll(leg,birdPink,[0,-.29,.12],[.18,.07,.25],12);for(let k=-1;k<=1;k++){const toe=new THREE.Mesh(new THREE.ConeGeometry(.045,.24,6),birdCream);toe.position.set(k*.1,-.3,.32);toe.rotation.x=-Math.PI/2;leg.add(toe);}birdFeet.push(leg);}
+      // Zampe corte da piccolo uccello, raccolte sotto il piumaggio.
+      for(const side of [-1,1]){const leg=new THREE.Group();leg.position.set(side*.27,.57,.08);piocino.add(leg);cylinder(.045,.05,.18,birdPink,leg,0,-.07,0,8);mEll(leg,birdPink,[0,-.17,.12],[.18,.065,.22],12);for(let k=-1;k<=1;k++){const toe=new THREE.Mesh(new THREE.ConeGeometry(.04,.15,6),birdCream);toe.position.set(k*.09,-.18,.27);toe.rotation.x=-Math.PI/2;leg.add(toe);}birdFeet.push(leg);}
       // ARABNITE: tre avatar esclusivi selezionabili soltanto nella tredicesima città.
       const cervio=new THREE.Group();player.add(cervio);cervio.visible=false;
       const cervioWhite=mat("#e8f8ff"),cervioBlue=mat("#55c9f4"),cervioDark=mat("#163b78"),cervioEye=mat("#071b35");
@@ -2152,8 +2172,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const onWindowBlur=()=>keys.clear();
       const onPointerDown=e=>{if(e.button!==0)return;dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture?.(e.pointerId);};
       const onPointerUp=()=>{dragging=false;};
-      const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.0038;pitch=Math.max(.16,Math.min(.82,pitch+dy*.0032));};
-      const onWheel=e=>{distance=THREE.MathUtils.clamp(distance+e.deltaY*.009,7,20);};
+      const onPointerMove=e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*(compactDevice ? 0.005 : 0.0036);pitch=Math.max(.20,Math.min(.88,pitch+dy*.0034));};
+      const onWheel=e=>{distance=THREE.MathUtils.clamp(distance+e.deltaY*.009,compactDevice?7.8:7,compactDevice?16:18);};
       renderer.domElement.addEventListener("pointerdown",onPointerDown);
       renderer.domElement.addEventListener("pointerup",onPointerUp);
       renderer.domElement.addEventListener("pointercancel",onPointerUp);
@@ -2243,7 +2263,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           // La camera segue gradualmente la direzione di marcia, senza strappi.
           const followYaw=player.rotation.y+Math.PI;
           const yawDelta=Math.atan2(Math.sin(followYaw-yaw),Math.cos(followYaw-yaw));
-          yaw+=yawDelta*(1-Math.exp(-2.1*dt));
+          yaw+=yawDelta*(1-Math.exp(-2.8*dt));
         }
         // Ciclo di movimento del modello 3D: rimbalzo del corpo e alternanza di braccia/piedi.
         const walkBlend=THREE.MathUtils.clamp(horizontalSpeed/4.6,0,1);
@@ -2268,12 +2288,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
         talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
         talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
-        const target=new THREE.Vector3(player.position.x,player.position.y+1.48,player.position.z);
+        const target=new THREE.Vector3(player.position.x,player.position.y+(arabniteActive?1.56:1.44),player.position.z);
         const cp=new THREE.Vector3(target.x+Math.sin(yaw)*Math.cos(pitch)*distance,target.y+Math.sin(pitch)*distance,target.z+Math.cos(yaw)*Math.cos(pitch)*distance);
         if(!cameraReady){camera.position.copy(cp);cameraLookTarget.copy(target);cameraReady=true;}
-        const cameraEase=1-Math.exp(-5.8*dt);
+        const cameraEase=1-Math.exp(-7.4*dt);
         camera.position.lerp(cp,cameraEase);
-        cameraLookTarget.lerp(target,1-Math.exp(-7.2*dt));
+        cameraLookTarget.lerp(target,1-Math.exp(-9.2*dt));
         camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
