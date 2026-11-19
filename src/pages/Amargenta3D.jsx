@@ -1039,12 +1039,12 @@ function Amargenta3DContent({ onExit }) {
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
       // Arabnite usa NPC low-poly leggeri per ridurre il carico della scena.
-      const lightweightArabnite=["Biglia","Brama","Lumen","Ponce","Sanlegno","Trix","Vudele","Cervio","Gunvallo","Rullino"];
+      const lightweightArabnite=["Adli","Biglia","Brama","Lumen","Ponce","Sanlegno","Trix","Vudele","Cervio","Gunvallo","Rullino"];
       if(lightweightArabnite.includes(name)){
         g.children.forEach(child=>{child.visible=false;});
         const mini=new THREE.Group();g.add(mini);
-        const miniBody=mat(({Biglia:"#b72c25",Brama:"#a98251",Lumen:"#7564bd",Ponce:"#d9a34c",Sanlegno:"#8b633f",Trix:"#45347d",Vudele:"#e85b9b",Cervio:"#55c9f4",Gunvallo:"#9b4d20",Rullino:"#236de8"})[name]||baseColor);
-        const miniLight=mat(({Biglia:"#f2bd8b",Brama:"#f1d2a2",Lumen:"#d8d0ff",Ponce:"#ffe0a1",Sanlegno:"#c9a078",Trix:"#d8caff",Vudele:"#ffd1e8",Cervio:"#e8f8ff",Gunvallo:"#d58a45",Rullino:"#43dcb2"})[name]||lightColor);
+        const miniBody=mat(({Adli:"#17201c",Biglia:"#b72c25",Brama:"#f0c52e",Lumen:"#258bdc",Ponce:"#d9a34c",Sanlegno:"#a66a32",Trix:"#258bdc",Vudele:"#f28db9",Cervio:"#55c9f4",Gunvallo:"#9b4d20",Rullino:"#236de8"})[name]||baseColor);
+        const miniLight=mat(({Adli:"#f7f4e9",Biglia:"#f2bd8b",Brama:"#ffe45c",Lumen:"#8bd4ff",Ponce:"#ffe0a1",Sanlegno:"#c9a078",Trix:"#8bd4ff",Vudele:"#ffd1e8",Cervio:"#e8f8ff",Gunvallo:"#d58a45",Rullino:"#43dcb2"})[name]||lightColor);
         if(name==="Ponce"){
           // Ponce è un cammello 3D: corpo robusto, gobba, collo arcuato e quattro zampe.
           const camelBody=new THREE.Mesh(new THREE.SphereGeometry(.62,10,8),miniBody);camelBody.position.set(0,.91,-.02);camelBody.scale.set(1.55,.88,.94);mini.add(camelBody);
@@ -1073,10 +1073,12 @@ function Amargenta3DContent({ onExit }) {
           const headShapes={Biglia:[1.12,1.02,.9],Brama:[1.18,.88,1],Lumen:[.92,1.12,.92],Sanlegno:[1.02,1.08,.95],Trix:[.92,1.02,.92],Vudele:[1.12,1.04,1.08]};
           head.scale.set(...(headShapes[name]||[1,1,1]));mini.add(head);
           const face=new THREE.Mesh(new THREE.SphereGeometry(.19,6,4),belly);face.scale.set(1,.65,.5);face.position.set(0,1.34,.27);mini.add(face);
+          const genericParts=[body,head,face];
           for(const side of [-1,1]){
-            const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);
-            const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.24,1,4),miniBody);leg.position.set(side*.17,.2,.015);mini.add(leg);
+            const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,5,4),dark);eye.position.set(side*.105,1.48,.285);mini.add(eye);genericParts.push(eye);
+            const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.24,1,4),miniBody);leg.position.set(side*.17,.2,.015);mini.add(leg);genericParts.push(leg);
           }
+          if(["Adli","Brama","Lumen","Sanlegno","Trix","Vudele"].includes(name))genericParts.forEach(part=>{part.visible=false;});
         }
         if(name==="Cervio"){
           for(const side of [-1,1]){const antler=new THREE.Mesh(new THREE.ConeGeometry(.075,.48,5),miniLight);antler.position.set(side*.19,1.88,-.01);antler.rotation.z=side*-.2;mini.add(antler);}
@@ -1088,24 +1090,89 @@ function Amargenta3DContent({ onExit }) {
           const crest=new THREE.Mesh(new THREE.ConeGeometry(.2,.42,6),mat("#f4c64f"));crest.position.set(0,1.83,-.02);mini.add(crest);
           const shield=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.1,8),mat("#f4c64f"));shield.position.set(.39,.88,.18);shield.rotation.x=Math.PI/2;mini.add(shield);
           const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.13),mat("#b72c25"));gem.position.set(.39,.88,.25);mini.add(gem);
+        }else if(name==="Adli"){
+          // Mago-albero: tronco di abete spoglio, testa nera tonda e cappello bianco/blu.
+          const trunk=mat("#315c43"),black=mat("#101116"),blue=mat("#315bca"),white=mat("#f5f5f1");
+          for(let tier=0;tier<3;tier++){const bough=new THREE.Mesh(new THREE.ConeGeometry(.56-tier*.11,.78,7),trunk);bough.position.set(0,.62+tier*.38,0);mini.add(bough);}
+          const head=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),black);head.position.set(0,1.92,.03);mini.add(head);
+          for(const side of [-1,1]){
+            const eyeWhite=new THREE.Mesh(new THREE.SphereGeometry(.105,8,6),white);eyeWhite.position.set(side*.14,1.96,.335);mini.add(eyeWhite);
+            const spiralCurve=new THREE.CatmullRomCurve3(Array.from({length:28},(_,i)=>{const t=i/27*Math.PI*4,r=.012+t*.012;return new THREE.Vector3(side*.14+Math.cos(t)*r,1.96+Math.sin(t)*r,.43);}));
+            mini.add(new THREE.Mesh(new THREE.TubeGeometry(spiralCurve,36,.018,5,false),blue));
+          }
+          const hatBrim=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.09,12),white);hatBrim.position.set(0,2.28,0);mini.add(hatBrim);
+          const hat=new THREE.Mesh(new THREE.ConeGeometry(.39,.88,9),blue);hat.position.set(0,2.73,0);hat.rotation.z=-.12;mini.add(hat);
+          const hatBand=new THREE.Mesh(new THREE.TorusGeometry(.32,.045,6,16),white);hatBand.position.set(0,2.43,0);mini.add(hatBand);
+          const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.52,2,6),black);arm.position.set(.58,.98,.05);arm.rotation.z=-.85;mini.add(arm);
+          const hand=new THREE.Mesh(new THREE.SphereGeometry(.11,7,6),black);hand.position.set(.83,1.25,.12);mini.add(hand);
+          const wand=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.62,7),mat("#6b4930"));wand.position.set(.94,1.57,.15);wand.rotation.z=-.2;mini.add(wand);
+          const spark=new THREE.Mesh(new THREE.OctahedronGeometry(.07),white);spark.position.set(.94,1.91,.15);mini.add(spark);
         }else if(name==="Brama"){
-          const turban=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),mat("#e7c48c"));turban.scale.set(1.2,.62,1);turban.position.y=1.68;mini.add(turban);
-          const satchel=new THREE.Mesh(new THREE.BoxGeometry(.38,.46,.25),mat("#6c432b"));satchel.position.set(-.39,.78,.12);mini.add(satchel);
-          const clasp=new THREE.Mesh(new THREE.OctahedronGeometry(.12),mat("#f0c66e"));clasp.position.set(-.39,.8,.27);mini.add(clasp);
-        }else if(name==="Lumen"){
-          const halo=new THREE.Mesh(new THREE.TorusGeometry(.42,.075,7,18),mat("#d9d0ff"));halo.position.set(0,1.82,-.08);mini.add(halo);
-          const moon=new THREE.Mesh(new THREE.SphereGeometry(.12,7,6),mat("#fff0b2"));moon.position.set(.36,1.9,.02);mini.add(moon);
+          // Demone-borsello di gemme: corpo blu/giallo, corna e testa a lanterna con occhi di biglia.
+          const sack=new THREE.Mesh(new THREE.SphereGeometry(.5,9,7),mat("#2458b9"));sack.position.set(0,.92,0);sack.scale.set(1.05,1.25,.86);mini.add(sack);
+          const bellyGem=new THREE.Mesh(new THREE.SphereGeometry(.39,9,7),mat("#f3cc35"));bellyGem.position.set(0,.94,.35);bellyGem.scale.set(1,.9,.35);mini.add(bellyGem);
+          for(let i=0;i<9;i++){const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.13+(i%3)*.025),mat(i%2?"#56b6ff":"#f6d447"));const a=i*2.399;gem.position.set(Math.cos(a)*.37,.72+(i%4)*.19,.46+Math.sin(a)*.08);mini.add(gem);}
+          const lantern=new THREE.Mesh(new THREE.SphereGeometry(.42,9,7),mat("#f3ca36",.12,{metalness:.15}));lantern.position.set(0,1.83,.04);lantern.scale.set(1,.96,.9);mini.add(lantern);
+          for(const side of [-1,1]){
+            const horn=new THREE.Mesh(new THREE.ConeGeometry(.13,.55,6),mat("#2458b9"));horn.position.set(side*.31,2.29,-.02);horn.rotation.z=side*-.32;mini.add(horn);
+          }
+          const eyeRed=new THREE.Mesh(new THREE.SphereGeometry(.145,8,7),mat("#d83a36"));eyeRed.position.set(-.16,1.86,.39);mini.add(eyeRed);
+          const eyeYellow=new THREE.Mesh(new THREE.SphereGeometry(.145,8,7),mat("#ffe45c"));eyeYellow.position.set(.16,1.86,.39);mini.add(eyeYellow);
+          for(const eye of [eyeRed,eyeYellow]){const pupil=new THREE.Mesh(new THREE.SphereGeometry(.05,6,5),mat("#171322"));pupil.position.set(eye.position.x,eye.position.y,.52);mini.add(pupil);}
+          const mouth=new THREE.Mesh(new THREE.BoxGeometry(.22,.055,.04),mat("#37212a"));mouth.position.set(0,1.61,.4);mini.add(mouth);
+        }else if(name==="Lumen"||name==="Trix"){
+          // Lumen è la gatta blu bipede; Trix la sua piccola evoluzione quadrupede.
+          const blueFur=mat("#2189df"),blueLight=mat("#75c8ff"),innerEar=mat("#f5a8ce"),darkEye=mat("#10223e");
+          const small=name==="Trix",scale=small?.78:1;
+          const cat=new THREE.Group();mini.add(cat);cat.scale.setScalar(scale);
+          const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.29,.62,3,8),blueFur);torso.position.set(0,.92,0);torso.scale.set(1,.92,.9);cat.add(torso);
+          const catHead=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8),blueFur);catHead.position.set(0,1.78,.08);catHead.scale.set(1.1,1,.9);cat.add(catHead);
+          const muzzle=new THREE.Mesh(new THREE.SphereGeometry(.17,8,6),blueLight);muzzle.position.set(0,1.66,.36);muzzle.scale.set(1,.65,.55);cat.add(muzzle);
+          for(const side of [-1,1]){
+            const ear=new THREE.Mesh(new THREE.ConeGeometry(.16,.48,6),blueFur);ear.position.set(side*.22,2.15,.02);ear.rotation.z=side*-.18;cat.add(ear);
+            const inner=new THREE.Mesh(new THREE.ConeGeometry(.075,.29,5),innerEar);inner.position.set(side*.22,2.16,.12);inner.rotation.z=side*-.18;cat.add(inner);
+            const eye=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),darkEye);eye.position.set(side*.14,1.83,.39);cat.add(eye);
+            const shine=new THREE.Mesh(new THREE.SphereGeometry(.025,6,5),white);shine.position.set(side*.12,1.86,.45);cat.add(shine);
+            const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.36,2,6),blueFur);leg.position.set(side*.19,.31,.08);cat.add(leg);
+            const paw=new THREE.Mesh(new THREE.SphereGeometry(.11,7,6),blueLight);paw.position.set(side*.19,.1,.12);cat.add(paw);
+          }
+          const tailCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,.66,-.22),new THREE.Vector3(.32,.55,-.48),new THREE.Vector3(.46,.9,-.72),new THREE.Vector3(.28,1.18,-.8)]);
+          cat.add(new THREE.Mesh(new THREE.TubeGeometry(tailCurve,22,.075,7,false),blueFur));
+          if(small){
+            // La mini-evoluzione cammina a quattro zampe e ha corpo più basso e allungato.
+            torso.scale.set(1.5,.62,1);torso.position.set(0,.66,-.06);catHead.position.set(0,1.15,.48);
+            muzzle.position.set(0,1.04,.77);
+            for(const child of cat.children){if(child.geometry?.type==="CapsuleGeometry"&&child!==torso)child.visible=false;}
+            for(const side of [-1,1])for(const z of [-.34,.38]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.07,.34,2,6),blueFur);leg.position.set(side*.23,.3,z);cat.add(leg);const paw=new THREE.Mesh(new THREE.SphereGeometry(.1,7,6),blueLight);paw.position.set(side*.23,.1,z+.04);cat.add(paw);}
+          }else{
+            for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.065,.4,2,6),blueFur);arm.position.set(side*.39,1.02,.04);arm.rotation.z=side*-.18;cat.add(arm);}
+          }
+        }else if(name==="Sanlegno"){
+          // Un bastoncino di palo santo vivo, con braci e fiamme avvolte intorno al legno.
+          const wood=mat("#9b6537"),grain=mat("#4b3025"),ember=mat("#ff7a22",.15,{emissive:"#ff4b13",emissiveIntensity:1.4}),flame=mat("#ffb21f",.12,{emissive:"#ff6b12",emissiveIntensity:1.3}),hot=mat("#ffe76a",.1,{emissive:"#ffb62d",emissiveIntensity:1.5});
+          const stick=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,1.72,7),wood);stick.position.set(0,.98,0);stick.rotation.z=-.1;mini.add(stick);
+          for(let i=0;i<4;i++){const line=new THREE.Mesh(new THREE.CylinderGeometry(.012,.018,1.3,5),grain);line.position.set(-.12+i*.08,.98,.205);line.rotation.z=-.1;mini.add(line);}
+          const face=new THREE.Mesh(new THREE.SphereGeometry(.12,7,6),grain);face.position.set(0,1.12,.22);face.scale.set(1,.72,.45);mini.add(face);
+          for(const side of [-1,1]){const fire=new THREE.Mesh(new THREE.ConeGeometry(.18,.68,6),flame);fire.position.set(side*.19,1.96,.02);fire.rotation.z=side*.32;mini.add(fire);}
+          for(let i=0;i<3;i++){const fire=new THREE.Mesh(new THREE.ConeGeometry(.13,.52,6),i===1?hot:ember);fire.position.set((i-1)*.17,2.35+(i%2)*.12,-.02);fire.rotation.z=(i-1)*-.25;mini.add(fire);}
+          const coal=new THREE.Mesh(new THREE.SphereGeometry(.13,7,6),ember);coal.position.set(0,.2,.08);mini.add(coal);
+        }else if(name==="Vudele"){
+          // Elefantessa rosa, bambola voodoo cucita e lecca-lecca in mano.
+          const pink=mat("#f18bb7"),pinkLight=mat("#ffc0d8"),seam=mat("#8b456a"),white=mat("#fff0e5");
+          const body=new THREE.Mesh(new THREE.SphereGeometry(.48,10,8),pink);body.position.set(0,.85,0);body.scale.set(1.05,1.1,.88);mini.add(body);
+          const head=new THREE.Mesh(new THREE.SphereGeometry(.4,10,8),pink);head.position.set(0,1.62,.08);mini.add(head);
+          for(const side of [-1,1]){const ear=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),pinkLight);ear.position.set(side*.48,1.63,-.02);ear.scale.set(1.15,.72,.28);mini.add(ear);const stitch=new THREE.Mesh(new THREE.TorusGeometry(.19,.018,5,14),seam);stitch.position.set(side*.48,1.63,.08);mini.add(stitch);}
+          const trunkCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,1.55,.42),new THREE.Vector3(.04,1.3,.68),new THREE.Vector3(.12,1.05,.72),new THREE.Vector3(.28,1.08,.72)]);
+          mini.add(new THREE.Mesh(new THREE.TubeGeometry(trunkCurve,18,.12,8,false),pink));
+          for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,7,6),seam);eye.position.set(side*.15,1.72,.43);mini.add(eye);const tusk=new THREE.Mesh(new THREE.ConeGeometry(.055,.22,5),white);tusk.position.set(side*.16,1.38,.42);tusk.rotation.x=Math.PI;mini.add(tusk);}
+          // Cuciture a X sulla pancia e sugli arti.
+          for(let i=0;i<3;i++){const stitch=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.025),seam);stitch.position.set(-.1+i*.1,.88,.43);stitch.rotation.z=Math.PI/4;mini.add(stitch);}
+          const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.06,.42,2,6),pink);arm.position.set(.53,.92,.06);arm.rotation.z=-.65;mini.add(arm);
+          const stick=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.58,7),mat("#e8e0d4"));stick.position.set(.83,1.16,.16);stick.rotation.z=-.2;mini.add(stick);
+          const candy=new THREE.Mesh(new THREE.SphereGeometry(.22,9,7),mat("#f6f3f0"));candy.position.set(.83,1.52,.16);mini.add(candy);
+          const swirl=new THREE.Mesh(new THREE.TorusGeometry(.13,.035,6,16),mat("#e94f91"));swirl.position.set(.83,1.52,.37);mini.add(swirl);
         }else if(name==="Ponce"){
           // Il modello del cammello è completo nel ramo dedicato sopra.
-        }else if(name==="Sanlegno"){
-          for(let k=0;k<3;k++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.14,.48,5),mat(k%2?"#e1a14d":"#6f9b4e"));leaf.position.set((k-1)*.23,1.87,-.04);leaf.rotation.z=(k-1)*-.25;mini.add(leaf);}
-          const ember=new THREE.Mesh(new THREE.OctahedronGeometry(.12),mat("#f08a36",0,{emissive:"#d45c20",emissiveIntensity:.3}));ember.position.set(0,.78,.36);mini.add(ember);
-        }else if(name==="Trix"){
-          const crescent=new THREE.Mesh(new THREE.TorusGeometry(.34,.08,7,18,Math.PI*1.55),mat("#d8caff"));crescent.position.set(0,1.82,-.06);crescent.rotation.z=-.55;mini.add(crescent);
-          const star=new THREE.Mesh(new THREE.OctahedronGeometry(.11),mat("#f4d77b"));star.position.set(.32,1.8,.05);mini.add(star);
-        }else if(name==="Vudele"){
-          const candy=new THREE.Mesh(new THREE.SphereGeometry(.19,7,6),mat("#ffd1e8"));candy.position.set(0,1.87,.02);mini.add(candy);
-          for(const side of [-1,1]){const twist=new THREE.Mesh(new THREE.ConeGeometry(.12,.28,5),mat("#f08cbd"));twist.position.set(side*.28,1.88,.02);twist.rotation.z=side*Math.PI/2;mini.add(twist);}
         }else{
           const crest=new THREE.Mesh(new THREE.ConeGeometry(.13,.25,5),accent);crest.position.y=1.78;mini.add(crest);
         }
@@ -1911,7 +1978,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
       // Cintura di dune monumentali: Arabnite è un bacino chiuso, senza uscite oltre il deserto.
       const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
-      [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
+      [[132,-20,15,3.4,10],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
       // Quattro pareti di sabbia alte 22–30 unità, con collisioni solide e nessun varco attraversabile.
       const duneWall=(x,z,w,d,seed=0)=>{
         const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,3.4+((seed%3)*.35),z,2);
@@ -1993,14 +2060,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         "Benvenuto ad Arabnite! Qui le carte dei Sognatori sono una vera passione.",
         "Sono stato io a inventare il Gioco di Carte dei Sognatori."
       ],1.12,{parent:arabniteWorld});
-      // Adli usa il suo artwork ufficiale n.1 come modello billboard 3D, non il NPC generico.
-      adli.children.forEach(child=>{child.visible=false;});
-      const adliTexture=new THREE.TextureLoader().load("/images/1. ADLI.png");
-      adliTexture.colorSpace=THREE.SRGBColorSpace;
-      const adliArtwork=new THREE.Sprite(new THREE.SpriteMaterial({map:adliTexture,transparent:true,depthWrite:false}));
-      adliArtwork.scale.set(2.5,2.5,1);
-      adliArtwork.position.set(0,1.28,.12);
-      adli.add(adliArtwork);
+      // Adli usa il modello 3D originale da mago-albero, non un artwork piatto.
       adli.userData.isArabniteFounder=true;
       removeNpcInteraction("Adli");
       addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
@@ -2639,7 +2699,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         renderer.setSize(resizeWidth, resizeHeight);
       };
       observer=new ResizeObserver(resize);observer.observe(host);
-      let lastSessionSave=0;
+      let lastSessionSaveAt=0;
       const animate=()=>{
         if(disposed)return;frame=requestAnimationFrame(animate);
         if(document.hidden)return;
@@ -2657,7 +2717,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
         }
          const dt=Math.min(clock.getDelta(),.04);
-        if(clock.elapsedTime-lastSessionSave>1.5){lastSessionSave=clock.elapsedTime;saveCurrentWorld();}
+        if(Date.now()-lastSessionSaveAt>450){lastSessionSaveAt=Date.now();saveCurrentWorld();}
         if(jumpRequested&&jumpHeight<=.001&&!controlsLockedRef.current)jumpVelocity=characterState.active==="piocino"?8.2:7.4;
          const piocinoFlying=characterState.active==="piocino"&&keys.has("Space");
          jumpRequested=false;
@@ -2898,7 +2958,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       console.error("Amargenta 3D init error",error);
       setHint("Avvio grafica 3D non riuscito: "+(error?.message||"WebGL non disponibile")+". In Chrome attiva l'accelerazione grafica e aggiorna i driver video.");
     }
-    return ()=>{disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
+    return ()=>{saveCurrentWorld();disposed=true;if(frame)cancelAnimationFrame(frame);observer?.disconnect();};
   }, []);
 
   const trustTotal = Object.values(residentTrust).reduce((sum, value) => sum + Math.max(0, Math.min(5, Number(value) || 0)), 0);
