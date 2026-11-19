@@ -1786,7 +1786,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             T:["11111","00100","00100","00100","00100","00100","00100"]
           };
           const letters=worldName.toUpperCase().split("");
-          const cell=.105, letterGap=.13, totalWidth=letters.length*(5*cell+letterGap)-letterGap;
+          const cell=.078, letterGap=.10, totalWidth=letters.length*(5*cell+letterGap)-letterGap;
           const left=-totalWidth/2;
           letters.forEach((letter,index)=>{
             const pattern=glyphs[letter];
@@ -1794,8 +1794,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             pattern.forEach((line,row)=>{
               [...line].forEach((pixel,col)=>{
                 if(pixel==="1"){
-                  box(.088,.088,.055,arabGold,g,
-                    left+index*(5*cell+letterGap)+col*cell+.044,
+                  box(.066,.066,.045,arabGold,g,
+                    left+index*(5*cell+letterGap)+col*cell+.033,
                     3.55+(3-row)*cell,
                     .72);
                 }
@@ -1882,9 +1882,27 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // Sentieri chiari tra portale, bazar e oasi: leggibili senza tagliare le bancarelle.
       const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,arabniteWorld,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
       const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
-      // Dune morbide e rocce ai margini, senza invadere i passaggi principali.
+      // Cintura di dune monumentali: Arabnite è un bacino chiuso, senza uscite oltre il deserto.
       const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
       [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
+      // Quattro pareti di sabbia alte 22–30 unità, con collisioni solide e nessun varco attraversabile.
+      const duneWall=(x,z,w,d,seed=0)=>{
+        const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,10.5+((seed%3)*1.4),z,2);
+        wall.scale.set(w,13+(seed%3)*1.8,d);
+        addBoxCollider(x,z,w*.88,d*.88,0,30);
+        const crest=sphere(1,seed%2?duneLight:duneMat,arabniteWorld,x-w*.12,19+((seed%2)*1.5),z+d*.08,2);
+        crest.scale.set(w*.72,7,d*.72);
+      };
+      for(let i=0;i<7;i++){
+        const z=-43+i*18;
+        duneWall(119,z,19,17,i);
+        duneWall(238,z,19,17,i+1);
+      }
+      for(let i=0;i<7;i++){
+        const x=128+i*18;
+        duneWall(x,-51,19,17,i+1);
+        duneWall(x,75,19,17,i);
+      }
       for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
       // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
@@ -2659,6 +2677,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         camera.lookAt(cameraLookTarget);
         smokePuffs.forEach(puff=>{puff.position.y+=dt*.45;if(puff.position.y>13)puff.position.y=10;});
         const p=player.position;
+        // Attraversare fisicamente il cerchio del portale cambia mondo in automatico.
+        if(!controlsLockedRef.current){
+          const portalDistance=arabniteActive?Math.hypot(p.x-132,p.z-12):Math.hypot(p.x-67,p.z-2);
+          if(portalDistance<3.9)travelToWorldRef.current?.(arabniteActive?"amargenta":"arabnite");
+        }
         if(clock.elapsedTime-lastHudUpdate>0.22){lastHudUpdate=clock.elapsedTime;setPlayerCoords({x:Math.round(p.x),z:Math.round(p.z)});}
         const period=Math.floor((clock.elapsedTime%240)/60);
         const moments=["Mattina","Pomeriggio","Tramonto","Notte"];
