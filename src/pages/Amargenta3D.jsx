@@ -383,7 +383,7 @@ function Amargenta3DContent({ onExit }) {
       const center=28+(z-2)*.08, bridge=Math.abs(z)<3.8||Math.abs(z+32)<3.8;
       return !bridge&&Math.abs(z)<50&&Math.abs(x-center)<5.6;
     };
-    const isBlockedAt = (x,z,radius=.55) => {
+    const isBlockedAt = (x,z,radius=(arabniteActive?.82:.62)) => {
       if(isWaterAt(x,z)&&!(characterState?.active==="piocino"&&jumpHeight>=1.35)&&characterState?.active!=="ripple")return true;
       return colliders.some(collider => {
       if (jumpHeight + climbHeight > (collider.height ?? 2.2) + .08) return false;
@@ -2108,10 +2108,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(const side of [-1,1]){const fold=box(.12,.82,.12,foilLight,g,side*.42,0,.08);fold.rotation.z=side*.12;}
         const halo=addMesh(new THREE.TorusGeometry(.72,.035,6,24),seal,g,0,-.08,0);halo.rotation.x=Math.PI/2;
         const phase=x*.17+z*.11,already=arabniteCollectionRef.current.collectedPackIds.includes(id);
-        g.visible=!already;arabnitePackMeshes.push({group:g,baseY:.62,phase});
-        if(!already)addInteraction("arabnite-pack-"+id,"Bustina dei Sognatori","Una bustina sigillata: raccoglila e aprila dall'Album dei Sognatori.",x,z,()=>{
-          if(arabniteCollectionRef.current.collectedPackIds.includes(id))return;g.visible=false;collectArabnitePack(id);
-        },3.1);
+        g.visible=!already;arabnitePackMeshes.push({group:g,baseY:.62,phase,id,x,z});
       };
       [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12],["north-west-terrace",151,-50],["north-market-roof",180,-48],["north-east-arch",214,-46],["eastern-dune",239,-4],["east-lantern",240,22],["south-east-courtyard",232,67],["south-oasis-edge",204,75],["south-garden",172,69],["south-west-gate",133,35],["west-crescent",136,-2]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
@@ -2677,7 +2674,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(e.code==="Space"&&!e.repeat&&!controlsLockedRef.current){jumpRequested=true;e.preventDefault();}
         if(e.code==="KeyE"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
-          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&!(item.title.startsWith("Trix ·")&&currentPeriod!==3)).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
         if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current){
@@ -2805,14 +2802,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         }else if(climbingWall){climbHeight=0;climbingWall=null;}
         const nx = player.position.x + move.x;
         const nz = player.position.z + move.z;
-        if (Math.abs(move.x) > 0.0001 && !isBlockedAt(nx, player.position.z)) {
+        if (Math.abs(move.x) > 0.0001 && !isBlockedAt(nx, player.position.z,arabniteActive?.82:.62)) {
           player.position.x = nx;
-        } else if (isBlockedAt(nx, player.position.z)) {
+        } else if (isBlockedAt(nx, player.position.z,arabniteActive?.82:.62)) {
           movementVelocity.x = 0;
         }
-        if (Math.abs(move.z) > 0.0001 && !isBlockedAt(player.position.x, nz)) {
+        if (Math.abs(move.z) > 0.0001 && !isBlockedAt(player.position.x, nz,arabniteActive?.82:.62)) {
           player.position.z = nz;
-        } else if (isBlockedAt(player.position.x, nz)) {
+        } else if (isBlockedAt(player.position.x, nz,arabniteActive?.82:.62)) {
           movementVelocity.z = 0;
         }
         player.position.y=(player.position.x>120?0:getWalkHeight(player.position.x,player.position.z))+jumpHeight+climbHeight;
@@ -2896,7 +2893,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         sun.position.set(Math.cos(clock.elapsedTime*.025)*38,22+daylight*34,Math.sin(clock.elapsedTime*.025)*32);
         scene.background.setHSL(.55,.22,.28+daylight*.22);
         scene.fog.color.copy(scene.background);
-        const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+        const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&!(item.title.startsWith("Trix ·")&&period!==3)).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
           const npcName=actor.group.userData.npcName;
@@ -2993,7 +2990,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           }
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
-        arabnitePackMeshes.forEach(({group,baseY,phase})=>{if(group.visible){group.position.y=baseY+Math.sin(clock.elapsedTime*2.1+phase)*.16;group.rotation.y=clock.elapsedTime*.55+phase*.08;}});
+        arabnitePackMeshes.forEach(({group,baseY,phase,id,x,z})=>{
+           if(!group.visible)return;
+           group.position.y=baseY+Math.sin(clock.elapsedTime*2.1+phase)*.16;
+           group.rotation.y=clock.elapsedTime*.55+phase*.08;
+           if(arabniteActive&&Math.hypot(p.x-x,p.z-z)<1.75){
+             group.visible=false;
+             removeInteraction("arabnite-pack-"+id);
+             collectArabnitePack(id);
+           }
+         });
         arabPortalEffects.forEach(({ring,innerRing,core,crest,phase})=>{ring.rotation.z+=dt*.22;innerRing.rotation.z-=dt*.3;core.material.opacity=.42+Math.sin(clock.elapsedTime*2.2+phase)*.13;crest.rotation.y+=dt*.5;crest.rotation.z+=dt*.22;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Giardino dei Sigilli" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Terrazza delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Piazzale della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
