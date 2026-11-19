@@ -1754,52 +1754,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
         const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
         sphere(.24,gem,g,0,8.05,.35,2);
-        // Nome del mondo sopra l’arco, nello stile classico dei portali.
-        if(worldName){
-          const glyphs={
-            A:["01110","10001","10001","11111","10001","10001","10001"],
-            B:["11110","10001","10001","11110","10001","10001","11110"],
-            E:["11111","10000","10000","11110","10000","10000","11111"],
-            G:["01111","10000","10000","10111","10001","10001","01111"],
-            I:["11111","00100","00100","00100","00100","00100","11111"],
-            M:["10001","11011","10101","10101","10001","10001","10001"],
-            N:["10001","11001","10101","10011","10001","10001","10001"],
-            R:["11110","10001","10001","11110","10100","10010","10001"],
-            T:["11111","00100","00100","00100","00100","00100","00100"]
-          };
-          const letters=worldName.toUpperCase().split("");
-          const cell=.078, letterGap=.10, totalWidth=letters.length*(5*cell+letterGap)-letterGap;
-          const left=-totalWidth/2;
-          letters.forEach((letter,index)=>{
-            const pattern=glyphs[letter];
-            if(!pattern)return;
-            pattern.forEach((line,row)=>{
-              [...line].forEach((pixel,col)=>{
-                if(pixel==="1"){
-                  box(.066,.066,.045,arabGold,g,
-                    left+index*(5*cell+letterGap)+col*cell+.033,
-                    3.55+(3-row)*cell,
-                    .72);
-                }
-              });
-            });
-          });
-        }
         arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
         return g;
       };
       try { makeSpyroPortal(67,2,-Math.PI/2,"Arabnite"); }
       catch (error) { console.error("Portale Arabnite non inizializzato: Amargenta resta disponibile", error); }
-      addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
-        if(!arabniteReady){setToast("Arabnite non è disponibile in questo momento. Amargenta resta esplorabile.");return;}
-        setWorldTransition("arabnite");controlsLockedRef.current=true;
-        window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="talpitrippa";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · Talpitrippa attivo per prova");controlsLockedRef.current=false;setWorldTransition(null);},950);
-      },5.5);
-      addInteraction("arabnite-return","Portale per Amargenta","Il varco dorato ti riporta al borgo del caffè.",132,12,()=>{
-        setWorldTransition("amargenta");controlsLockedRef.current=true;
-        window.setTimeout(()=>{arabniteScene.remove(player);arabniteScene.remove(talpitrippaShadow);scene.add(player);scene.add(talpitrippaShadow);arabniteActive=false;characterState.active="moci-moci";switchCharacter();player.position.set(61,0,2);movementVelocity.set(0,0,0);yaw=Math.PI*.22;pitch=.34;distance=compactDevice?10.2:8.9;cameraReady=false;setToast("Sei tornato ad Amargenta");controlsLockedRef.current=false;setWorldTransition(null);},950);
-      },5.5);
-
       travelToWorldRef.current=(target)=>{
         const toArabnite=target==="arabnite";
         if(toArabnite&&!arabniteReady){setToast("Arabnite non è disponibile in questo momento. Amargenta resta esplorabile.");return;}
@@ -1857,21 +1816,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       [[132,-20,15,3.4,10],[222,-18,13,2.8,9],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
       // Quattro pareti di sabbia alte 22–30 unità, con collisioni solide e nessun varco attraversabile.
       const duneWall=(x,z,w,d,seed=0)=>{
-        const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,10.5+((seed%3)*1.4),z,2);
-        wall.scale.set(w,13+(seed%3)*1.8,d);
-        addBoxCollider(x,z,w*.88,d*.88,0,30);
-        const crest=sphere(1,seed%2?duneLight:duneMat,arabniteWorld,x-w*.12,19+((seed%2)*1.5),z+d*.08,2);
-        crest.scale.set(w*.72,7,d*.72);
+        const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,3.4+((seed%3)*.35),z,2);
+        wall.scale.set(w,4.6+(seed%3)*.45,d);
+        addBoxCollider(x,z,w*.88,d*.88,0,9);
+        const crest=sphere(1,seed%2?duneLight:duneMat,arabniteWorld,x-w*.12,6.2+((seed%2)*.35),z+d*.08,2);
+        crest.scale.set(w*.72,2.2,d*.72);
       };
+      // Dune arretrate verso il perimetro: il centro della città resta ampio e leggibile.
       for(let i=0;i<7;i++){
-        const z=-43+i*18;
-        duneWall(119,z,19,17,i);
-        duneWall(238,z,19,17,i+1);
+        const z=-55+i*19;
+        duneWall(104,z,20,18,i);
+        duneWall(253,z,20,18,i+1);
       }
       for(let i=0;i<7;i++){
-        const x=128+i*18;
-        duneWall(x,-51,19,17,i+1);
-        duneWall(x,75,19,17,i);
+        const x=119+i*19;
+        duneWall(x,-66,20,18,i+1);
+        duneWall(x,91,20,18,i);
       }
       for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15)continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
       // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
@@ -2416,7 +2376,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
         const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
         Object.entries(models).forEach(([id,model])=>model.visible=id===characterState.active);
-        Object.entries(arabniteCompanions).forEach(([id,model])=>{model.visible=arabniteActive&&id!==characterState.active;});
+        Object.values(arabniteCompanions).forEach(model=>{model.visible=false;});
         const configs={
           "talpitrippa":{model:talpitrippa,arms,feet,eyes:eyeMeshes},
           "ripple":{model:rippleBody,arms:rippleArms,feet:rippleFeet,eyes:[]},
@@ -2616,19 +2576,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         }
         if(!(isRullino&&onIce))player.rotation.z=THREE.MathUtils.damp(player.rotation.z,-(activeSide*.025*walkBlend),7,dt);
         if(!isCervio)playerMotion.model?.scale.set(1,1,1);
-        if(arabniteActive){
-          const followers=arabniteOrder.filter(id=>id!==characterState.active);
-          followers.forEach((id,index)=>{
-            const follower=arabniteCompanions[id];if(!follower)return;
-            const side=index===0?-1:1,back=2.0+index*.35;
-            const tx=player.position.x+Math.sin(player.rotation.y+side*.52)*1.35-Math.sin(player.rotation.y)*back;
-            const tz=player.position.z+Math.cos(player.rotation.y+side*.52)*1.35-Math.cos(player.rotation.y)*back;
-            follower.position.x=THREE.MathUtils.damp(follower.position.x,tx,5.5,dt);
-            follower.position.z=THREE.MathUtils.damp(follower.position.z,tz,5.5,dt);
-            follower.position.y=player.position.y+Math.abs(Math.sin(clock.elapsedTime*4+index))*.06;
-            follower.rotation.y=player.rotation.y;
-          });
-        }else Object.values(arabniteCompanions).forEach(model=>{model.visible=false;});
         talpitrippaShadow.position.set(player.position.x,0.035,player.position.z);
         talpitrippaShadow.material.opacity=THREE.MathUtils.clamp(.28-jumpHeight*.035,.08,.28);
         talpitrippaShadow.scale.set(1.25+jumpHeight*.035,.62+jumpHeight*.02,1);
