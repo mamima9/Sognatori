@@ -141,15 +141,15 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteCollection, setArabniteCollection] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:arabnite:cards:v1") || "{}");
-      return { packs: Math.max(0, Number(saved.packs) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
-    } catch { return { packs: 0, collectedPackIds: [], cards: {} }; }
+      return { packs: Math.max(0, Number(saved.packs) || 0), coins: Math.max(0, Number(saved.coins ?? 120) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
+    } catch { return { packs: 0, coins: 120, collectedPackIds: [], cards: {} }; }
   });
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
   const collectArabnitePack = (id) => {
     const current = arabniteCollectionRef.current;
     if (current.collectedPackIds.includes(id)) return;
-    const next = { ...current, packs: current.packs + 1, collectedPackIds: [...current.collectedPackIds, id] };
+    const next = { ...current, coins: Number(current.coins ?? 120), packs: current.packs + 1, collectedPackIds: [...current.collectedPackIds, id] };
     arabniteCollectionRef.current = next; setArabniteCollection(next);
     setToast("Bustina raccolta! Puoi aprirla dall'Album dei Sognatori.");
   };
@@ -164,9 +164,30 @@ function Amargenta3DContent({ onExit }) {
       counts[card.id] = (Number(counts[card.id]) || 0) + 1;
       drawn.push({ ...card, isNew: counts[card.id] === 1, copies: counts[card.id] });
     }
-    const next = { ...current, packs: current.packs - 1, cards: counts };
+    const next = { ...current, coins: Number(current.coins ?? 120), packs: current.packs - 1, cards: counts };
     arabniteCollectionRef.current = next; setArabniteCollection(next);
     setCardReveal(drawn); setToast("Bustina aperta · hai trovato 3 carte!");
+  };
+  const buyArabnitePack = (kind="standard") => {
+    const offers={standard:{label:"Bustina del Bazar",price:30},premium:{label:"Bustina delle Lanterne",price:65},rare:{label:"Bustina del Collezionista",price:110}};
+    const offer=offers[kind]||offers.standard, current=arabniteCollectionRef.current;
+    if(Number(current.coins??120)<offer.price){setToast("Monete insufficienti: cerca altre carte o tesori in città.");return false;}
+    const next={...current,coins:Number(current.coins??120)-offer.price,packs:current.packs+1};
+    arabniteCollectionRef.current=next;setArabniteCollection(next);setToast(offer.label+" acquistata!");return true;
+  };
+  const tradeArabniteCard = (npcName) => {
+    const current=arabniteCollectionRef.current, counts={...current.cards};
+    const duplicates=ROSTER.filter(card=>(Number(counts[card.id])||0)>1);
+    if(!duplicates.length){setToast("Per scambiare serve almeno una carta doppia.");return false;}
+    const missing=ROSTER.filter(card=>(Number(counts[card.id])||0)===0);
+    if(!missing.length){setToast("Hai già completato l'album!");return false;}
+    const give=duplicates[Math.floor(Math.random()*duplicates.length)];
+    const receive=missing[Math.floor(Math.random()*missing.length)];
+    counts[give.id]-=1;counts[receive.id]=1;
+    const next={...current,cards:counts,coins:Number(current.coins??120)};
+    arabniteCollectionRef.current=next;setArabniteCollection(next);
+    setCardReveal([{...receive,isNew:true,copies:1}]);
+    setToast(npcName+" ha scambiato "+give.nome+" con "+receive.nome+".");return true;
   };
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
   const questCountRef = useRef(Number(savedProgress.questCount) || 0);
