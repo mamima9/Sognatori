@@ -1848,7 +1848,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         for(let row=0;row<3;row++)box(w+.08,.055,.08,row%2?arabGold:arabWood,g,0,.55+row*.58,d/2+.08);
         box(2.1,.16,.7,arabStone,g,0,.12,d/2+.25);addBoxCollider(x,z,w+.7,d+.8,0,h+1.8);return g;
       };
-            makeArabHouse(143,59,11,9,4.1,"#3e7568");makeArabMinaret(229,-4);
       // Cupole e tronchi dell'oasi sono ostacoli solidi, non attraversabili.
       // Sentieri chiari tra portale, bazar e oasi: leggibili senza tagliare le bancarelle.
       const bazaarTrail=addMesh(new THREE.PlaneGeometry(6.5,48),sand,arabniteWorld,181,.025,27);bazaarTrail.rotation.x=-Math.PI/2;bazaarTrail.rotation.z=-.24;
