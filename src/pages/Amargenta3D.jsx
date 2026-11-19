@@ -963,8 +963,8 @@ function Amargenta3DContent({ onExit }) {
       }else{
         for(let k=0;k<3;k++){const leafBit=sphere(.09,accent,g,-.45+k*.18,1.28,.18,1);leafBit.scale.set(.55,1.45,.35);}
       }
-      npcActors.push({group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id});
-      if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);}
+      const npcActor={group:g,baseY:0,phase:npcActors.length*1.7,leftArm:arms[0],rightArm:arms[1],headPivot,kind:id,nightOnly:Boolean(options.nightOnly)};g.visible=!npcActor.nightOnly;npcActors.push(npcActor);
+      if(!options.detached){addCollider(x,z,.48*scale);addInteraction(id,name+" · "+job,lines.join("\\n"),x,z,null,3.8);const interaction=interactables.find(item=>item.id===id);if(interaction&&options.nightOnly)interaction.nightOnly=true;}
       return g;
     };
     // Cardinero: piccoli custodi dei giardini di Amargenta. Sono abitanti pacifici, non combattenti.
@@ -1769,12 +1769,26 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const oasis=addMesh(new THREE.CircleGeometry(9,48),mat("#287f91",.2,{metalness:.16}),scene,190,.04,48);oasis.rotation.x=-Math.PI/2;
       for(let i=0;i<9;i++){const a=i*Math.PI*2/9,x=190+Math.cos(a)*11,z=48+Math.sin(a)*11;cylinder(.28,.48,4,wood,scene,x,2,z,8);addCollider(x,z,.58,4.5);for(let k=0;k<5;k++){const lf=sphere(1.8,mat("#397d50"),scene,x+Math.cos(a+k*1.2)*1.5,4.1,z+Math.sin(a+k*1.2)*1.5,1);lf.scale.set(1.4,.16,.48);lf.rotation.y=a+k*1.2;}hangLantern(x,z,2.8);}
       for(let i=0;i<18;i++){const pebble=sphere(.18,lantern,scene,150+i*4.5,.14,38+Math.sin(i*.5)*2,1);pebble.scale.y=.3;}
+
+      // Piazzetta accogliente: sedute, fioriere, tappeti e indicazioni per i visitatori.
+      const welcomeWood=mat("#70482f"),welcomeGold=mat("#f6d58a",.28,{metalness:.25,emissive:"#9b6428",emissiveIntensity:.18}),welcomeTile=mat("#d8bd91");
+      const makeWelcomeRug=(x,z,w,d,color)=>{const border=addMesh(new THREE.PlaneGeometry(w+.34,d+.34),welcomeGold,scene,x,.035,z);border.rotation.x=-Math.PI/2;const rug=addMesh(new THREE.PlaneGeometry(w,d),mat(color),scene,x,.045,z);rug.rotation.x=-Math.PI/2;};
+      const makeBench=(x,z,rotation=0)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;box(2.5,.18,.72,welcomeWood,g,0,.72,0);box(2.5,.16,.72,welcomeWood,g,0,1.05,-.28);for(const sx of [-.92,.92]){box(.16,.68,.16,welcomeWood,g,sx,.34,-.18);box(.16,.68,.16,welcomeWood,g,sx,.34,.22);}addCollider(x,z,.9,1.35);};
+      const makePlanter=(x,z,color)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);cylinder(.62,.78,.55,arabRoof,g,0,.28,0,10);cylinder(.55,.62,.08,welcomeGold,g,0,.58,0,10);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const leaf=sphere(.28,mat("#477c54"),g,Math.cos(a)*.24,.9,Math.sin(a)*.24,1);leaf.scale.set(.55,1.7,.5);}sphere(.16,mat(color),g,0,1.18,0,1);};
+      makeWelcomeRug(178,15,13,8,"#315f68");makeWelcomeRug(195,7,8,5,"#8e4e55");makeBench(169,22,.12);makeBench(188,24,-.22);makeBench(207,17,Math.PI);
+      [[168,8],[185,17],[201,12],[213,2],[173,34],[207,34]].forEach((p,i)=>makePlanter(p[0],p[1],i%2?"#e6a7bd":"#f0ca72"));
+      const welcomeBoard=new THREE.Group();scene.add(welcomeBoard);welcomeBoard.position.set(151,0,12);welcomeBoard.rotation.y=-Math.PI/2;box(4.8,2.25,.24,welcomeWood,welcomeBoard,0,2.35,0);box(4.45,1.92,.08,welcomeTile,welcomeBoard,0,2.36,.16);
+      for(const sx of [-2.05,2.05])cylinder(.12,.15,3.2,welcomeGold,welcomeBoard,sx,1.6,0,8);
+      const boardCanvas=document.createElement("canvas");boardCanvas.width=1024;boardCanvas.height=512;const boardCtx=boardCanvas.getContext("2d");boardCtx.clearRect(0,0,1024,512);boardCtx.textAlign="center";boardCtx.fillStyle="#563a2a";boardCtx.font="900 92px Georgia";boardCtx.fillText("BENVENUTO",512,145);boardCtx.font="bold 52px Georgia";boardCtx.fillText("BAZAR  ·  OASI  ·  PIAZZA",512,245);boardCtx.font="42px Georgia";boardCtx.fillText("Esplora, riposati, incontra i Sognatori",512,330);
+      const boardTexture=new THREE.CanvasTexture(boardCanvas);boardTexture.colorSpace=THREE.SRGBColorSpace;const boardFace=new THREE.Sprite(new THREE.SpriteMaterial({map:boardTexture,transparent:true,depthWrite:false}));boardFace.position.set(0,2.36,.23);boardFace.scale.set(4.25,2.12,1);welcomeBoard.add(boardFace);
+      addInteraction("arabnite-welcome","Benvenuto ad Arabnite","La piazza è il tuo punto di riferimento. A ovest trovi il bazar, a sud-est l'Oasi della Luna. Le bustine dei Sognatori brillano lungo i sentieri.",151,12,()=>setDialogue({title:"Benvenuto ad Arabnite!",text:"Prenditi il tuo tempo: esplora il bazar, riposati nella piazza, raggiungi l'oasi e cerca le bustine dei Sognatori. Di notte la città cambia volto e alcuni abitanti escono solo allora."}),4.8);
+
       makeNpc("guard","Biglia","Custode del Sigillo Cremisi",158,-1,"#b72c25",["Il fuoco antico protegge Arabnite.","Il Sigillo Cremisi non deve spegnersi."],1.15);
       makeNpc("merchant","Brama","Mercante delle Gemme",190,-3,"#a98251",["Ogni tesoro ha una storia.","Le gemme più rare arrivano dalle dune."],1.08);
-      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1);
+      makeNpc("keeper","Lumen","Custode della Luna",177,20,"#514080",["La notte è una mappa piena di stelle.","Segui la luna per trovare l'oasi."],1,{nightOnly:true});
       makeNpc("archivist","Ponce","Emiro del Bazar",205,8,"#d9a34c",["Benvenuto nel bazar di Arabnite.","Qui ogni spezia ha un segreto."],1.08);
       makeNpc("farmer","Sanlegno","Spirito del Bosco Ardente",142,44,"#8b633f",["Le radici ricordano ogni viaggiatore.","La fiamma scalda, ma non deve divorare."],1.05);
-      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95);
+      makeNpc("barista","Trix","Guardiana dei Vicoli Lunari",211,43,"#45347d",["I vicoli cambiano quando sorge la luna.","Non tutto ciò che brilla è un tesoro."],.95,{nightOnly:true});
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
       for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),scene,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
@@ -2292,7 +2306,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(e.code==="Space"&&!e.repeat&&!controlsLockedRef.current){jumpRequested=true;e.preventDefault();}
         if(e.code==="KeyE"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
-          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&(!item.nightOnly||period===3)).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
         if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current){
@@ -2463,6 +2477,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
+           if(actor.nightOnly)actor.group.visible=period===3;
           const idle=clock.elapsedTime*1.7+actor.phase;
           if(actor.wild){
             const t=clock.elapsedTime*actor.walkSpeed+actor.phase;
