@@ -2722,10 +2722,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           playerMotion.feet.forEach((foot,i)=>{
             const phase=step*(i===0?-1:1);
             foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,phase*.48,12,dt);
-            if(foot.position.y!==undefined){
-              const lift=Math.max(0,Math.sin(gait+(i===0?0:Math.PI)))*.105*walkBlend;
-              foot.position.y=THREE.MathUtils.damp(foot.position.y,lift,14,dt);
-            }
+
           });
           playerGroundShadow.position.x=player.position.x;
           playerGroundShadow.position.z=player.position.z;
