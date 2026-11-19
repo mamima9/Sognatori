@@ -2306,7 +2306,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         if(e.code==="Space"&&!e.repeat&&!controlsLockedRef.current){jumpRequested=true;e.preventDefault();}
         if(e.code==="KeyE"&&!e.repeat&&!controlsLockedRef.current){
           const p=player.position;
-          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&(!item.nightOnly||period===3)).sort((a,b)=>a.distance-b.distance)[0];
+          const target=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&(!item.nightOnly||currentPeriod===3)).sort((a,b)=>a.distance-b.distance)[0];
           if(target){if(target.action)target.action();else setDialogue({title:target.title,text:target.text});}
         }
         if(e.code==="KeyF"&&!e.repeat&&!controlsLockedRef.current){
@@ -2474,7 +2474,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         sun.position.set(Math.cos(clock.elapsedTime*.025)*38,22+daylight*34,Math.sin(clock.elapsedTime*.025)*32);
         scene.background.setHSL(.55,.22,.28+daylight*.22);
         scene.fog.color.copy(scene.background);
-        const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius).sort((a,b)=>a.distance-b.distance)[0];
+        const closest=interactables.map(item=>({...item,distance:Math.hypot(p.x-item.x,p.z-item.z)})).filter(item=>item.distance<item.radius&&(!item.nightOnly||period===3)).sort((a,b)=>a.distance-b.distance)[0];
         setNearby(old=>old?.id===closest?.id?old:(closest||null));
         npcActors.forEach((actor,i)=>{
            if(actor.nightOnly)actor.group.visible=period===3;
