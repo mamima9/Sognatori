@@ -1024,7 +1024,7 @@ function Amargenta3DContent({ onExit }) {
           const scroll=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.56,7),mat("#f3dfb6"));scroll.position.set(.4,.95,.05);scroll.rotation.z=Math.PI/2;mini.add(scroll);
         }else if(name==="Sanlegno"){
           for(let k=0;k<3;k++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.14,.48,5),mat(k%2?"#e1a14d":"#6f9b4e"));leaf.position.set((k-1)*.23,1.87,-.04);leaf.rotation.z=(k-1)*-.25;mini.add(leaf);}
-          const ember=new THREE.Mesh(new THREE.OctahedronGeometry(.12),mat("#f08a36",{emissive:"#d45c20",emissiveIntensity:.3}));ember.position.set(0,.78,.36);mini.add(ember);
+          const ember=new THREE.Mesh(new THREE.OctahedronGeometry(.12),mat("#f08a36",0,{emissive:"#d45c20",emissiveIntensity:.3}));ember.position.set(0,.78,.36);mini.add(ember);
         }else if(name==="Trix"){
           const crescent=new THREE.Mesh(new THREE.TorusGeometry(.34,.08,7,18,Math.PI*1.55),mat("#d8caff"));crescent.position.set(0,1.82,-.06);crescent.rotation.z=-.55;mini.add(crescent);
           const star=new THREE.Mesh(new THREE.OctahedronGeometry(.11),mat("#f4d77b"));star.position.set(.32,1.8,.05);mini.add(star);
