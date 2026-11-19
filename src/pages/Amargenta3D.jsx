@@ -1848,6 +1848,17 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
+      // Adli accoglie chi arriva ad Arabnite: è l'inventore del gioco di carte dei Sognatori.
+      const adli=makeNpc("archivist","Adli","Inventore del Gioco di Carte",151,7,"#c68b42",[
+        "Benvenuto ad Arabnite! Qui le carte dei Sognatori sono una vera passione.",
+        "Sono stato io a inventare il Gioco di Carte dei Sognatori."
+      ],1.12,{parent:arabniteWorld});
+      adli.userData.isArabniteFounder=true;
+      removeInteraction("archivist");
+      addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
+        title:"Adli · L'inventore del gioco",
+        text:"«Benvenuto ad Arabnite! Forse non lo sai, ma sono stato io a inventare il Gioco di Carte dei Sognatori. All'inizio era solo un modo per raccogliere le storie e le abilità dei Sognatori. Poi sono nate le bustine, i bazar e la voglia di completare la collezione. Qui puoi comprare nuove bustine, trovare carte rare e scambiarle con altri collezionisti. La tua avventura comincia proprio da qui!»"
+      }),4.4);
       const makeArabnitePack=(id,x,z)=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
         const foil=mat("#6d3c8f",.3,{metalness:.42}),foilLight=mat("#b98be0",.28,{metalness:.32}),seal=mat("#f5cf72",.25,{metalness:.45});
