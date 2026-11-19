@@ -2011,7 +2011,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const oasisTrail=addMesh(new THREE.PlaneGeometry(5.5,26),sand,arabniteWorld,192,.028,43);oasisTrail.rotation.x=-Math.PI/2;
       // Cintura di dune monumentali: Arabnite è un bacino chiuso, senza uscite oltre il deserto.
       const duneMat=mat("#b88c55"),duneLight=mat("#d3ad73"),rockMat=mat("#66516d");
-      [[132,-20,15,3.4,10],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);});
+      [[132,-20,15,3.4,10],[132,48,17,3.1,11],[225,55,16,3.8,10],[151,67,12,2.1,8],[218,-42,18,2.7,12]].forEach(([x,z,w,h,d],i)=>{const dune=sphere(1,i%2?duneMat:duneLight,arabniteWorld,x,h*.34,z,2);dune.scale.set(w,h,d);addBoxCollider(x,z,w*.82,d*.82,0,h+1.2);});
       // Quattro pareti di sabbia alte 22–30 unità, con collisioni solide e nessun varco attraversabile.
       const duneWall=(x,z,w,d,seed=0)=>{
         const wall=sphere(1,seed%2?duneMat:duneLight,arabniteWorld,x,3.4+((seed%3)*.35),z,2);
@@ -2031,7 +2031,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         duneWall(x,-66,20,18,i+1);
         duneWall(x,91,20,18,i);
       }
-      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15||(Math.abs(x-208)<17&&Math.abs(z+12)<13))continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);rock.scale.set(.9+(i%4)*.25,.7+(i%3)*.18,.8+(i%5)*.18);}
+      for(let i=0;i<18;i++){const x=136+(i*17%83),z=-38+((i*29)%112);if((x>155&&x<211&&z>-5&&z<22)||Math.hypot(x-190,z-48)<15||(Math.abs(x-208)<17&&Math.abs(z+12)<13))continue;const rock=sphere(.8,rockMat,arabniteWorld,x,.55+(i%3)*.12,z,1);const rockScaleX=.9+(i%4)*.25,rockScaleZ=.8+(i%5)*.18;rock.scale.set(rockScaleX,.7+(i%3)*.18,rockScaleZ);addCollider(x,z,Math.max(rockScaleX,rockScaleZ)*.58,1.35);}
       // Un solo sistema di punti per il cielo stellato, leggero anche su mobile.
       const starPositions=[];for(let i=0;i<180;i++){const x=132+(i*37%96),y=17+(i*19%25),z=-42+(i*53%112);starPositions.push(x,y,z);}
       const starGeometry=new THREE.BufferGeometry();starGeometry.setAttribute("position",new THREE.Float32BufferAttribute(starPositions,3));
