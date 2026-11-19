@@ -138,6 +138,36 @@ function Amargenta3DContent({ onExit }) {
   const [playerCoords, setPlayerCoords] = useState({ x: -44, z: 2 });
   const [worldMoment, setWorldMoment] = useState("Mattina");
   const [toast, setToast] = useState("");
+  const [arabniteCollection, setArabniteCollection] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("sognatori:arabnite:cards:v1") || "{}");
+      return { packs: Math.max(0, Number(saved.packs) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
+    } catch { return { packs: 0, collectedPackIds: [], cards: {} }; }
+  });
+  const arabniteCollectionRef = useRef(arabniteCollection);
+  const [cardReveal, setCardReveal] = useState([]);
+  const collectArabnitePack = (id) => {
+    const current = arabniteCollectionRef.current;
+    if (current.collectedPackIds.includes(id)) return;
+    const next = { ...current, packs: current.packs + 1, collectedPackIds: [...current.collectedPackIds, id] };
+    arabniteCollectionRef.current = next; setArabniteCollection(next);
+    setToast("Bustina raccolta! Puoi aprirla dall'Album dei Sognatori.");
+  };
+  const openArabnitePack = () => {
+    const current = arabniteCollectionRef.current;
+    if (current.packs <= 0) { setToast("Non hai bustine da aprire. Cercane altre ad Arabnite!"); return; }
+    const counts = { ...current.cards }, drawn = [];
+    for (let i = 0; i < 3; i++) {
+      const undiscovered = ROSTER.filter((card) => !counts[card.id]);
+      const pool = undiscovered.length ? undiscovered : ROSTER;
+      const card = pool[Math.floor(Math.random() * pool.length)];
+      counts[card.id] = (Number(counts[card.id]) || 0) + 1;
+      drawn.push({ ...card, isNew: counts[card.id] === 1, copies: counts[card.id] });
+    }
+    const next = { ...current, packs: current.packs - 1, cards: counts };
+    arabniteCollectionRef.current = next; setArabniteCollection(next);
+    setCardReveal(drawn); setToast("Bustina aperta · hai trovato 3 carte!");
+  };
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
   const questCountRef = useRef(Number(savedProgress.questCount) || 0);
   const questDoneRef = useRef(Boolean(savedProgress.questDone));
@@ -168,6 +198,11 @@ function Amargenta3DContent({ onExit }) {
   useEffect(() => {
     controlsLockedRef.current = Boolean(dialogue || panel || dungeonBattleOpen);
   }, [dialogue, panel, dungeonBattleOpen]);
+  useEffect(() => {
+    arabniteCollectionRef.current = arabniteCollection;
+    try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); }
+    catch (error) { console.warn("Salvataggio album Arabnite non disponibile", error); }
+  }, [arabniteCollection]);
   useEffect(() => {
     if (!toast) return undefined;
     const timeout = window.setTimeout(() => setToast(""), 2800);
@@ -209,6 +244,8 @@ function Amargenta3DContent({ onExit }) {
     const npcActors = [];
     const smokePuffs = [];
     const amberPickups = [];
+    const arabnitePackMeshes = [];
+    const arabPortalEffects = [];
     const fireflies = [];
     const bellActors = [];
     const groundEdits = [];
@@ -1587,13 +1624,33 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
       makeFlyer("dodo",-28,12,-8,"#9b83c4");makeFlyer("flypork",5,16,-34,"#ef9d9d");makeFlyer("cocconn",44,14,24,"#e7c18d");
 
-      // Portale orientale verso Arabnite, la tredicesima città.
+      // Portali monumentali gemelli: pietra antica, archi, gemme e un nucleo magico pulsante.
       const arabGold=mat("#d9a63c",.42,{metalness:.48}),arabRed=mat("#8f2731"),arabStone=mat("#c6a36a");
-      const gate=new THREE.Group();scene.add(gate);gate.position.set(67,0,2);
-      for(const side of [-1,1]){cylinder(.72,.92,7,arabStone,gate,side*4,3.5,0,10);cylinder(.84,.84,.35,arabGold,gate,side*4,6.9,0,10);sphere(.65,arabRed,gate,side*4,7.5,0,1).scale.set(.7,1.5,.7);}
-      box(9,.8,1.2,arabGold,gate,0,7,0);
-      const gateRing=addMesh(new THREE.TorusGeometry(2.3,.22,10,32),arabGold,gate,0,3.2,.2);gateRing.rotation.y=Math.PI/2;
-      sphere(1.75,mat("#e9a33b",.25,{emissive:"#a64c1e",emissiveIntensity:1.2,transparent:true,opacity:.7}),gate,0,3.1,.1,2);
+      const makeSpyroPortal=(x,z,rotation=0)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rotation;
+        const carvedStone=mat("#b99a70",.82),shadowStone=mat("#70523e",.9),gem=mat("#63d8dc",.24,{metalness:.28,emissive:"#1a8fbd",emissiveIntensity:.72});
+        box(8.8,.42,3.8,shadowStone,g,0,.22,0);box(7.8,.34,3.1,arabStone,g,0,.58,0); 
+        for(const side of [-1,1]){
+          cylinder(.48,.7,6.35,carvedStone,g,side*3.15,3.75,0,12);
+          cylinder(.72,.72,.34,arabGold,g,side*3.15,6.78,0,12);
+          cylinder(.62,.62,.22,shadowStone,g,side*3.15,.98,0,12);
+          box(.18,3.9,.16,arabGold,g,side*3.15,3.65,.52);sphere(.38,gem,g,side*3.15,4.45,.12,2);
+          const crystal=addMesh(new THREE.OctahedronGeometry(.55),gem,g,side*4.05,4.15,.18);crystal.rotation.z=side*.22;
+          const cap=addMesh(new THREE.ConeGeometry(.72,.85,4),arabRed,g,side*3.15,7.2,0);cap.rotation.y=Math.PI/4;
+        }
+        box(7.8,.62,1.1,carvedStone,g,0,7.1,0);
+        addMesh(new THREE.TorusGeometry(3.25,.42,10,40,Math.PI),carvedStone,g,0,3.9,0);
+        addMesh(new THREE.TorusGeometry(3.25,.12,8,40,Math.PI),arabGold,g,0,3.9,.16);
+        const coreMaterial=new THREE.MeshBasicMaterial({color:"#53cfe0",transparent:true,opacity:.58,side:THREE.DoubleSide});
+        const core=addMesh(new THREE.CircleGeometry(2.48,48),coreMaterial,g,0,3.55,.28);
+        const ring=addMesh(new THREE.TorusGeometry(2.62,.22,12,48),arabGold,g,0,3.55,.35);
+        const innerRing=addMesh(new THREE.TorusGeometry(2.27,.065,8,48),gem,g,0,3.55,.38);
+        for(let i=0;i<7;i++){const rune=addMesh(new THREE.OctahedronGeometry(.16),arabGold,g,Math.cos(i*Math.PI*2/7)*2.92,3.55+Math.sin(i*Math.PI*2/7)*2.92,.44);rune.rotation.z=i*.7;}
+        const crest=addMesh(new THREE.OctahedronGeometry(.78),arabGold,g,0,8.05,0);crest.rotation.y=Math.PI/4;crest.rotation.z=Math.PI/4;
+        sphere(.24,gem,g,0,8.05,.35,2);arabPortalEffects.push({ring,innerRing,core,crest,phase:x*.07});
+        return g;
+      };
+      makeSpyroPortal(67,2,-Math.PI/2);
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
         setWorldTransition("arabnite");controlsLockedRef.current=true;
         window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="gunvallo";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · scegli tra Cervio, Gunvallo e Rullino");controlsLockedRef.current=false;setWorldTransition(null);},950);
@@ -1623,8 +1680,40 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       iceEdge.rotation.x=-Math.PI/2;
       const isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
+      makeSpyroPortal(132,12,Math.PI/2);
       const dome=(x,z,r,h,color)=>{cylinder(r,r,h*.45,sandstone,scene,x,h*.22,z,20);const d=sphere(r,mat(color),scene,x,h*.45,z,2);d.scale.y=.72;cylinder(r*.16,r*.16,h*.28,arabGold,scene,x,h*.95,z,12);sphere(r*.12,lantern,scene,x,h*1.1,z,1);};
       const hangLantern=(x,z,y=3)=>{const g=new THREE.Group();scene.add(g);g.position.set(x,y,z);cylinder(.28,.38,.7,arabGold,g,0,0,0,8);sphere(.25,lantern,g,0,0,0,1);sphere(.16,arabRed,g,0,.48,0,1).scale.y=.5;};
+      const arabWall=mat("#d8bd91"),arabWallLight=mat("#ead5ad"),arabRoof=mat("#8e5542"),arabWood=mat("#62432f"),arabCloth=mat("#9f3f48");
+      const makeArabHouse=(x,z,w=11,d=8,h=4.4,accent="#9f3f48")=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        const cloth=mat(accent),door=mat("#55362c"),windowGlow=mat("#f8c76d",.3,{emissive:"#c9782e",emissiveIntensity:.55});
+        box(w,h,d,arabWall,g,0,h/2,0);box(w+.7,.28,d+.7,arabStone,g,0,h+.08,0);box(w+.25,.16,d+.25,arabRoof,g,0,h+.3,0);
+        for(const side of [-1,1]){
+          const domeX=side*w*.25;cylinder(1.28,1.42,.52,arabRoof,g,domeX,h+.55,-.2,16);
+          const domeCap=addMesh(new THREE.SphereGeometry(1.22,16,10,0,Math.PI*2,0,Math.PI/2),arabRoof,g,domeX,h+.8,-.2);domeCap.scale.y=.9;sphere(.12,arabGold,g,domeX,h+1.86,-.2,1);
+          box(1.05,1.45,.16,arabWood,g,side*w*.34,2.75,d/2+.1);box(.72,1.08,.08,windowGlow,g,side*w*.34,2.76,d/2+.2);
+          box(1.24,.12,.25,arabStone,g,side*w*.34,2.02,d/2+.18);box(.08,1.15,.12,arabGold,g,side*w*.34,2.76,d/2+.27);
+        }
+        box(1.55,2.55,.2,door,g,0,1.3,d/2+.12);
+        addMesh(new THREE.TorusGeometry(.88,.17,8,20,Math.PI),arabStone,g,0,2.55,d/2+.14);
+        box(2.05,.18,.55,arabCloth,g,0,h+.55,d/2+.15);
+        for(let stripe=-2;stripe<=2;stripe++)box(.12,.16,.58,stripe%2?arabGold:cloth,g,stripe*.36,h+.55,d/2+.18);
+        box(3.2,.14,.8,arabWood,g,0,3.65,d/2+.42);box(3.2,.13,.12,arabGold,g,0,4.08,d/2+.78);
+        for(let i=0;i<7;i++)box(.08,.42,.08,arabWood,g,-1.45+i*.48,3.88,d/2+.78);
+        for(const side of [-1,1]){box(.12,.9,.12,arabWood,g,side*1.45,4.05,d/2+.78);const lamp=new THREE.Group();g.add(lamp);lamp.position.set(side*(w/2-.6),2.65,d/2+.35);cylinder(.12,.18,.36,arabGold,lamp,0,0,0,8);sphere(.16,lantern,lamp,0,-.08,.05,1);}
+        for(let row=0;row<3;row++)box(w+.08,.055,.08,row%2?arabGold:arabWood,g,0,.55+row*.58,d/2+.08);
+        box(2.1,.16,.7,arabStone,g,0,.12,d/2+.25);addBoxCollider(x,z,w+.7,d+.8,0,h+1.8);return g;
+      };
+      const makeArabMinaret=(x,z)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);
+        cylinder(1.12,1.55,11.5,arabWall,g,0,5.75,0,16);cylinder(1.85,1.85,.35,arabGold,g,0,7.2,0,16);
+        cylinder(1.45,1.65,2.1,arabWallLight,g,0,8.35,0,16);cylinder(1.95,1.95,.28,arabGold,g,0,9.55,0,16);
+        const roofCap=addMesh(new THREE.ConeGeometry(1.65,2.1,8),arabRoof,g,0,10.75,0);roofCap.rotation.y=Math.PI/8;sphere(.18,arabGold,g,0,12,0,2);
+        for(let i=0;i<4;i++){const a=i*Math.PI/2;box(.16,2.1,.16,arabWood,g,Math.cos(a)*1.12,5.4,Math.sin(a)*1.12);}addCollider(x,z,1.5,12.8);
+      };
+      makeArabHouse(145,-29,12,9,4.4,"#9f3f48");makeArabHouse(180,-34,13,10,4.8,"#416f78");
+      makeArabHouse(218,-25,12,9,4.2,"#b17a3f");makeArabHouse(221,59,13,9,4.5,"#74518e");
+      makeArabHouse(143,59,11,9,4.1,"#3e7568");makeArabMinaret(229,-4);
       [[158,-8,9,13,"#e6c17b"],[193,-8,7,10,"#d9ad69"],[176,31,8,12,"#b78bd0"],[211,25,6,9,"#e6c17b"],[144,31,6,9,"#d7a35e"]].forEach(v=>dome(...v));
       // Cupole e tronchi dell'oasi sono ostacoli solidi, non attraversabili.
       [[158,-8,6.2,7.2],[193,-8,4.9,5.8],[176,31,5.6,6.5],[211,25,4.2,5.2],[144,31,4.2,5.2]].forEach(([x,z,r,h])=>addCollider(x,z,r,h));
@@ -1652,6 +1741,23 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       makeNpc("town-cook","Vudele","Giocattolaio delle Caramelle",164,53,"#e85b9b",["I miei dolci nascondono sorprese.","Un sorriso apre più porte di una chiave."],1);
       for(let i=0;i<24;i++)hangLantern(140+(i%6)*13,-25+Math.floor(i/6)*19,5+(i%3)*.5);
       for(let i=0;i<14;i++){const x=139+(i*23%88),z=-31+(i*31%91);if((x>158&&x<207&&z>-5&&z<22)||Math.hypot(x-190,z-48)<14)continue;const shrub=sphere(.72,i%2?mat("#47764b"):mat("#5f8151"),scene,x,.48,z,1);shrub.scale.set(1.25,.62,1);if(i%2===0)hangLantern(x+1.1,z,.95);}
+      interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
+        item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
+      });
+      const makeArabnitePack=(id,x,z)=>{
+        const g=new THREE.Group();scene.add(g);g.position.set(x,.62,z);
+        const foil=mat("#6d3c8f",.3,{metalness:.42}),foilLight=mat("#b98be0",.28,{metalness:.32}),seal=mat("#f5cf72",.25,{metalness:.45});
+        box(.92,.96,.16,foil,g,0,0,0);box(.98,.13,.2,seal,g,0,.5,0);box(.72,.08,.19,foilLight,g,0,.25,.1);
+        const crest=addMesh(new THREE.OctahedronGeometry(.2),seal,g,0,.03,.12);crest.rotation.z=Math.PI/4;
+        for(const side of [-1,1]){const fold=box(.12,.82,.12,foilLight,g,side*.42,0,.08);fold.rotation.z=side*.12;}
+        const halo=addMesh(new THREE.TorusGeometry(.72,.035,6,24),seal,g,0,-.08,0);halo.rotation.x=Math.PI/2;
+        const phase=x*.17+z*.11,already=arabniteCollectionRef.current.collectedPackIds.includes(id);
+        g.visible=!already;arabnitePackMeshes.push({group:g,baseY:.62,phase});
+        if(!already)addInteraction("arabnite-pack-"+id,"Bustina dei Sognatori","Una bustina sigillata: raccoglila e aprila dall'Album dei Sognatori.",x,z,()=>{
+          if(arabniteCollectionRef.current.collectedPackIds.includes(id))return;g.visible=false;collectArabnitePack(id);
+        },3.1);
+      };
+      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
 
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
@@ -2412,6 +2518,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           }
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
+        arabnitePackMeshes.forEach(({group,baseY,phase})=>{if(group.visible){group.position.y=baseY+Math.sin(clock.elapsedTime*2.1+phase)*.16;group.rotation.y=clock.elapsedTime*.55+phase*.08;}});
+        arabPortalEffects.forEach(({ring,innerRing,core,crest,phase})=>{ring.rotation.z+=dt*.22;innerRing.rotation.z-=dt*.3;core.material.opacity=.42+Math.sin(clock.elapsedTime*2.2+phase)*.13;crest.rotation.y+=dt*.5;crest.rotation.z+=dt*.22;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
         const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Cripta delle Miscele" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Caffè delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Interno della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
@@ -2525,18 +2633,25 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
     <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></div>
-    {!menuOpen&&!dialogue&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
+    {!menuOpen&&!dialogue&&!zone?.toLowerCase().includes("arabnite")&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:"#e9c58d",letterSpacing:1}}>MENU · {zone?.toLowerCase().includes("arabnite")?"ARABNITE":"AMARGENTA"}</strong><button onClick={()=>{setMenuOpen(false);setPanel(null);}} style={{background:"transparent",color:"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>×</button></div>
       <button onClick={()=>travelToWorldRef.current?.(zone?.toLowerCase().includes("arabnite")?"amargenta":"arabnite")} style={{width:"100%",marginBottom:10,border:"1px solid #e8c47e",borderRadius:10,background:"linear-gradient(135deg,#9b713e,#65452d)",color:"#fff2d8",padding:"12px 10px",fontSize:12,fontWeight:900,cursor:"pointer"}}>{zone?.toLowerCase().includes("arabnite")?"✦ TORNA AD AMARGENTA":"✦ RAGGIUNGI IL PORTALE DI ARABNITE"}</button>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginBottom:12}}>
-        {[[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]].map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
+        {(zone?.toLowerCase().includes("arabnite") ? [[null,"⌂","Menu"],["cards","🃏","Album carte"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["controls","⌖","Comandi"],["exit","↩","Torna ad Amargenta"]] : [[null,"⌂","Menu"],["journal","✎","Taccuino"],["inventory","▣","Borsa"],["zone","☀","Zona e orario"],["team","♙","Squadra"],["restart","↻","Riparti dal primo giorno"],["exit","↩","Torna a Verdelume"]]).map(([id,icon,label])=><button key={String(id)} onClick={()=>{if(id==="exit"){if(zone?.toLowerCase().includes("arabnite"))travelToWorldRef.current?.("amargenta");else{setMenuOpen(false);onExit?onExit():window.location.assign("/avventura");}}else if(id==="restart"){if(window.confirm("Ripartire dal primo giorno? Verranno azzerati progressi, squadra e oggetti di Amargenta su questo dispositivo.")){["sognatori:amargenta:save:v2","sognatori:amargenta:roster:v1","sognatori:amargenta:first-day:v1"].forEach(key=>window.localStorage.removeItem(key));window.location.reload();}}else {setPanel(id);if(id==="journal")setJournalPage(0);}}} style={{border:"1px solid #d8bd8b88",borderRadius:9,background:panel===id?"#a87545ee":"#26382bee",color:"#f6ead5",padding:"10px 9px",fontSize:11,fontWeight:800,cursor:"pointer",textAlign:"left"}}>{icon} · {label}</button>)}
       </div>
-      {panel===null&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
+      {panel===null&&!zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#d7c5a5"}}><strong style={{color:"#e9c58d"}}>Amargenta</strong><div>La città segreta del caffè</div><div style={{marginTop:8}}>Scegli una sezione per consultare il taccuino, la squadra o la borsa.</div><div style={{marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #d8bd8b55"}}><div style={{display:"flex",justifyContent:"space-between",gap:8,color:"#e9c58d",fontWeight:900,fontSize:11}}><span>FIDUCIA DEGLI ABITANTI</span><span>{trustTotal}/25</span></div><div style={{height:6,background:"#ffffff18",borderRadius:9,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:(trustTotal/25*100)+"%",background:"linear-gradient(90deg,#78a879,#e9c58d)",borderRadius:9}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:10}}>{trustResidents.map((resident)=><div key={resident.id} style={{fontSize:10,color:"#d7c5a5",display:"flex",justifyContent:"space-between",gap:5}}><span>{resident.name}</span><strong style={{color:"#e9c58d"}}>{residentTrust[resident.id]||0}/5</strong></div>)}</div><div style={{fontSize:10,color:"#d7c5a5",marginTop:8}}>Completa gli incarichi per costruire legami più forti. La fiducia resta salvata.</div></div></div>}
+      {panel===null&&zone?.toLowerCase().includes("arabnite")&&<div style={{padding:"10px 2px",color:"#e8d7bd"}}>
+        <strong style={{color:"#f1cb7b"}}>Arabnite · Città delle Lanterne</strong>
+        <div style={{marginTop:7}}>Esplorazione libera tra bazar, palazzi, cortili e oasi. Nessuna quest è attiva in questa città.</div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
+        <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
+      </div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
       {panel==="controls"&&<div style={{color:"#e6d6bb"}}><strong style={{color:"#e9c58d"}}>ESPLORAZIONE LIBERA</strong><div style={{marginTop:6}}>WASD o frecce: muovi il personaggio</div><div>C: cambia personaggio · Talpitrippa / Ripple</div><div>Shift: corri</div><div>Spazio: salta gli ostacoli bassi</div><div>E: interagisci</div><div>Trascina il mouse: ruota la visuale</div><div>Rotella: avvicina o allontana la visuale</div><div style={{marginTop:10,fontWeight:800}}>Comandi touch</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,46px)",gridTemplateRows:"repeat(2,46px)",gap:5,marginTop:7,touchAction:"none"}}>{[{label:"↑",code:"KeyW",col:2,row:1},{label:"←",code:"KeyA",col:1,row:2},{label:"↓",code:"KeyS",col:2,row:2},{label:"→",code:"KeyD",col:3,row:2}].map(c=><button key={c.code} style={{gridColumn:c.col,gridRow:c.row,border:"1px solid #e1c28d88",borderRadius:12,background:"#18221ecc",color:"#f8ecd8",fontSize:22,fontWeight:800,touchAction:"none"}} onPointerDown={e=>{e.preventDefault();window.dispatchEvent(new KeyboardEvent("keydown",{code:c.code}));}} onPointerUp={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerCancel={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onLostPointerCapture={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))} onPointerLeave={()=>window.dispatchEvent(new KeyboardEvent("keyup",{code:c.code}))}>{c.label}</button>)}</div></div>}
-      {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:panel==="journal"?"#68472f":"#e9c58d",letterSpacing:1}}>{panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:panel==="journal"?"#68472f":"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
+      {panel!==null&&panel!=="zone"&&panel!=="controls"&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><strong style={{color:panel==="journal"?"#68472f":"#e9c58d",letterSpacing:1}}>{panel==="journal"?"TACCUINO DI AMARGENTA":panel==="team"?"SQUADRA DI AMARGENTA":panel==="cards"?"ALBUM DEI SOGNATORI":"BORSA E RISORSE"}</strong><button onClick={()=>setPanel(null)} style={{background:"transparent",color:panel==="journal"?"#68472f":"#f4ead8",border:0,fontSize:18,cursor:"pointer"}}>←</button></div>}
       {panel==="map"&&<div>
         <div style={{height:190,position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid #8d7554",background:"linear-gradient(135deg,#405f3c,#718454 48%,#526e48)",backgroundImage:"repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px),repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 19px)"}}>
           <div style={{position:"absolute",left:"68%",top:0,width:9,height:"100%",background:"#397f83",opacity:.9}}/>
@@ -2565,6 +2680,28 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           <button disabled={journalPage===0} onClick={()=>setJournalPage(p=>Math.max(0,p-1))} style={{border:"1px solid #9b7950",borderRadius:8,padding:"7px 12px",background:journalPage===0?"#d8c7aa":"#8b6542",color:journalPage===0?"#a99476":"#fff2dc",fontWeight:900,cursor:journalPage===0?"default":"pointer"}}>‹ PAGINA PRECEDENTE</button>
           <button disabled={journalPage===1} onClick={()=>setJournalPage(p=>Math.min(1,p+1))} style={{border:"1px solid #9b7950",borderRadius:8,padding:"7px 12px",background:journalPage===1?"#d8c7aa":"#8b6542",color:journalPage===1?"#a99476":"#fff2dc",fontWeight:900,cursor:journalPage===1?"default":"pointer"}}>SUCCESSIVA ›</button>
         </div>
+      </div>}
+      {panel==="cards"&&<div style={{color:"#f2e4cc"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
+          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div></div>
+          <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.packs} ✦</div>
+        </div>
+        <button disabled={arabniteCollection.packs<=0} onClick={openArabnitePack} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:arabniteCollection.packs>0?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:arabniteCollection.packs>0?"pointer":"not-allowed",opacity:arabniteCollection.packs>0?1:.55}}>✦ SBUSTA UNA BUSTINA · 3 CARTE</button>
+        {cardReveal.length>0&&<div style={{marginTop:11,padding:10,borderRadius:12,background:"linear-gradient(135deg,#5b3d76,#27223f)",border:"1px solid #e8c46f"}}>
+          <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
+            <img src={card.img} alt={card.nome} style={{width:"100%",height:76,objectFit:"contain",background:"#ffffff16",borderRadius:8}}/><strong style={{display:"block",fontSize:10,marginTop:4}}>{card.nome}</strong>
+            <span style={{fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
+          </div>)}</div><button onClick={()=>setCardReveal([])} style={{marginTop:8,border:0,background:"transparent",color:"#f1dfbd",fontSize:10,textDecoration:"underline"}}>Nascondi risultato</button>
+        </div>}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
+          {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
+            {discovered?<img src={card.img} alt={card.nome} style={{width:"100%",height:72,objectFit:"contain",borderRadius:6,background:"#ffffff12"}}/>:<div style={{height:72,display:"grid",placeItems:"center",fontSize:28,color:"#b5a6c5"}}>?</div>}
+            <strong style={{display:"block",fontSize:9,marginTop:4,overflowWrap:"anywhere"}}>{discovered?card.nome:card?"???":"Carta "+(index+1)}</strong>
+            <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span>
+          </div>;})}
+        </div>
+        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}>Il catalogo si aggiorna automaticamente con i Sognatori ufficiali. Le 19 carte non ancora presenti nel roster restano riservate finché non vengono aggiunte al gioco.</div>
       </div>}
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
