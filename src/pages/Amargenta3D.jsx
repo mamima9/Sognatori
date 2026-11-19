@@ -2489,8 +2489,14 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const labels={"talpitrippa":"Talpitrippa","ripple":"Ripple","moci-moci":"Moci-Moci","piocino":"Piocino","cervio":"Cervio","gunvallo":"Gunvallo","rullino":"Rullino"};
         if(!silent)setToast(labels[characterState.active]+" · personaggio attivo");
       };
+      // Ombra di contatto morbida per ancorare il Sognatore al pavimento.
+      const playerGroundShadow=new THREE.Mesh(new THREE.CircleGeometry(.62,32),new THREE.MeshBasicMaterial({color:"#172018",transparent:true,opacity:.28,depthWrite:false}));
+      playerGroundShadow.rotation.x=-Math.PI/2;
+      playerGroundShadow.position.y=.035;
+      playerGroundShadow.renderOrder=2;
+      scene.add(playerGroundShadow);
       scene.add(player);
-      scene.add(player);player.position.set(-44,0,2);
+      player.position.set(-44,0,2);
 
       const saveCurrentWorld=()=>{
         try{
@@ -2566,7 +2572,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             shot.position.set(p.x,1.65,p.z);shot.castShadow=true;(arabniteActive?arabniteWorld:scene).add(shot);
             const dir=new THREE.Vector3(Math.sin(player.rotation.y),.08,Math.cos(player.rotation.y)).normalize();
             candyShots.push({mesh:shot,velocity:dir.multiplyScalar(22),life:2.2});
-            setToast("Gunvallo spara una caramella! Colpisci un barattolo per far cadere le bacche.");
+            setToast("Gunvallo spara una caramella! Mira ai barattoli per colpirli.");
           }
         }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
@@ -2687,7 +2693,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Barattolo colpito! Le bacche sono cadute · +5 bacche.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;setInventory(old=>({...old,berries:(old.berries||0)+5}));setToast("Barattolo colpito! +5 bacche.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
@@ -2713,7 +2719,20 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           playerMotion.model.position.y=Math.abs(Math.sin(gait*2))*.055*walkBlend+jumpHeight*.10+idleBreath*(1-walkBlend);          playerMotion.model.scale.y=1+idleBreath*.32;
           playerMotion.model.rotation.z=THREE.MathUtils.damp(playerMotion.model.rotation.z,-activeSide*.045*walkBlend+idleSway*(1-walkBlend),7,dt);
           playerMotion.arms.forEach((arm,i)=>{arm.rotation.x=THREE.MathUtils.damp(arm.rotation.x,(i===0?1:-1)*step*.16+Math.sin(clock.elapsedTime*1.7+i)*.025*(1-walkBlend),9,dt);});
-          playerMotion.feet.forEach((foot,i)=>{foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,(i===0?-1:1)*step*.22,10,dt);});
+          playerMotion.feet.forEach((foot,i)=>{
+            const phase=step*(i===0?-1:1);
+            foot.rotation.x=THREE.MathUtils.damp(foot.rotation.x,phase*.48,12,dt);
+            if(foot.position.y!==undefined){
+              const lift=Math.max(0,Math.sin(gait+(i===0?0:Math.PI)))*.105*walkBlend;
+              foot.position.y=THREE.MathUtils.damp(foot.position.y,lift,14,dt);
+            }
+          });
+          playerGroundShadow.position.x=player.position.x;
+          playerGroundShadow.position.z=player.position.z;
+          const airborne=THREE.MathUtils.clamp(jumpHeight/1.2,0,1);
+          const shadowScale=1+walkBlend*.08-airborne*.22;
+          playerGroundShadow.scale.set(shadowScale,shadowScale,1);
+          playerGroundShadow.material.opacity=.28-airborne*.12;
           // Battito palpebrale breve e asincrono, senza interrompere il movimento.
           const blinkPhase=(clock.elapsedTime+1.3)%4.7;
           const blink=blinkPhase>.0&&blinkPhase<.13?Math.sin(Math.PI*blinkPhase/.13):0;
@@ -2957,7 +2976,6 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       <button className="amargenta-menu-button" onClick={()=>{setMenuOpen(v=>!v);if(menuOpen)setPanel(null);}} style={{pointerEvents:"auto",cursor:"pointer",whiteSpace:"nowrap"}}>☰ MENU</button>
     </div>
      <div className="amargenta-status amargenta-glass"><span style={{color:"#e9c58d"}}>✦</span><span>{zone}</span><span style={{opacity:.45}}>·</span><span>{worldMoment}</span>{!zone?.toLowerCase().includes("arabnite")&&<><span style={{opacity:.45}}>·</span><span style={{color:"#e9c58d"}}>✦ FIDUCIA {trustTotal}/25</span></>}</div>
-     {!menuOpen&&zone?.toLowerCase().includes("arabnite")&&<div aria-label="Monete del bazar" className="amargenta-glass arabnite-coins" style={{position:"absolute",top:64,right:18,zIndex:22,display:"flex",alignItems:"center",gap:9,padding:"9px 14px",borderRadius:14,color:"#fff1d5",fontSize:13,fontWeight:900,boxShadow:"0 8px 24px #0008",pointerEvents:"none"}}><span style={{fontSize:17,color:"#f2c94c"}}>◈</span><span>MONETE</span><strong style={{fontSize:17,color:"#f5cf72",fontVariantNumeric:"tabular-nums"}}>{arabniteCollection.coins??120}</strong></div>}
      {!menuOpen&&!dialogue&&!zone?.toLowerCase().includes("arabnite")&&<div className="amargenta-objective amargenta-glass"><div className="amargenta-objective-label">✧ PROSSIMO OBIETTIVO</div><div className="amargenta-objective-title">{activeObjective}</div>{objectiveWaypoint&&<div className="amargenta-objective-waypoint"><span>⌖ {objectiveWaypoint.name} · {waypointDirection}</span><span>{waypointDistance} m</span></div>}</div>}
     {hint&&<div className="amargenta-toast" style={{top:54,zIndex:40,background:"rgba(27,48,39,.96)"}}>{hint}</div>}{toast&&<div className="amargenta-toast">{toast}</div>}
     {menuOpen&&<div className="amargenta-menu-panel">
