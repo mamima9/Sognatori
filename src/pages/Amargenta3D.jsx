@@ -189,6 +189,7 @@ function Amargenta3DContent({ onExit }) {
     setCardReveal([{...receive,isNew:true,copies:1}]);
     setToast(npcName+" ha scambiato "+give.nome+" con "+receive.nome+".");return true;
   };
+  useEffect(() => { try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); } catch (error) { console.warn("Impossibile salvare la collezione di Arabnite:",error); } }, [arabniteCollection]);
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
   const questCountRef = useRef(Number(savedProgress.questCount) || 0);
   const questDoneRef = useRef(Boolean(savedProgress.questDone));
@@ -1869,6 +1870,12 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       interactables.filter(item=>item.x>120&&item.id!=="arabnite-return").forEach(item=>{
         item.action=()=>setDialogue({title:item.title,text:"Le strade di Arabnite sono aperte ai viaggiatori. Per ora non ci sono incarichi: goditi la città e cerca le bustine dei Sognatori."});
       });
+      // Bazar specializzati: ogni mercante propone un tipo di bustina e un prezzo.
+      addInteraction("arabnite-shop-standard","Brama · Bazar delle Bustine","Bustina standard · 30 monete · 3 carte.",190,-3,()=>setDialogue({title:"Brama · Bazar delle Bustine",text:"«Le bustine del bazar sono perfette per iniziare. Ogni confezione contiene tre carte. Prezzo: 30 monete.»",actions:[{label:"Compra · 30 monete",run:()=>{if(buyArabnitePack("standard"))setDialogue(null);}},{label:"Compra 3 · 90 monete",run:()=>{if(buyArabnitePack("standard")&&buyArabnitePack("standard")&&buyArabnitePack("standard"))setDialogue(null);}}]}),4.5);
+      addInteraction("arabnite-shop-premium","Ponce · Bazar delle Lanterne","Bustina premium · 65 monete · 3 carte.",205,8,()=>setDialogue({title:"Ponce · Bazar delle Lanterne",text:"«Le bustine delle Lanterne hanno una selezione ricercata. Tre carte per 65 monete.»",actions:[{label:"Compra · 65 monete",run:()=>{if(buyArabnitePack("premium"))setDialogue(null);}}]}),4.5);
+      addInteraction("arabnite-shop-rare","Trix · Emporio del Collezionista","Bustina rara · 110 monete · 3 carte.",211,43,()=>setDialogue({title:"Trix · Emporio del Collezionista",text:"«Qui trovi le confezioni più ambite dai collezionisti. Tre carte per 110 monete.»",actions:[{label:"Compra · 110 monete",run:()=>{if(buyArabnitePack("rare"))setDialogue(null);}}]}),4.5);
+      addInteraction("arabnite-trade-brama","Brama · Banco degli Scambi","Scambia una carta doppia per una carta che non possiedi.",190,-3,()=>setDialogue({title:"Brama · Banco degli Scambi",text:"«Portami una carta doppia: in cambio ti darò una carta che ancora ti manca.»",actions:[{label:"Proponi uno scambio",run:()=>tradeArabniteCard("Brama")}]}),4.5);
+      addInteraction("arabnite-trade-lumen","Lumen · Scambi della Luna","Scambia una carta doppia con il custode della luna.",177,20,()=>setDialogue({title:"Lumen · Scambi della Luna",text:"«Le carte doppie possono aiutare altri collezionisti. Scambiamone una con una che ti manca.»",actions:[{label:"Proponi uno scambio",run:()=>tradeArabniteCard("Lumen")}]}),4.5);
       // Adli accoglie chi arriva ad Arabnite: è l'inventore del gioco di carte dei Sognatori.
       const adli=makeNpc("archivist","Adli","Inventore del Gioco di Carte",151,7,"#c68b42",[
         "Benvenuto ad Arabnite! Qui le carte dei Sognatori sono una vera passione.",
@@ -2797,6 +2804,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         <div style={{marginTop:7}}>Esplorazione libera tra bazar, palazzi, cortili e oasi. Nessuna quest è attiva in questa città.</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
+        <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Brama vende bustine standard, Ponce quelle premium e Trix quelle rare. Brama e Lumen accettano scambi di doppioni.</div>
         <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
       </div>}
       {panel==="zone"&&<div style={{padding:8,borderRadius:9,background:"#ffffff0b"}}><strong style={{color:"#e9c58d"}}>ZONA ATTUALE</strong><div style={{fontSize:15,fontWeight:800,marginTop:5}}>{zone}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Momento della giornata: {worldMoment}</div><div style={{marginTop:5,color:"#d7c5a5"}}>Posizione · X {playerCoords.x} · Z {playerCoords.z}</div></div>}
@@ -2936,7 +2945,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       <div style={{fontSize:10,letterSpacing:3,color:"#d8b77d",fontWeight:800}}>AMARGENTA · INCONTRO</div>
       <div style={{fontSize:22,fontWeight:900,margin:"5px 0 10px"}}>{dialogue.title}</div>
       <div style={{whiteSpace:"pre-line",lineHeight:1.7,fontSize:14,color:"#f2e6d3"}}>{dialogue.text}</div>
-      {dialogue.confirm&&<button onClick={dialogue.confirm} style={{marginTop:15,marginRight:8,border:"1px solid #a8d4a2",borderRadius:9,padding:"8px 18px",background:"#315b42",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>Convincilo a unirsi</button>}<button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
+      {dialogue.actions?.map((action,index)=><button key={action.label+"-"+index} onClick={action.run} style={{marginTop:15,marginRight:8,border:"1px solid #e9c16d",borderRadius:9,padding:"8px 14px",background:"#59417a",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>{action.label}</button>)}{dialogue.confirm&&<button onClick={dialogue.confirm} style={{marginTop:15,marginRight:8,border:"1px solid #a8d4a2",borderRadius:9,padding:"8px 18px",background:"#315b42",color:"#fff3dc",fontWeight:900,cursor:"pointer"}}>Convincilo a unirsi</button>}<button onClick={()=>setDialogue(null)} style={{marginTop:15,border:"1px solid #d8b77d",borderRadius:9,padding:"8px 18px",background:"#9b6848",color:"#fff3dc",fontWeight:800,cursor:"pointer"}}>Continua · Esc</button>
     </div>}
   </div>;
 }
