@@ -1122,7 +1122,7 @@ function Amargenta3DContent({ onExit }) {
           const mouth=new THREE.Mesh(new THREE.BoxGeometry(.22,.055,.04),mat("#37212a"));mouth.position.set(0,1.61,.4);mini.add(mouth);
         }else if(name==="Lumen"||name==="Trix"){
           // Lumen è la gatta blu bipede; Trix la sua piccola evoluzione quadrupede.
-          const blueFur=mat("#2189df"),blueLight=mat("#75c8ff"),innerEar=mat("#f5a8ce"),darkEye=mat("#10223e");
+          const blueFur=mat("#2189df"),blueLight=mat("#75c8ff"),innerEar=mat("#f5a8ce"),darkEye=mat("#10223e"),catWhite=mat("#ffffff");
           const small=name==="Trix",scale=small?.78:1;
           const cat=new THREE.Group();mini.add(cat);cat.scale.setScalar(scale);
           const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.29,.62,3,8),blueFur);torso.position.set(0,.92,0);torso.scale.set(1,.92,.9);cat.add(torso);
@@ -1132,7 +1132,7 @@ function Amargenta3DContent({ onExit }) {
             const ear=new THREE.Mesh(new THREE.ConeGeometry(.16,.48,6),blueFur);ear.position.set(side*.22,2.15,.02);ear.rotation.z=side*-.18;cat.add(ear);
             const inner=new THREE.Mesh(new THREE.ConeGeometry(.075,.29,5),innerEar);inner.position.set(side*.22,2.16,.12);inner.rotation.z=side*-.18;cat.add(inner);
             const eye=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),darkEye);eye.position.set(side*.14,1.83,.39);cat.add(eye);
-            const shine=new THREE.Mesh(new THREE.SphereGeometry(.025,6,5),white);shine.position.set(side*.12,1.86,.45);cat.add(shine);
+            const shine=new THREE.Mesh(new THREE.SphereGeometry(.025,6,5),catWhite);shine.position.set(side*.12,1.86,.45);cat.add(shine);
             const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.36,2,6),blueFur);leg.position.set(side*.19,.31,.08);cat.add(leg);
             const paw=new THREE.Mesh(new THREE.SphereGeometry(.11,7,6),blueLight);paw.position.set(side*.19,.1,.12);cat.add(paw);
           }
