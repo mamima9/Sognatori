@@ -1346,8 +1346,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       // Ombre più leggere: riducono consumo GPU e rischio di perdita del contesto.
       renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor("#b7cbd0",1);
-      renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("La scheda grafica ha sospeso WebGL. Ricarica Amargenta; se continua, aggiorna i driver grafici.");});
-      renderer.domElement.addEventListener("webglcontextrestored",()=>setHint("Grafica ripristinata. Ricarica Amargenta per riprendere l'esplorazione."));
+      renderer.domElement.addEventListener("webglcontextlost",(event)=>{event.preventDefault();setHint("Sto ripristinando la grafica: la tua posizione e i progressi restano salvati.");});
+      renderer.domElement.addEventListener("webglcontextrestored",()=>{setHint("");if(camera)cameraReady=false;});
       host.appendChild(renderer.domElement);
       scene.add(new THREE.HemisphereLight("#f2fbff","#52664b",1.9));
       arabniteScene.add(new THREE.HemisphereLight("#c8c4ff","#4d2e28",2.15));
@@ -2406,7 +2406,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       const arabniteOrder=["cervio","gunvallo","rullino"];
       const switchCharacter=(requestedCharacter=null,silent=false)=>{
         const order=arabniteActive?arabniteOrder:regularOrder;
-        if(requestedCharacter&&order.includes(requestedCharacter))characterState.active=requestedCharacter;
+        if(requestedCharacter)characterState.active=order.includes(requestedCharacter)?requestedCharacter:order[0];
         else if(!order.includes(characterState.active))characterState.active=order[0];
         else characterState.active=order[(order.indexOf(characterState.active)+1)%order.length];
         const models={"talpitrippa":talpitrippa,"ripple":ripple,"moci-moci":mociMoci,"piocino":piocino,"cervio":cervio,"gunvallo":gunvallo,"rullino":rullino};
@@ -2515,7 +2515,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           }
         }
         if(e.code==="Escape"){setDialogue(null);setPanel(null);}
-        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current)switchCharacter();
+        if(!e.repeat&&e.code==="KeyC"&&!controlsLockedRef.current){switchCharacter();saveCurrentWorld();}
         if(!e.repeat&&e.code==="KeyM")setPanel(old=>old==="map"?null:"map");
         if(!e.repeat&&e.code==="KeyI")setPanel(old=>old==="inventory"?null:"inventory");
         if(!e.repeat&&e.code==="KeyJ")setPanel(old=>old==="journal"?null:"journal");
