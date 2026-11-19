@@ -255,6 +255,8 @@ function Amargenta3DContent({ onExit }) {
     let climbHeight = 0;
     let climbingWall = null;
     let arabniteActive = false;
+    let arabniteReady = false;
+    let isArabniteIceAt = () => false;
     let yaw = Math.PI * 0.22, pitch = 0.34, distance = 9.2;
     const movementVelocity = new THREE.Vector3();
     const desiredMovement = new THREE.Vector3();
@@ -1732,6 +1734,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       try { makeSpyroPortal(67,2,-Math.PI/2,"Arabnite"); }
       catch (error) { console.error("Portale Arabnite non inizializzato: Amargenta resta disponibile", error); }
       addInteraction("arabnite-gate","Portale per Arabnite","Un antico portale dorato conduce alla tredicesima città.",67,2,()=>{
+        if(!arabniteReady){setToast("Arabnite non è disponibile in questo momento. Amargenta resta esplorabile.");return;}
         setWorldTransition("arabnite");controlsLockedRef.current=true;
         window.setTimeout(()=>{scene.remove(player);scene.remove(talpitrippaShadow);arabniteScene.add(player);arabniteScene.add(talpitrippaShadow);arabniteActive=true;characterState.active="talpitrippa";switchCharacter();player.position.set(178,0,12);movementVelocity.set(0,0,0);yaw=Math.PI*.12;pitch=.38;distance=compactDevice?12.2:10.8;cameraReady=false;setToast("Arabnite · Talpitrippa attivo per prova");controlsLockedRef.current=false;setWorldTransition(null);},950);
       },5.5);
@@ -1742,6 +1745,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
 
       travelToWorldRef.current=(target)=>{
         const toArabnite=target==="arabnite";
+        if(toArabnite&&!arabniteReady){setToast("Arabnite non è disponibile in questo momento. Amargenta resta esplorabile.");return;}
         if(Boolean(arabniteActive)===toArabnite)return;
         setWorldTransition(toArabnite?"arabnite":"amargenta");controlsLockedRef.current=true;
         window.setTimeout(()=>{
@@ -1750,6 +1754,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           movementVelocity.set(0,0,0);jumpHeight=0;jumpVelocity=0;zoneRef.current=toArabnite?"Arabnite · Piazza delle Lanterne":"Ingresso di Amargenta";setZone(zoneRef.current);cameraReady=false;controlsLockedRef.current=false;setWorldTransition(null);setMenuOpen(false);setPanel(null);
         },950);
       };
+      const arabniteBuildSnapshot={interactables:interactables.length,colliders:colliders.length,npcActors:npcActors.length,packs:arabnitePackMeshes.length,portalEffects:arabPortalEffects.length};
+      try {
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       addMesh(new THREE.PlaneGeometry(112,112,24,24),mat("#8b6847"),arabniteWorld,178,-.02,12).rotation.x=-Math.PI/2;
       // Pista naturale di ghiaccio: tutti scivolano, Rullino può pattinare e sterzare.
@@ -1758,7 +1764,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       icePatch.rotation.x=-Math.PI/2;
       const iceEdge=addMesh(new THREE.RingGeometry(12.8,13.35,64),mat("#e2fbff",.28,{metalness:.18}),arabniteWorld,164,.07,-13);
       iceEdge.rotation.x=-Math.PI/2;
-      const isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
+      isArabniteIceAt=(x,z)=>arabniteActive&&x>=150.5&&x<=177.5&&z>=-22.5&&z<=-3.5;
       const sandstone=mat("#a87845"),lantern=mat("#ffbd4b",.3,{emissive:"#e88925",emissiveIntensity:1.5}),sand=mat("#c29a63");
       try { makeSpyroPortal(132,12,Math.PI/2,"Amargenta",arabniteWorld); }
       catch (error) { console.error("Portale di ritorno non inizializzato: Arabnite resta caricabile", error); }
@@ -1855,7 +1861,19 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           if(arabniteCollectionRef.current.collectedPackIds.includes(id))return;g.visible=false;collectArabnitePack(id);
         },3.1);
       };
-      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64),["garden-steps",154,50],["lantern-gate",140,12]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      arabniteReady=true;
+      } catch(error) {
+        arabniteReady=false;
+        isArabniteIceAt=()=>false;
+        arabniteWorld.clear();
+        interactables.splice(arabniteBuildSnapshot.interactables);
+        colliders.splice(arabniteBuildSnapshot.colliders);
+        npcActors.splice(arabniteBuildSnapshot.npcActors);
+        arabnitePackMeshes.splice(arabniteBuildSnapshot.packs);
+        arabPortalEffects.splice(arabniteBuildSnapshot.portalEffects);
+        console.error("Arabnite non inizializzata: Amargenta resta autonoma",error);
+      }
 
       const linaInteraction=interactables.find(item=>item.id==="farmer");
       if(linaInteraction)linaInteraction.action=()=>{
