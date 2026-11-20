@@ -2111,7 +2111,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       }),4.4);
       const makeArabnitePack=(id,x,z)=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
-        const foil=mat("#6d3c8f",.3,{metalness:.42}),foilLight=mat("#b98be0",.28,{metalness:.32}),seal=mat("#f5cf72",.25,{metalness:.45});
+        const foil=mat("#159c91",.24,{metalness:.38}),foilLight=mat("#70dfcf",.2,{metalness:.3}),seal=mat("#f5a044",.18,{metalness:.45});
         box(.92,.96,.16,foil,g,0,0,0);box(.98,.13,.2,seal,g,0,.5,0);box(.72,.08,.19,foilLight,g,0,.25,.1);
         const crest=addMesh(new THREE.OctahedronGeometry(.2),seal,g,0,.03,.12);crest.rotation.z=Math.PI/4;
         for(const side of [-1,1]){const fold=box(.12,.82,.12,foilLight,g,side*.42,0,.08);fold.rotation.z=side*.12;}
@@ -2128,7 +2128,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         cylinder(.32,.38,.72,glass,jar,0,.42,0,10);
         cylinder(.38,.38,.12,mat("#f2c66d"),jar,0,.82,0,10);
         const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(jarSlot%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
-        const claimed=(()=>{try{return JSON.parse(window.localStorage.getItem("sognatori:arabnite:claimed-jars:v1")||"[]").includes(cycleIndex+":"+jarSlot);}catch{return false;}})();
+        const jarKey=cycleIndex+":"+jarSlot;
+        const claimed=(()=>{try{return JSON.parse(window.localStorage.getItem("sognatori:arabnite:claimed-jars:v1")||"[]").includes(jarKey)||arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey);}catch{return Boolean(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey));}})();
         jar.visible=!claimed;
         arabniteCandyTargets.push({group:jar,x,z,active:!claimed,cycleIndex,jarSlot});
       };
@@ -2904,6 +2905,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const moments=["Mattina","Pomeriggio","Tramonto","Notte"];
         if(period!==currentPeriod){currentPeriod=period;setWorldMoment(moments[period]);}
         const cycleIndex=Math.floor(clock.elapsedTime/240);
+        arabniteCandyTargets.forEach(target=>{
+          const jarKey=target.cycleIndex+":"+target.jarSlot;
+          if(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey)){target.active=false;target.group.visible=false;}
+        });
         if(arabniteActive&&cycleIndex>0&&!arabniteCandyTargets.some(target=>target.cycleIndex===cycleIndex)){
           const [jarX,jarZ]=jarSpawnPoints[(cycleIndex-1)%jarSpawnPoints.length];
           makeCandyJar(jarX,jarZ,cycleIndex,1);
