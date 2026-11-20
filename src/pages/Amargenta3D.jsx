@@ -3,6 +3,8 @@ import * as THREE from "three";
 import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 import ArabniteOnlineMarket from "@/components/game/ArabniteOnlineMarket";
+import { useAuth } from "@/lib/AuthContext";
+import { loadArabniteCollection, openSharedArabnitePack } from "@/lib/arabniteCards";
 
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
@@ -16,6 +18,7 @@ const ARABNITE_RESIDENTS = ARABNITE_RESIDENT_IDS.map((id) => ROSTER.find((s) => 
  * Gli asset GLB definitivi di Scenario potranno sostituire progressivamente i moduli procedurali.
  */
 function Amargenta3DContent({ onExit }) {
+  const { isAuthenticated } = useAuth();
   const hostRef = useRef(null);
   const travelToWorldRef = useRef(null);
   const [hint, setHint] = useState("");
@@ -178,43 +181,37 @@ function Amargenta3DContent({ onExit }) {
     arabniteCollectionRef.current = next; setArabniteCollection(next);
     setToast("Bustina raccolta! Puoi aprirla dall'Album dei Sognatori.");
   };
-  const openArabnitePack = () => {
-    const current = arabniteCollectionRef.current;
-    if (current.packs <= 0) { setToast("Non hai bustine da aprire. Cercane altre ad Arabnite!"); return; }
-    const counts = { ...current.cards }, drawn = [], packKind=(current.packInventory||[])[0]||"standard";
-    const weightedPick = (pool) => {
-      const weighted=pool.map(card=>({card,weight:Math.max(1,Number(card.costo)||1)}));
-      const total=weighted.reduce((sum,item)=>sum+item.weight,0);let roll=Math.random()*total;
-      for(const item of weighted){roll-=item.weight;if(roll<=0)return item.card;}
-      return weighted[weighted.length-1]?.card;
-    };
-    const tier=(card)=>{const value=Number(card.costo)||1;return value>=40?"LEGGENDA":value>=28?"EPICA":value>=18?"RARA":"COMUNE";};
-    for (let i = 0; i < 3; i++) {
-      const remaining=ROSTER.filter(card=>!drawn.some(p=>p.id===card.id));
-      let pool=remaining.length?remaining:ROSTER;
-      if(packKind==="standard") pool=pool.filter(card=>tier(card)==="COMUNE"||tier(card)==="RARA");
-      if(packKind==="premium") pool=pool.filter(card=>tier(card)!=="COMUNE");
-      if(packKind==="rare") pool=pool.filter(card=>tier(card)==="EPICA"||tier(card)==="LEGGENDA");
-      if(!pool.length)pool=remaining.length?remaining:ROSTER;
-      const card=weightedPick(pool);
-      counts[card.id]=(Number(counts[card.id])||0)+1;
-      drawn.push({...card,rarity:tier(card),isNew:counts[card.id]===1,copies:counts[card.id]});
-    }
-    if(packKind==="premium"&&!drawn.some(card=>card.rarity==="EPICA"||card.rarity==="LEGGENDA")){
-      const guaranteed=weightedPick(ROSTER.filter(card=>["EPICA","LEGGENDA"].includes(tier(card))));
-      if(guaranteed){const index=drawn.length-1,old=drawn[index];counts[old.id]=Math.max(0,counts[old.id]-1);counts[guaranteed.id]=(Number(counts[guaranteed.id])||0)+1;drawn[index]={...guaranteed,rarity:tier(guaranteed),isNew:counts[guaranteed.id]===1,copies:counts[guaranteed.id]};}
-    }
-    const next = { ...current, coins: Number(current.coins ?? 120), packs: Math.max(0,current.packs-1), packInventory:(current.packInventory||[]).slice(1), cards: counts };
-    arabniteCollectionRef.current = next; setArabniteCollection(next);
-    setCardReveal(drawn); setToast("Bustina aperta · hai trovato 3 carte!");
+  const refreshSharedArabniteCollection = async () => {
+    if (!isAuthenticated) return;
+    const collection = await loadArabniteCollection();
+    const counts = {};
+    collection.cards.forEach((instance) => { counts[instance.card_id] = (Number(counts[instance.card_id]) || 0) + 1; });
+    const next = { packs: 0, packInventory: [], coins: collection.coins, collectedPackIds: arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
+    arabniteCollectionRef.current = next;
+    setArabniteCollection(next);
   };
-  const buyArabnitePack = (kind="standard") => {
-    const offers={standard:{label:"Bustina del Bazar",price:30},premium:{label:"Bustina delle Lanterne",price:65},rare:{label:"Bustina del Collezionista",price:110}};
-    const offer=offers[kind]||offers.standard, current=arabniteCollectionRef.current;
-    if(Number(current.coins??120)<offer.price){setToast("Monete insufficienti: cerca altre carte o tesori in città.");return false;}
-    const next={...current,coins:Number(current.coins??120)-offer.price,packs:current.packs+1,packInventory:[...(current.packInventory||[]),kind]};
-    arabniteCollectionRef.current=next;setArabniteCollection(next);setToast(offer.label+" acquistata!");return true;
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    refreshSharedArabniteCollection().catch((error) => setToast(error.message || "Impossibile caricare la collezione condivisa."));
+  }, [isAuthenticated]);
+  const openArabnitePack = async (kind = "standard") => {
+    if (!isAuthenticated) { setToast("Accedi per aprire bustine e salvare le carte nella collezione condivisa."); return false; }
+    try {
+      const instances = await openSharedArabnitePack(kind);
+      await refreshSharedArabniteCollection();
+      const drawn = instances.map((instance) => {
+        const card = ROSTER.find((item) => item.id === instance.card_id);
+        return card ? { ...card, rarity: instance.rarity, serial_number: instance.serial_number, isNew: true, copies: 1 } : null;
+      }).filter(Boolean);
+      setCardReveal(drawn);
+      setToast("Bustina aperta · 3 carte assegnate al tuo account!");
+      return true;
+    } catch (error) {
+      setToast(error.message || "Non è stato possibile aprire la bustina.");
+      return false;
+    }
   };
+  const buyArabnitePack = (kind = "standard") => openArabnitePack(kind);
   const tradeArabniteCard = (npcName) => {
     const current=arabniteCollectionRef.current, counts={...current.cards};
     const duplicates=ROSTER.filter(card=>(Number(counts[card.id])||0)>1);
@@ -234,7 +231,7 @@ function Amargenta3DContent({ onExit }) {
     setCardReveal([{...receive,isNew:true,copies:1}]);
     setToast(npcName+" ha accettato "+give.nome+" e ti ha dato "+receive.nome+" · +"+rule.bonus+" monete.");return true;
   };
-  useEffect(() => { try { window.localStorage.setItem("sognatori:arabnite:cards:v1", JSON.stringify(arabniteCollection)); } catch (error) { console.warn("Impossibile salvare la collezione di Arabnite:",error); } }, [arabniteCollection]);
+  // La collezione autenticata è persistita su Supabase; non sovrascrivere il dato condiviso in localStorage.
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
   const questCountRef = useRef(Number(savedProgress.questCount) || 0);
   const questDoneRef = useRef(Boolean(savedProgress.questDone));
@@ -3178,10 +3175,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       </div>}
       {panel==="cards"&&<div style={{color:"#f2e4cc"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
-          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>Bustine: {(arabniteCollection.packInventory||[]).filter(p=>p==="standard").length} standard · {(arabniteCollection.packInventory||[]).filter(p=>p==="premium").length} premium · {(arabniteCollection.packInventory||[]).filter(p=>p==="rare").length} rare</div></div>
-          <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.packs} ✦</div>
+          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>{isAuthenticated ? "Collezione condivisa · carte numerate" : "Accedi per sincronizzare la collezione"}</div></div>
+          <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.coins ?? "—"} ✦</div>
         </div>
-        <button disabled={arabniteCollection.packs<=0} onClick={openArabnitePack} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:arabniteCollection.packs>0?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:arabniteCollection.packs>0?"pointer":"not-allowed",opacity:arabniteCollection.packs>0?1:.55}}>✦ SBUSTA UNA BUSTINA · 3 CARTE</button>
+        <button disabled={!isAuthenticated} onClick={()=>openArabnitePack("standard")} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:isAuthenticated?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:isAuthenticated?"pointer":"not-allowed",opacity:isAuthenticated?1:.55}}>✦ APRI BUSTINA STANDARD · 30 MONETE · 3 CARTE</button>
         {cardReveal.length>0&&<div style={{marginTop:11,padding:10,borderRadius:12,background:"linear-gradient(135deg,#5b3d76,#27223f)",border:"1px solid #e8c46f"}}>
           <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
