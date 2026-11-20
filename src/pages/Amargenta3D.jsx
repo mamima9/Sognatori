@@ -156,7 +156,7 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteInstances, setArabniteInstances] = useState([]);
   const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
   const [selectedOwnedCard, setSelectedOwnedCard] = useState(null);
-  const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false });
+  const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false, collected_pack_ids: [], claimed_jar_keys: [] });
   const arabniteProgressRef = useRef(arabniteProgress);
   useEffect(() => { arabniteProgressRef.current = arabniteProgress; }, [arabniteProgress]);
   const [cardDuelOpen, setCardDuelOpen] = useState(false);
@@ -198,7 +198,7 @@ function Amargenta3DContent({ onExit }) {
     const counts = {};
     collection.cards.forEach((instance) => { counts[instance.card_id] = (Number(counts[instance.card_id]) || 0) + 1; });
     setArabniteInstances(collection.cards || []);
-    const next = { packs: 0, packInventory: [], coins: progress.coins, collectedPackIds: arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
+    const next = { packs: 0, packInventory: [], coins: progress.coins, collectedPackIds: progress.collected_pack_ids || arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
     arabniteCollectionRef.current = next;
     setArabniteCollection(next);
   };
