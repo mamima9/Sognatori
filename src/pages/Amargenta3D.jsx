@@ -2133,7 +2133,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         cylinder(.38,.38,.12,mat("#f2c66d"),jar,0,.82,0,10);
         const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(jarSlot%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
         const jarKey=cycleIndex+":"+jarSlot;
-        const claimed=(()=>{try{return JSON.parse(window.localStorage.getItem("sognatori:arabnite:claimed-jars:v1")||"[]").includes(jarKey)||arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey);}catch{return Boolean(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey));}})();
+        const claimed=Boolean(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey));
         jar.visible=!claimed;
         arabniteCandyTargets.push({group:jar,x,z,active:!claimed,cycleIndex,jarSlot});
       };
