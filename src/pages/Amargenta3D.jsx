@@ -1971,6 +1971,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
       // L'ingresso diretto in Arabnite viene applicato dopo la costruzione completa del mondo.
       const arabniteBuildSnapshot={interactables:interactables.length,colliders:colliders.length,npcActors:npcActors.length,packs:arabnitePackMeshes.length,portalEffects:arabPortalEffects.length};
+      let arabniteJarSpawnPoints=[];
+      let spawnArabniteJar=null;
+      let lastSpawnedJarCycle=0;
       try {
       // ARABNITE: città notturna di cupole, bazar, lanterne e oasi lunare.
       // La sabbia continua sotto tutta la cintura di dune, senza fessure o bordi neri.
@@ -2125,8 +2128,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
       [["first-pack-01",139,-24],["first-pack-02",165,-36],["first-pack-03",205,-35],["first-pack-04",226,12],["first-pack-05",224,48]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
-      const jarSpawnPoints=[[174,-28],[216,-18],[224,30],[151,39],[185,55]];
-      const makeCandyJar=(x,z,cycleIndex,jarSlot)=>{
+      arabniteJarSpawnPoints=[[174,-28],[216,-18],[224,30],[151,39],[185,55]];
+      spawnArabniteJar=(x,z,cycleIndex,jarSlot)=>{
         const jar=new THREE.Group();arabniteWorld.add(jar);jar.position.set(x,0,z);
         const glass=mat("#e8b4dc",.24,{transparent:true,opacity:.82,roughness:.25});
         cylinder(.32,.38,.72,glass,jar,0,.42,0,10);
@@ -2139,9 +2142,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
       const startingCycle=Math.floor(clock.elapsedTime/240);
       const firstArabniteVisit=!restoredSession?.worlds?.arabnite;
-      let lastSpawnedJarCycle=startingCycle;
-      if(firstArabniteVisit||startingCycle===0)jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
-      else {const [x,z]=jarSpawnPoints[(startingCycle-1)%jarSpawnPoints.length];makeCandyJar(x,z,startingCycle,1);}
+      lastSpawnedJarCycle=startingCycle;
+      if(firstArabniteVisit||startingCycle===0)arabniteJarSpawnPoints.forEach(([x,z],index)=>spawnArabniteJar(x,z,0,index+1));
+      else {const [x,z]=arabniteJarSpawnPoints[(startingCycle-1)%arabniteJarSpawnPoints.length];spawnArabniteJar(x,z,startingCycle,1);}
       arabniteReady=true;
       } catch(error) {
         arabniteReady=false;
@@ -2916,8 +2919,8 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           if(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey)){target.active=false;target.group.visible=false;}
         });
         if(arabniteActive&&cycleIndex>lastSpawnedJarCycle){
-          const [jarX,jarZ]=jarSpawnPoints[(cycleIndex-1)%jarSpawnPoints.length];
-          makeCandyJar(jarX,jarZ,cycleIndex,1);
+          const [jarX,jarZ]=arabniteJarSpawnPoints[(cycleIndex-1)%arabniteJarSpawnPoints.length];
+          spawnArabniteJar?.(jarX,jarZ,cycleIndex,1);
           lastSpawnedJarCycle=cycleIndex;
         }
         const daylight=period===0?1:period===1?.82:period===2?.48:.22;
