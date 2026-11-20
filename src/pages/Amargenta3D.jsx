@@ -3038,7 +3038,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
          });
         arabPortalEffects.forEach(({ring,innerRing,core,crest,phase})=>{ring.rotation.z+=dt*.22;innerRing.rotation.z-=dt*.3;core.material.opacity=.42+Math.sin(clock.elapsedTime*2.2+phase)*.13;crest.rotation.y+=dt*.5;crest.rotation.z+=dt*.22;});
         if(dungeonGuardian.visible)dungeonGuardian.rotation.y=Math.sin(clock.elapsedTime*.8)*.12;
-        const nextZone=p.x>120?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Giardino dei Sigilli" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Terrazza delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Piazzale della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
+        const nextZone=arabniteActive?"Arabnite · "+(p.z>34?"Oasi della Luna":p.z<0?"Bazar delle Gemme":"Piazza delle Lanterne"):p.x > 60 && p.z < -55 ? "Giardino dei Sigilli" : p.x < -60 && p.z < -30 ? "Giardino del Retrogusto" : p.x < -60 && p.z > 55 ? "Terrazza delle Tre Foglie" : p.x > 60 && p.z > 55 ? "Piazzale della Torrefazione" : p.x>8&&p.z>20?"Distretto della Torrefazione":p.x>17?"Valle delle Cascate":p.x<-10&&p.z<-15?"Borgo superiore":p.x<-10?"Terrazze del Caffè":Math.hypot(p.x,p.z)<13?"Piazza del Chicco":"Ingresso di Amargenta";
         if (nextZone !== zoneRef.current) { zoneRef.current = nextZone; setZone(nextZone); }
         renderer.render(arabniteActive?arabniteScene:scene,camera);
       };
