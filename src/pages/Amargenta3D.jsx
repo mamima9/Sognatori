@@ -2128,9 +2128,13 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         cylinder(.32,.38,.72,glass,jar,0,.42,0,10);
         cylinder(.38,.38,.12,mat("#f2c66d"),jar,0,.82,0,10);
         const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(jarSlot%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
-        arabniteCandyTargets.push({group:jar,x,z,active:true,cycleIndex,jarSlot});
+        const claimed=(()=>{try{return JSON.parse(window.localStorage.getItem("sognatori:arabnite:claimed-jars:v1")||"[]").includes(cycleIndex+":"+jarSlot);}catch{return false;}})();
+        jar.visible=!claimed;
+        arabniteCandyTargets.push({group:jar,x,z,active:!claimed,cycleIndex,jarSlot});
       };
-      jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
+      const startingCycle=Math.floor(clock.elapsedTime/240);
+      if(startingCycle===0)jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
+      else {const [x,z]=jarSpawnPoints[(startingCycle-1)%jarSpawnPoints.length];makeCandyJar(x,z,startingCycle,1);}
       arabniteReady=true;
       } catch(error) {
         arabniteReady=false;
@@ -2833,7 +2837,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;claimArabniteJar(target.cycleIndex??Math.floor(clock.elapsedTime/240),target.jarSlot||1).then(progress=>setArabniteProgress(progress)).catch(error=>setToast(error.message||"Ricompensa del barattolo non disponibile."));setToast("Barattolo colpito! +1 moneta.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;const jarKey=(target.cycleIndex??Math.floor(clock.elapsedTime/240))+":"+(target.jarSlot||1);try{const claimed=JSON.parse(window.localStorage.getItem("sognatori:arabnite:claimed-jars:v1")||"[]");if(!claimed.includes(jarKey))window.localStorage.setItem("sognatori:arabnite:claimed-jars:v1",JSON.stringify([...claimed,jarKey]));}catch{}claimArabniteJar(target.cycleIndex??Math.floor(clock.elapsedTime/240),target.jarSlot||1).then(progress=>setArabniteProgress(progress)).catch(error=>setToast(error.message||"Ricompensa del barattolo non disponibile."));setToast("Barattolo colpito! +1 moneta.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
@@ -3007,6 +3011,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         });
         amberPickups.forEach(pickup=>{if(pickup.visible)pickup.rotation.y+=dt*.65;});
         arabnitePackMeshes.forEach(({group,baseY,phase,id,x,z})=>{
+           if(arabniteCollectionRef.current.collectedPackIds.includes(id)){group.visible=false;return;}
            if(!group.visible)return;
            group.position.y=baseY+Math.sin(clock.elapsedTime*2.1+phase)*.16;
            group.rotation.y=clock.elapsedTime*.55+phase*.08;
@@ -3194,7 +3199,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       {panel==="cards"&&<div style={{color:"#f2e4cc"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
           <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{arabniteProgress.discovered_artwork_ids.length} artwork sbloccati · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>{isAuthenticated ? "Collezione condivisa · carte numerate" : "Accedi per sincronizzare la collezione"}</div></div>
-          <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.coins ?? "—"} ✦</div>
+          <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteProgress.coins ?? "—"} ✦</div>
         </div>
         <button disabled={!isAuthenticated||Number(arabniteProgress.default_packs||0)<1} onClick={()=>openArabnitePack()} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:isAuthenticated?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:isAuthenticated?"pointer":"not-allowed",opacity:isAuthenticated?1:.55}}>✦ APRI BUSTINA DEFAULT · 1 ARTWORK</button>
          <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:10,color:"#d7c5a5"}}><span>Doppioni: {arabniteProgress.duplicate_artwork_count||0}</span><span>Premio Adli: {arabniteProgress.adli_reward_claimed?"RISCATTATO":arabniteProgress.discovered_artwork_ids.length+"/64"}</span></div>
