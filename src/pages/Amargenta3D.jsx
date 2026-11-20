@@ -156,6 +156,7 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteInstances, setArabniteInstances] = useState([]);
   const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
   const [selectedOwnedCard, setSelectedOwnedCard] = useState(null);
+  const [specialPackOpen, setSpecialPackOpen] = useState(false);
   const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false, collected_pack_ids: [], claimed_jar_keys: [] });
   const arabniteProgressRef = useRef(arabniteProgress);
   useEffect(() => { arabniteProgressRef.current = arabniteProgress; }, [arabniteProgress]);
@@ -232,6 +233,7 @@ function Amargenta3DContent({ onExit }) {
     if (!isAuthenticated) { setToast("Accedi per riscattare il premio."); return false; }
     try {
       const instances = await claimAdliReward();
+      setSpecialPackOpen(false);
       await refreshSharedArabniteCollection();
       setCardReveal(instances.map((instance) => {
         const card = ROSTER.find((item) => item.id === instance.card_id);
@@ -2109,7 +2111,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       removeNpcInteraction("Adli");
       addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
         title:"Adli · L'inventore del gioco",
-        text:arabniteProgressRef.current.discovered_artwork_ids.length===64 ? (arabniteProgressRef.current.adli_reward_claimed ? "«Hai già ricevuto il mio dono. Custodisci con cura le tue tre carte originali!»" : "«Hai completato tutti i 64 artwork! Come promesso, questa bustina speciale contiene tre carte originali registrate nella tua collezione.»") : "«Sblocca tutti i 64 artwork con le bustine default e torna da me: ti consegnerò una bustina speciale con tre carte originali.»",actions:arabniteProgressRef.current.discovered_artwork_ids.length===64&&!arabniteProgressRef.current.adli_reward_claimed?[{label:"Riscatta la bustina speciale",run:()=>claimAdliSpecialPack()}]:[]
+        text:arabniteProgressRef.current.discovered_artwork_ids.length===64 ? (arabniteProgressRef.current.adli_reward_claimed ? "«Hai già ricevuto il mio dono. Custodisci con cura le tue tre carte originali!»" : "«Hai completato tutti i 64 artwork! Come promesso, questa bustina speciale contiene tre carte originali registrate nella tua collezione.»") : "«Sblocca tutti i 64 artwork con le bustine default e torna da me: ti consegnerò una bustina speciale con tre carte originali.»",actions:arabniteProgressRef.current.discovered_artwork_ids.length===64&&!arabniteProgressRef.current.adli_reward_claimed?[{label:"Apri la bustina speciale",run:()=>setSpecialPackOpen(true)}]:[]
       }),4.4);
       const makeArabnitePack=(id,x,z)=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
@@ -3361,6 +3363,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             {cardDuel.done&&<button onClick={()=>setCardDuel(null)} style={{flex:1,minWidth:140,padding:13,borderRadius:11,border:"1px solid #ffe08a",background:"#68508b",color:"#fff4dc",fontWeight:1000,cursor:"pointer"}}>NUOVA SFIDA</button>}
           </div>
         </div>}
+      </div>
+    </div>}
+    {specialPackOpen&&<div role="dialog" aria-modal="true" aria-label="Bustina speciale di Adli" style={{position:"absolute",inset:0,zIndex:180,display:"grid",placeItems:"center",padding:16,background:"rgba(5,8,12,.92)",backdropFilter:"blur(10px)",color:"#fff1d5"}}>
+      <div style={{width:"min(440px,100%)",maxHeight:"94%",overflowY:"auto",display:"flex",flexDirection:"column",alignItems:"center",padding:18,borderRadius:22,border:"2px solid #e8c46f",background:"radial-gradient(ellipse at top,#315e62 0%,#17252d 58%,#151421 100%)",boxShadow:"0 24px 80px #000c",textAlign:"center"}}>
+        <div style={{fontSize:10,letterSpacing:3,fontWeight:1000,color:"#f4cf79"}}>RICOMPENSA ESCLUSIVA · ADLI</div>
+        <div style={{fontSize:23,fontWeight:1000,margin:"6px 0 12px"}}>La bustina dei 64</div>
+        <img src="/images/adli-special-pack.webp" alt="Bustina speciale della Collezione dei Sognatori con Adli, Ripple e Deb" style={{display:"block",width:"min(250px,75vw)",maxHeight:"54vh",objectFit:"contain",filter:"drop-shadow(0 12px 24px #0009)"}}/>
+        <div style={{fontSize:12,lineHeight:1.55,color:"#e9dfc9",margin:"12px 0 16px"}}>Hai completato tutti i 64 artwork. Apri il tuo premio per ricevere tre carte originali, con seriale, assegnate e registrate nella tua collezione su Supabase.</div>
+        <button disabled={!isAuthenticated} onClick={()=>claimAdliSpecialPack()} style={{width:"100%",padding:13,borderRadius:12,border:"1px solid #ffe08a",background:"linear-gradient(135deg,#e18a2f,#a84925)",color:"#fff8e8",fontWeight:1000,fontSize:14,cursor:"pointer",opacity:isAuthenticated?1:.55}}>✦ APRI LA BUSTINA · 3 CARTE ORIGINALI</button>
+        <button onClick={()=>setSpecialPackOpen(false)} style={{marginTop:9,padding:"9px 16px",borderRadius:10,border:"1px solid #d8c39b66",background:"#ffffff10",color:"#f3e5ce",fontWeight:800,cursor:"pointer"}}>Più tardi</button>
       </div>
     </div>}
     {dialogue&&<div className="amargenta-dialogue" role="dialog" aria-modal="true" style={{position:"absolute",left:"50%",bottom:28,transform:"translateX(-50%)",width:"min(560px,calc(100vw - 32px))",padding:20,borderRadius:20,zIndex:30}}>
