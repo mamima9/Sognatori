@@ -3159,7 +3159,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
          <div style={{marginTop:7}}>Un grande tendone ospita l’Arena delle Carte: entra e affronta duelli 1 contro 1.</div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine default</span><strong>{arabniteProgress.default_packs||0}</strong></div>
-         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
+         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteProgress.coins??0}</strong></div>
          <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Adli custodisce il premio dei 64. Raccogli e apri le bustine default per sbloccare gli artwork; le carte vere arrivano solo dal suo premio.</div>
          <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
        </div>}
