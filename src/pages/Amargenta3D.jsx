@@ -14,6 +14,33 @@ const ARABNITE_RESIDENT_IDS = ["adlimago","biglia","brama","lumen","ponce","sanl
 const ARABNITE_RESIDENTS = ARABNITE_RESIDENT_IDS.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean);
 
 const DEFAULT_CARD_BACK = "/images/DIETRO/Carta fantasy del Sognatore d’Amargenta.png";
+const DEFAULT_CARD_FRONT = "/images/davanti/Carta davanti fake Toasty.png";
+const CARD_FRONTS = {
+  "adlimago:1": "/images/davanti/ADLì DAVANTI RARA 001.png",
+  "adlimago:2": "/images/davanti/ADLì DAVANTI NON COMUNE 002.png",
+  "aragostino:1": "/images/davanti/aragostino davanti rara 001.jpg",
+  "aragostino:2": "/images/davanti/aragostino davanti.jpg",
+  "cenere:1": "/images/davanti/CENERE DAVANTI RARA 001.jpg",
+  "ring-ape:1": "/images/davanti/Carta davanti fake Ring-Ape.png",
+  "toasty:1": "/images/davanti/Carta davanti fake Toasty.png",
+  "nina:1": "/images/davanti/Nina davanti.jpg",
+  "sparkly:1": "/images/davanti/SPARKLY DAVANTI.jpg",
+  "taomarco:1": "/images/davanti/TAOMARCO davanti.png",
+  "cancucc:1": "/images/davanti/cancucc DAVANTI.jpg",
+  "cillymbu:1": "/images/davanti/cillymbu davanti.jpg",
+  "deb:1": "/images/davanti/deb davanti.jpg",
+  "dragociocco:1": "/images/davanti/dragociocco davanti rara 001.jpg",
+  "eroe:1": "/images/davanti/eroe davanti.png",
+  "fierononno:1": "/images/davanti/fierononno davanti.jpg",
+  "long:1": "/images/davanti/long davanti.jpg",
+  "nuvobetta:1": "/images/davanti/nuvobetta davanti.jpg",
+  "scroccospell:1": "/images/davanti/scroccospell davanti.jpg",
+  "spinoff:1": "/images/davanti/spinoff davanti.jpg",
+  "uesditti:1": "/images/davanti/uesditti davanti.jpg",
+};
+const getOwnedCardFront = (cardId, serial) =>
+  CARD_FRONTS[`${cardId}:${Number(serial)}`] || DEFAULT_CARD_FRONT;
+
 const CARD_BACKS = {
   "adlimago": "/images/DIETRO/Carta retro 1 ADLì.png",
   "aragostino": "/images/DIETRO/Carta retro Aragostino.png",
@@ -3264,7 +3291,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(0,1fr))",gap:7}}>
               {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} onClick={()=>{if(owned){setSelectedOwnedCard({card:selected,serial});setOwnedCardFlipped(false);}}} role={owned?"button":undefined} tabIndex={owned?0:undefined} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:owned?"zoom-in":"default"}}>
-                <div style={{height:66,display:"grid",placeItems:"center",borderRadius:6,background:"#171525",overflow:"hidden"}}>{owned?<img src={selected.img} alt={selected.nome+" #"+serial} style={{width:"100%",height:"100%",objectFit:"contain"}}/>:<span style={{fontSize:25,fontWeight:1000,color:"#d8c5a6"}}>?</span>}</div>
+                <div style={{height:66,display:"grid",placeItems:"center",borderRadius:6,background:"#171525",overflow:"hidden"}}>{owned?<img src={getOwnedCardFront(selected.id,serial)} alt={selected.nome+" #"+serial} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=DEFAULT_CARD_FRONT;}} style={{width:"100%",height:"100%",objectFit:"contain"}}/>:<span style={{fontSize:25,fontWeight:1000,color:"#d8c5a6"}}>?</span>}</div>
                 <strong style={{display:"block",fontSize:10,marginTop:4,color:owned?"#f1cb7b":"#a99b88"}}>{serial}/100</strong>
               </div>;})}
             </div>
@@ -3279,7 +3306,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
              <div role="button" tabIndex={0} aria-label={ownedCardFlipped?"Mostra il fronte della carta":"Mostra il retro della carta"} onClick={()=>setOwnedCardFlipped(value=>!value)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOwnedCardFlipped(value=>!value);}}} style={{width:"min(76vw,430px)",height:"min(70vh,650px)",maxHeight:"100%",perspective:1400,cursor:"pointer"}}>
                <div style={{position:"relative",width:"100%",height:"100%",transformStyle:"preserve-3d",transition:"transform 720ms cubic-bezier(.2,.75,.2,1)",transform:ownedCardFlipped?"rotateY(180deg)":"rotateY(0deg)"}}>
                  <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",borderRadius:18,overflow:"hidden",background:"radial-gradient(ellipse at 50% 30%,#655080,#171525 78%)",boxShadow:"0 18px 45px #000b"}}>
-                   <img src={selectedOwnedCard.card.img} alt={selectedOwnedCard.card.nome+" #"+selectedOwnedCard.serial} style={{width:"100%",height:"100%",objectFit:"contain",filter:"drop-shadow(0 18px 28px #000b)"}}/>
+                   <img src={getOwnedCardFront(selectedOwnedCard.card.id,selectedOwnedCard.serial)} alt={selectedOwnedCard.card.nome+" #"+selectedOwnedCard.serial} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=DEFAULT_CARD_FRONT;}} style={{width:"100%",height:"100%",objectFit:"contain",filter:"drop-shadow(0 18px 28px #000b)"}}/>
                  </div>
                  <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",transform:"rotateY(180deg)",borderRadius:18,overflow:"hidden",background:"#171525",boxShadow:"0 18px 45px #000b"}}>
                    <img src={CARD_BACKS[selectedOwnedCard.card.id]||DEFAULT_CARD_BACK} alt={"Retro della carta "+selectedOwnedCard.card.nome} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=DEFAULT_CARD_BACK;}} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
