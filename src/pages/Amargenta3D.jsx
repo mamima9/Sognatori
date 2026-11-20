@@ -152,6 +152,7 @@ function Amargenta3DContent({ onExit }) {
   });
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
+  const [arabniteInstances, setArabniteInstances] = useState([]);
   const [cardDuelOpen, setCardDuelOpen] = useState(false);
   const [cardDuel, setCardDuel] = useState(null);
   const startCardDuel = (playerCard) => {
@@ -185,6 +186,7 @@ function Amargenta3DContent({ onExit }) {
     const collection = await loadArabniteCollection();
     const counts = {};
     collection.cards.forEach((instance) => { counts[instance.card_id] = (Number(counts[instance.card_id]) || 0) + 1; });
+    setArabniteInstances(collection.cards || []);
     const next = { packs: 0, packInventory: [], coins: collection.coins, collectedPackIds: arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
     arabniteCollectionRef.current = next;
     setArabniteCollection(next);
@@ -3180,7 +3182,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
             <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span><span style={{display:"block",fontSize:7,color:"#e9c58d",marginTop:2}}>{discovered?(Number(card.costo)>=40?"LEGGENDA":Number(card.costo)>=28?"EPICA":Number(card.costo)>=18?"RARA":"COMUNE"):""}</span>
           </div>;})}
         </div>
-        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}></div>
+        <div style={{marginTop:14,padding:10,borderRadius:11,background:"#171525",border:"1px solid #d8b46b66"}}>
+          <strong style={{display:"block",color:"#f1cb7b",fontSize:11,letterSpacing:1,marginBottom:8}}>LE TUE COPIE · {arabniteInstances.length} CARTE INDIVIDUALI</strong>
+          {arabniteInstances.length===0&&<div style={{fontSize:10,color:"#bfae98"}}>Apri una bustina per ottenere le prime carte numerate.</div>}
+          <div style={{display:"grid",gap:6}}>
+            {arabniteInstances.map((instance)=>{
+              const card=ROSTER.find(item=>item.id===instance.card_id);
+              if(!card)return null;
+              return <div key={instance.id} style={{display:"flex",alignItems:"center",gap:8,padding:7,borderRadius:8,background:"#ffffff0b"}}>
+                <img src={card.img} alt={card.nome} style={{width:38,height:38,objectFit:"contain",borderRadius:6,background:"#ffffff10"}}/>
+                <div style={{flex:1,minWidth:0}}><strong style={{fontSize:10,display:"block"}}>{card.nome}</strong><span style={{fontSize:9,color:"#d7c5a5"}}>Copia unica · {instance.rarity}</span></div>
+                <strong style={{fontSize:11,color:"#f1cb7b",whiteSpace:"nowrap"}}>#{String(instance.serial_number).padStart(3,"0")}/100</strong>
+              </div>;
+            })}
+          </div>
+        </div>
+        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}>Ogni seriale identifica una copia precisa: anche due carte dello stesso Sognatore hanno numeri e ID differenti.</div>
       </div>}
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
