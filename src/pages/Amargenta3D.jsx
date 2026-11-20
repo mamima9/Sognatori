@@ -3219,15 +3219,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
               <button onClick={()=>setSelectedCollectionCard(null)} style={{border:"1px solid #d8b46b",borderRadius:8,padding:"7px 10px",background:"#59417a",color:"#fff3dc",fontWeight:900}}>CHIUDI ✕</button>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(0,1fr))",gap:7}}>
-              {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
+              {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} onClick={()=>{if(owned)setSelectedOwnedCard({card:selected,serial});}} role={owned?"button":undefined} tabIndex={owned?0:undefined} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:owned?"zoom-in":"default"}}>
                 <div style={{height:66,display:"grid",placeItems:"center",borderRadius:6,background:"#171525",overflow:"hidden"}}>{owned?<img src={selected.img} alt={selected.nome+" #"+serial} style={{width:"100%",height:"100%",objectFit:"contain"}}/>:<span style={{fontSize:25,fontWeight:1000,color:"#d8c5a6"}}>?</span>}</div>
                 <strong style={{display:"block",fontSize:10,marginTop:4,color:owned?"#f1cb7b":"#a99b88"}}>{serial}/100</strong>
               </div>;})}
             </div>
-            <div style={{fontSize:10,color:"#c9b99f",marginTop:10}}>Le caselle con l'artwork sono le copie che possiedi. Le altre restano da scoprire.</div>
+            <div style={{fontSize:10,color:"#c9b99f",marginTop:10}}>Tocca una copia posseduta per ammirare la carta ingrandita.</div>
           </div>
         </div>;})()}
       </div>}
+         {selectedOwnedCard&&<div role="dialog" aria-modal="true" onClick={()=>setSelectedOwnedCard(null)} style={{position:"fixed",inset:0,zIndex:420,display:"grid",placeItems:"center",padding:12,background:"rgba(5,5,12,.96)",backdropFilter:"blur(12px)"}}>
+           <div onClick={e=>e.stopPropagation()} style={{position:"relative",width:"min(94vw,620px)",height:"min(92vh,900px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:12,borderRadius:20,border:"1px solid #e8c46f",background:"radial-gradient(ellipse at 50% 20%,#564278,#171525 72%)",boxShadow:"0 20px 80px #000b"}}>
+             <button onClick={()=>setSelectedOwnedCard(null)} style={{position:"absolute",right:12,top:12,zIndex:2,border:"1px solid #e8c46f",borderRadius:999,padding:"9px 14px",background:"#241c35",color:"#fff3dc",fontWeight:900}}>✕ CHIUDI</button>
+             <img src={selectedOwnedCard.card.img} alt={selectedOwnedCard.card.nome+" #"+selectedOwnedCard.serial} style={{maxWidth:"100%",maxHeight:"calc(100% - 70px)",objectFit:"contain",filter:"drop-shadow(0 18px 28px #000b)"}}/>
+             <div style={{marginTop:10,color:"#f6d88e",fontWeight:1000,fontSize:16,letterSpacing:1}}>{selectedOwnedCard.card.nome} · #{selectedOwnedCard.serial}/100</div>
+           </div>
+         </div>}
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}><strong style={{color:"#e9c58d"}}>SQUADRA ATTIVA</strong><span style={{color:"#e9c58d"}}>{amargentaPartyIds.length}/4</span></div>
