@@ -3213,10 +3213,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         <button disabled={!isAuthenticated||Number(arabniteProgress.default_packs||0)<1} onClick={()=>openArabnitePack()} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:isAuthenticated?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:isAuthenticated?"pointer":"not-allowed",opacity:isAuthenticated?1:.55}}>✦ APRI BUSTINA DEFAULT · 1 ARTWORK</button>
          <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:10,color:"#d7c5a5"}}><span>Doppioni: {arabniteProgress.duplicate_artwork_count||0}</span><span>Premio Adli: {arabniteProgress.adli_reward_claimed?"RISCATTATO":arabniteProgress.discovered_artwork_ids.length+"/64"}</span></div>
         {cardReveal.length>0&&<div style={{marginTop:11,padding:10,borderRadius:12,background:"linear-gradient(135deg,#5b3d76,#27223f)",border:"1px solid #e8c46f"}}>
-          <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
+          <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>{cardReveal.some(card=>card.serial_number)?"PREMIO DI ADLI · 3 CARTE ORIGINALI":"ARTWORK SBLOCCATO"}</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
             <img src={card.img} alt={card.nome} style={{width:"100%",height:76,objectFit:"contain",background:"#ffffff16",borderRadius:8}}/><strong style={{display:"block",fontSize:10,marginTop:4}}>{card.nome}</strong>
-            <span style={{display:"block",fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
+            <span style={{display:"block",fontSize:9,color:card.serial_number?"#9ff0c0":card.isNew?"#9ff0c0":"#f5d28a"}}>{card.serial_number?"CARTA ORIGINALE · #"+card.serial_number+"/100":card.isNew?"NUOVO ARTWORK":"DOPPIONE"}</span>
           </div>)}</div><button onClick={()=>setCardReveal([])} style={{marginTop:8,border:0,background:"transparent",color:"#f1dfbd",fontSize:10,textDecoration:"underline"}}>Nascondi risultato</button>
         </div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
