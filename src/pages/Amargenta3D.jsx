@@ -13,6 +13,29 @@ const AMARGENTA_SOGNATORE_IDS = new Set(AMARGENTA_ROSTER.map((s) => String(s.id)
 const ARABNITE_RESIDENT_IDS = ["adlimago","biglia","brama","lumen","ponce","sanlegno","trix","vudele"];
 const ARABNITE_RESIDENTS = ARABNITE_RESIDENT_IDS.map((id) => ROSTER.find((s) => s.id === id)).filter(Boolean);
 
+const DEFAULT_CARD_BACK = "/images/DIETRO/Carta fantasy del Sognatore d’Amargenta.png";
+const CARD_BACKS = {
+  "adlimago": "/images/DIETRO/Carta retro 1 ADLì.png",
+  "aragostino": "/images/DIETRO/Carta retro Aragostino.png",
+  "cancucc": "/images/DIETRO/Carta retro cancucc.png",
+  "cenere": "/images/DIETRO/Carta retro cenere.png",
+  "cillymbu": "/images/DIETRO/Carta rero cillymbu.jpg",
+  "deb": "/images/DIETRO/Carta retro Deb.png",
+  "dragociocco": "/images/DIETRO/Carta retro Dragociocco.jpg",
+  "eroe": "/images/DIETRO/Carta retro eroe.png",
+  "fierononno": "/images/DIETRO/Carta retro fierononno.jpg",
+  "long": "/images/DIETRO/Carta retro Long.png",
+  "nina": "/images/DIETRO/Carta retro Nina.png",
+  "nuvobetta": "/images/DIETRO/Carta retro Nuvobetta.jpg",
+  "ring-ape": "/images/DIETRO/Carta retro Ring-Ape.png",
+  "scroccospell": "/images/DIETRO/Carta retro Scroccospell.jpg",
+  "sparkly": "/images/DIETRO/Carta retro Sparkly.jpg",
+  "spinoff": "/images/DIETRO/Carta retro Spinoff.jpg",
+  "toasty": "/images/DIETRO/Carta retro  Toasty.png",
+  "uesditti": "/images/DIETRO/Carta retro uesditti.jpg",
+};
+
+
 /**
  * Amargenta 3D — ambiente esplorabile sperimentale.
  * La scena è isolata dal renderer Canvas di Avventura: non modifica Arcade/Multiplayer.
@@ -156,6 +179,7 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteInstances, setArabniteInstances] = useState([]);
   const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
   const [selectedOwnedCard, setSelectedOwnedCard] = useState(null);
+  const [ownedCardFlipped, setOwnedCardFlipped] = useState(false);
   const [specialPackOpen, setSpecialPackOpen] = useState(false);
   const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false, collected_pack_ids: [], claimed_jar_keys: [] });
   const arabniteProgressRef = useRef(arabniteProgress);
@@ -3239,7 +3263,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
               <button onClick={()=>setSelectedCollectionCard(null)} style={{border:"1px solid #d8b46b",borderRadius:8,padding:"7px 10px",background:"#59417a",color:"#fff3dc",fontWeight:900}}>CHIUDI ✕</button>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(0,1fr))",gap:7}}>
-              {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} onClick={()=>{if(owned)setSelectedOwnedCard({card:selected,serial});}} role={owned?"button":undefined} tabIndex={owned?0:undefined} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:owned?"zoom-in":"default"}}>
+              {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} onClick={()=>{if(owned){setSelectedOwnedCard({card:selected,serial});setOwnedCardFlipped(false);}}} role={owned?"button":undefined} tabIndex={owned?0:undefined} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:owned?"zoom-in":"default"}}>
                 <div style={{height:66,display:"grid",placeItems:"center",borderRadius:6,background:"#171525",overflow:"hidden"}}>{owned?<img src={selected.img} alt={selected.nome+" #"+serial} style={{width:"100%",height:"100%",objectFit:"contain"}}/>:<span style={{fontSize:25,fontWeight:1000,color:"#d8c5a6"}}>?</span>}</div>
                 <strong style={{display:"block",fontSize:10,marginTop:4,color:owned?"#f1cb7b":"#a99b88"}}>{serial}/100</strong>
               </div>;})}
@@ -3248,11 +3272,22 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           </div>
         </div>;})()}
       </div>}
-         {selectedOwnedCard&&<div role="dialog" aria-modal="true" onClick={()=>setSelectedOwnedCard(null)} style={{position:"fixed",inset:0,zIndex:420,display:"grid",placeItems:"center",padding:12,background:"rgba(5,5,12,.96)",backdropFilter:"blur(12px)"}}>
-           <div onClick={e=>e.stopPropagation()} style={{position:"relative",width:"min(94vw,620px)",height:"min(92vh,900px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:12,borderRadius:20,border:"1px solid #e8c46f",background:"radial-gradient(ellipse at 50% 20%,#564278,#171525 72%)",boxShadow:"0 20px 80px #000b"}}>
-             <button onClick={()=>setSelectedOwnedCard(null)} style={{position:"absolute",right:12,top:12,zIndex:2,border:"1px solid #e8c46f",borderRadius:999,padding:"9px 14px",background:"#241c35",color:"#fff3dc",fontWeight:900}}>✕ CHIUDI</button>
-             <img src={selectedOwnedCard.card.img} alt={selectedOwnedCard.card.nome+" #"+selectedOwnedCard.serial} style={{maxWidth:"100%",maxHeight:"calc(100% - 70px)",objectFit:"contain",filter:"drop-shadow(0 18px 28px #000b)"}}/>
-             <div style={{marginTop:10,color:"#f6d88e",fontWeight:1000,fontSize:16,letterSpacing:1}}>{selectedOwnedCard.card.nome} · #{selectedOwnedCard.serial}/100</div>
+         {selectedOwnedCard&&<div role="dialog" aria-modal="true" onClick={()=>{setSelectedOwnedCard(null);setOwnedCardFlipped(false);}} style={{position:"fixed",inset:0,zIndex:420,display:"grid",placeItems:"center",padding:12,background:"rgba(5,5,12,.97)",backdropFilter:"blur(12px)"}}>
+           <div onClick={e=>e.stopPropagation()} style={{position:"relative",width:"min(94vw,620px)",height:"min(94vh,900px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"54px 12px 18px",borderRadius:20,border:"1px solid #e8c46f",background:"radial-gradient(ellipse at 50% 20%,#564278,#171525 72%)",boxShadow:"0 20px 80px #000b"}}>
+             <button onClick={()=>{setSelectedOwnedCard(null);setOwnedCardFlipped(false);}} style={{position:"absolute",right:12,top:12,zIndex:3,border:"1px solid #e8c46f",borderRadius:999,padding:"9px 14px",background:"#241c35",color:"#fff3dc",fontWeight:900}}>✕ CHIUDI</button>
+             <button onClick={()=>setOwnedCardFlipped(value=>!value)} style={{position:"absolute",left:12,top:12,zIndex:3,border:"1px solid #e8c46f",borderRadius:999,padding:"9px 14px",background:"#59417a",color:"#fff3dc",fontWeight:900}}>{ownedCardFlipped?"↩ FRONTE":"⟳ GIRA CARTA"}</button>
+             <div role="button" tabIndex={0} aria-label={ownedCardFlipped?"Mostra il fronte della carta":"Mostra il retro della carta"} onClick={()=>setOwnedCardFlipped(value=>!value)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOwnedCardFlipped(value=>!value);}}} style={{width:"min(76vw,430px)",height:"min(70vh,650px)",maxHeight:"100%",perspective:1400,cursor:"pointer"}}>
+               <div style={{position:"relative",width:"100%",height:"100%",transformStyle:"preserve-3d",transition:"transform 720ms cubic-bezier(.2,.75,.2,1)",transform:ownedCardFlipped?"rotateY(180deg)":"rotateY(0deg)"}}>
+                 <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",borderRadius:18,overflow:"hidden",background:"radial-gradient(ellipse at 50% 30%,#655080,#171525 78%)",boxShadow:"0 18px 45px #000b"}}>
+                   <img src={selectedOwnedCard.card.img} alt={selectedOwnedCard.card.nome+" #"+selectedOwnedCard.serial} style={{width:"100%",height:"100%",objectFit:"contain",filter:"drop-shadow(0 18px 28px #000b)"}}/>
+                 </div>
+                 <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",transform:"rotateY(180deg)",borderRadius:18,overflow:"hidden",background:"#171525",boxShadow:"0 18px 45px #000b"}}>
+                   <img src={CARD_BACKS[selectedOwnedCard.card.id]||DEFAULT_CARD_BACK} alt={"Retro della carta "+selectedOwnedCard.card.nome} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=DEFAULT_CARD_BACK;}} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+                 </div>
+               </div>
+             </div>
+             <div style={{marginTop:12,color:"#f6d88e",fontWeight:1000,fontSize:16,letterSpacing:1,textAlign:"center"}}>{selectedOwnedCard.card.nome} · #{selectedOwnedCard.serial}/100</div>
+             <div style={{marginTop:5,color:"#c9b99f",fontSize:10,textAlign:"center"}}>Tocca la carta o premi GIRA CARTA per vedere il retro</div>
            </div>
          </div>}
       {panel==="team"&&<div>
