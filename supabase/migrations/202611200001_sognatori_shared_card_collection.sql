@@ -134,14 +134,14 @@ revoke insert, update, delete on public.sognatore_card_transactions from anon, a
 
 create or replace function public.sognatore_get_wallet()
 returns bigint language plpgsql security definer set search_path = public, pg_temp
-as $
+as $$
 declare v_user uuid := auth.uid(); v_coins bigint;
 begin
   if v_user is null then raise exception 'AUTH_REQUIRED'; end if;
   insert into public.sognatore_wallets(user_id) values(v_user) on conflict do nothing;
   select coins into v_coins from public.sognatore_wallets where user_id=v_user;
   return v_coins;
-end $;
+end $$;
 
 create or replace function public.sognatore_open_pack(p_kind text default 'standard')
 returns table(card_instance_id uuid, card_id text, serial_number smallint, rarity text)
