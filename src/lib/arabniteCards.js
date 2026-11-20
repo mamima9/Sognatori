@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 export async function loadArabniteCollection() {
   const [{ data: coins, error: walletError }, { data: cards, error: cardsError }] = await Promise.all([
     supabase.rpc("sognatore_get_wallet"),
-    supabase.from("sognatore_card_instances").select("id,card_id,serial_number,rarity").not("owner_id", "is", null).order("card_id").order("serial_number"),
+    supabase.from("sognatore_card_instances").select("id,card_id,serial_number").not("owner_id", "is", null).order("card_id").order("serial_number"),
   ]);
   if (walletError) throw walletError;
   if (cardsError) throw cardsError;
