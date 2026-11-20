@@ -52,7 +52,7 @@ export default function ArabniteOnlineMarket() {
         const key=instance.id;
         return <div key={key} style={{display:"flex",alignItems:"center",gap:8,padding:"7px",borderRadius:9,background:"#ffffff0c"}}>
           <img src={card.img} alt={card.nome} style={{width:38,height:38,objectFit:"contain"}}/>
-          <div style={{flex:1,minWidth:0}}><strong style={{fontSize:11}}>{card.nome}</strong><div style={{fontSize:9,color:"#d7c5a5"}}>#{String(instance.serial_number).padStart(3,"0")} · {instance.rarity}</div></div>
+          <div style={{flex:1,minWidth:0}}><strong style={{fontSize:11}}>{card.nome}</strong><div style={{fontSize:9,color:"#d7c5a5"}}>#{String(instance.serial_number).padStart(3,"0")}</div></div>
           <input aria-label={"Prezzo per "+card.nome} type="number" min="1" value={prices[key]||""} onChange={(e)=>setPrices(v=>({...v,[key]:e.target.value}))} placeholder="Prezzo" style={{width:65,minWidth:0,padding:6,borderRadius:7,border:"1px solid #8d795e",background:"#211b2a",color:"#fff"}}/>
           <button disabled={busy===key||!Number(prices[key])} onClick={()=>act(key,()=>listArabniteCard(key,prices[key]),"Carta messa in vendita.")} style={{...buttonStyle,opacity:busy===key||!Number(prices[key])?.5:1,fontSize:9}}>Vendi</button>
         </div>;
