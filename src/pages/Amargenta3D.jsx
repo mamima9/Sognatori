@@ -2135,7 +2135,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         arabniteCandyTargets.push({group:jar,x,z,active:!claimed,cycleIndex,jarSlot});
       };
       const startingCycle=Math.floor(clock.elapsedTime/240);
-      if(startingCycle===0)jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
+      const firstArabniteVisit=!restoredSession?.worlds?.arabnite;
+      let lastSpawnedJarCycle=startingCycle;
+      if(firstArabniteVisit||startingCycle===0)jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
       else {const [x,z]=jarSpawnPoints[(startingCycle-1)%jarSpawnPoints.length];makeCandyJar(x,z,startingCycle,1);}
       arabniteReady=true;
       } catch(error) {
@@ -2910,9 +2912,10 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const jarKey=target.cycleIndex+":"+target.jarSlot;
           if(arabniteProgressRef.current.claimed_jar_keys?.includes(jarKey)){target.active=false;target.group.visible=false;}
         });
-        if(arabniteActive&&cycleIndex>0&&!arabniteCandyTargets.some(target=>target.cycleIndex===cycleIndex)){
+        if(arabniteActive&&cycleIndex>lastSpawnedJarCycle){
           const [jarX,jarZ]=jarSpawnPoints[(cycleIndex-1)%jarSpawnPoints.length];
           makeCandyJar(jarX,jarZ,cycleIndex,1);
+          lastSpawnedJarCycle=cycleIndex;
         }
         const daylight=period===0?1:period===1?.82:period===2?.48:.22;
         sun.intensity=3.2*daylight;
