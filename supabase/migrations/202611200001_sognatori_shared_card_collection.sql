@@ -115,7 +115,7 @@ create policy "card definitions readable" on public.sognatore_card_definitions f
 drop policy if exists "owned cards readable" on public.sognatore_card_instances;
 create policy "owned cards readable" on public.sognatore_card_instances for select to authenticated using (owner_id = auth.uid());
 drop policy if exists "listed cards readable" on public.sognatore_card_instances;
-create policy "listed cards readable" on public.sognatore_card_instances for select to authenticated using (exists (select 1 from public.sognatore_market_listings l where l.card_instance_id = id and l.status = 'ACTIVE'));
+create policy "listed cards readable" on public.sognatore_card_instances for select to authenticated using (exists (select 1 from public.sognatore_market_listings l where l.card_instance_id = sognatore_card_instances.id and l.status = 'ACTIVE'));
 drop policy if exists "wallet owner readable" on public.sognatore_wallets;
 create policy "wallet owner readable" on public.sognatore_wallets for select to authenticated using (user_id = auth.uid());
 drop policy if exists "active listings readable" on public.sognatore_market_listings;
@@ -152,6 +152,8 @@ begin
   if v_user is null then raise exception 'AUTH_REQUIRED'; end if;
   if p_kind not in ('standard','premium','rare') then raise exception 'INVALID_PACK'; end if;
   v_price := case p_kind when 'standard' then 30 when 'premium' then 65 else 110 end;
+  -- Serializza le aperture per evitare che due utenti prenotino contemporaneamente le stesse carte libere.
+  perform pg_advisory_xact_lock(hashtext('sognatore_pack_pool'));
   insert into public.sognatore_wallets(user_id) values(v_user) on conflict do nothing;
   select coins into v_wallet from public.sognatore_wallets where user_id=v_user for update;
   if v_wallet < v_price then raise exception 'INSUFFICIENT_COINS'; end if;
