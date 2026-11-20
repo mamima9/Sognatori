@@ -19,7 +19,7 @@ export async function openSharedArabnitePack(kind = "standard") {
 
 export async function getArabniteMarket() {
   const { data, error } = await supabase.from("sognatore_market_listings")
-    .select("id,card_instance_id,seller_id,price,created_at,sognatore_card_instances(id,card_id,serial_number,rarity)")
+    .select("id,card_instance_id,seller_id,price,created_at,sognatore_card_instances(id,card_id,serial_number)")
     .eq("status", "ACTIVE").order("created_at", { ascending: false }).limit(60);
   if (error) throw error;
   return data || [];
