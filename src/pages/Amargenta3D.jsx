@@ -2091,9 +2091,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const entry=interactables.find(item=>item.title.startsWith(name+" ·"));
         if(entry){entry.text=description;entry.action=action;entry.radius=radius;}
       };
-       setArabniteNpcAction("Brama","BUSTINE STANDARD · 30 monete · scambia doppioni.",()=>setDialogue({title:"Brama · Bazar delle Bustine",text:"«Ehi viaggiatore! Qui trovi le bustine standard dei Sognatori. Ogni bustina contiene 3 carte: puoi anche scambiare un doppione con una carta che ti manca.»",actions:[{label:"Compra 1 bustina · 30 monete",run:()=>{buyArabnitePack("standard");}},{label:"Compra 3 bustine · 90 monete",run:()=>{if(buyArabnitePack("standard")&&buyArabnitePack("standard")&&buyArabnitePack("standard"))setDialogue(null);}},{label:"Scambia un doppione",run:()=>tradeArabniteCard("Brama")}]}),7.2);
+       setArabniteNpcAction("Brama","BUSTINA DEFAULT · 60 MONETE.",()=>setDialogue({title:"Brama · Bazar delle Bustine",text:"«Una bustina default costa 60 monete. Serve a scoprire gli artwork dei 64 Sognatori nell'album. Le carte vere non si trovano qui.»",actions:[{label:"Compra 1 bustina · 60 monete",run:()=>buyArabnitePack()}]}),7.2);
        // Ponce resta visibile come abitante, ma non apre dialoghi né interazioni.
-       setArabniteNpcAction("Trix","BUSTINE RARE · 110 monete.",()=>setDialogue({title:"Trix · Emporio Raro",text:"«Le mie bustine rare contengono soltanto carte epiche o leggendarie: tre tesori per i collezionisti.»",actions:[{label:"Compra rara · 110 monete",run:()=>{buyArabnitePack("rare");}}]}),7.2);
+       setArabniteNpcAction("Trix","ACQUISTA DOPPIONI · +1 MONETA.",()=>setDialogue({title:"Trix · Commerciante dei Doppioni",text:"«Se hai trovato un artwork che possiedi già, lo compro per una moneta. Nient'altro: solo doppioni!»",actions:[{label:"Vendi 1 doppione · +1 moneta",run:()=>tradeArabniteCard()}]}),7.2);
       // Adli accoglie chi arriva ad Arabnite: è l'inventore del gioco di carte dei Sognatori.
       const adli=makeNpc("archivist","Adli","Inventore del Gioco di Carte",151,7,"#c68b42",[
         "Benvenuto ad Arabnite! Qui le carte dei Sognatori sono una vera passione.",
@@ -2104,7 +2104,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       removeNpcInteraction("Adli");
       addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
         title:"Adli · L'inventore del gioco",
-        text:"«Benvenuto ad Arabnite! Forse non lo sai, ma sono stato io a inventare il Gioco di Carte dei Sognatori. All'inizio era solo un modo per raccogliere le storie e le abilità dei Sognatori. Poi sono nate le bustine, i bazar e la voglia di completare la collezione. Qui puoi comprare nuove bustine, trovare carte rare e scambiarle con altri collezionisti. La tua avventura comincia proprio da qui!»"
+        text:arabniteProgress.discovered_artwork_ids.length===64 ? (arabniteProgress.adli_reward_claimed ? "«Hai già ricevuto il mio dono. Custodisci con cura le tue tre carte originali!»" : "«Hai completato tutti i 64 artwork! Come promesso, questa bustina speciale contiene tre carte originali registrate nella tua collezione.»") : "«Sblocca tutti i 64 artwork con le bustine default e torna da me: ti consegnerò una bustina speciale con tre carte originali.»",actions:arabniteProgress.discovered_artwork_ids.length===64&&!arabniteProgress.adli_reward_claimed?[{label:"Riscatta la bustina speciale",run:()=>claimAdliSpecialPack()}]:[]
       }),4.4);
       const makeArabnitePack=(id,x,z)=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
@@ -2116,7 +2116,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const phase=x*.17+z*.11,already=arabniteCollectionRef.current.collectedPackIds.includes(id);
         g.visible=!already;arabnitePackMeshes.push({group:g,baseY:.62,phase,id,x,z});
       };
-      [["souq-rooftop",139,-24],["silk-alley",165,-36],["west-arcade",205,-35],["moon-minaret",226,12],["oasis-terrace",224,48],["palm-courtyard",190,64],["garden-steps",154,50],["lantern-gate",140,12],["north-west-terrace",151,-50],["north-market-roof",180,-48],["north-east-arch",214,-46],["eastern-dune",239,-4],["east-lantern",240,22],["south-east-courtyard",232,67],["south-oasis-edge",204,75],["south-garden",172,69],["south-west-gate",133,35],["west-crescent",136,-2]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
+      [["first-pack-01",139,-24],["first-pack-02",165,-36],["first-pack-03",205,-35],["first-pack-04",226,12],["first-pack-05",224,48]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
       [[174,-28],[216,-18],[224,30],[151,39],[185,55]].forEach(([x,z],index)=>{
         const jar=new THREE.Group();arabniteWorld.add(jar);jar.position.set(x,0,z);
@@ -2828,7 +2828,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;const reward={...arabniteCollectionRef.current,coins:Number(arabniteCollectionRef.current.coins??120)+5};arabniteCollectionRef.current=reward;setArabniteCollection(reward);setToast("Barattolo colpito! +5 monete.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;claimArabniteJar(Math.floor(clock.elapsedTime/240),target.jarSlot||1).then(progress=>setArabniteProgress(progress)).catch(error=>setToast(error.message||"Ricompensa del barattolo non disponibile."));setToast("Barattolo colpito! +1 moneta.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
@@ -3134,9 +3134,9 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
          <strong style={{color:"#f1cb7b"}}>Arabnite · Città delle Lanterne</strong>
          <div style={{marginTop:7}}>Un grande tendone ospita l’Arena delle Carte: entra e affronta duelli 1 contro 1.</div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:14,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>🃏 Carte scoperte</span><strong>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length}/64</strong></div>
-         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine da aprire</span><strong>{arabniteCollection.packs}</strong></div>
+         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>✦ Bustine default</span><strong>{arabniteProgress.default_packs||0}</strong></div>
          <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:12,borderRadius:12,background:"#ffffff0b",border:"1px solid #e9c16d66"}}><span>◈ Monete del bazar</span><strong>{arabniteCollection.coins??120}</strong></div>
-         <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Adli custodisce l’Arena delle Carte. Raccogli le bustine sparse in città per ampliare la tua collezione.</div>
+         <div style={{fontSize:11,lineHeight:1.5,color:"#e8d7bd",marginTop:8}}>Adli custodisce il premio dei 64. Raccogli e apri le bustine default per sbloccare gli artwork; le carte vere arrivano solo dal suo premio.</div>
          <button onClick={()=>setPanel("cards")} style={{width:"100%",marginTop:10,border:"1px solid #e9c16d",borderRadius:10,padding:11,background:"linear-gradient(135deg,#76519b,#3f315e)",color:"#fff4dc",fontWeight:900}}>APRI L'ALBUM DEI SOGNATORI</button>
        </div>}
        {panel==="arabnitani"&&<div style={{color:"#f2e4cc"}}>
@@ -3183,10 +3183,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       </div>}
       {panel==="cards"&&<div style={{color:"#f2e4cc"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:9}}>
-          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ROSTER.filter(card=>Number(arabniteCollection.cards[card.id])>0).length} carte scoperte · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>{isAuthenticated ? "Collezione condivisa · carte numerate" : "Accedi per sincronizzare la collezione"}</div></div>
+          <div><strong style={{color:"#f1cb7b"}}>COLLEZIONE</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{arabniteProgress.discovered_artwork_ids.length} artwork sbloccati · 64 disponibili</div><div style={{fontSize:9,color:"#d7c5a5"}}>{isAuthenticated ? "Collezione condivisa · carte numerate" : "Accedi per sincronizzare la collezione"}</div></div>
           <div style={{fontSize:22,fontWeight:1000,color:"#f1cb7b"}}>{arabniteCollection.coins ?? "—"} ✦</div>
         </div>
-        <button disabled={!isAuthenticated} onClick={()=>openArabnitePack("standard")} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:isAuthenticated?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:isAuthenticated?"pointer":"not-allowed",opacity:isAuthenticated?1:.55}}>✦ APRI BUSTINA STANDARD · 30 MONETE · 3 CARTE</button>
+        <button disabled={!isAuthenticated||Number(arabniteProgress.default_packs||0)<1} onClick={()=>openArabnitePack()} style={{width:"100%",border:"1px solid #f0c66e",borderRadius:10,padding:12,background:isAuthenticated?"linear-gradient(135deg,#8d5bb2,#51366f)":"#49404f",color:"#fff5df",fontWeight:1000,cursor:isAuthenticated?"pointer":"not-allowed",opacity:isAuthenticated?1:.55}}>✦ APRI BUSTINA DEFAULT · 1 ARTWORK</button>
+         <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:10,color:"#d7c5a5"}}><span>Doppioni: {arabniteProgress.duplicate_artwork_count||0}</span><span>Premio Adli: {arabniteProgress.adli_reward_claimed?"RISCATTATO":arabniteProgress.discovered_artwork_ids.length+"/64"}</span></div>
         {cardReveal.length>0&&<div style={{marginTop:11,padding:10,borderRadius:12,background:"linear-gradient(135deg,#5b3d76,#27223f)",border:"1px solid #e8c46f"}}>
           <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
@@ -3195,7 +3196,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           </div>)}</div><button onClick={()=>setCardReveal([])} style={{marginTop:8,border:0,background:"transparent",color:"#f1dfbd",fontSize:10,textDecoration:"underline"}}>Nascondi risultato</button>
         </div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
-          {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} onClick={()=>{if(discovered)setSelectedCollectionCard(card.id);}} role={discovered?"button":undefined} tabIndex={discovered?0:undefined} onKeyDown={e=>{if(discovered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelectedCollectionCard(card.id);}}} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:discovered?"pointer":"default"}}>
+          {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=Boolean(card&&arabniteProgress.discovered_artwork_ids.includes(card.id));return <div key={card?.id||"slot-"+index} onClick={()=>{if(discovered)setSelectedCollectionCard(card.id);}} role={discovered?"button":undefined} tabIndex={discovered?0:undefined} onKeyDown={e=>{if(discovered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelectedCollectionCard(card.id);}}} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:discovered?"pointer":"default"}}>
             <div style={{height:92,position:"relative",overflow:"hidden",borderRadius:7,background:"linear-gradient(145deg,#221b35,#5a4773)",border:"1px solid "+(discovered?"#f1cb7b88":"#ffffff20")}}><img src={card.img} alt={card.nome} loading="lazy" onError={(e)=>{e.currentTarget.style.visibility="hidden";}} style={{width:"100%",height:"100%",objectFit:"contain",opacity:discovered?1:.28,filter:discovered?"none":"grayscale(1) brightness(.72)"}}/>{!discovered&&<div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:23,fontWeight:1000,color:"#f1dba9",textShadow:"0 2px 8px #171126"}}>?</div>}</div>
             <strong style={{display:"block",fontSize:9,marginTop:4,overflowWrap:"anywhere"}}>{discovered?card.nome:card?"???":"Carta "+(index+1)}</strong>
             <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span>
