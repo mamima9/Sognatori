@@ -157,6 +157,8 @@ function Amargenta3DContent({ onExit }) {
   const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
   const [selectedOwnedCard, setSelectedOwnedCard] = useState(null);
   const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false });
+  const arabniteProgressRef = useRef(arabniteProgress);
+  useEffect(() => { arabniteProgressRef.current = arabniteProgress; }, [arabniteProgress]);
   const [cardDuelOpen, setCardDuelOpen] = useState(false);
   const [cardDuel, setCardDuel] = useState(null);
   const startCardDuel = (playerCard) => {
@@ -317,6 +319,7 @@ function Amargenta3DContent({ onExit }) {
       if (stored && stored.version === 1 && stored.worlds && typeof stored.worlds === "object") restoredSession = stored;
     } catch { restoredSession = null; }
     let sessionWorlds = restoredSession?.worlds || {};
+     clock.elapsedTime = Math.max(0, Number(restoredSession?.elapsedTime) || 0);
     const player = new THREE.Group();
     const playerMotion = { model:null, arms:[], feet:[] };
     const colliders = [];
@@ -2104,7 +2107,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       removeNpcInteraction("Adli");
       addInteraction("adli-origin-story","Adli · Inventore del Gioco", "Il fondatore del Gioco di Carte dei Sognatori ti dà il benvenuto.",151,7,()=>setDialogue({
         title:"Adli · L'inventore del gioco",
-        text:arabniteProgress.discovered_artwork_ids.length===64 ? (arabniteProgress.adli_reward_claimed ? "«Hai già ricevuto il mio dono. Custodisci con cura le tue tre carte originali!»" : "«Hai completato tutti i 64 artwork! Come promesso, questa bustina speciale contiene tre carte originali registrate nella tua collezione.»") : "«Sblocca tutti i 64 artwork con le bustine default e torna da me: ti consegnerò una bustina speciale con tre carte originali.»",actions:arabniteProgress.discovered_artwork_ids.length===64&&!arabniteProgress.adli_reward_claimed?[{label:"Riscatta la bustina speciale",run:()=>claimAdliSpecialPack()}]:[]
+        text:arabniteProgressRef.current.discovered_artwork_ids.length===64 ? (arabniteProgressRef.current.adli_reward_claimed ? "«Hai già ricevuto il mio dono. Custodisci con cura le tue tre carte originali!»" : "«Hai completato tutti i 64 artwork! Come promesso, questa bustina speciale contiene tre carte originali registrate nella tua collezione.»") : "«Sblocca tutti i 64 artwork con le bustine default e torna da me: ti consegnerò una bustina speciale con tre carte originali.»",actions:arabniteProgressRef.current.discovered_artwork_ids.length===64&&!arabniteProgressRef.current.adli_reward_claimed?[{label:"Riscatta la bustina speciale",run:()=>claimAdliSpecialPack()}]:[]
       }),4.4);
       const makeArabnitePack=(id,x,z)=>{
         const g=new THREE.Group();arabniteWorld.add(g);g.position.set(x,.62,z);
@@ -2118,14 +2121,16 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
       };
       [["first-pack-01",139,-24],["first-pack-02",165,-36],["first-pack-03",205,-35],["first-pack-04",226,12],["first-pack-05",224,48]].forEach(([id,x,z])=>makeArabnitePack(id,x,z));
       // Bersagli di caramella per la skill di Gunvallo: colpirli assegna monete del bazar.
-      [[174,-28],[216,-18],[224,30],[151,39],[185,55]].forEach(([x,z],index)=>{
+      const jarSpawnPoints=[[174,-28],[216,-18],[224,30],[151,39],[185,55]];
+      const makeCandyJar=(x,z,cycleIndex,jarSlot)=>{
         const jar=new THREE.Group();arabniteWorld.add(jar);jar.position.set(x,0,z);
         const glass=mat("#e8b4dc",.24,{transparent:true,opacity:.82,roughness:.25});
         cylinder(.32,.38,.72,glass,jar,0,.42,0,10);
         cylinder(.38,.38,.12,mat("#f2c66d"),jar,0,.82,0,10);
-        const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(index%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
-        arabniteCandyTargets.push({group:jar,x,z,active:true});
-      });
+        const candy=addMesh(new THREE.OctahedronGeometry(.22),mat(jarSlot%2?"#ff7c9d":"#8de1c5"),jar,0,.48,.04);candy.rotation.z=.3;
+        arabniteCandyTargets.push({group:jar,x,z,active:true,cycleIndex,jarSlot});
+      };
+      jarSpawnPoints.forEach(([x,z],index)=>makeCandyJar(x,z,0,index+1));
       arabniteReady=true;
       } catch(error) {
         arabniteReady=false;
@@ -2828,7 +2833,7 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           const shot=candyShots[i];shot.mesh.position.addScaledVector(shot.velocity,dt);shot.life-=dt;
           if(arabniteActive){
             const target=arabniteCandyTargets.find(t=>t.active&&Math.hypot(shot.mesh.position.x-t.x,shot.mesh.position.z-t.z)<1.35&&shot.mesh.position.y<3.2);
-            if(target){target.active=false;target.group.visible=false;claimArabniteJar(Math.floor(clock.elapsedTime/240),target.jarSlot||1).then(progress=>setArabniteProgress(progress)).catch(error=>setToast(error.message||"Ricompensa del barattolo non disponibile."));setToast("Barattolo colpito! +1 moneta.");shot.life=0;}
+            if(target){target.active=false;target.group.visible=false;claimArabniteJar(target.cycleIndex??Math.floor(clock.elapsedTime/240),target.jarSlot||1).then(progress=>setArabniteProgress(progress)).catch(error=>setToast(error.message||"Ricompensa del barattolo non disponibile."));setToast("Barattolo colpito! +1 moneta.");shot.life=0;}
           }
           if(shot.life<=0){shot.mesh.parent?.remove(shot.mesh);shot.mesh.geometry.dispose();shot.mesh.material.dispose();candyShots.splice(i,1);}
         }
@@ -2894,6 +2899,11 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
         const period=Math.floor((clock.elapsedTime%240)/60);
         const moments=["Mattina","Pomeriggio","Tramonto","Notte"];
         if(period!==currentPeriod){currentPeriod=period;setWorldMoment(moments[period]);}
+        const cycleIndex=Math.floor(clock.elapsedTime/240);
+        if(arabniteActive&&cycleIndex>0&&!arabniteCandyTargets.some(target=>target.cycleIndex===cycleIndex)){
+          const [jarX,jarZ]=jarSpawnPoints[(cycleIndex-1)%jarSpawnPoints.length];
+          makeCandyJar(jarX,jarZ,cycleIndex,1);
+        }
         const daylight=period===0?1:period===1?.82:period===2?.48:.22;
         sun.intensity=3.2*daylight;
         sun.position.set(Math.cos(clock.elapsedTime*.025)*38,22+daylight*34,Math.sin(clock.elapsedTime*.025)*32);
