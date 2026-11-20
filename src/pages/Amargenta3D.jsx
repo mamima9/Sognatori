@@ -165,8 +165,7 @@ function Amargenta3DContent({ onExit }) {
     const damage=Math.max(2,(Number(current.playerCard.att)||5)-Math.floor((Number(current.opponentCard.dif)||0)*.28)+Math.floor(Math.random()*4));
     const enemyHp=Math.max(0,current.opponentHp-damage);
     if(enemyHp<=0){
-      const reward={...arabniteCollectionRef.current,coins:Number(arabniteCollectionRef.current.coins??120)+15};
-      arabniteCollectionRef.current=reward;setArabniteCollection(reward);setToast("Vittoria nell'Arena delle Carte · +15 monete");
+      setToast("Vittoria nell'Arena delle Carte!");
       return {...current,opponentHp:0,done:true,log:current.playerCard.nome+" infligge "+damage+" danni: hai vinto il duello!"};
     }
     const counter=Math.max(1,(Number(current.opponentCard.att)||5)-Math.floor((Number(current.playerCard.dif)||0)*.28)+Math.floor(Math.random()*3));
@@ -177,9 +176,9 @@ function Amargenta3DContent({ onExit }) {
   const collectArabnitePack = (id) => {
     const current = arabniteCollectionRef.current;
     if (current.collectedPackIds.includes(id)) return;
-    const next = { ...current, coins: Number(current.coins ?? 120) + 5, packs: current.packs + 1, packInventory: [...(current.packInventory||[]),"standard"], collectedPackIds: [...current.collectedPackIds, id] };
+    const next = { ...current, collectedPackIds: [...current.collectedPackIds, id] };
     arabniteCollectionRef.current = next; setArabniteCollection(next);
-    setToast("Bustina raccolta! Puoi aprirla dall'Album dei Sognatori.");
+    setToast("Hai trovato una bustina del bazar: apri l'Album per acquistarne una con le tue monete.");
   };
   const refreshSharedArabniteCollection = async () => {
     if (!isAuthenticated) return;
@@ -197,11 +196,14 @@ function Amargenta3DContent({ onExit }) {
   const openArabnitePack = async (kind = "standard") => {
     if (!isAuthenticated) { setToast("Accedi per aprire bustine e salvare le carte nella collezione condivisa."); return false; }
     try {
+      const previousCounts = { ...arabniteCollectionRef.current.cards };
       const instances = await openSharedArabnitePack(kind);
       await refreshSharedArabniteCollection();
       const drawn = instances.map((instance) => {
         const card = ROSTER.find((item) => item.id === instance.card_id);
-        return card ? { ...card, rarity: instance.rarity, serial_number: instance.serial_number, isNew: true, copies: 1 } : null;
+        const copies = (Number(previousCounts[instance.card_id]) || 0) + 1;
+        previousCounts[instance.card_id] = copies;
+        return card ? { ...card, rarity: instance.rarity, serial_number: instance.serial_number, isNew: copies === 1, copies } : null;
       }).filter(Boolean);
       setCardReveal(drawn);
       setToast("Bustina aperta · 3 carte assegnate al tuo account!");
@@ -212,24 +214,9 @@ function Amargenta3DContent({ onExit }) {
     }
   };
   const buyArabnitePack = (kind = "standard") => openArabnitePack(kind);
-  const tradeArabniteCard = (npcName) => {
-    const current=arabniteCollectionRef.current, counts={...current.cards};
-    const duplicates=ROSTER.filter(card=>(Number(counts[card.id])||0)>1);
-    if(!duplicates.length){setToast("Per scambiare serve almeno una carta doppia.");return false;}
-    const missing=ROSTER.filter(card=>(Number(counts[card.id])||0)===0);
-    if(!missing.length){setToast("Hai già completato l'album!");return false;}
-    const npcRules={Brama:{wanted:["Dolce","Umano"],bonus:8},Lumen:{wanted:["Luce","Mago","Nuvola"],bonus:12}};
-    const rule=npcRules[npcName]||{wanted:[],bonus:5};
-    const wantedDuplicates=duplicates.filter(card=>rule.wanted.includes(card.tipo));
-    const givePool=wantedDuplicates.length?wantedDuplicates:duplicates;
-    const give=givePool.sort((a,b)=>(Number(a.costo)||0)-(Number(b.costo)||0))[0];
-    const receivePool=missing.filter(card=>rule.wanted.includes(card.tipo));
-    const receive=receivePool.length?receivePool[Math.floor(Math.random()*receivePool.length)]:missing[Math.floor(Math.random()*missing.length)];
-    counts[give.id]-=1;counts[receive.id]=1;
-    const next={...current,cards:counts,coins:Number(current.coins??120)+rule.bonus};
-    arabniteCollectionRef.current=next;setArabniteCollection(next);
-    setCardReveal([{...receive,isNew:true,copies:1}]);
-    setToast(npcName+" ha accettato "+give.nome+" e ti ha dato "+receive.nome+" · +"+rule.bonus+" monete.");return true;
+  const tradeArabniteCard = () => {
+    setToast("Gli scambi con gli altri giocatori si gestiscono dal Mercato online. Gli scambi NPC non sono ancora collegati al database.");
+    return false;
   };
   // La collezione autenticata è persistita su Supabase; non sovrascrivere il dato condiviso in localStorage.
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
