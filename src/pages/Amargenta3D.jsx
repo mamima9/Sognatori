@@ -153,6 +153,7 @@ function Amargenta3DContent({ onExit }) {
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
   const [arabniteInstances, setArabniteInstances] = useState([]);
+  const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
   const [cardDuelOpen, setCardDuelOpen] = useState(false);
   const [cardDuel, setCardDuel] = useState(null);
   const startCardDuel = (playerCard) => {
@@ -3172,32 +3173,31 @@ arabniteScene=new THREE.Scene();arabniteScene.background=new THREE.Color("#17132
           <div style={{fontWeight:900,color:"#f7d887",marginBottom:8}}>ULTIMA SBUSTATA</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7}}>{cardReveal.map((card,index)=><div key={card.id+"-"+index} style={{textAlign:"center",minWidth:0}}>
             <img src={card.img} alt={card.nome} style={{width:"100%",height:76,objectFit:"contain",background:"#ffffff16",borderRadius:8}}/><strong style={{display:"block",fontSize:10,marginTop:4}}>{card.nome}</strong>
-            <span style={{fontSize:9,color:card.rarity==="LEGGENDA"?"#ffd36b":card.rarity==="EPICA"?"#e0a5ff":card.rarity==="RARA"?"#8bd8ff":"#c9c1b7"}}>{card.rarity||"COMUNE"}</span><span style={{display:"block",fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
+            <span style={{display:"block",fontSize:9,color:card.isNew?"#9ff0c0":"#f5d28a"}}>{card.isNew?"NUOVA":"DOPPIONE"} · x{card.copies}</span>
           </div>)}</div><button onClick={()=>setCardReveal([])} style={{marginTop:8,border:0,background:"transparent",color:"#f1dfbd",fontSize:10,textDecoration:"underline"}}>Nascondi risultato</button>
         </div>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginTop:12}}>
-          {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
+          {Array.from({length:64},(_,index)=>{const card=ROSTER[index]||null,copies=card?Number(arabniteCollection.cards[card.id])||0:0,discovered=copies>0;return <div key={card?.id||"slot-"+index} onClick={()=>{if(discovered)setSelectedCollectionCard(card.id);}} role={discovered?"button":undefined} tabIndex={discovered?0:undefined} onKeyDown={e=>{if(discovered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelectedCollectionCard(card.id);}}} style={{minWidth:0,padding:6,borderRadius:9,border:"1px solid "+(discovered?"#d8b46b88":"#ffffff20"),background:discovered?"linear-gradient(160deg,#57466b,#302c43)":"#ffffff08",textAlign:"center",cursor:discovered?"pointer":"default"}}>
             <div style={{height:92,position:"relative",overflow:"hidden",borderRadius:7,background:"linear-gradient(145deg,#221b35,#5a4773)",border:"1px solid "+(discovered?"#f1cb7b88":"#ffffff20")}}><img src={card.img} alt={card.nome} loading="lazy" onError={(e)=>{e.currentTarget.style.visibility="hidden";}} style={{width:"100%",height:"100%",objectFit:"contain",opacity:discovered?1:.28,filter:discovered?"none":"grayscale(1) brightness(.72)"}}/>{!discovered&&<div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:23,fontWeight:1000,color:"#f1dba9",textShadow:"0 2px 8px #171126"}}>?</div>}</div>
             <strong style={{display:"block",fontSize:9,marginTop:4,overflowWrap:"anywhere"}}>{discovered?card.nome:card?"???":"Carta "+(index+1)}</strong>
-            <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span><span style={{display:"block",fontSize:7,color:"#e9c58d",marginTop:2}}>{discovered?(Number(card.costo)>=40?"LEGGENDA":Number(card.costo)>=28?"EPICA":Number(card.costo)>=18?"RARA":"COMUNE"):""}</span>
+            <span style={{display:"block",fontSize:8,color:"#d2c0a5",marginTop:2}}>{discovered?card.tipo+(copies>1?" · x"+copies:""):card?"Da scoprire":"Archivio in arrivo"}</span>
           </div>;})}
         </div>
-        <div style={{marginTop:14,padding:10,borderRadius:11,background:"#171525",border:"1px solid #d8b46b66"}}>
-          <strong style={{display:"block",color:"#f1cb7b",fontSize:11,letterSpacing:1,marginBottom:8}}>LE TUE COPIE · {arabniteInstances.length} CARTE INDIVIDUALI</strong>
-          {arabniteInstances.length===0&&<div style={{fontSize:10,color:"#bfae98"}}>Apri una bustina per ottenere le prime carte numerate.</div>}
-          <div style={{display:"grid",gap:6}}>
-            {arabniteInstances.map((instance)=>{
-              const card=ROSTER.find(item=>item.id===instance.card_id);
-              if(!card)return null;
-              return <div key={instance.id} style={{display:"flex",alignItems:"center",gap:8,padding:7,borderRadius:8,background:"#ffffff0b"}}>
-                <img src={card.img} alt={card.nome} style={{width:38,height:38,objectFit:"contain",borderRadius:6,background:"#ffffff10"}}/>
-                <div style={{flex:1,minWidth:0}}><strong style={{fontSize:10,display:"block"}}>{card.nome}</strong><span style={{fontSize:9,color:"#d7c5a5"}}>Copia unica · {instance.rarity}</span></div>
-                <strong style={{fontSize:11,color:"#f1cb7b",whiteSpace:"nowrap"}}>#{String(instance.serial_number).padStart(3,"0")}/100</strong>
-              </div>;
-            })}
+        {selectedCollectionCard&&(()=>{const selected=ROSTER.find(item=>item.id===selectedCollectionCard);if(!selected)return null;const ownedSerials=new Set(arabniteInstances.filter(item=>item.card_id===selectedCollectionCard).map(item=>Number(item.serial_number)));return <div role="dialog" aria-modal="true" style={{position:"fixed",inset:0,zIndex:300,display:"grid",placeItems:"center",padding:14,background:"rgba(8,7,15,.9)",backdropFilter:"blur(7px)"}}>
+          <div style={{width:"min(760px,100%)",maxHeight:"90vh",overflowY:"auto",padding:14,borderRadius:16,border:"2px solid #e8c46f",background:"linear-gradient(145deg,#342743,#171525)",color:"#f2e4cc"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}><img src={selected.img} alt={selected.nome} style={{width:52,height:52,objectFit:"contain"}}/><div><strong style={{color:"#f1cb7b",fontSize:16}}>{selected.nome}</strong><div style={{fontSize:10,color:"#d7c5a5"}}>{ownedSerials.size} / 100 copie possedute</div></div></div>
+              <button onClick={()=>setSelectedCollectionCard(null)} style={{border:"1px solid #d8b46b",borderRadius:8,padding:"7px 10px",background:"#59417a",color:"#fff3dc",fontWeight:900}}>CHIUDI ✕</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(0,1fr))",gap:7}}>
+              {Array.from({length:100},(_,index)=>{const serial=index+1,owned=ownedSerials.has(serial);return <div key={serial} style={{minWidth:0,padding:5,borderRadius:8,border:"1px solid "+(owned?"#e8c46f":"#ffffff20"),background:owned?"linear-gradient(145deg,#57466b,#302c43)":"#ffffff08",textAlign:"center"}}>
+                <div style={{height:66,display:"grid",placeItems:"center",borderRadius:6,background:"#171525",overflow:"hidden"}}>{owned?<img src={selected.img} alt={selected.nome+" #"+serial} style={{width:"100%",height:"100%",objectFit:"contain"}}/>:<span style={{fontSize:25,fontWeight:1000,color:"#d8c5a6"}}>?</span>}</div>
+                <strong style={{display:"block",fontSize:10,marginTop:4,color:owned?"#f1cb7b":"#a99b88"}}>{serial}/100</strong>
+              </div>;})}
+            </div>
+            <div style={{fontSize:10,color:"#c9b99f",marginTop:10}}>Le caselle con l'artwork sono le copie che possiedi. Le altre restano da scoprire.</div>
           </div>
-        </div>
-        <div style={{fontSize:9,color:"#bfae98",marginTop:9}}>Ogni seriale identifica una copia precisa: anche due carte dello stesso Sognatore hanno numeri e ID differenti.</div>
+        </div>;})()}
       </div>}
       {panel==="team"&&<div>
         <div style={{color:"#d7c5a5",marginBottom:10}}>La squadra di Amargenta è indipendente dall'Avventura. Puoi portare fino a 4 Sognatori; solo quelli in squadra partecipano alle lotte.</div>
