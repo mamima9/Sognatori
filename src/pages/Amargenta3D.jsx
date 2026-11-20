@@ -4,7 +4,8 @@ import AdventureBattle from "@/components/game/AdventureBattle";
 import { ROSTER, ROSTER_AMARGENTA } from "@/lib/sognatoriData";
 import ArabniteOnlineMarket from "@/components/game/ArabniteOnlineMarket";
 import { useAuth } from "@/lib/AuthContext";
-import { loadArabniteCollection, openSharedArabnitePack } from "@/lib/arabniteCards";
+import { loadArabniteCollection } from "@/lib/arabniteCards";
+import { getArabniteProgress, collectDefaultPack, openDefaultPack, buyDefaultPack, sellDuplicateArtwork, claimArabniteJar, claimAdliReward } from "@/lib/arabniteProgress";
 
 // Amargenta ospita esclusivamente le carte numerate dal 40 in avanti.
 const AMARGENTA_ROSTER = ROSTER_AMARGENTA;
@@ -147,13 +148,15 @@ function Amargenta3DContent({ onExit }) {
   const [arabniteCollection, setArabniteCollection] = useState(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem("sognatori:arabnite:cards:v1") || "{}");
-      return { packs: Math.max(0, Number(saved.packs) || 0), packInventory: Array.isArray(saved.packInventory) ? saved.packInventory.filter(p=>["standard","premium","rare"].includes(p)) : Array(Math.max(0,Number(saved.packs)||0)).fill("standard"), coins: Math.max(0, Number(saved.coins ?? 120) || 0), collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: saved.cards && typeof saved.cards === "object" ? saved.cards : {} };
-    } catch { return { packs: 0, packInventory: [], coins: 120, collectedPackIds: [], cards: {} }; }
+      return { packs: 0, packInventory: [], coins: 0, collectedPackIds: Array.isArray(saved.collectedPackIds) ? saved.collectedPackIds : [], cards: {} };
+    } catch { return { packs: 0, packInventory: [], coins: 0, collectedPackIds: [], cards: {} }; }
   });
   const arabniteCollectionRef = useRef(arabniteCollection);
   const [cardReveal, setCardReveal] = useState([]);
   const [arabniteInstances, setArabniteInstances] = useState([]);
   const [selectedCollectionCard, setSelectedCollectionCard] = useState(null);
+  const [selectedOwnedCard, setSelectedOwnedCard] = useState(null);
+  const [arabniteProgress, setArabniteProgress] = useState({ coins: 0, default_packs: 0, discovered_artwork_ids: [], duplicate_artwork_count: 0, adli_reward_claimed: false });
   const [cardDuelOpen, setCardDuelOpen] = useState(false);
   const [cardDuel, setCardDuel] = useState(null);
   const startCardDuel = (playerCard) => {
@@ -175,20 +178,25 @@ function Amargenta3DContent({ onExit }) {
     if(playerHp<=0){setToast("Sfida persa · puoi ritentare nell'Arena");return {...current,opponentHp:enemyHp,playerHp:0,done:true,log:current.opponentCard.nome+" contrattacca per "+counter+" danni. Hai perso il duello."};}
     return {...current,opponentHp:enemyHp,playerHp,log:current.playerCard.nome+" infligge "+damage+" danni. "+current.opponentCard.nome+" contrattacca per "+counter+" danni."};
   });
-  const collectArabnitePack = (id) => {
+  const collectArabnitePack = async (id) => {
     const current = arabniteCollectionRef.current;
     if (current.collectedPackIds.includes(id)) return;
-    const next = { ...current, collectedPackIds: [...current.collectedPackIds, id] };
-    arabniteCollectionRef.current = next; setArabniteCollection(next);
-    setToast("Hai trovato una bustina del bazar: apri l'Album per acquistarne una con le tue monete.");
+    try {
+      await collectDefaultPack(id);
+      const next = { ...current, collectedPackIds: [...current.collectedPackIds, id] };
+      arabniteCollectionRef.current = next; setArabniteCollection(next);
+      setArabniteProgress(await getArabniteProgress());
+      setToast("Bustina default raccolta! Puoi aprirla dall'Album.");
+    } catch (error) { setToast(error.message || "Non è stato possibile raccogliere la bustina."); }
   };
   const refreshSharedArabniteCollection = async () => {
     if (!isAuthenticated) return;
-    const collection = await loadArabniteCollection();
+    const [collection, progress] = await Promise.all([loadArabniteCollection(), getArabniteProgress()]);
+    setArabniteProgress(progress);
     const counts = {};
     collection.cards.forEach((instance) => { counts[instance.card_id] = (Number(counts[instance.card_id]) || 0) + 1; });
     setArabniteInstances(collection.cards || []);
-    const next = { packs: 0, packInventory: [], coins: collection.coins, collectedPackIds: arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
+    const next = { packs: 0, packInventory: [], coins: progress.coins, collectedPackIds: arabniteCollectionRef.current.collectedPackIds || [], cards: counts };
     arabniteCollectionRef.current = next;
     setArabniteCollection(next);
   };
@@ -196,30 +204,40 @@ function Amargenta3DContent({ onExit }) {
     if (!isAuthenticated) return;
     refreshSharedArabniteCollection().catch((error) => setToast(error.message || "Impossibile caricare la collezione condivisa."));
   }, [isAuthenticated]);
-  const openArabnitePack = async (kind = "standard") => {
-    if (!isAuthenticated) { setToast("Accedi per aprire bustine e salvare le carte nella collezione condivisa."); return false; }
+  const openArabnitePack = async () => {
+    if (!isAuthenticated) { setToast("Accedi per salvare la tua collezione."); return false; }
     try {
-      const previousCounts = { ...arabniteCollectionRef.current.cards };
-      const instances = await openSharedArabnitePack(kind);
-      await refreshSharedArabniteCollection();
-      const drawn = instances.map((instance) => {
-        const card = ROSTER.find((item) => item.id === instance.card_id);
-        const copies = (Number(previousCounts[instance.card_id]) || 0) + 1;
-        previousCounts[instance.card_id] = copies;
-        return card ? { ...card, rarity: instance.rarity, serial_number: instance.serial_number, isNew: copies === 1, copies } : null;
-      }).filter(Boolean);
-      setCardReveal(drawn);
-      setToast("Bustina aperta · 3 carte assegnate al tuo account!");
+      const result = await openDefaultPack();
+      setArabniteProgress(result.progress);
+      const card = ROSTER.find((item) => item.id === result.card_id);
+      setCardReveal(card ? [{ ...card, isNew: Boolean(result.is_new), copies: result.is_new ? 1 : 0 }] : []);
+      setToast(result.is_new ? "Nuovo artwork sbloccato nell'album!" : "Doppione trovato: Trix lo acquista per 1 moneta.");
       return true;
-    } catch (error) {
-      setToast(error.message || "Non è stato possibile aprire la bustina.");
-      return false;
-    }
+    } catch (error) { setToast(error.message || "Non è stato possibile aprire la bustina."); return false; }
   };
-  const buyArabnitePack = (kind = "standard") => openArabnitePack(kind);
-  const tradeArabniteCard = () => {
-    setToast("Gli scambi con gli altri giocatori si gestiscono dal Mercato online. Gli scambi NPC non sono ancora collegati al database.");
-    return false;
+  const buyArabnitePack = async () => {
+    if (!isAuthenticated) { setToast("Accedi per acquistare bustine."); return false; }
+    try { setArabniteProgress(await buyDefaultPack()); setToast("Hai acquistato una bustina default per 60 monete."); return true; }
+    catch (error) { setToast(error.message || "Monete insufficienti."); return false; }
+  };
+  const tradeArabniteCard = async () => {
+    if (!isAuthenticated) { setToast("Accedi per gestire i doppioni."); return false; }
+    try { setArabniteProgress(await sellDuplicateArtwork()); setToast("Doppione venduto a Trix · +1 moneta."); return true; }
+    catch (error) { setToast(error.message || "Non hai doppioni da vendere."); return false; }
+  };
+  const claimAdliSpecialPack = async () => {
+    if (!isAuthenticated) { setToast("Accedi per riscattare il premio."); return false; }
+    try {
+      const instances = await claimAdliReward();
+      await refreshSharedArabniteCollection();
+      setCardReveal(instances.map((instance) => {
+        const card = ROSTER.find((item) => item.id === instance.card_id);
+        return card ? { ...card, serial_number: instance.serial_number, isNew: true, copies: 1 } : null;
+      }).filter(Boolean));
+      setArabniteProgress((current) => ({ ...current, adli_reward_claimed: true }));
+      setToast("Adli ti ha consegnato 3 carte originali!");
+      return true;
+    } catch (error) { setToast(error.message || "Non è stato possibile riscattare il premio."); return false; }
   };
   // La collezione autenticata è persistita su Supabase; non sovrascrivere il dato condiviso in localStorage.
   const questActiveRef = useRef(Boolean(savedProgress.questStarted));
