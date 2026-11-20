@@ -61,7 +61,7 @@ as $$
 declare v_user uuid := auth.uid(); v_added integer;
 begin
   if v_user is null then raise exception 'AUTH_REQUIRED'; end if;
-  if p_pickup_id is null or length(p_pickup_id)>100 then raise exception 'INVALID_PICKUP'; end if;
+  if p_pickup_id not in ('first-pack-01','first-pack-02','first-pack-03','first-pack-04','first-pack-05') then raise exception 'INVALID_PICKUP'; end if;
   insert into public.sognatore_arabnite_progress(user_id) values(v_user) on conflict do nothing;
   insert into public.sognatore_arabnite_pack_pickups(user_id,pickup_id) values(v_user,p_pickup_id) on conflict do nothing;
   get diagnostics v_added = row_count;
