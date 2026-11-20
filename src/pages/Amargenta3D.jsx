@@ -185,9 +185,10 @@ function Amargenta3DContent({ onExit }) {
     if (current.collectedPackIds.includes(id)) return;
     try {
       await collectDefaultPack(id);
-      const next = { ...current, collectedPackIds: [...current.collectedPackIds, id] };
+      const progress = await getArabniteProgress();
+      const next = { ...current, collectedPackIds: progress.collected_pack_ids || [...current.collectedPackIds, id] };
       arabniteCollectionRef.current = next; setArabniteCollection(next);
-      setArabniteProgress(await getArabniteProgress());
+      setArabniteProgress(progress);
       setToast("Bustina default raccolta! Puoi aprirla dall'Album.");
     } catch (error) { setToast(error.message || "Non è stato possibile raccogliere la bustina."); }
   };
