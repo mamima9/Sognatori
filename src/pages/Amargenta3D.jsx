@@ -319,6 +319,7 @@ function Amargenta3DContent({ onExit }) {
       if (stored && stored.version === 1 && stored.worlds && typeof stored.worlds === "object") restoredSession = stored;
     } catch { restoredSession = null; }
     let sessionWorlds = restoredSession?.worlds || {};
+     clock.start();
      clock.elapsedTime = Math.max(0, Number(restoredSession?.elapsedTime) || 0);
     const player = new THREE.Group();
     const playerMotion = { model:null, arms:[], feet:[] };
