@@ -1,0 +1,386 @@
+[
+  {
+    "id": "adlimago",
+    "name": "Adlimago",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/adlimago.png"
+  },
+  {
+    "id": "cancucc",
+    "name": "Cancucc",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cancucc.png"
+  },
+  {
+    "id": "eroe",
+    "name": "Eroe",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eroe.png"
+  },
+  {
+    "id": "nuvobetta",
+    "name": "Nuvobetta",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nuvobetta.png"
+  },
+  {
+    "id": "scroccospell",
+    "name": "Scroccospell",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/scroccospell.png"
+  },
+  {
+    "id": "deb",
+    "name": "Deb",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/deb.png"
+  },
+  {
+    "id": "aragostino",
+    "name": "Aragostino",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/aragostino.png"
+  },
+  {
+    "id": "sparkly",
+    "name": "Sparkly",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sparkly.png"
+  },
+  {
+    "id": "nina",
+    "name": "Nina",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nina.png"
+  },
+  {
+    "id": "taomarco",
+    "name": "Taomarco",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/taomarco.png"
+  },
+  {
+    "id": "riwupido",
+    "name": "Riwupido",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwupido.png"
+  },
+  {
+    "id": "fourmori",
+    "name": "Fourmori",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fourmori.png"
+  },
+  {
+    "id": "ginza",
+    "name": "Ginza",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ginza.png"
+  },
+  {
+    "id": "dragociocco",
+    "name": "Dragociocco",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dragociocco.png"
+  },
+  {
+    "id": "tinia",
+    "name": "Tinia",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tinia.png"
+  },
+  {
+    "id": "uesditti",
+    "name": "Uesditti",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/uesditti.png"
+  },
+  {
+    "id": "fierononno",
+    "name": "Fierononno",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fierononno.png"
+  },
+  {
+    "id": "long",
+    "name": "Long",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/long.png"
+  },
+  {
+    "id": "pepe",
+    "name": "Pepe",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pepe.png"
+  },
+  {
+    "id": "cillymbu",
+    "name": "Cillymbu",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cillymbu.png"
+  },
+  {
+    "id": "pequeno",
+    "name": "Pequeno",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pequeno.png"
+  },
+  {
+    "id": "cenere",
+    "name": "Cenere",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cenere.png"
+  },
+  {
+    "id": "icepadel",
+    "name": "Icepadel",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/icepadel.png"
+  },
+  {
+    "id": "pirimar",
+    "name": "Pirimar",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pirimar.png"
+  },
+  {
+    "id": "spinoff",
+    "name": "Spinoff",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/spinoff.png"
+  },
+  {
+    "id": "toasty",
+    "name": "Toasty",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/toasty.png"
+  },
+  {
+    "id": "shoboshi",
+    "name": "Shoboshi",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/shoboshi.png"
+  },
+  {
+    "id": "eriiro",
+    "name": "Eriiro",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eriiro.png"
+  },
+  {
+    "id": "elmas",
+    "name": "Elmas",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/elmas.png"
+  },
+  {
+    "id": "ring-ape",
+    "name": "Ring Ape",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ring-ape.png"
+  },
+  {
+    "id": "chino",
+    "name": "Chino",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/chino.png"
+  },
+  {
+    "id": "ponte",
+    "name": "Ponte",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponte.png"
+  },
+  {
+    "id": "roccota",
+    "name": "Roccota",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/roccota.png"
+  },
+  {
+    "id": "slurpo",
+    "name": "Slurpo",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/slurpo.png"
+  },
+  {
+    "id": "riwi",
+    "name": "Riwi",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwi.png"
+  },
+  {
+    "id": "torosucco",
+    "name": "Torosucco",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/torosucco.png"
+  },
+  {
+    "id": "crunchypat",
+    "name": "Crunchypat",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/crunchypat.png"
+  },
+  {
+    "id": "talamos",
+    "name": "Talamos",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talamos.png"
+  },
+  {
+    "id": "zibelle",
+    "name": "Zibelle",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/zibelle.png"
+  },
+  {
+    "id": "pingcake",
+    "name": "Pingcake",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pingcake.png"
+  },
+  {
+    "id": "lattelo",
+    "name": "Lattelo",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lattelo.png"
+  },
+  {
+    "id": "muccanza",
+    "name": "Muccanza",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/muccanza.png"
+  },
+  {
+    "id": "cardinero",
+    "name": "Cardinero",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cardinero.png"
+  },
+  {
+    "id": "belligonghi-umami",
+    "name": "Belligonghi Umami",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/belligonghi-umami.png"
+  },
+  {
+    "id": "flame",
+    "name": "Flame",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flame.png"
+  },
+  {
+    "id": "cocconn",
+    "name": "Cocconn",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cocconn.png"
+  },
+  {
+    "id": "dodo",
+    "name": "Dodo",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dodo.png"
+  },
+  {
+    "id": "flypork",
+    "name": "Flypork",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flypork.png"
+  },
+  {
+    "id": "patatos",
+    "name": "Patatos",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/patatos.png"
+  },
+  {
+    "id": "tartadino",
+    "name": "Tartadino",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tartadino.png"
+  },
+  {
+    "id": "moci-moci",
+    "name": "Moci Moci",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/moci-moci.png"
+  },
+  {
+    "id": "piocino",
+    "name": "Piocino",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/piocino.png"
+  },
+  {
+    "id": "talpitrippa",
+    "name": "Talpitrippa",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talpitrippa.png"
+  },
+  {
+    "id": "ripple",
+    "name": "Ripple",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ripple.png"
+  },
+  {
+    "id": "cervio",
+    "name": "Cervio",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cervio.png"
+  },
+  {
+    "id": "gunvallo",
+    "name": "Gunvallo",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/gunvallo.png"
+  },
+  {
+    "id": "rullino",
+    "name": "Rullino",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/rullino.png"
+  },
+  {
+    "id": "biglia",
+    "name": "Biglia",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/biglia.png"
+  },
+  {
+    "id": "brama",
+    "name": "Brama",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/brama.png"
+  },
+  {
+    "id": "lumen",
+    "name": "Lumen",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lumen.png"
+  },
+  {
+    "id": "ponce",
+    "name": "Ponce",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponce.png"
+  },
+  {
+    "id": "sanlegno",
+    "name": "Sanlegno",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sanlegno.png"
+  },
+  {
+    "id": "trix",
+    "name": "Trix",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/trix.png"
+  },
+  {
+    "id": "vudele",
+    "name": "Vudele",
+    "description": "REPLACE_WITH_APPROVED_LORE",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/vudele.png"
+  }
+]
