@@ -961,6 +961,12 @@ export function getSognatoreNumero(sognatore, index = -1) {
   return index >= 0 ? index + 1 : 999;
 }
 
+// Roster storico delle modalità competitive: esclusivamente le carte numerate 1–29.
+export const ROSTER_ARCADE = ROSTER.filter((sognatore, index) => {
+  const numero = getSognatoreNumero(sognatore, index);
+  return numero >= 1 && numero <= 29;
+});
+
 export const ROSTER_AVVENTURA = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 1 && getSognatoreNumero(sognatore, index) <= 39);
 export const ROSTER_AMARGENTA = ROSTER.filter((sognatore, index) => { const n = getSognatoreNumero(sognatore, index); return n >= 40 && n <= 54; });
 export const ROSTER_ARABNITE = ROSTER.filter((sognatore, index) => getSognatoreNumero(sognatore, index) >= 55 && getSognatoreNumero(sognatore, index) <= 64);
