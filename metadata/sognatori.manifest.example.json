@@ -1,386 +1,450 @@
 [
   {
     "id": "adlimago",
-    "name": "Adlimago",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/adlimago.png"
+    "name": "Adli",
+    "description": "Adli è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/adlimago.png",
+    "sourceArtworkPath": "public/images/1. ADLI.png"
   },
   {
     "id": "cancucc",
     "name": "Cancucc",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cancucc.png"
+    "description": "Cancucc è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cancucc.png",
+    "sourceArtworkPath": "public/images/2. CANCUCC.png"
   },
   {
     "id": "eroe",
     "name": "Eroe",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eroe.png"
+    "description": "Eroe è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eroe.png",
+    "sourceArtworkPath": "public/images/3. EROE.png"
   },
   {
     "id": "nuvobetta",
     "name": "Nuvobetta",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nuvobetta.png"
+    "description": "Nuvobetta è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nuvobetta.png",
+    "sourceArtworkPath": "public/images/4. NUVOBETTA.png"
   },
   {
     "id": "scroccospell",
     "name": "Scroccospell",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/scroccospell.png"
+    "description": "Scroccospell è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/scroccospell.png",
+    "sourceArtworkPath": "public/images/5.SCROCCOSPELL.jpg"
   },
   {
     "id": "deb",
     "name": "Deb",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/deb.png"
+    "description": "Deb è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/deb.png",
+    "sourceArtworkPath": "public/images/6. DEB.png"
   },
   {
     "id": "aragostino",
     "name": "Aragostino",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/aragostino.png"
+    "description": "Aragostino è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/aragostino.png",
+    "sourceArtworkPath": "public/images/7. ARAGOSTINO.png"
   },
   {
     "id": "sparkly",
     "name": "Sparkly",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sparkly.png"
+    "description": "Sparkly è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sparkly.png",
+    "sourceArtworkPath": "public/images/8. Sparkly.png"
   },
   {
     "id": "nina",
     "name": "Nina",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nina.png"
+    "description": "Nina è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/nina.png",
+    "sourceArtworkPath": "public/images/9. NINA.jpg"
   },
   {
     "id": "taomarco",
-    "name": "Taomarco",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/taomarco.png"
+    "name": "Tao Marco",
+    "description": "Tao Marco è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/taomarco.png",
+    "sourceArtworkPath": "public/images/10 TAOMARCO.png"
   },
   {
     "id": "riwupido",
     "name": "Riwupido",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwupido.png"
+    "description": "Riwupido è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwupido.png",
+    "sourceArtworkPath": "public/images/11. RIWUPIDO.png"
   },
   {
     "id": "fourmori",
     "name": "Fourmori",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fourmori.png"
+    "description": "Fourmori è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fourmori.png",
+    "sourceArtworkPath": "public/images/12-Fourmori.png"
   },
   {
     "id": "ginza",
     "name": "Ginza",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ginza.png"
+    "description": "Ginza è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ginza.png",
+    "sourceArtworkPath": "public/images/13 - GINZA.png"
   },
   {
     "id": "dragociocco",
     "name": "Dragociocco",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dragociocco.png"
+    "description": "Dragociocco è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dragociocco.png",
+    "sourceArtworkPath": "public/images/14 - DRAGO CIOCCO.png"
   },
   {
     "id": "tinia",
     "name": "Tinia",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tinia.png"
+    "description": "Tinia è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tinia.png",
+    "sourceArtworkPath": "public/images/15-tinia.png"
   },
   {
     "id": "uesditti",
     "name": "Uesditti",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/uesditti.png"
+    "description": "Uesditti è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/uesditti.png",
+    "sourceArtworkPath": "public/images/16 - UESDITTI.png"
   },
   {
     "id": "fierononno",
-    "name": "Fierononno",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fierononno.png"
+    "name": "Fiero Nonno",
+    "description": "Fiero Nonno è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/fierononno.png",
+    "sourceArtworkPath": "public/images/17 -FIERONONNO.png"
   },
   {
     "id": "long",
     "name": "Long",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/long.png"
+    "description": "Long è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/long.png",
+    "sourceArtworkPath": "public/images/18 -LONG.png"
   },
   {
     "id": "pepe",
     "name": "Pepe",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pepe.png"
+    "description": "Pepe è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pepe.png",
+    "sourceArtworkPath": "public/images/19  - PEPE.png"
   },
   {
     "id": "cillymbu",
     "name": "Cillymbu",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cillymbu.png"
+    "description": "Cillymbu è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cillymbu.png",
+    "sourceArtworkPath": "public/images/20 - CILLYMBU.png"
   },
   {
     "id": "pequeno",
     "name": "Pequeno",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pequeno.png"
+    "description": "Pequeno è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pequeno.png",
+    "sourceArtworkPath": "public/images/21 - PEQUENO.png"
   },
   {
     "id": "cenere",
     "name": "Cenere",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cenere.png"
+    "description": "Cenere è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cenere.png",
+    "sourceArtworkPath": "public/images/22- CENERE.png"
   },
   {
     "id": "icepadel",
     "name": "Icepadel",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/icepadel.png"
+    "description": "Icepadel è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/icepadel.png",
+    "sourceArtworkPath": "public/images/23- ICEPADEL.png"
   },
   {
     "id": "pirimar",
     "name": "Pirimar",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pirimar.png"
+    "description": "Pirimar è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pirimar.png",
+    "sourceArtworkPath": "public/images/24 - PIRIMAR.png"
   },
   {
     "id": "spinoff",
     "name": "Spinoff",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/spinoff.png"
+    "description": "Spinoff è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/spinoff.png",
+    "sourceArtworkPath": "public/images/25 - SPINOFF.png"
   },
   {
     "id": "toasty",
     "name": "Toasty",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/toasty.png"
+    "description": "Toasty è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/toasty.png",
+    "sourceArtworkPath": "public/images/26 - Toasty.png"
   },
   {
     "id": "shoboshi",
     "name": "Shoboshi",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/shoboshi.png"
+    "description": "Shoboshi è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/shoboshi.png",
+    "sourceArtworkPath": "public/images/27-SHOBOSHI.jpg"
   },
   {
     "id": "eriiro",
     "name": "Eriiro",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eriiro.png"
+    "description": "Eriiro è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/eriiro.png",
+    "sourceArtworkPath": "public/images/30 - ERIIRO.png"
   },
   {
     "id": "elmas",
     "name": "Elmas",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/elmas.png"
+    "description": "Elmas è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/elmas.png",
+    "sourceArtworkPath": "public/images/28 - Elmas.png"
   },
   {
     "id": "ring-ape",
-    "name": "Ring Ape",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ring-ape.png"
+    "name": "Ring-Ape",
+    "description": "Ring-Ape è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ring-ape.png",
+    "sourceArtworkPath": "public/images/29 - RING-APE.png"
   },
   {
     "id": "chino",
     "name": "Chino",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/chino.png"
+    "description": "Chino è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/chino.png",
+    "sourceArtworkPath": "public/images/31 -CHINO.jpg"
   },
   {
     "id": "ponte",
     "name": "Ponte",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponte.png"
+    "description": "Ponte è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponte.png",
+    "sourceArtworkPath": "public/images/32 - PONTE.png"
   },
   {
     "id": "roccota",
-    "name": "Roccota",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/roccota.png"
+    "name": "Roccotà",
+    "description": "Roccotà è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/roccota.png",
+    "sourceArtworkPath": "public/images/33 - ROCCOTà.png"
   },
   {
     "id": "slurpo",
     "name": "Slurpo",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/slurpo.png"
+    "description": "Slurpo è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/slurpo.png",
+    "sourceArtworkPath": "public/images/34- Slurpo.png"
   },
   {
     "id": "riwi",
     "name": "Riwi",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwi.png"
+    "description": "Riwi è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/riwi.png",
+    "sourceArtworkPath": "public/images/35 - RIWI.png"
   },
   {
     "id": "torosucco",
     "name": "Torosucco",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/torosucco.png"
+    "description": "Torosucco è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/torosucco.png",
+    "sourceArtworkPath": "public/images/36 - Torosucco.png"
   },
   {
     "id": "crunchypat",
     "name": "Crunchypat",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/crunchypat.png"
+    "description": "Crunchypat è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/crunchypat.png",
+    "sourceArtworkPath": "public/images/37 - Crunchpat.png"
   },
   {
     "id": "talamos",
     "name": "Talamos",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talamos.png"
+    "description": "Talamos è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talamos.png",
+    "sourceArtworkPath": "public/images/38 -Talamos.png"
   },
   {
     "id": "zibelle",
     "name": "Zibelle",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/zibelle.png"
+    "description": "Zibelle è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/zibelle.png",
+    "sourceArtworkPath": "public/images/40 - Zibelle.webp"
   },
   {
     "id": "pingcake",
     "name": "Pingcake",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pingcake.png"
+    "description": "Pingcake è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/pingcake.png",
+    "sourceArtworkPath": "public/images/39 - Pingcake.png"
   },
   {
     "id": "lattelo",
     "name": "Lattelo",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lattelo.png"
+    "description": "Lattelo è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lattelo.png",
+    "sourceArtworkPath": "public/images/41. LATTELO.png"
   },
   {
     "id": "muccanza",
     "name": "Muccanza",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/muccanza.png"
+    "description": "Muccanza è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/muccanza.png",
+    "sourceArtworkPath": "public/images/42. MUCCANZA.png"
   },
   {
     "id": "cardinero",
     "name": "Cardinero",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cardinero.png"
+    "description": "Cardinero è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cardinero.png",
+    "sourceArtworkPath": "public/images/43- CARDINERO.png"
   },
   {
     "id": "belligonghi-umami",
-    "name": "Belligonghi Umami",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/belligonghi-umami.png"
+    "name": "Belligonghi-umami",
+    "description": "Belligonghi-umami è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/belligonghi-umami.png",
+    "sourceArtworkPath": "public/images/44- BELLIGONGHI UMAMI.png"
   },
   {
     "id": "flame",
     "name": "Flame",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flame.png"
+    "description": "Flame è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flame.png",
+    "sourceArtworkPath": "public/images/45 - FLAME.png"
   },
   {
     "id": "cocconn",
     "name": "Cocconn",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cocconn.png"
+    "description": "Cocconn è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cocconn.png",
+    "sourceArtworkPath": "public/images/46- COCCONN.png"
   },
   {
     "id": "dodo",
     "name": "Dodo",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dodo.png"
+    "description": "Dodo è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/dodo.png",
+    "sourceArtworkPath": "public/images/47 - DODO.jpg"
   },
   {
     "id": "flypork",
     "name": "Flypork",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flypork.png"
+    "description": "Flypork è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/flypork.png",
+    "sourceArtworkPath": "public/images/48 - Flypork.webp"
   },
   {
     "id": "patatos",
     "name": "Patatos",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/patatos.png"
+    "description": "Patatos è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/patatos.png",
+    "sourceArtworkPath": "public/images/49 - Patatos.png"
   },
   {
     "id": "tartadino",
     "name": "Tartadino",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tartadino.png"
+    "description": "Tartadino è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/tartadino.png",
+    "sourceArtworkPath": "public/images/50 -TARTADINO.png"
   },
   {
     "id": "moci-moci",
-    "name": "Moci Moci",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/moci-moci.png"
+    "name": "Moci-Moci",
+    "description": "Moci-Moci è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/moci-moci.png",
+    "sourceArtworkPath": "public/images/51 -Moci-Moci.png"
   },
   {
     "id": "piocino",
     "name": "Piocino",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/piocino.png"
+    "description": "Piocino è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/piocino.png",
+    "sourceArtworkPath": "public/images/52 -Piocino.jpg"
   },
   {
     "id": "talpitrippa",
     "name": "Talpitrippa",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talpitrippa.png"
+    "description": "Talpitrippa è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/talpitrippa.png",
+    "sourceArtworkPath": "public/images/53 - TALPITRIPPA.webp"
   },
   {
     "id": "ripple",
     "name": "Ripple",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ripple.png"
+    "description": "Ripple è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ripple.png",
+    "sourceArtworkPath": "public/images/54-  Ripple.jpg"
   },
   {
     "id": "cervio",
     "name": "Cervio",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cervio.png"
+    "description": "Cervio è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/cervio.png",
+    "sourceArtworkPath": "public/images/55 -CERVIO.jpg"
   },
   {
     "id": "gunvallo",
     "name": "Gunvallo",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/gunvallo.png"
+    "description": "Gunvallo è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/gunvallo.png",
+    "sourceArtworkPath": "public/images/56 - Gunvallo.webp"
   },
   {
     "id": "rullino",
     "name": "Rullino",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/rullino.png"
+    "description": "Rullino è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/rullino.png",
+    "sourceArtworkPath": "public/images/57- Rullino.png"
   },
   {
     "id": "biglia",
     "name": "Biglia",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/biglia.png"
+    "description": "Biglia è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/biglia.png",
+    "sourceArtworkPath": "public/images/58 - BIGLIA.png"
   },
   {
     "id": "brama",
     "name": "Brama",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/brama.png"
+    "description": "Brama è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/brama.png",
+    "sourceArtworkPath": "public/images/59 - BRAMA.png"
   },
   {
     "id": "lumen",
     "name": "Lumen",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lumen.png"
+    "description": "Lumen è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/lumen.png",
+    "sourceArtworkPath": "public/images/60 - LUMEN.png"
   },
   {
     "id": "ponce",
     "name": "Ponce",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponce.png"
+    "description": "Ponce è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/ponce.png",
+    "sourceArtworkPath": "public/images/61 - PONCE.png"
   },
   {
     "id": "sanlegno",
     "name": "Sanlegno",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sanlegno.png"
+    "description": "Sanlegno è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/sanlegno.png",
+    "sourceArtworkPath": "public/images/62 - Sanlegno.png"
   },
   {
     "id": "trix",
     "name": "Trix",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/trix.png"
+    "description": "Trix è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/trix.png",
+    "sourceArtworkPath": "public/images/63 - TRIX.png"
   },
   {
     "id": "vudele",
     "name": "Vudele",
-    "description": "REPLACE_WITH_APPROVED_LORE",
-    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/vudele.png"
+    "description": "Vudele è un Sognatore della collezione Sognatori.",
+    "image": "ipfs://REPLACE_WITH_ARTWORK_CID/vudele.png",
+    "sourceArtworkPath": "public/images/64 - VUDELE.png"
   }
 ]
