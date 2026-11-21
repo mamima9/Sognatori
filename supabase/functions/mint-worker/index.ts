@@ -4,7 +4,6 @@ import {
   createWalletClient,
   http,
   getAddress,
-  defineChain,
   privateKeyToAccount,
 } from "npm:viem@2";
 import { base, baseSepolia } from "npm:viem@2/chains";
@@ -35,7 +34,6 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
-  const contractAddress = getAddress(Deno.env.get("NFT_CONTRACT_ADDRESS")!);
   const account = privateKeyToAccount(Deno.env.get("NFT_MINTER_PRIVATE_KEY") as `0x${string}`);
   const batchSize = Math.min(Math.max(Number((await req.json().catch(() => ({}))).limit ?? 10), 1), 25);
 
@@ -50,6 +48,10 @@ Deno.serve(async (req) => {
       const rpcUrl = Deno.env.get(isMainnet ? "BASE_MAINNET_RPC_URL" : "BASE_SEPOLIA_RPC_URL");
       if (!rpcUrl) throw new Error("MISSING_BASE_RPC_URL");
 
+      const contractEnv = isMainnet ? "NFT_CONTRACT_ADDRESS_BASE_MAINNET" : "NFT_CONTRACT_ADDRESS_BASE_SEPOLIA";
+      const contractAddressValue = Deno.env.get(contractEnv);
+      if (!contractAddressValue) throw new Error(`MISSING_${contractEnv}`);
+      const contractAddress = getAddress(contractAddressValue);
       const publicClient = createPublicClient({ chain, transport: http(rpcUrl) });
       const walletClient = createWalletClient({ account, chain, transport: http(rpcUrl) });
       const tokenId = BigInt(job.token_id);
@@ -100,7 +102,7 @@ Deno.serve(async (req) => {
 
       const { error: finishError } = await supabase.from("nft_mint_jobs").update({
         status: "MINTED",
-        tx_hash: txHash,
+        ...(txHash ? { tx_hash: txHash } : {}),
         minted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_error: null,
