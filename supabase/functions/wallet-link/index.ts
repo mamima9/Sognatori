@@ -99,6 +99,24 @@ Deno.serve(async (req) => {
         .is("consumed_at", null);
       if (consumeError) throw consumeError;
 
+      const { data: existingWallet, error: existingWalletError } = await admin
+        .from("player_wallets")
+        .select("address,chain_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (existingWalletError) throw existingWalletError;
+      if (existingWallet && (existingWallet.address !== address || existingWallet.chain_id !== chainId)) {
+        const { count, error: mintedLookupError } = await admin
+          .from("nft_mint_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "MINTED");
+        if (mintedLookupError) throw mintedLookupError;
+        if ((count ?? 0) > 0) {
+          return response({ error: "WALLET_CHANGE_REQUIRES_NFT_MIGRATION" }, 409);
+        }
+      }
+
       const { error: walletError } = await admin.from("player_wallets").upsert({
         user_id: user.id,
         address,
