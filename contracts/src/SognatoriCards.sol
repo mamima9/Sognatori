@@ -71,6 +71,7 @@ contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable, Re
         returns (uint256 tokenId)
     {
         require(to != address(0), "ZERO_RECIPIENT");
+        if (bytes(_collectionBaseURI).length == 0) revert InvalidBaseURI();
         tokenId = tokenIdFor(definitionIndex, serialNumber);
         if (serialMinted[tokenId]) revert AlreadyMinted();
         if (totalSupply >= MAX_SUPPLY) revert SupplyCapReached();
