@@ -190,3 +190,23 @@ The 64 artwork files and 6,400 JSON metadata files must be reviewed, pinned and 
 - ERC-721: https://eips.ethereum.org/EIPS/eip-721
 - Supabase Edge Functions: https://supabase.com/docs/guides/functions
 - Supabase Database Webhooks: https://supabase.com/docs/guides/database/webhooks
+
+
+## Implemented in the `web3/nft-architecture` branch
+
+The following starter implementation has been committed:
+
+- `contracts/src/SognatoriCards.sol`: ERC-721 with deterministic IDs, 6,400 hard cap, 100 unique serials per definition, role-gated minting and mint pause.
+- `contracts/test/SognatoriCards.t.sol`: Foundry tests for ID mapping, access control, duplicate prevention, invalid ranges, pause behavior and metadata URI.
+- `contracts/script/DeploySognatori.s.sol`: explicit deployment script; it requires deployment environment variables and does not deploy automatically.
+- `supabase/migrations/202611210001_progressive_base_nft_minting.sql`: wallet/challenge/mint-job schema and first-assignment trigger.
+- `supabase/migrations/202611210002_nft_mint_worker_recovery.sql`: recovery of stale worker jobs.
+- `supabase/functions/wallet-link/index.ts`: short-lived signed wallet challenge verification.
+- `supabase/functions/mint-worker/index.ts`: server-side mint worker with deterministic token checks and retry handling.
+- `src/components/web3/WalletNFTPanel.jsx`: wallet linking and mint status panel in the profile.
+- `scripts/generate-nft-metadata.mjs`: generator for all 6,400 JSON metadata files from a reviewed 64-item manifest.
+- `.github/workflows/sognatori-contracts.yml`: Foundry test workflow.
+
+## Not yet activated
+
+This is implementation code, not a live NFT launch. The contract has not been compiled or deployed in this environment. SQL migrations and Edge Functions have not been applied/deployed to the live Supabase project. Wallet provider uses the standard injected EIP-1193 interface; embedded/passkey wallet onboarding and gas sponsorship require a provider decision and configuration. Existing card ownership is intentionally not auto-minted. Marketplace/trade transfer synchronization is not yet enabled. Do not enable Base mainnet until all tests, deployment verification, artwork/legal checks and an independent contract review are complete.
