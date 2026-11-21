@@ -5,13 +5,14 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * Sognatori progressive-mint collection.
  * tokenId = (definitionIndex - 1) * 100 + serialNumber.
  * 64 definitions x 100 copies = 6,400 maximum NFTs.
  */
-contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable {
+contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable, ReentrancyGuard {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint256 public constant MAX_SUPPLY = 6_400;
     uint8 public constant MAX_DEFINITIONS = 64;
@@ -27,6 +28,7 @@ contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable {
     error AlreadyMinted();
     error SupplyCapReached();
     error BaseURIAlreadyConfigured();
+    error InvalidBaseURI();
 
     event SognatoreMinted(
         address indexed recipient,
@@ -39,6 +41,9 @@ contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable {
         ERC721("Sognatori", "SOGN")
     {
         require(admin != address(0) && minter != address(0), "ZERO_ADDRESS");
+        if (bytes(initialBaseURI).length != 0 && bytes(initialBaseURI)[bytes(initialBaseURI).length - 1] != bytes1("/")) {
+            revert InvalidBaseURI();
+        }
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, minter);
         _collectionBaseURI = initialBaseURI;
@@ -62,6 +67,7 @@ contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable {
         external
         onlyRole(MINTER_ROLE)
         whenNotPaused
+        nonReentrant
         returns (uint256 tokenId)
     {
         require(to != address(0), "ZERO_RECIPIENT");
@@ -83,6 +89,9 @@ contract SognatoriCards is ERC721, ERC721URIStorage, AccessControl, Pausable {
     {
         if (totalSupply != 0 || bytes(_collectionBaseURI).length != 0) {
             revert BaseURIAlreadyConfigured();
+        }
+        if (bytes(newBaseURI).length == 0 || bytes(newBaseURI)[bytes(newBaseURI).length - 1] != bytes1("/")) {
+            revert InvalidBaseURI();
         }
         _collectionBaseURI = newBaseURI;
     }
