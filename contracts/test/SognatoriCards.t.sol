@@ -73,6 +73,20 @@ contract SognatoriCardsTest is Test {
     }
 
 
+
+    function testMetadataUriMustBeSetBeforeMint() public {
+        vm.prank(admin);
+        SognatoriCards unconfigured = new SognatoriCards(admin, minter, "");
+        vm.prank(minter);
+        vm.expectRevert(SognatoriCards.InvalidBaseURI.selector);
+        unconfigured.mintCard(player, 1, 1);
+        vm.prank(admin);
+        unconfigured.setCollectionBaseURI("ipfs://metadata/");
+        vm.prank(minter);
+        unconfigured.mintCard(player, 1, 1);
+        assertEq(unconfigured.tokenURI(1), "ipfs://metadata/1.json");
+    }
+
     function testRejectsBaseUriWithoutTrailingSlash() public {
         vm.expectRevert(SognatoriCards.InvalidBaseURI.selector);
         new SognatoriCards(admin, minter, "ipfs://collection");
