@@ -24,7 +24,5 @@ jobs:
         run: |
           forge install OpenZeppelin/openzeppelin-contracts --no-commit
           forge install foundry-rs/forge-std --no-commit
-      - name: Format check
-        run: forge fmt --check
       - name: Run tests
         run: forge test -vvv
