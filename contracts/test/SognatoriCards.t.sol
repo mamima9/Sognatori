@@ -72,6 +72,12 @@ contract SognatoriCardsTest is Test {
         assertEq(token.ownerOf(id), address(0xD00D));
     }
 
+
+    function testRejectsBaseUriWithoutTrailingSlash() public {
+        vm.expectRevert(SognatoriCards.InvalidBaseURI.selector);
+        new SognatoriCards(admin, minter, "ipfs://collection");
+    }
+
     function testBaseUriCannotChangeAfterFirstMint() public {
         vm.prank(minter);
         token.mintCard(player, 1, 1);
