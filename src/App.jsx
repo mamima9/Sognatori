@@ -25,6 +25,7 @@ import SognatoriStats from '@/pages/SognatoriStats';
 import TestRandom from '@/pages/TestRandom';
 import Profile from '@/pages/Profile';
 import Avventura from '@/pages/Avventura';
+import CooperativeCity14 from '@/pages/CooperativeCity14';
 import Amargenta3D from '@/pages/Amargenta3D';
 import TelegramAuthGate from '@/components/TelegramAuthGate';
 
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
            <Route path="/profilo" element={<Profile />} />
         </Route>
         <Route path="/avventura" element={<Avventura />} />
+        <Route path="/avventura-coop" element={<CooperativeCity14 />} />
         <Route path="/amargenta-3d" element={isArabnitePublicEntry || canAccessAmargenta3D ? <Amargenta3D /> : (
           <div className="min-h-screen flex items-center justify-center bg-[#18221e] text-[#f4ead8] p-6">
             <div className="max-w-md text-center rounded-2xl border border-[#d8b77d66] bg-[#243229] p-8 shadow-2xl">
