@@ -1,97 +1,25 @@
-import React, { useMemo, useState } from "react";
-import { ROSTER } from "@/lib/sognatoriData";
-
-/**
- * Prototype for City 14 cooperative adventure.
- * Shared round model: 3 actions per player; party size 2–5.
- * This is a local prototype, not online room synchronization.
- */
-const STARTERS = ROSTER.slice(0, 29);
-const STORY = [
-  { name: "Piazza delle Lanterne", text: "Le lanterne della città si stanno spegnendo. Gli abitanti raccontano di una presenza sotto la città.", type: "town" },
-  { name: "Bosco dei Sussurri", text: "Piccoli mostri custodiscono i sentieri. Tra le radici si intravedono tracce di un Sognatore disperso.", type: "encounter" },
-  { name: "Archivio Sommerso", text: "Rune, stanze mutevoli e un enigma: le porte reagiscono alle azioni coordinate della squadra.", type: "dungeon" },
-  { name: "Sala del Sigillo", text: "Il sigillo si rompe. La creatura che alimentava il buio emerge per lo scontro finale.", type: "boss" },
-];
-const ACTIONS = ["Esplora", "Parla", "Attacca", "Proteggi", "Switch", "Allenati", "Scambia"];
-const css = { background:"#17241f", panel:"#26372e", gold:"#d6b77a", text:"#f4ead8", muted:"#b8c4b5" };
-
-export default function CooperativeCity14() {
-  const [partySize,setPartySize] = useState(2);
-  const [starters,setStarters] = useState([]);
-  const [players,setPlayers] = useState([]);
-  const [step,setStep] = useState(0);
-  const [round,setRound] = useState(1);
-  const [actions,setActions] = useState({});
-  const [log,setLog] = useState(["Benvenuti nella città cooperativa. Scegliete il Sognatore iniziale per ogni partecipante."]);
-  const [recruited,setRecruited] = useState([]);
-  const [bossHp,setBossHp] = useState(100);
-  const [bossStarted,setBossStarted] = useState(false);
-
-  const available = useMemo(()=>STARTERS.filter(s=>!starters.includes(s.id)),[starters]);
-  const addStarter = (id) => {
-    if(starters.length>=partySize || starters.includes(id)) return;
-    const s=STARTERS.find(x=>x.id===id);
-    setStarters(v=>[...v,id]);
-    setPlayers(v=>[...v,{starter:s,active:s,bench:null}]);
-  };
-  const ready = starters.length===partySize;
-  const spent = (p)=>actions[p]||0;
-  const perform = (p,action) => {
-    if(spent(p)>=3) return;
-    const player=players[p];
-    if(action==="Switch" && !player.bench) { setLog(v=>["Serve un Sognatore in panchina per effettuare lo switch.",...v]); return; }
-    if(action==="Scambia" && p===0 && !players.some(x=>x.bench)) { setLog(v=>["Prima reclutate un Sognatore di panchina. Lo scambio non può coinvolgere gli iniziali.",...v]); return; }
-    setActions(v=>({...v,[p]:spent(p)+1}));
-    if(action==="Attacca" && bossStarted) setBossHp(h=>Math.max(0,h-8));
-    setLog(v=>[`P${p+1} — ${action} (${player.active.nome})`,...v].slice(0,12));
-  };
-  const recruit = () => {
-    const candidate=ROSTER.find(s=>!starters.includes(s.id)&&!players.some(p=>p.bench?.id===s.id)&&!recruited.includes(s.id));
-    if(!candidate) { setLog(v=>["Non ci sono altri Sognatori disponibili nel prototipo.",...v]);return; }
-    const owner=players.findIndex(p=>!p.bench);
-    if(owner<0){setLog(v=>["Ogni giocatore ha già una panchina.",...v]);return;}
-    setPlayers(v=>v.map((p,i)=>i===owner?{...p,bench:candidate}:p));
-    setRecruited(v=>[...v,candidate.id]);
-    setLog(v=>[`${candidate.nome} si unisce alla panchina di P${owner+1}!`,...v]);
-  };
-  const switchPlayer = (p) => {
-    setPlayers(v=>v.map((x,i)=>i===p&&x.bench?{...x,active:x.bench,bench:x.active}:x));
-    perform(p,"Switch");
-  };
-  const advance = () => {
-    setStep(s=>Math.min(STORY.length-1,s+1));
-    setActions({});
-    setRound(r=>r+1);
-    setLog(v=>["La squadra avanza alla fase successiva.",...v]);
-    if(step>=2)setBossStarted(true);
-  };
-  const reset = () => {setStarters([]);setPlayers([]);setStep(0);setRound(1);setActions({});setRecruited([]);setBossHp(100);setBossStarted(false);setLog(["Nuova spedizione iniziata."]);};
-
-  return <main style={{minHeight:"100vh",background:css.background,color:css.text,padding:"24px",fontFamily:"inherit"}}>
-    <div style={{maxWidth:1150,margin:"0 auto"}}>
-      <header style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",gap:16,alignItems:"center"}}>
-        <div><div style={{letterSpacing:4,fontSize:12,color:css.gold}}>SOGNATORI • COOPERATIVA</div><h1 style={{fontSize:34,fontWeight:900,margin:"6px 0"}}>Città XIV — Lumequieto</h1><p style={{color:css.muted}}>Una storia condivisa per 2–5 giocatori · 3 azioni a testa per round</p></div>
-        <button onClick={reset} style={btn(css.gold)}>Nuova spedizione</button>
-      </header>
-      <section style={panel}><h2 style={h2}>1 · Squadra</h2><label>Numero giocatori <select value={partySize} disabled={starters.length>0} onChange={e=>setPartySize(Number(e.target.value))} style={selectStyle}>{[2,3,4,5].map(n=><option key={n}>{n}</option>)}</select></label>
-      {!ready&&<p style={{color:css.muted}}>Scegliete {partySize} Sognatori iniziali dal roster dei primi 29 ({starters.length}/{partySize}).</p>}
-      <div style={grid}>{available.map(s=><button key={s.id} onClick={()=>addStarter(s.id)} style={cardButton}><img src={s.img} alt="" style={{width:64,height:64,objectFit:"contain"}}/><strong>{s.nome}</strong><small>{s.tipo||s.fazione}</small></button>)}</div>
-      {players.length>0&&<div style={grid}>{players.map((p,i)=><div key={p.starter.id} style={miniPanel}><strong>Giocatore {i+1}</strong><div style={{display:"flex",gap:10,alignItems:"center"}}><img src={p.active.img} alt="" style={{width:58,height:58,objectFit:"contain"}}/><div><b>{p.active.nome}</b><div style={{color:css.muted,fontSize:12}}>Titolare attivo</div></div></div><div style={{marginTop:8,color:css.muted}}>Panchina: {p.bench?.nome||"Da reclutare"}</div></div>)}</div>}
-      </section>
-      {ready&&<section style={panel}><h2 style={h2}>2 · Round {round} — {STORY[step].name}</h2><p>{STORY[step].text}</p><div style={{padding:12,border:"1px solid #536859",borderRadius:12,margin:"12px 0"}}><strong>Azioni rimaste</strong><div style={grid}>{players.map((p,i)=><div key={i} style={miniPanel}><strong>Giocatore {i+1} · {p.active.nome}</strong><p>{3-spent(i)} / 3 disponibili</p><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{ACTIONS.map(a=><button key={a} disabled={spent(i)>=3} onClick={()=>a==="Switch"?switchPlayer(i):perform(i,a)} style={btn(spent(i)>=3?"#526056":css.gold)}>{a}</button>)}</div></div>)}</div></div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:8}}><button onClick={recruit} style={btn("#91c99c")}>Recluta Sognatore di panchina</button><button onClick={advance} disabled={players.some((_,i)=>spent(i)<3)} style={btn(css.gold)}>{step===STORY.length-1?"Completa la storia":"Avanza fase"}</button></div>
-        {bossStarted&&<div style={{marginTop:16}}><strong>Boss finale · Sigillo Vivente</strong><div style={{height:14,background:"#492f31",borderRadius:8,overflow:"hidden",marginTop:6}}><div style={{height:"100%",width:bossHp+"%",background:"#e87962",transition:"width .2s"}}/></div><small>HP {bossHp}/100 · Attacco prototipo: 8 danni</small>{bossHp===0&&<p style={{color:"#a8e0ac",fontWeight:800}}>Boss sconfitto! La squadra ha completato la storia.</p>}</div>}
-      </section>}
-      <section style={panel}><h2 style={h2}>Registro dell'avventura</h2><div style={{maxHeight:220,overflow:"auto"}}>{log.map((entry,i)=><div key={i} style={{padding:"6px 0",borderBottom:"1px solid #ffffff14"}}>{entry}</div>)}</div></section>
-      <p style={{fontSize:12,color:css.muted}}>Prototipo locale UI: le azioni, la squadra e il progresso sono gestiti nel browser. Multiplayer online sincronizzato, dungeon grafico e persistenza server saranno fasi successive.</p>
-    </div>
-  </main>;
-}
-const panel={background:"#26372e",border:"1px solid #536859",borderRadius:18,padding:18,marginTop:18};
-const miniPanel={background:"#17241f",border:"1px solid #465b4c",borderRadius:12,padding:12};
-const h2={fontSize:20,fontWeight:800,color:"#d6b77a",marginTop:0};
-const grid={display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,marginTop:12};
-const cardButton={background:"#17241f",color:"#f4ead8",border:"1px solid #536859",borderRadius:12,padding:10,display:"flex",alignItems:"center",gap:8,flexDirection:"column",cursor:"pointer"};
-const selectStyle={marginLeft:10,background:"#17241f",color:"#f4ead8",padding:8,borderRadius:8};
+import React,{useMemo,useState} from "react";
+import {ROSTER} from "@/lib/sognatoriData";
+const STARTERS=ROSTER.slice(0,29),HP=20,STORY=[["Piazza delle Lanterne","Raccogliete indizi nella piazza."],["Bosco dei Sussurri","Creature e tracce del Sognatore disperso."],["Archivio Sommerso","Rune e sentinella proteggono il sigillo."],["Sala del Sigillo","Il Sigillo Vivente affronta la squadra."]],A=["Esplora","Parla","Attacca","Proteggi","Switch","Allenati","Scambia"],C={bg:"#17241f",panel:"#26372e",gold:"#d6b77a",text:"#f4ead8",muted:"#b8c4b5"};
+const fresh=s=>({starter:s,active:s,bench:null,hp:HP,benchHp:HP,train:0,guard:false});
+export default function CooperativeCity14(){const[n,setN]=useState(2),[ids,setIds]=useState([]),[ps,setPs]=useState([]),[stage,setStage]=useState(0),[round,setRound]=useState(1),[acts,setActs]=useState({}),[log,setLog]=useState(["Benvenuti a Lumequieto. Scegliete i vostri Sognatori."]),[recr,setRecr]=useState([]),[enemy,setEnemy]=useState(null),[flags,setFlags]=useState({}),[won,setWon]=useState(false),[lost,setLost]=useState(false);
+const avail=useMemo(()=>STARTERS.filter(s=>!ids.includes(s.id)),[ids]),ready=ids.length===n,full=ready&&ps.every((_,i)=>(acts[i]||0)>=3),say=m=>setLog(v=>[m,...v].slice(0,30));
+const add=id=>{if(ids.length>=n||ids.includes(id))return;let s=STARTERS.find(x=>x.id===id);setIds(v=>[...v,id]);setPs(v=>[...v,fresh(s)])};
+const recruit=i=>{if(ps[i]?.bench)return;let s=ROSTER.find(x=>!ids.includes(x.id)&&!ps.some(p=>p.bench?.id===x.id)&&!recr.includes(x.id));if(!s)return say("Nessun Sognatore disponibile.");setPs(v=>v.map((p,j)=>j===i?{...p,bench:s}:p));setRecr(v=>[...v,s.id]);say(s.nome+" reclutato in panchina P"+(i+1));};
+const spawn=(name,hp)=>{setEnemy({name,hp,max:hp});say("⚔️ "+name+" appare!")};
+const act=(i,a)=>{let p=ps[i];if(!p||(acts[i]||0)>=3||won||lost)return;
+if(a==="Switch"){if(!p.bench)return say("Serve un Sognatore in panchina.");setPs(v=>v.map((x,j)=>j===i?{...x,active:x.bench,bench:x.active,hp:x.benchHp,benchHp:x.hp}:x));say("Switch effettuato P"+(i+1));}
+else if(a==="Esplora"){if(stage===0)setFlags(v=>({...v,clue:true}));if(stage===1){setFlags(v=>({...v,forest:true}));if(!enemy)spawn("Custode delle Radici",20+n*5)}if(stage===2){setFlags(v=>({...v,archive:true}));if(!enemy)spawn("Sentinella dell'Archivio",30+n*6)}say("P"+(i+1)+" esplora.");}
+else if(a==="Parla")say("P"+(i+1)+" raccoglie un indizio dagli abitanti.");
+else if(a==="Attacca"){if(!enemy)return say("Non c'è un nemico: esplorate.");if(p.hp<=0)return say("Sognatore esausto: recupero o switch.");let d=Math.max(2,Math.floor((p.active.att||1)/2)+2+p.train);setEnemy(e=>({...e,hp:Math.max(0,e.hp-d)}));say(p.active.nome+" infligge "+d+" danni.")}
+else if(a==="Proteggi"){setPs(v=>v.map((x,j)=>j===i?{...x,guard:true}:x));say(p.active.nome+" si protegge.");}
+else if(a==="Allenati"){setPs(v=>v.map((x,j)=>j===i?{...x,train:x.train+1}:x));say(p.active.nome+" ottiene +1 attacco bonus.");}
+else if(a==="Scambia"){let o=ps.findIndex((x,j)=>j!==i&&x.bench);if(o<0)return say("Scambia richiede due panchine; gli starter sono protetti.");setPs(v=>v.map((x,j)=>j===i?{...x,bench:v[o].bench,benchHp:v[o].benchHp}:j===o?{...x,bench:v[i].bench,benchHp:v[i].benchHp}:x));say("Panchine scambiate tra P"+(i+1)+" e P"+(o+1)+".")}
+setActs(v=>({...v,[i]:(v[i]||0)+1}));};
+const recover=i=>{if((acts[i]||0)>=3)return;setPs(v=>v.map((p,j)=>j===i?{...p,hp:Math.min(HP,p.hp+5),guard:false}:p));setActs(v=>({...v,[i]:(v[i]||0)+1}));say("P"+(i+1)+" recupera 5 HP.")};
+const end=()=>{if(!full)return;if(enemy&&enemy.hp>0){let d=5+Math.floor(n*1.5);setPs(v=>v.map(p=>({...p,hp:Math.max(0,p.hp-(p.guard?Math.ceil(d/2):d)),guard:false})));say(enemy.name+" attacca la squadra.")}setActs({});setRound(x=>x+1);if(ps.every(p=>p.hp<=0&&(!p.bench||p.benchHp<=0)))setLost(true);else say("Round terminato; azioni ripristinate.")};
+const advance=()=>{if(!full)return;if(stage===0&&!flags.clue)return say("Esplorate la piazza per raccogliere l'indizio.");if(stage===1&&(!flags.forest||enemy?.hp>0))return say("Esplorate e sconfiggete il custode.");if(stage===2&&(!flags.archive||enemy?.hp>0))return say("Attivate la runa e sconfiggete la sentinella.");if(stage===3){if(enemy?.hp>0)return say("Il boss è ancora in piedi.");setWon(true);return say("🏆 Sigillo Vivente sconfitto! Lumequieto è salva.")}let s=stage+1;setStage(s);setActs({});setRound(x=>x+1);setEnemy(null);if(s===3)spawn("Sigillo Vivente",70+n*15);say("Avanzate: "+STORY[s][0])};
+const reset=()=>{setIds([]);setPs([]);setStage(0);setRound(1);setActs({});setRecr([]);setEnemy(null);setFlags({});setWon(false);setLost(false);setLog(["Nuova spedizione."])};
+return <main style={{minHeight:"100vh",background:C.bg,color:C.text,padding:24}}><div style={{maxWidth:1150,margin:"auto"}}><header style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap"}}><div><small style={{letterSpacing:4,color:C.gold}}>SOGNATORI • COOPERATIVA</small><h1>Città XIV — Lumequieto</h1><p>2–5 giocatori · 3 azioni per round</p></div><button onClick={reset} style={btn(C.gold)}>Nuova spedizione</button></header><section style={panel}><h2>Squadra</h2><label>Giocatori <select disabled={ids.length>0} value={n} onChange={e=>setN(+e.target.value)}>{[2,3,4,5].map(x=><option key={x} value={x}>{x}</option>)}</select></label>{!ready&&<p>Scegliete {n} starter tra i primi 29 ({ids.length}/{n}).</p>}<div style={grid}>{avail.map(s=><button key={s.id} onClick={()=>add(s.id)} style={card}><img src={s.img} alt="" width="64"/><b>{s.nome}</b><small>{s.tipo}</small></button>)}</div><div style={grid}>{ps.map((p,i)=><div style={mini} key={p.starter.id}><b>P{i+1} · {p.active.nome}</b><p>HP {p.hp}/{HP} · training +{p.train}</p><small>Panchina: {p.bench?.nome||"da reclutare"} {p.bench&&" · "+p.benchHp+" HP"}</small></div>)}</div></section>{ready&&<section style={panel}><h2>Round {round} — {STORY[stage][0]}</h2><p>{STORY[stage][1]}</p>{enemy&&<div style={mini}><b>⚔️ {enemy.name}</b><div style={{height:14,background:"#492f31",borderRadius:8,marginTop:8}}><div style={{height:"100%",width:Math.max(0,100*enemy.hp/enemy.max)+"%",background:"#e87962",borderRadius:8}}/></div><small>HP {enemy.hp}/{enemy.max}</small></div>}<div style={grid}>{ps.map((p,i)=><div style={mini} key={i}><b>P{i+1} · {p.active.nome}</b><p>{3-(acts[i]||0)} azioni · HP {p.hp}/{HP}</p><div style={{display:"flex",flexWrap:"wrap",gap:5}}>{A.map(a=><button key={a} disabled={(acts[i]||0)>=3||won||lost} style={btn(C.gold)} onClick={()=>act(i,a)}>{a}</button>)}<button disabled={(acts[i]||0)>=3} style={btn("#91c99c")} onClick={()=>recover(i)}>Recupero</button></div><button disabled={!!p.bench} style={btn("#91c99c")} onClick={()=>recruit(i)}>Recluta panchina</button></div>)}</div><div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:12}}><button disabled={!full||won||lost} style={btn("#9eb5e4")} onClick={end}>Fine round / attacco nemico</button><button disabled={!full||won||lost} style={btn(C.gold)} onClick={advance}>{stage===3?"Concludi avventura":"Avanza fase"}</button></div>{won&&<h3 style={{color:"#a8e0ac"}}>🏆 Lumequieto è salva!</h3>}{lost&&<h3 style={{color:"#e7a08b"}}>Spedizione fallita.</h3>}</section>}<section style={panel}><h2>Registro</h2><div style={{maxHeight:240,overflow:"auto"}}>{log.map((m,i)=><div key={i} style={{padding:"6px 0",borderBottom:"1px solid #ffffff14"}}>{m}</div>)}</div></section><small style={{color:C.muted}}>Fase 1: turni, HP, nemici, protezione, recupero, switch, training, panchine, avanzamento e vittoria. Multiplayer e salvataggi server sono fasi successive.</small></div></main>}
+const panel={background:"#26372e",border:"1px solid #536859",borderRadius:18,padding:18,marginTop:18},mini={background:"#17241f",border:"1px solid #465b4c",borderRadius:12,padding:12},grid={display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,marginTop:12},card={background:"#17241f",color:"#f4ead8",border:"1px solid #536859",borderRadius:12,padding:10,display:"flex",alignItems:"center",gap:8,flexDirection:"column",cursor:"pointer"};
 function btn(bg){return {background:bg,color:"#17241f",border:0,borderRadius:10,padding:"9px 12px",fontWeight:800,cursor:"pointer"}}
