@@ -15,6 +15,9 @@ export default function Lumequieto3D({stage=0,onLocationChange=()=>{}}){
   const path=new THREE.Mesh(new THREE.PlaneGeometry(7,58),mat("#c3a477"));path.rotation.x=-Math.PI/2;path.position.set(0,.025,-15);scene.add(path);
   const trunk=mat("#765036"),leaf=mat("#42834b"),leaf2=mat("#6ca45c"),stone=mat("#9a9885"),roof=mat("#8b5540");
   const colliders=[];
+  const lanterns=[];
+  for(let i=0;i<10;i++){const x=(i%2?-1:1)*(5.5+(i%3)*1.1),z=-4-i*3.2;const post=new THREE.Mesh(new THREE.CylinderGeometry(.08,.11,2.2,6),trunk);post.position.set(x,1.1,z);scene.add(post);const lamp=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),new THREE.MeshBasicMaterial({color:'#f7d78a'}));lamp.position.set(x,2.25,z);scene.add(lamp);lanterns.push(lamp);const halo=new THREE.PointLight('#ffd68b',.5,5);halo.position.copy(lamp.position);scene.add(halo)}
+  for(let i=0;i<35;i++){const flower=new THREE.Mesh(new THREE.SphereGeometry(.08,6,5),new THREE.MeshStandardMaterial({color:['#f4d88b','#f2a8a0','#c8b5e8'][i%3]}));flower.position.set(((i*7)%27)-13,.12,-((i*11)%34)-2);scene.add(flower)}
   function tree(x,z,s=1){const t=new THREE.Mesh(new THREE.CylinderGeometry(.18*s,.28*s,1.4*s,7),trunk);t.position.set(x,.7*s,z);t.castShadow=true;scene.add(t);for(let i=0;i<3;i++){const c=new THREE.Mesh(new THREE.ConeGeometry((1.05-i*.16)*s,1.55*s,8),i%2?leaf:leaf2);c.position.set(x,(1.45+i*.55)*s,z);c.castShadow=true;scene.add(c)}colliders.push({x,z,r:1.05*s})}
   for(let i=0;i<48;i++){const x=((i*17)%43)-21,z=-((i*13)%48)-3;if(Math.abs(x)>5)tree(x,z,.65+((i%4)*.15))}
   function building(x,z){const b=new THREE.Mesh(new THREE.BoxGeometry(4,3,4),mat("#e4d1a6"));b.position.set(x,1.5,z);b.castShadow=true;scene.add(b);const r=new THREE.Mesh(new THREE.ConeGeometry(3.1,1.8,4),roof);r.rotation.y=Math.PI/4;r.position.set(x,3.7,z);r.castShadow=true;scene.add(r);const door=new THREE.Mesh(new THREE.BoxGeometry(.8,1.7,.12),mat("#553d2b"));door.position.set(x,.85,z+2.05);scene.add(door);colliders.push({x,z,r:2.8})}
@@ -31,7 +34,7 @@ export default function Lumequieto3D({stage=0,onLocationChange=()=>{}}){
   avatar.add(rig);avatar.position.set(0,0,3);scene.add(avatar);
   // Friendly villager with floating name marker
   const npc=new THREE.Group();const nbody=new THREE.Mesh(new THREE.CapsuleGeometry(.36,.7,4,8),mat("#d08b55"));nbody.position.y=1;const nhead=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),mat("#efc69e"));nhead.position.y=1.8;const hat=new THREE.Mesh(new THREE.ConeGeometry(.48,.7,8),mat("#664c82"));hat.position.y=2.2;npc.add(nbody,nhead,hat);npc.position.set(3,0,-5);scene.add(npc);
-  const marker=new THREE.Mesh(new THREE.OctahedronGeometry(.22),new THREE.MeshBasicMaterial({color:"#f5d77a"}));marker.position.set(3,3,-5);scene.add(marker);
+  const marker=new THREE.Mesh(new THREE.OctahedronGeometry(.22),new THREE.MeshBasicMaterial({color:"#f5d77a"}));marker.position.set(3,3,-5);scene.add(marker);const npcGlow=new THREE.PointLight('#d6b77a',1.1,6);npcGlow.position.set(3,1.8,-5);scene.add(npcGlow);
   const rocks=[];for(let i=0;i<18;i++){const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.4+(i%3)*.18,0),stone);rock.position.set(((i*9)%34)-17,.25,-((i*7)%36)-5);rock.castShadow=true;scene.add(rock)}
   camera.position.set(0,5,9);camera.lookAt(avatar.position);
   let keys={},move={x:0,z:0},running=true,last=0,walk=0,interact=false;
@@ -39,10 +42,10 @@ export default function Lumequieto3D({stage=0,onLocationChange=()=>{}}){
   window.addEventListener("keydown",keydown);window.addEventListener("keyup",keyup);
   const resize=()=>{if(!host.clientWidth)return;camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();renderer.setSize(host.clientWidth,host.clientHeight)};
   window.addEventListener("resize",resize);
-  const animate=(t)=>{if(!running)return;requestAnimationFrame(animate);const dt=Math.min((t-last)/1000,.05)||0;last=t;marker.position.y=2.85+Math.sin(t*.0025)*.18;marker.rotation.y+=dt*1.5;
+  const animate=(t)=>{if(!running)return;requestAnimationFrame(animate);const dt=Math.min((t-last)/1000,.05)||0;last=t;marker.position.y=2.85+Math.sin(t*.0025)*.18;marker.rotation.y+=dt*1.5;lanterns.forEach((l,i)=>{l.material.color.setHex(Math.sin(t*.003+i)*.05>0?0xffe2a2:0xf7d78a)});
    let dx=move.x+(keys.a||keys.arrowleft?-1:0)+(keys.d||keys.arrowright?1:0),dz=move.z+(keys.w||keys.arrowup?-1:0)+(keys.s||keys.arrowdown?1:0);const len=Math.hypot(dx,dz);
    if(len>0){dx/=len;dz/=len;let nx=avatar.position.x+dx*5*dt,nz=avatar.position.z+dz*5*dt;const blocked=colliders.some(c=>Math.hypot(nx-c.x,nz-c.z)<c.r+.45);if(!blocked){avatar.position.x=THREE.MathUtils.clamp(nx,-18,18);avatar.position.z=THREE.MathUtils.clamp(nz,2,-39)}avatar.rotation.y=Math.atan2(dx,dz);walk+=dt*9;rig.position.y=Math.sin(walk)*.07;armL.rotation.x=Math.sin(walk)*.65;armR.rotation.x=-Math.sin(walk)*.65;setHint(avatar.position.z<-24?"La Porta delle Rune":avatar.position.z<-13?"Bosco dei Sussurri":avatar.position.x<-5?"Borgo delle Lanterne":"Sentiero di Lumequieto")}else{rig.position.y=Math.sin(t*.0018)*.025;armL.rotation.x=armR.rotation.x=0}
-   const dist=Math.hypot(avatar.position.x-npc.position.x,avatar.position.z-npc.position.z);if(interact){interact=false;if(dist<3.2)setDialog("Lumequieto è in pericolo... Cerca le rune oltre il bosco!");else setDialog("Avvicinati all'abitante per parlare.");}
+   const dist=Math.hypot(avatar.position.x-npc.position.x,avatar.position.z-npc.position.z);if(interact){interact=false;if(dist<3.2)setDialog("Le Rune Antiche si sono risvegliate. Attraversa il Bosco dei Sussurri, trova il Custode e recupera il frammento!");else setDialog("Avvicinati all'abitante per parlare.");}
    camera.position.lerp(new THREE.Vector3(avatar.position.x,avatar.position.y+4.6,avatar.position.z+7.5),.09);camera.lookAt(avatar.position.x,avatar.position.y+1,avatar.position.z-1);renderer.render(scene,camera)};
   requestAnimationFrame(animate);const setMove=(x,z)=>move={x,z};host.__setMove=setMove;host.__interact=()=>interact=true;
   return()=>{running=false;window.removeEventListener("keydown",keydown);window.removeEventListener("keyup",keyup);window.removeEventListener("resize",resize);scene.traverse(o=>{o.geometry?.dispose();if(o.material?.dispose)o.material.dispose()});renderer.dispose();host.removeChild(renderer.domElement)};
