@@ -193,10 +193,15 @@ begin
   end if;
   if p_action='explore' then
     v_state:=jsonb_set(v_state,'{explores}',to_jsonb(coalesce((v_state->>'explores')::integer,0)+1),true);
+    -- Count exploration independently in each zone; do not carry a previous zone's
+    -- discoveries into the next zone's shared treasure threshold.
+    v_flag:='explores_stage_'||v_stage;
+    v_count:=coalesce((v_state->'flags'->>v_flag)::integer,0)+1;
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(v_count),true);
     v_flag:='explored_stage_'||v_stage;
     v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
     v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+1),true);
-    if coalesce((v_state->>'explores')::integer,0)>=2 and not coalesce((v_state->'flags'->>('shared_treasure_stage_'||v_stage))::boolean,false) then
+    if v_count>=2 and not coalesce((v_state->'flags'->>('shared_treasure_stage_'||v_stage))::boolean,false) then
       v_state:=jsonb_set(v_state,array['flags','shared_treasure_stage_'||v_stage],to_jsonb(true),true);
       v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+20),true);
       v_state:=jsonb_set(v_state,'{treasure_count}',to_jsonb(coalesce((v_state->>'treasure_count')::integer,0)+1),true);
@@ -211,10 +216,15 @@ begin
       v_state:=jsonb_set(v_state,array['flags','enemy_spawned_stage_'||v_stage],to_jsonb(true),true);
     end if;
   elsif p_action='talk' then
+    v_flag:='talk_reward_'||v_user::text||'_stage_'||v_stage;
+    if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'Talk reward already claimed in this zone'; end if;
     v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
     v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+1),true);
     v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+5),true);
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
   elsif p_action='fight_minor' then
+    v_flag:='minor_fight_'||v_user::text||'_stage_'||v_stage;
+    if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'Minor fight already completed in this zone'; end if;
     v_stats:=public.cityxiv_character_stats(v_active); if v_stats is null then raise exception 'Invalid active character'; end if;
     v_minor_hp:=8+v_stage*4;
     v_damage:=greatest(3,round((coalesce((v_stats->>'att')::numeric,1)*.75+coalesce((v_stats->>'vel')::numeric,1)*.15)::numeric)::integer);
@@ -222,6 +232,7 @@ begin
     v_minor_damage:=case when v_hp>0 then greatest(1,4+v_stage*2-floor(coalesce((v_stats->>'dif')::integer,1)/5)::integer) else 0 end;
     v_player:=jsonb_set(v_player,'{hp}',to_jsonb(greatest(0,coalesce((v_player->>'hp')::integer,20)-v_minor_damage)),true);
     v_minor_reward:=case when v_hp=0 then 15+v_stage*5 else 5 end;
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
     v_player:=jsonb_set(v_player,'{xp}',to_jsonb(coalesce((v_player->>'xp')::integer,0)+v_minor_reward),true);
     v_state:=jsonb_set(v_state,'{minor_fights}',to_jsonb(coalesce((v_state->>'minor_fights')::integer,0)+1),true);
     v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+2),true);
