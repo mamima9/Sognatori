@@ -62,7 +62,7 @@ begin
   v_name:=left(coalesce(nullif(trim(p_player_name),''),'Player'),32);
   v_state:='{"stage":0,"round":1,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb;
   for i in 1..10 loop
-    v_code:=upper(substr(encode(extensions.gen_random_bytes(6),'hex'),1,6));
+    v_code:=upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
     begin
       insert into public.cityxiv_rooms(room_code,host_id,max_players,game_state)
       values(v_code,v_user,p_max_players,v_state) returning id into v_id;
