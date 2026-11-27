@@ -51,6 +51,15 @@ const ADVENTURE_TRACKS = [
   { cityId: "salato", city: "Salmastra", name: "Lantern Deer 1", url: "/audio/Lantern Deer (1).mp3", northUrl: "/audio/Lantern Deer (1).mp3", southUrl: "/audio/Lantern Deer (1).mp3" },
 ];
 
+const MUSIC_LIBRARY = (() => {
+  const sources = [...MAIN_TRACKS, ...BATTLE_TRACKS, ...ADVENTURE_TRACKS.flatMap(t => [
+    { name: t.name + (t.city ? " · " + t.city : ""), url: t.url },
+    ...(t.northUrl && t.northUrl !== t.url ? [{ name: t.name + " · Nord", url: t.northUrl }] : []),
+    ...(t.southUrl && t.southUrl !== t.url ? [{ name: t.name + " · Sud", url: t.southUrl }] : []),
+  ]), ...AUCTION_TRACKS];
+  const seen = new Set();
+  return sources.filter(t => t.url && !seen.has(t.url) && seen.add(t.url));
+})();
 const AUCTION_TRACKS = [
   {
     name: "Franco",
@@ -383,7 +392,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
 
         {/* PLAYLIST */}
         <AnimatePresence>
-          {showPlaylist && musicMode !== "adventure" && (
+          {showPlaylist && (insideAdventureMenu || musicMode !== "adventure") && (
             <motion.div
               initial={{
                 opacity: 0,
