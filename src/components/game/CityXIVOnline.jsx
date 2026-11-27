@@ -10,16 +10,21 @@ const button=(color=GOLD)=>({background:color,color:BG,border:0,borderRadius:10,
 const nameOf=(user)=>user?.user_metadata?.username||user?.user_metadata?.full_name||user?.email?.split("@")[0]||"Player";
 export default function CityXIVOnline({onBack=()=>{}}){
  const [user,setUser]=useState(null),[screen,setScreen]=useState("menu"),[roomId,setRoomId]=useState(null),[room,setRoom]=useState(null),[players,setPlayers]=useState([]),[gameState,setGameState]=useState(null);
- const [selected,setSelected]=useState(STARTERS[0]?.id||""),[maxPlayers,setMaxPlayers]=useState(5),[code,setCode]=useState(""),[recruitId,setRecruitId]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[position,setPosition]=useState({x:0,z:3});
- const lastPositionRef=useRef(0),roomIdRef=useRef(null),roomRef=useRef(null);
+ const [selected,setSelected]=useState(STARTERS[0]?.id||""),[maxPlayers,setMaxPlayers]=useState(5),[code,setCode]=useState(""),[recruitId,setRecruitId]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[position,setPosition]=useState({x:0,z:3}),[restoreKey,setRestoreKey]=useState(0);
+ const lastPositionRef=useRef(0),roomIdRef=useRef(null),roomRef=useRef(null),hydratedRoomRef=useRef(null);
  useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user||null))},[]);
  const refreshRoom=useCallback(async(id)=>{
    if(!id)return;
    const [r,p]=await Promise.all([supabase.from("cityxiv_rooms").select("*").eq("id",id).single(),supabase.from("cityxiv_room_players").select("*").eq("room_id",id).order("joined_at")]);
    if(r.error||p.error){setError(r.error?.message||p.error?.message||"Aggiornamento stanza non riuscito.");return}
    setRoom(r.data);roomRef.current=r.data;setPlayers(p.data||[]);setGameState(r.data.game_state);
+   if(user?.id&&hydratedRoomRef.current!==id){
+     const saved=p.data?.find(player=>player.user_id===user.id)?.position;
+     if(saved&&Number.isFinite(Number(saved.x))&&Number.isFinite(Number(saved.z)))setPosition({x:Number(saved.x),z:Number(saved.z)});
+     hydratedRoomRef.current=id;setRestoreKey(k=>k+1);
+   }
    if(r.data.status==="waiting")setScreen("lobby");else setScreen("game");
- },[]);
+ },[user?.id]);
  useEffect(()=>{roomIdRef.current=roomId},[roomId]);
  useEffect(()=>{
    if(!roomId)return;
@@ -54,7 +59,7 @@ export default function CityXIVOnline({onBack=()=>{}}){
  const leave=async()=>{
    const id=roomIdRef.current;
    if(id){await supabase.rpc("cityxiv_leave_room",{p_room_id:id});supabase.removeChannel("cityxiv-online-"+id)}
-   setRoomId(null);setRoom(null);setPlayers([]);setGameState(null);setScreen("menu");onBack();
+   setRoomId(null);setRoom(null);setPlayers([]);setGameState(null);setScreen("menu");hydratedRoomRef.current=null;onBack();
  };
  const ready=async()=>{const me=players.find(p=>p.user_id===user?.id);await actRpc("cityxiv_set_ready",{p_room_id:roomId,p_ready:!me?.ready})};
  const start=async()=>await actRpc("cityxiv_start_room",{p_room_id:roomId});
@@ -76,7 +81,7 @@ export default function CityXIVOnline({onBack=()=>{}}){
  if(!user)return <main style={{position:"fixed",inset:0,overflow:"auto",background:BG,color:TEXT,padding:20,display:"grid",placeItems:"center"}}><section style={{...box,maxWidth:480,textAlign:"center"}}><h1>City XIV · Multiplayer online</h1><p>Accedi per creare o unirti a una stanza cooperativa da 2 a 5 giocatori.</p><a href="/login?returnTo=%2Favventura-coop" style={button()}>Accedi</a><button style={{...button("#9eb5e4"),marginLeft:8}} onClick={onBack}>Indietro</button></section></main>;
  if(showGame&&gameState&&!gameState.won&&!gameState.lost&&room?.status!=="finished"){
    return <main style={{position:"fixed",inset:0,overflow:"hidden",background:BG,color:TEXT}}>
-    <div style={{position:"absolute",inset:0}}><Lumequieto3D stage={stage} restorePosition={position} avatarCharacter={active} remotePlayers={remote} onPositionChange={move}/></div>
+    <div style={{position:"absolute",inset:0}}><Lumequieto3D stage={stage} restorePosition={position} restoreKey={restoreKey} avatarCharacter={active} remotePlayers={remote} onPositionChange={move}/></div>
     <header style={{position:"absolute",top:8,left:8,right:8,display:"flex",gap:8,alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",pointerEvents:"none"}}>
       <div style={{...box,pointerEvents:"auto",padding:"9px 12px"}}><b>🌐 CITY XIV · {stageNames[stage]||"Lumequieto"}</b><div style={{fontSize:12}}>Stanza {room?.room_code} · Round {gameState.round} · {players.length}/5</div></div>
       <div style={{...box,pointerEvents:"auto",padding:8,display:"flex",gap:6,alignItems:"center"}}><img src={active?.img} alt="" width="42" height="42" style={{objectFit:"contain"}}/><span><b>{me?.player_name}</b><div>HP {hp}/20 · {3-used} azioni</div><small>XP {current?.xp||0} · Monete {gameState.coins||0}</small></span></div>
