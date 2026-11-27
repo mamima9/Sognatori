@@ -234,10 +234,11 @@ begin
     v_player:=jsonb_set(v_player,'{bench_hp}',to_jsonb(20),true);
   elsif p_action='switch' then
     if v_bench is null then raise exception 'No bench Sognatore'; end if;
+    v_newhp:=coalesce((v_player->>'hp')::integer,20);
     v_player:=jsonb_set(v_player,'{active}',to_jsonb(v_bench),true);
     v_player:=jsonb_set(v_player,'{bench}',to_jsonb(v_active),true);
     v_player:=jsonb_set(v_player,'{hp}',to_jsonb(coalesce((v_player->>'bench_hp')::integer,20)),true);
-    v_player:=jsonb_set(v_player,'{bench_hp}',to_jsonb(coalesce((v_player->>'hp')::integer,20)),true);
+    v_player:=jsonb_set(v_player,'{bench_hp}',to_jsonb(v_newhp),true);
     v_player:=jsonb_set(v_player,'{guard}',to_jsonb(false),true);
   end if;
   v_player:=jsonb_set(v_player,'{actions_used}',to_jsonb(v_used+1),true);
@@ -289,7 +290,7 @@ end $$;
 
 create or replace function public.cityxiv_advance(p_room_id uuid)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
-declare v_room public.cityxiv_rooms; v_state jsonb; v_stage integer; v_enemy jsonb; v_next integer; v_players jsonb; v_key text; v_member jsonb;
+declare v_room public.cityxiv_rooms; v_state jsonb; v_stage integer; v_enemy jsonb; v_next integer; v_players jsonb; v_key text; v_member jsonb; v_count integer;
 begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
   if not found or v_room.host_id<>auth.uid() or v_room.status<>'playing' then raise exception 'Host only'; end if;
