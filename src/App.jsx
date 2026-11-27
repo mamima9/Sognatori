@@ -1,33 +1,35 @@
 
+import { lazy, Suspense } from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
-import Home from '@/pages/Home';
-import Lore from '@/pages/Lore';
-import TypeChart from '@/pages/TypeChart';
-import Multiplayer from '@/pages/Multiplayer';
-import Rankings from '@/pages/Rankings';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
 import GlobalMusicPlayer from '@/components/game/GlobalMusicPlayer';
 import { LanguageProvider } from '@/lib/i18n';
 import { useLanguage } from '@/lib/i18n';
-import SognatoriStats from '@/pages/SognatoriStats';
-import TestRandom from '@/pages/TestRandom';
-import Profile from '@/pages/Profile';
-import Avventura from '@/pages/Avventura';
-import CooperativeCity14 from '@/pages/CooperativeCity14';
-import Amargenta3D from '@/pages/Amargenta3D';
 import TelegramAuthGate from '@/components/TelegramAuthGate';
+
+const PageNotFound = lazy(() => import('./lib/PageNotFound'))
+const Home = lazy(() => import('@/pages/Home'))
+const Lore = lazy(() => import('@/pages/Lore'))
+const TypeChart = lazy(() => import('@/pages/TypeChart'))
+const Multiplayer = lazy(() => import('@/pages/Multiplayer'))
+const Rankings = lazy(() => import('@/pages/Rankings'))
+const Login = lazy(() => import('@/pages/Login'))
+const Register = lazy(() => import('@/pages/Register'))
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'))
+const SognatoriStats = lazy(() => import('@/pages/SognatoriStats'))
+const TestRandom = lazy(() => import('@/pages/TestRandom'))
+const Profile = lazy(() => import('@/pages/Profile'))
+const Avventura = lazy(() => import('@/pages/Avventura'))
+const CooperativeCity14 = lazy(() => import('@/pages/CooperativeCity14'))
+const Amargenta3D = lazy(() => import('@/pages/Amargenta3D'))
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -55,6 +57,7 @@ const AuthenticatedApp = () => {
   // Render the main app
  return (
     <>
+<Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-[#18221e] text-[#f4ead8]"><div className="text-center"><div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-[#d8b77d] border-t-transparent"/><p className="font-semibold tracking-wide">Caricamento...</p></div></div>}>
      <Routes>
       <Route path="/sognatori" element={<SognatoriStats />} />
         <Route path="/login" element={<Login />} />
@@ -84,6 +87,7 @@ const AuthenticatedApp = () => {
         )} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
+      </Suspense>
       <GlobalMusicPlayer />
     </>
   );
