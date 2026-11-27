@@ -45,7 +45,7 @@ Record the Supabase migration version, the test account count, pass/fail results
 
 ## Current verification
 
-Vercel preview for head commit `e148187a4b2f6a7cdb6aec7e4b97eeb3b27db965` is READY and the Vercel check is SUCCESS. The live database integration cannot be verified until the migration is applied. Interactive gameplay and multi-device testing are unavailable in the current browser sandbox, so this test matrix is a release gate, not a claim that these tests have passed.
+The migration received a source audit that corrected malformed dollar-quote delimiters in the readiness and heartbeat RPCs, removed a redundant leave-RPC definition, and added a guard so a downed player cannot act unless switching or recovering with a living bench character. The migration is statically checked for balanced dollar-quoted blocks and duplicate RPC definitions; it has **not** been executed against PostgreSQL/Supabase in this environment. The latest PR preview build is pending/subject to Vercel status checks. The live database integration cannot be verified until the migration is applied. Interactive gameplay and multi-device testing are unavailable in the current browser sandbox, so this test matrix is a release gate, not a claim that these tests have passed.
 
 ## Notes
 
