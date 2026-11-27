@@ -7,7 +7,7 @@ create table if not exists public.cityxiv_rooms (
   host_id uuid not null references auth.users(id) on delete cascade,
   max_players int not null check (max_players between 2 and 5),
   status text not null default 'waiting' check (status in ('waiting','playing','finished')),
-  game_state jsonb not null default '{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb,
+  game_state jsonb not null default '{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"treasure_count":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   expires_at timestamptz not null default now() + interval '24 hours'
@@ -60,7 +60,7 @@ begin
   if public.cityxiv_character_stats(p_character_id) is null then raise exception 'Invalid Sognatore'; end if;
   if p_max_players not between 2 and 5 then raise exception 'Room size must be 2–5'; end if;
   v_name:=left(coalesce(nullif(trim(p_player_name),''),'Player'),32);
-  v_state:='{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb;
+  v_state:='{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"treasure_count":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb;
   for i in 1..10 loop
     v_code:=upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
     begin
@@ -196,6 +196,11 @@ begin
     v_flag:='explored_stage_'||v_stage;
     v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
     v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+1),true);
+    if coalesce((v_state->>'explores')::integer,0)>=2 and not coalesce((v_state->'flags'->>('shared_treasure_stage_'||v_stage))::boolean,false) then
+      v_state:=jsonb_set(v_state,array['flags','shared_treasure_stage_'||v_stage],to_jsonb(true),true);
+      v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+20),true);
+      v_state:=jsonb_set(v_state,'{treasure_count}',to_jsonb(coalesce((v_state->>'treasure_count')::integer,0)+1),true);
+    end if;
     if v_stage=0 then
       v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
     elsif v_stage in (1,2) and (v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0) and not coalesce((v_state->'flags'->>('enemy_spawned_stage_'||v_stage))::boolean,false) then
