@@ -145,8 +145,8 @@ begin
   update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
   if not found then raise exception 'Not a room member'; end if;
   select last_seen into v_host_seen from public.cityxiv_room_players where room_id=p_room_id and user_id=v_room.host_id;
-  if v_room.host_id<>v_user and (v_host_seen is null or v_host_seen<now()-interval '2 minutes') then
-    select user_id into v_next from public.cityxiv_room_players where room_id=p_room_id and user_id<>v_room.host_id and last_seen>now()-interval '2 minutes' order by joined_at limit 1;
+  if v_room.host_id<>v_user and (v_host_seen is null or v_host_seen<now()-interval '90 seconds') then
+    select user_id into v_next from public.cityxiv_room_players where room_id=p_room_id and user_id<>v_room.host_id and last_seen>now()-interval '90 seconds' order by last_seen desc,joined_at limit 1;
     if v_next is not null then update public.cityxiv_rooms set host_id=v_next,updated_at=now() where id=p_room_id; end if;
   end if;
   return true;
@@ -173,6 +173,7 @@ begin
   if p_action='recruit' and public.cityxiv_character_stats(p_character_id) is null then raise exception 'Invalid Sognatore'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
   v_state:=v_room.game_state;
   v_phase:=coalesce(v_state->>'phase','players');
   if v_phase<>'players' then raise exception 'Players phase is closed'; end if;
@@ -209,7 +210,7 @@ begin
     if v_stage=0 then
       v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
     elsif v_stage in (1,2) and (v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0) and not coalesce((v_state->'flags'->>('enemy_spawned_stage_'||v_stage))::boolean,false) then
-      select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
+      select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
       v_hp:=case v_stage when 1 then 20+v_count*5 else 30+v_count*6 end;
       v_enemy:=jsonb_build_object('name',case v_stage when 1 then 'Custode delle Radici' else 'Sentinella dell’Archivio' end,'hp',v_hp,'max',v_hp,'phase',1,'rewarded',false);
       v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
@@ -281,33 +282,45 @@ begin
   v_log:=coalesce(v_state->'log','[]'::jsonb)||jsonb_build_array(jsonb_build_object('action',p_action,'user_id',v_user,'at',now()));
   v_state:=jsonb_set(v_state,'{log}',v_log,true);
   select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
-  v_all_done:=true;
-  for v_key,v_member in select key,value from jsonb_each(v_players) loop
-    if coalesce((v_member->>'actions_used')::integer,0)<3 then v_all_done:=false; exit; end if;
+  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
+  v_all_done:=v_count>0;
+  for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds' loop
+    v_member:=v_players->v_key;
+    if v_member is null or coalesce((v_member->>'actions_used')::integer,0)<3 then v_all_done:=false; exit; end if;
   end loop;
-  if v_all_done and v_count>0 then v_state:=jsonb_set(v_state,'{phase}',to_jsonb('enemy'),true); end if;
+  if v_all_done then v_state:=jsonb_set(v_state,'{phase}',to_jsonb('enemy'),true); end if;
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
   return v_state;
 end $$;
 
 create or replace function public.cityxiv_enemy_turn(p_room_id uuid)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
-declare v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_enemy jsonb; v_stage integer; v_count integer; v_key text; v_member jsonb; v_stats jsonb; v_raw integer; v_def integer; v_damage integer; v_newhp integer; v_all_done boolean;
+declare v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_enemy jsonb; v_stage integer; v_count integer; v_key text; v_member jsonb; v_stats jsonb; v_raw integer; v_def integer; v_damage integer; v_newhp integer; v_all_done boolean; v_host_seen timestamptz;
 begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
-  if not found or v_room.host_id<>auth.uid() then raise exception 'Host only'; end if;
+  if not found then raise exception 'Room not found or inactive'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=auth.uid();
+  if not found then raise exception 'Not a room member'; end if;
+  if v_room.host_id<>auth.uid() then
+    select last_seen into v_host_seen from public.cityxiv_room_players where room_id=p_room_id and user_id=v_room.host_id;
+    if v_host_seen is not null and v_host_seen>now()-interval '90 seconds' then raise exception 'Host only'; end if;
+    update public.cityxiv_rooms set host_id=auth.uid(),updated_at=now() where id=p_room_id;
+  end if;
   v_state:=v_room.game_state;
   if coalesce(v_state->>'phase','players')<>'enemy' then return v_state; end if;
   v_players:=v_state->'players'; v_enemy:=v_state->'enemy'; v_stage:=coalesce((v_state->>'stage')::integer,0);
-  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
+  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
   if v_enemy is not null and coalesce((v_enemy->>'hp')::integer,0)>0 then
     v_raw:=case when v_stage=3 and coalesce((v_enemy->>'phase')::integer,1)=2 then 8+floor(v_count*2)::integer else 5+floor(v_count*1.5)::integer end;
     for v_key,v_member in select key,value from jsonb_each(v_players) loop
-      v_stats:=public.cityxiv_character_stats(v_member->>'active'); v_def:=coalesce((v_stats->>'dif')::integer,1)+(case when coalesce((v_member->'equipment'->>'armor')::boolean,false) then 2 else 0 end)+(case when coalesce((v_member->'equipment'->>'amulet')::boolean,false) then 1 else 0 end);
-      v_damage:=greatest(1,v_raw-floor(v_def/5)::integer);
-      if coalesce((v_member->>'guard')::boolean,false) then v_damage:=ceil(v_damage/2.0)::integer; end if;
-      v_newhp:=greatest(0,coalesce((v_member->>'hp')::integer,20)-v_damage);
-      v_member:=jsonb_set(v_member,'{hp}',to_jsonb(v_newhp),true);
+      if exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_key::uuid and last_seen>now()-interval '90 seconds') then
+        v_stats:=public.cityxiv_character_stats(v_member->>'active'); v_def:=coalesce((v_stats->>'dif')::integer,1)+(case when coalesce((v_member->'equipment'->>'armor')::boolean,false) then 2 else 0 end)+(case when coalesce((v_member->'equipment'->>'amulet')::boolean,false) then 1 else 0 end);
+        v_damage:=greatest(1,v_raw-floor(v_def/5)::integer);
+        if coalesce((v_member->>'guard')::boolean,false) then v_damage:=ceil(v_damage/2.0)::integer; end if;
+        v_newhp:=greatest(0,coalesce((v_member->>'hp')::integer,20)-v_damage);
+        v_member:=jsonb_set(v_member,'{hp}',to_jsonb(v_newhp),true);
+      end if;
+      -- Reset round counters even for offline players; preserve their HP.
       v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
       v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true);
       v_players:=jsonb_set(v_players,array[v_key],v_member,true);
@@ -317,10 +330,11 @@ begin
       v_enemy:=jsonb_set(v_enemy,'{phase}',to_jsonb(2),true); v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
     end if;
     v_all_done:=true;
-    for v_key,v_member in select key,value from jsonb_each(v_players) loop
+    for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds' loop
+      v_member:=v_players->v_key;
       if coalesce((v_member->>'hp')::integer,0)>0 or (v_member->>'bench') is not null and coalesce((v_member->>'bench_hp')::integer,0)>0 then v_all_done:=false; exit; end if;
     end loop;
-    if v_all_done then v_state:=jsonb_set(v_state,'{lost}',to_jsonb(true),true); end if;
+    if v_all_done and v_count>0 then v_state:=jsonb_set(v_state,'{lost}',to_jsonb(true),true); end if;
   else
     for v_key,v_member in select key,value from jsonb_each(v_players) loop
       v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true); v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
@@ -385,6 +399,7 @@ begin
   if p_action not in ('recover','switch','equip_weapon','equip_armor','equip_amulet','npc_aid') then raise exception 'Invalid preparation action'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
   v_state:=v_room.game_state;
   if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or coalesce(v_state->'enemy','null'::jsonb)<>'null'::jsonb then raise exception 'Boss preparation is closed'; end if;
   v_players:=coalesce(v_state->'players','{}'::jsonb); v_player:=v_players->v_user::text;
@@ -430,6 +445,7 @@ begin
   if v_user is null then raise exception 'Authentication required'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
   v_state:=v_room.game_state;
   if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or coalesce(v_state->'enemy','null'::jsonb)<>'null'::jsonb then raise exception 'Boss preparation is closed'; end if;
   v_state:=jsonb_set(v_state,'{prep_ready}',coalesce(v_state->'prep_ready','{}'::jsonb),true);
@@ -440,18 +456,25 @@ end $cityxiv_prep_ready$;
 
 create or replace function public.cityxiv_boss_start(p_room_id uuid)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $cityxiv_boss_start$
-declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_key text; v_count integer; v_member jsonb; v_enemy jsonb;
+declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_key text; v_count integer; v_member jsonb; v_enemy jsonb; v_host_seen timestamptz;
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
-  if not found or v_room.host_id<>v_user then raise exception 'Host only'; end if;
+  if not found then raise exception 'Room not active'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
+  if not found then raise exception 'Not a room member'; end if;
+  if v_room.host_id<>v_user then
+    select last_seen into v_host_seen from public.cityxiv_room_players where room_id=p_room_id and user_id=v_room.host_id;
+    if v_host_seen is not null and v_host_seen>now()-interval '90 seconds' then raise exception 'Host only'; end if;
+    update public.cityxiv_rooms set host_id=v_user,updated_at=now() where id=p_room_id;
+  end if;
   v_state:=v_room.game_state;
   if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or coalesce(v_state->'enemy','null'::jsonb)<>'null'::jsonb then raise exception 'Boss preparation is closed'; end if;
-  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
-  if v_count<2 or v_count>5 then raise exception 'Party size must be 2–5'; end if;
-  for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id loop
+  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
+  if v_count<2 or v_count>5 then raise exception '2–5 active players required to start the boss'; end if;
+  for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds' loop
     if not (v_state->'players' ? v_key) then raise exception 'Player state missing'; end if;
-    if coalesce((v_state->'prep_ready'->>v_key)::boolean,false) is not true then raise exception 'Every party member must be ready'; end if;
+    if coalesce((v_state->'prep_ready'->>v_key)::boolean,false) is not true then raise exception 'Every active party member must be ready'; end if;
   end loop;
   v_players:=coalesce(v_state->'players','{}'::jsonb);
   for v_key,v_member in select key,value from jsonb_each(v_players) loop
