@@ -157,25 +157,6 @@ returns uuid language sql security definer set search_path=public,pg_temp as $$
   order by p.last_seen desc limit 1
 $$;
 
-create or replace function public.cityxiv_leave_room(p_room_id uuid)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
-declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_next uuid; v_state jsonb;
-begin
-  select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
-  if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then return true; end if;
-  delete from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user;
-  select count(*) into v_next from public.cityxiv_room_players where room_id=p_room_id;
-  if v_next=0 then delete from public.cityxiv_rooms where id=p_room_id; return true; end if;
-  if v_room.host_id=v_user then
-    select user_id into v_next from public.cityxiv_room_players where room_id=p_room_id order by joined_at limit 1;
-    update public.cityxiv_rooms set host_id=v_next,updated_at=now() where id=p_room_id;
-  end if;
-  v_state:=v_room.game_state;
-  v_state:=jsonb_set(v_state,'{players}',coalesce(v_state->'players','{}'::jsonb)-v_user::text,true);
-  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
-  return true;
-end $$;
-
 create or replace function public.cityxiv_action(p_room_id uuid,p_action text,p_character_id text default null)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare
