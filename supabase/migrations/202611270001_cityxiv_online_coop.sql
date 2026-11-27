@@ -135,7 +135,7 @@ begin
 end $$;
 
 create or replace function public.cityxiv_ping(p_room_id uuid)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $
+returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_host_seen timestamptz; v_next uuid;
 begin
   -- Lock the room before the member row so heartbeat, leave and action RPCs
@@ -150,7 +150,7 @@ begin
     if v_next is not null then update public.cityxiv_rooms set host_id=v_next,updated_at=now() where id=p_room_id; end if;
   end if;
   return true;
-end $$;create or replace function public.cityxiv_resume_room()
+end $;\n\ncreate or replace function public.cityxiv_resume_room()
 returns uuid language sql security definer set search_path=public,pg_temp as $$
   select p.room_id from public.cityxiv_room_players p join public.cityxiv_rooms r on r.id=p.room_id
   where p.user_id=auth.uid() and r.status in ('waiting','playing') and r.expires_at>now()
