@@ -15,7 +15,7 @@ No service-role key is used in the frontend. The migration exposes authenticated
 - The host starts when at least two players are present and all are ready.
 - Players move in the existing Lumequieto 3D scene. Their chosen artwork is used for their avatar and remote-player billboards; positions and lobby state are synchronized through Supabase Realtime.
 - Each player has three actions per round. Explore, talk, attack, area attack (RPC supported), protect, recover, recruit and switch are processed by an RPC with membership/action validation. Encounter HP, XP, coins, clues, stage progression and ending state are shared.
-- Reconnect uses the authenticated user's room lookup. Heartbeats refresh presence and may transfer host when the host has been stale for two minutes; leaving also transfers the host.
+- Reconnect uses the authenticated user's room lookup and restores the last persisted position on initial room hydration. Heartbeats refresh presence and may transfer host when the host has been stale for two minutes; leaving also transfers the host. Ready-state changes are restricted to the waiting lobby, and server actions reject ended expeditions.
 - The room's shared state persists in the database.
 
 ## Current verification
