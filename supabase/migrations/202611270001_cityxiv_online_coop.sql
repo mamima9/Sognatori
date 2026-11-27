@@ -196,7 +196,8 @@ begin
     if v_stage=0 then
       v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
     elsif v_stage in (1,2) and (v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0) and not coalesce((v_state->'flags'->>('enemy_spawned_stage_'||v_stage))::boolean,false) then
-      v_hp:=case v_stage when 1 then 20+v_room.max_players*5 else 30+v_room.max_players*6 end;
+      select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
+      v_hp:=case v_stage when 1 then 20+v_count*5 else 30+v_count*6 end;
       v_enemy:=jsonb_build_object('name',case v_stage when 1 then 'Custode delle Radici' else 'Sentinella dell’Archivio' end,'hp',v_hp,'max',v_hp,'phase',1,'rewarded',false);
       v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
       v_state:=jsonb_set(v_state,array['flags','enemy_spawned_stage_'||v_stage],to_jsonb(true),true);
@@ -313,12 +314,10 @@ begin
   end if;
   v_next:=v_stage+1;
   v_state:=jsonb_set(v_state,'{stage}',to_jsonb(v_next),true);
-  v_state:=jsonb_set(v_state,'{enemy}',to_jsonb(null),true);
+  v_state:=jsonb_set(v_state,'{enemy}','null'::jsonb,true);
   if v_next=3 then
-    select count(*) into v_next from public.cityxiv_room_players where room_id=v_room.id;
-    v_enemy:=jsonb_build_object('name','Sigillo Vivente','hp',70+v_next*15,'max',70+v_next*15,'phase',1,'rewarded',false);
-    -- Party-size scaling uses the real participant count, not the temporary stage value.
-    v_enemy:=jsonb_build_object('name','Sigillo Vivente','hp',70+v_next*15,'max',70+v_next*15,'phase',1,'rewarded',false);
+    select count(*) into v_count from public.cityxiv_room_players where room_id=v_room.id;
+    v_enemy:=jsonb_build_object('name','Sigillo Vivente','hp',70+v_count*15,'max',70+v_count*15,'phase',1,'rewarded',false);
     v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
   end if;
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=v_room.id;
