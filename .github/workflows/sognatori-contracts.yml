@@ -1,0 +1,28 @@
+name: Sognatori smart contract tests
+
+on:
+  pull_request:
+    paths:
+      - "contracts/**"
+      - ".github/workflows/sognatori-contracts.yml"
+  push:
+    branches: [main, "web3/**"]
+    paths:
+      - "contracts/**"
+      - ".github/workflows/sognatori-contracts.yml"
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install dependencies
+        run: |
+          forge install OpenZeppelin/openzeppelin-contracts --no-commit
+          forge install foundry-rs/forge-std --no-commit
+      - name: Run tests
+        run: forge test -vvv

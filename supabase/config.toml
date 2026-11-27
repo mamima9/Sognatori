@@ -1,0 +1,4 @@
+[functions.mint-worker]
+verify_jwt = false
+
+# wallet-link keeps the default JWT verification enabled.

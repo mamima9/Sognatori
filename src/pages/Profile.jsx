@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { ROSTER } from "@/lib/sognatoriData";
 import { useLanguage } from "@/lib/i18n";
+import WalletNFTPanel from "@/components/web3/WalletNFTPanel";
 
 const LOGO = "/images/bannerLOGOSOGNATORI.png";
 
@@ -367,6 +368,8 @@ export default function Profile() {
           </p>
 
         </div>
+
+        <WalletNFTPanel />
 
         {/* ====================================================
             MESSAGGI
