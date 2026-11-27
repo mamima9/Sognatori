@@ -20,7 +20,7 @@ No service-role key is used in the frontend. The migration exposes authenticated
 
 ## Current verification
 
-The front-end build/preview should be checked before merging. Live database integration cannot be verified until the migration is applied. The browser sandbox in the current development environment cannot run interactive gameplay, so multi-device gameplay and disconnect/reconnect testing remain unverified.
+The Vercel preview build for head commit `0054f81b495624891714708138d60cd940e82774` is READY. Live database integration cannot be verified until the migration is applied. The browser sandbox in the current development environment cannot run interactive gameplay, so multi-device gameplay and disconnect/reconnect testing remain unverified.
 
 ## Notes
 
