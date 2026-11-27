@@ -73,7 +73,7 @@ begin
   if v_id is null then raise exception 'Could not generate a room code'; end if;
   insert into public.cityxiv_room_players(room_id,user_id,player_name,character_id,ready)
   values(v_id,v_user,v_name,p_character_id,true);
-  v_state:=jsonb_set(v_state,'{players}',jsonb_build_object(v_user::text,jsonb_build_object('active',p_character_id,'bench',null,'hp',20,'bench_hp',20,'actions_used',0,'guard',false,'xp',0,'level',1)),true);
+  v_state:=jsonb_set(v_state,'{players}',jsonb_build_object(v_user::text,jsonb_build_object('active',p_character_id,'bench',null,'hp',20,'bench_hp',20,'actions_used',0,'guard',false,'xp',0,'level',1,'equipment',jsonb_build_object('weapon',false,'armor',false,'amulet',false))),true);
   update public.cityxiv_rooms set game_state=v_state where id=v_id;
   return v_id;
 end $$;
@@ -93,7 +93,7 @@ begin
   insert into public.cityxiv_room_players(room_id,user_id,player_name,character_id,ready)
   values(v_room.id,v_user,v_name,p_character_id,false);
   v_state:=v_room.game_state;
-  v_state:=jsonb_set(v_state,'{players}',coalesce(v_state->'players','{}'::jsonb)||jsonb_build_object(v_user::text,jsonb_build_object('active',p_character_id,'bench',null,'hp',20,'bench_hp',20,'actions_used',0,'guard',false,'xp',0,'level',1)),true);
+  v_state:=jsonb_set(v_state,'{players}',coalesce(v_state->'players','{}'::jsonb)||jsonb_build_object(v_user::text,jsonb_build_object('active',p_character_id,'bench',null,'hp',20,'bench_hp',20,'actions_used',0,'guard',false,'xp',0,'level',1,'equipment',jsonb_build_object('weapon',false,'armor',false,'amulet',false))),true);
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=v_room.id;
   return v_room.id;
 end $$;
@@ -240,7 +240,7 @@ begin
   elsif p_action='attack' or p_action='attack_area' then
     if v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0 then raise exception 'No active enemy'; end if;
     v_stats:=public.cityxiv_character_stats(v_active); if v_stats is null then raise exception 'Invalid active character'; end if;
-    v_damage:=greatest(2,round((coalesce((v_stats->>'att')::numeric,1)*.65+coalesce((v_stats->>'vel')::numeric,1)*.15-coalesce((v_stats->>'dif')::numeric,1)*.08)::numeric)::integer);
+    v_damage:=greatest(2,round((coalesce((v_stats->>'att')::numeric,1)*.65+coalesce((v_stats->>'vel')::numeric,1)*.15-coalesce((v_stats->>'dif')::numeric,1)*.08)::numeric)::integer)+(case when coalesce((v_player->'equipment'->>'weapon')::boolean,false) then 2 else 0 end)+(case when coalesce((v_player->'equipment'->>'amulet')::boolean,false) then 1 else 0 end);
     if p_action='attack_area' then v_damage:=greatest(2,floor(v_damage*.65)::integer); end if;
     v_hp:=greatest(0,coalesce((v_enemy->>'hp')::integer,0)-v_damage);
     v_enemy:=jsonb_set(v_enemy,'{hp}',to_jsonb(v_hp),true);
@@ -303,7 +303,7 @@ begin
   if v_enemy is not null and coalesce((v_enemy->>'hp')::integer,0)>0 then
     v_raw:=case when v_stage=3 and coalesce((v_enemy->>'phase')::integer,1)=2 then 8+floor(v_count*2)::integer else 5+floor(v_count*1.5)::integer end;
     for v_key,v_member in select key,value from jsonb_each(v_players) loop
-      v_stats:=public.cityxiv_character_stats(v_member->>'active'); v_def:=coalesce((v_stats->>'dif')::integer,1);
+      v_stats:=public.cityxiv_character_stats(v_member->>'active'); v_def:=coalesce((v_stats->>'dif')::integer,1)+(case when coalesce((v_member->'equipment'->>'armor')::boolean,false) then 2 else 0 end)+(case when coalesce((v_member->'equipment'->>'amulet')::boolean,false) then 1 else 0 end);
       v_damage:=greatest(1,v_raw-floor(v_def/5)::integer);
       if coalesce((v_member->>'guard')::boolean,false) then v_damage:=ceil(v_damage/2.0)::integer; end if;
       v_newhp:=greatest(0,coalesce((v_member->>'hp')::integer,20)-v_damage);
@@ -370,13 +370,106 @@ begin
   v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(0),true);
   v_state:=jsonb_set(v_state,'{enemy}','null'::jsonb,true);
   if v_next=3 then
-    select count(*) into v_count from public.cityxiv_room_players where room_id=v_room.id;
-    v_enemy:=jsonb_build_object('name','Sigillo Vivente','hp',70+v_count*15,'max',70+v_count*15,'phase',1,'rewarded',false);
-    v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
+    -- Enter a synchronized preparation phase. The boss is not spawned until the
+    -- host's start RPC confirms that every active party member is ready.
+    v_state:=jsonb_set(v_state,'{phase}',to_jsonb('prep'),true);
+    v_state:=jsonb_set(v_state,'{prep_ready}','{}'::jsonb,true);
   end if;
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=v_room.id;
   return v_state;
-end $$;
+end $;
+
+create or replace function public.cityxiv_boss_prep_action(p_room_id uuid,p_action text)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $
+declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_player jsonb; v_member jsonb; v_key text; v_active text; v_bench text; v_hp integer; v_flag text;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  if p_action not in ('recover','switch','equip_weapon','equip_armor','equip_amulet','npc_aid') then raise exception 'Invalid preparation action'; end if;
+  select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
+  if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
+  v_state:=v_room.game_state;
+  if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or v_state->'enemy' is not null then raise exception 'Boss preparation is closed'; end if;
+  v_players:=coalesce(v_state->'players','{}'::jsonb); v_player:=v_players->v_user::text;
+  if v_player is null then raise exception 'Player state missing'; end if;
+  if p_action='recover' then
+    v_player:=jsonb_set(v_player,'{hp}',to_jsonb(20),true);
+    v_player:=jsonb_set(v_player,'{bench_hp}',to_jsonb(20),true);
+    v_player:=jsonb_set(v_player,'{guard}',to_jsonb(false),true);
+  elsif p_action='switch' then
+    v_active:=v_player->>'active'; v_bench:=v_player->>'bench';
+    if v_bench is null then raise exception 'No bench Sognatore'; end if;
+    v_hp:=coalesce((v_player->>'hp')::integer,20);
+    v_player:=jsonb_set(v_player,'{active}',to_jsonb(v_bench),true);
+    v_player:=jsonb_set(v_player,'{bench}',to_jsonb(v_active),true);
+    v_player:=jsonb_set(v_player,'{hp}',to_jsonb(coalesce((v_player->>'bench_hp')::integer,20)),true);
+    v_player:=jsonb_set(v_player,'{bench_hp}',to_jsonb(v_hp),true);
+  elsif p_action in ('equip_weapon','equip_armor','equip_amulet') then
+    v_player:=jsonb_set(v_player,'{equipment}',coalesce(v_player->'equipment','{"weapon":false,"armor":false,"amulet":false}'::jsonb),true);
+    if p_action='equip_weapon' then v_player:=jsonb_set(v_player,'{equipment,weapon}',to_jsonb(true),true);
+    elsif p_action='equip_armor' then v_player:=jsonb_set(v_player,'{equipment,armor}',to_jsonb(true),true);
+    else v_player:=jsonb_set(v_player,'{equipment,amulet}',to_jsonb(true),true); end if;
+  elsif p_action='npc_aid' then
+    v_flag:='boss_aid_stage_3';
+    if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'The Custode has already helped this expedition'; end if;
+    for v_key,v_member in select key,value from jsonb_each(v_players) loop
+      v_member:=jsonb_set(v_member,'{guard}',to_jsonb(true),true);
+      v_players:=jsonb_set(v_players,array[v_key],v_member,true);
+    end loop;
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
+  end if;
+  if p_action<>'npc_aid' then v_players:=jsonb_set(v_players,array[v_user::text],v_player,true); end if;
+  v_state:=jsonb_set(v_state,'{players}',v_players,true);
+  -- Any preparation change invalidates all ready votes.
+  v_state:=jsonb_set(v_state,'{prep_ready}','{}'::jsonb,true);
+  v_state:=jsonb_set(v_state,'{log}',coalesce(v_state->'log','[]'::jsonb)||jsonb_build_array(jsonb_build_object('action','prep_'||p_action,'user_id',v_user,'at',now())),true);
+  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  return v_state;
+end $;
+
+create or replace function public.cityxiv_boss_prep_ready(p_room_id uuid,p_ready boolean)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $
+declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
+  if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
+  v_state:=v_room.game_state;
+  if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or v_state->'enemy' is not null then raise exception 'Boss preparation is closed'; end if;
+  v_state:=jsonb_set(v_state,'{prep_ready}',coalesce(v_state->'prep_ready','{}'::jsonb),true);
+  v_state:=jsonb_set(v_state,array['prep_ready',v_user::text],to_jsonb(p_ready),true);
+  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  return v_state;
+end $;
+
+create or replace function public.cityxiv_boss_start(p_room_id uuid)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $
+declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_key text; v_count integer; v_member jsonb; v_enemy jsonb;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
+  if not found or v_room.host_id<>v_user then raise exception 'Host only'; end if;
+  v_state:=v_room.game_state;
+  if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or v_state->'enemy' is not null then raise exception 'Boss preparation is closed'; end if;
+  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
+  if v_count<2 or v_count>5 then raise exception 'Party size must be 2–5'; end if;
+  for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id loop
+    if coalesce((v_state->'prep_ready'->>v_key)::boolean,false) is not true then raise exception 'Every party member must be ready'; end if;
+  end loop;
+  v_players:=coalesce(v_state->'players','{}'::jsonb);
+  for v_key,v_member in select key,value from jsonb_each(v_players) loop
+    v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true);
+    v_players:=jsonb_set(v_players,array[v_key],v_member,true);
+  end loop;
+  v_enemy:=jsonb_build_object('name','Sigillo Vivente','hp',70+v_count*15,'max',70+v_count*15,'phase',1,'rewarded',false);
+  v_state:=jsonb_set(v_state,'{players}',v_players,true);
+  v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
+  v_state:=jsonb_set(v_state,'{phase}',to_jsonb('players'),true);
+  v_state:=jsonb_set(v_state,'{round}',to_jsonb(1),true);
+  v_state:=jsonb_set(v_state,'{prep_ready}','{}'::jsonb,true);
+  v_state:=jsonb_set(v_state,'{boss_prep_started}',to_jsonb(true),true);
+  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  return v_state;
+end $;
 
 create or replace function public.cityxiv_leave_room(p_room_id uuid)
 returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
@@ -408,7 +501,10 @@ revoke all on function public.cityxiv_leave_room(uuid) from public;
 revoke all on function public.cityxiv_action(uuid,text,text) from public;
 revoke all on function public.cityxiv_enemy_turn(uuid) from public;
 revoke all on function public.cityxiv_advance(uuid) from public;
-grant execute on function public.cityxiv_create_room(text,text,integer),public.cityxiv_join_room(text,text,text),public.cityxiv_set_ready(uuid,boolean),public.cityxiv_start_room(uuid),public.cityxiv_update_position(uuid,double precision,double precision),public.cityxiv_ping(uuid),public.cityxiv_resume_room(),public.cityxiv_leave_room(uuid),public.cityxiv_action(uuid,text,text),public.cityxiv_enemy_turn(uuid),public.cityxiv_advance(uuid) to authenticated;
+revoke all on function public.cityxiv_boss_prep_action(uuid,text) from public;
+revoke all on function public.cityxiv_boss_prep_ready(uuid,boolean) from public;
+revoke all on function public.cityxiv_boss_start(uuid) from public;
+grant execute on function public.cityxiv_create_room(text,text,integer),public.cityxiv_join_room(text,text,text),public.cityxiv_set_ready(uuid,boolean),public.cityxiv_start_room(uuid),public.cityxiv_update_position(uuid,double precision,double precision),public.cityxiv_ping(uuid),public.cityxiv_resume_room(),public.cityxiv_leave_room(uuid),public.cityxiv_action(uuid,text,text),public.cityxiv_enemy_turn(uuid),public.cityxiv_advance(uuid),public.cityxiv_boss_prep_action(uuid,text),public.cityxiv_boss_prep_ready(uuid,boolean),public.cityxiv_boss_start(uuid) to authenticated;
 
 do $$ begin
   if exists(select 1 from pg_publication where pubname='supabase_realtime') then
