@@ -275,7 +275,7 @@ begin
 end $$;
 
 create or replace function public.cityxiv_enemy_turn(p_room_id uuid)
-returns jsonb language plpgsql security definer set search_path=public,pg_temp as $
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_enemy jsonb; v_stage integer; v_count integer; v_key text; v_member jsonb; v_stats jsonb; v_raw integer; v_def integer; v_damage integer; v_newhp integer; v_all_done boolean;
 begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
@@ -316,7 +316,7 @@ begin
   v_state:=jsonb_set(v_state,'{round}',to_jsonb(coalesce((v_state->>'round')::integer,1)+1),true);
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
   return v_state;
-end $;
+end $$;
 
 create or replace function public.cityxiv_advance(p_room_id uuid)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
