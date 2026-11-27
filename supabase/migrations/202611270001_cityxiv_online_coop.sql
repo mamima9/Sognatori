@@ -135,21 +135,22 @@ begin
 end $$;
 
 create or replace function public.cityxiv_ping(p_room_id uuid)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
+returns boolean language plpgsql security definer set search_path=public,pg_temp as $
 declare v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_host_seen timestamptz; v_next uuid;
 begin
+  -- Lock the room before the member row so heartbeat, leave and action RPCs
+  -- follow the same lock order and avoid a room/player deadlock.
+  select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
+  if not found then raise exception 'Room not found'; end if;
   update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
   if not found then raise exception 'Not a room member'; end if;
-  select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
   select last_seen into v_host_seen from public.cityxiv_room_players where room_id=p_room_id and user_id=v_room.host_id;
-  if v_room.host_id<>v_user and v_host_seen<now()-interval '2 minutes' then
+  if v_room.host_id<>v_user and (v_host_seen is null or v_host_seen<now()-interval '2 minutes') then
     select user_id into v_next from public.cityxiv_room_players where room_id=p_room_id and user_id<>v_room.host_id and last_seen>now()-interval '2 minutes' order by joined_at limit 1;
     if v_next is not null then update public.cityxiv_rooms set host_id=v_next,updated_at=now() where id=p_room_id; end if;
   end if;
   return true;
-end $$;
-
-create or replace function public.cityxiv_resume_room()
+end $;create or replace function public.cityxiv_resume_room()
 returns uuid language sql security definer set search_path=public,pg_temp as $$
   select p.room_id from public.cityxiv_room_players p join public.cityxiv_rooms r on r.id=p.room_id
   where p.user_id=auth.uid() and r.status in ('waiting','playing') and r.expires_at>now()
