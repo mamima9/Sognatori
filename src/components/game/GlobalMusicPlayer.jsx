@@ -117,12 +117,12 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
       : musicMode === "auction"
         ? AUCTION_TRACKS
         : musicMode === "adventure"
-          ? ADVENTURE_TRACKS.map((track) => ({
+          ? (insideAdventureMenu ? MUSIC_LIBRARY : ADVENTURE_TRACKS.map((track) => ({
               ...track,
               url: track.southUrl
                 ? (entryDirection === "south" ? track.southUrl : track.northUrl)
                 : track.url,
-            }))
+            })))
           : MAIN_TRACKS;
 
   const current = tracks[trackIdx] || tracks[0];
@@ -147,7 +147,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
           : mode === "auction"
             ? AUCTION_TRACKS
             : mode === "adventure"
-              ? ADVENTURE_TRACKS
+              ? (insideAdventureMenu ? MUSIC_LIBRARY : ADVENTURE_TRACKS)
               : MAIN_TRACKS;
 
       const requestedCityId = event.detail?.cityId;
@@ -162,7 +162,9 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
       }
       const activeAdventure = lastAdventureRef.current;
       const cityIndex = mode === "adventure"
-        ? nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId))
+        ? (insideAdventureMenu
+            ? MUSIC_LIBRARY.findIndex(track => track.url === ADVENTURE_TRACKS.find(t => t.cityId === (requestedCityId || activeAdventure.cityId))?.url)
+            : nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId)))
         : -1;
       const nextIndex = mode === "battle"
         ? 0
@@ -569,7 +571,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
           )}
 
           {/* CURRENT TRACK: non selezionabile in Avventura */}
-          {musicMode === "adventure" ? (
+          {musicMode === "adventure" && !insideAdventureMenu ? (
             <div className="ml-1 px-2 h-7 min-w-0 max-w-[150px] flex items-center justify-center text-xs text-slate-300">
               <span className="truncate">{current?.name || "Musica"}</span>
             </div>
