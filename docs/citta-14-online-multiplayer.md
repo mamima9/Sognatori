@@ -76,3 +76,10 @@ The migration received a source audit that corrected malformed dollar-quote deli
 This increment is source-reviewed but not yet runtime-verified against a live Supabase database. The migration remains a release prerequisite; do not merge/deploy the online loop until the migration and multi-device test matrix above pass.
 
 - Shared exploration treasure: the server records a once-per-zone treasure flag and grants the party 20 coins when the exploration threshold is reached; the treasure counter and flag are synchronized in the room state.
+
+
+## Mandatory graphics release gate
+
+The required visual target is a curated, real 3D RPG standard—not placeholder cubes or generic avatars: recognizable original Sognatore models, detailed and distinct zones, vegetation/structures, atmosphere, materials, lighting, shadows and effects, coherent presentation across overworld, battles and UI, with mobile performance maintained. The selected Sognatore must be its actual 3D model for both local and remote party members.
+
+This increment only improves renderer performance settings and shadow quality. The current multiplayer avatars remain camera-facing 2.5D artwork planes; a repository code search did not surface a GLTF/GLB model-loader or rigged model pipeline. The graphics gate is therefore **not met** and must not be represented as complete until rigged original assets and visual review are available.
