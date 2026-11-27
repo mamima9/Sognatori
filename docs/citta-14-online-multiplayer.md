@@ -74,3 +74,5 @@ The migration received a source audit that corrected malformed dollar-quote deli
 | Non-host client | Cannot execute enemy turn or bypass phase lock |
 
 This increment is source-reviewed but not yet runtime-verified against a live Supabase database. The migration remains a release prerequisite; do not merge/deploy the online loop until the migration and multi-device test matrix above pass.
+
+- Shared exploration treasure: the server records a once-per-zone treasure flag and grants the party 20 coins when the exploration threshold is reached; the treasure counter and flag are synchronized in the room state.
