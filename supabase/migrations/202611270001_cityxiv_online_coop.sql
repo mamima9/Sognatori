@@ -330,6 +330,10 @@ begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
   if not found or v_room.host_id<>auth.uid() or v_room.status<>'playing' then raise exception 'Host only'; end if;
   v_state:=v_room.game_state; v_stage:=coalesce((v_state->>'stage')::integer,0); v_enemy:=v_state->'enemy';
+  if coalesce(v_state->>'phase','players')<>'players' then raise exception 'Wait for the enemy phase to resolve'; end if;
+  for v_key,v_member in select key,value from jsonb_each(coalesce(v_state->'players','{}'::jsonb)) loop
+    if coalesce((v_member->>'actions_used')::integer,0)<>0 then raise exception 'Finish the round before advancing zones'; end if;
+  end loop;
   if coalesce((v_state->>'lost')::boolean,false) then raise exception 'Party defeated'; end if;
   if coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition already completed'; end if;
   if v_stage=0 then
