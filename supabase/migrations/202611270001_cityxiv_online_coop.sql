@@ -218,6 +218,7 @@ begin
         v_member:=jsonb_set(v_member,'{xp}',to_jsonb(coalesce((v_member->>'xp')::integer,0)+30),true);
         v_players:=jsonb_set(v_players,array[v_key],v_member,true);
       end loop;
+      v_player:=v_players->v_user::text;
     end if;
     v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
   elsif p_action='protect' then
