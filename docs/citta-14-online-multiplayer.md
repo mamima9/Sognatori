@@ -83,3 +83,11 @@ This increment is source-reviewed but not yet runtime-verified against a live Su
 The required visual target is a curated, real 3D RPG standard—not placeholder cubes or generic avatars: recognizable original Sognatore models, detailed and distinct zones, vegetation/structures, atmosphere, materials, lighting, shadows and effects, coherent presentation across overworld, battles and UI, with mobile performance maintained. The selected Sognatore must be its actual 3D model for both local and remote party members.
 
 This increment only improves renderer performance settings and shadow quality. The current multiplayer avatars remain camera-facing 2.5D artwork planes; a repository code search did not surface a GLTF/GLB model-loader or rigged model pipeline. The graphics gate is therefore **not met** and must not be represented as complete until rigged original assets and visual review are available.
+
+
+## Anti-farming guard for the three-action loop
+
+- Exploration treasure progress now counts separately within each stage. Two exploration actions in that specific zone unlock its shared treasure; previous-zone exploration does not carry into the next zone's threshold.
+- Talk and minor-fight reward claims are limited to once per player per zone, stored server-side in room flags. Repeat attempts are rejected, and the mobile action buttons reflect the player's already-claimed status.
+- The HUD now shows exploration progress for the current zone rather than dumping internal flag keys.
+- This is a source-level change only. Vercel rate-limit failure means the latest branch commit has no verified fresh preview build; Supabase and multi-device tests remain pending.
