@@ -112,12 +112,19 @@ end $$;
 
 create or replace function public.cityxiv_start_room(p_room_id uuid)
 returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
-declare v_room public.cityxiv_rooms; v_count integer; v_ready integer;
+declare v_room public.cityxiv_rooms; v_count integer; v_ready integer; v_host_seen timestamptz;
 begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
-  if not found or v_room.host_id<>auth.uid() then raise exception 'Host only'; end if;
+  if not found then raise exception 'Room not found'; end if;
+  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=auth.uid();
+  if not found then raise exception 'Not a room member'; end if;
+  if v_room.host_id<>auth.uid() then
+    select last_seen into v_host_seen from public.cityxiv_room_players where room_id=p_room_id and user_id=v_room.host_id;
+    if v_host_seen is not null and v_host_seen>now()-interval '90 seconds' then raise exception 'Host only'; end if;
+    update public.cityxiv_rooms set host_id=auth.uid(),updated_at=now() where id=p_room_id;
+  end if;
   if v_room.status<>'waiting' then raise exception 'Room already started'; end if;
-  select count(*),count(*) filter(where ready) into v_count,v_ready from public.cityxiv_room_players where room_id=p_room_id;
+  select count(*),count(*) filter(where ready) into v_count,v_ready from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
   if v_count<2 or v_count>v_room.max_players or v_ready<>v_count then raise exception '2–5 players must all be ready'; end if;
   update public.cityxiv_rooms set status='playing',updated_at=now(),expires_at=now()+interval '24 hours' where id=p_room_id;
   return true;
