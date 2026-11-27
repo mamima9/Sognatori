@@ -62,6 +62,13 @@ const AUCTION_TRACKS = [
   },
 ];
 
+function nextDirectionForLibrary(requestedDirection, previousDirection, cityTrack) {
+  const direction = requestedDirection === "south" || requestedDirection === "north"
+    ? requestedDirection
+    : previousDirection;
+  return direction === "south" ? (cityTrack.southUrl || cityTrack.url) : (cityTrack.northUrl || cityTrack.url);
+}
+
 const MUSIC_LIBRARY = (() => {
   const sources = [...MAIN_TRACKS, ...BATTLE_TRACKS, ...ADVENTURE_TRACKS.flatMap(t => [
     { name: t.name + (t.city ? " · " + t.city : ""), url: t.url },
@@ -95,6 +102,8 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
   const [musicMode, setMusicModeState] = useState("main");
   const [entryDirection, setEntryDirection] = useState("north");
   const lastAdventureRef = useRef({ cityId: "natura", entryDirection: "north" });
+  const insideAdventureMenuRef = useRef(insideAdventureMenu);
+  insideAdventureMenuRef.current = insideAdventureMenu;
 
   const [trackIdx, setTrackIdx] = useState(
     () => Math.floor(Math.random() * MAIN_TRACKS.length)
@@ -141,13 +150,14 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
     const handleMusicMode = (event) => {
       const mode = event.detail?.mode || "main";
 
+      const menuLibrary = insideAdventureMenuRef.current;
       const nextTracks =
         mode === "battle"
           ? BATTLE_TRACKS
           : mode === "auction"
             ? AUCTION_TRACKS
             : mode === "adventure"
-              ? (insideAdventureMenu ? MUSIC_LIBRARY : ADVENTURE_TRACKS)
+              ? (menuLibrary ? MUSIC_LIBRARY : ADVENTURE_TRACKS)
               : MAIN_TRACKS;
 
       const requestedCityId = event.detail?.cityId;
@@ -162,8 +172,12 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
       }
       const activeAdventure = lastAdventureRef.current;
       const cityIndex = mode === "adventure"
-        ? (insideAdventureMenu
-            ? MUSIC_LIBRARY.findIndex(track => track.url === ADVENTURE_TRACKS.find(t => t.cityId === (requestedCityId || activeAdventure.cityId))?.url)
+        ? (menuLibrary
+            ? MUSIC_LIBRARY.findIndex(track => track.url === (() => {
+                const cityTrack = ADVENTURE_TRACKS.find(t => t.cityId === (requestedCityId || activeAdventure.cityId));
+                if (!cityTrack) return null;
+                return nextDirectionForLibrary(requestedDirection, activeAdventure.entryDirection, cityTrack);
+              })())
             : nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId)))
         : -1;
       const nextIndex = mode === "battle"
