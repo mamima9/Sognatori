@@ -62,6 +62,24 @@ const AUCTION_TRACKS = [
   },
 ];
 
+function nextDirectionForLibrary(requestedDirection, previousDirection, cityTrack) {
+  const direction = requestedDirection === "south" || requestedDirection === "north"
+    ? requestedDirection
+    : previousDirection;
+  return direction === "south" ? (cityTrack.southUrl || cityTrack.url) : (cityTrack.northUrl || cityTrack.url);
+}
+
+const MUSIC_LIBRARY = (() => {
+  const sources = [...MAIN_TRACKS, ...BATTLE_TRACKS, ...ADVENTURE_TRACKS.flatMap(t => [
+    { name: t.name + (t.city ? " · " + t.city : ""), url: t.url },
+    ...(t.northUrl && t.northUrl !== t.url ? [{ name: t.name + " · Nord", url: t.northUrl }] : []),
+    ...(t.southUrl && t.southUrl !== t.url ? [{ name: t.name + " · Sud", url: t.southUrl }] : []),
+  ]), ...AUCTION_TRACKS];
+  const seen = new Set();
+  return sources.filter(t => t.url && !seen.has(t.url) && seen.add(t.url));
+})();
+
+
 /*
  * Cambia la modalità musicale del player globale.
  *
@@ -84,6 +102,8 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
   const [musicMode, setMusicModeState] = useState("main");
   const [entryDirection, setEntryDirection] = useState("north");
   const lastAdventureRef = useRef({ cityId: "natura", entryDirection: "north" });
+  const insideAdventureMenuRef = useRef(insideAdventureMenu);
+  insideAdventureMenuRef.current = insideAdventureMenu;
 
   const [trackIdx, setTrackIdx] = useState(
     () => Math.floor(Math.random() * MAIN_TRACKS.length)
@@ -106,12 +126,12 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
       : musicMode === "auction"
         ? AUCTION_TRACKS
         : musicMode === "adventure"
-          ? ADVENTURE_TRACKS.map((track) => ({
+          ? (insideAdventureMenu ? MUSIC_LIBRARY : ADVENTURE_TRACKS.map((track) => ({
               ...track,
               url: track.southUrl
                 ? (entryDirection === "south" ? track.southUrl : track.northUrl)
                 : track.url,
-            }))
+            })))
           : MAIN_TRACKS;
 
   const current = tracks[trackIdx] || tracks[0];
@@ -130,13 +150,14 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
     const handleMusicMode = (event) => {
       const mode = event.detail?.mode || "main";
 
+      const menuLibrary = insideAdventureMenuRef.current;
       const nextTracks =
         mode === "battle"
           ? BATTLE_TRACKS
           : mode === "auction"
             ? AUCTION_TRACKS
             : mode === "adventure"
-              ? ADVENTURE_TRACKS
+              ? (menuLibrary ? MUSIC_LIBRARY : ADVENTURE_TRACKS)
               : MAIN_TRACKS;
 
       const requestedCityId = event.detail?.cityId;
@@ -151,7 +172,13 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
       }
       const activeAdventure = lastAdventureRef.current;
       const cityIndex = mode === "adventure"
-        ? nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId))
+        ? (menuLibrary
+            ? MUSIC_LIBRARY.findIndex(track => track.url === (() => {
+                const cityTrack = ADVENTURE_TRACKS.find(t => t.cityId === (requestedCityId || activeAdventure.cityId));
+                if (!cityTrack) return null;
+                return nextDirectionForLibrary(requestedDirection, activeAdventure.entryDirection, cityTrack);
+              })())
+            : nextTracks.findIndex((track) => track.cityId === (requestedCityId || activeAdventure.cityId)))
         : -1;
       const nextIndex = mode === "battle"
         ? 0
@@ -383,7 +410,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
 
         {/* PLAYLIST */}
         <AnimatePresence>
-          {showPlaylist && musicMode !== "adventure" && (
+          {showPlaylist && (insideAdventureMenu || musicMode !== "adventure") && (
             <motion.div
               initial={{
                 opacity: 0,
@@ -536,7 +563,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
         >
 
           {/* In Avventura le tracce sono fisse per città e porta: niente selezione manuale. */}
-          {musicMode !== "adventure" && (
+          {(insideAdventureMenu || musicMode !== "adventure") && (
             <button onClick={previousTrack} className="w-7 h-7 flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center text-xs text-slate-300 transition" aria-label="Brano precedente">
               ⏮
             </button>
@@ -551,14 +578,14 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
             {playing ? "⏸" : "▶"}
           </button>
 
-          {musicMode !== "adventure" && (
+          {(insideAdventureMenu || musicMode !== "adventure") && (
             <button onClick={nextTrack} className="w-7 h-7 flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center text-xs text-slate-300 transition" aria-label="Brano successivo">
               ⏭
             </button>
           )}
 
           {/* CURRENT TRACK: non selezionabile in Avventura */}
-          {musicMode === "adventure" ? (
+          {musicMode === "adventure" && !insideAdventureMenu ? (
             <div className="ml-1 px-2 h-7 min-w-0 max-w-[150px] flex items-center justify-center text-xs text-slate-300">
               <span className="truncate">{current?.name || "Musica"}</span>
             </div>
