@@ -100,12 +100,15 @@ end $$;
 
 create or replace function public.cityxiv_set_ready(p_room_id uuid,p_ready boolean)
 returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
+declare v_status text;
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
+  select status into v_status from public.cityxiv_rooms where id=p_room_id for update;
+  if v_status is distinct from 'waiting' then raise exception 'Lobby is no longer open'; end if;
   update public.cityxiv_room_players set ready=p_ready,last_seen=now() where room_id=p_room_id and user_id=auth.uid();
   if not found then raise exception 'Not a room member'; end if;
   return true;
-end $$;
+end $;
 
 create or replace function public.cityxiv_start_room(p_room_id uuid)
 returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
@@ -185,7 +188,9 @@ begin
   if p_action='recruit' and public.cityxiv_character_stats(p_character_id) is null then raise exception 'Invalid Sognatore'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
-  v_state:=v_room.game_state; v_players:=v_state->'players'; v_player:=v_players->v_user::text;
+  v_state:=v_room.game_state;
+  if coalesce((v_state->>'lost')::boolean,false) or coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition is over'; end if;
+  v_players:=v_state->'players'; v_player:=v_players->v_user::text;
   if v_player is null then raise exception 'Player state missing'; end if;
   v_used:=coalesce((v_player->>'actions_used')::integer,0); if v_used>=3 then raise exception 'No actions left this round'; end if;
   v_stage:=coalesce((v_state->>'stage')::integer,0); v_active:=v_player->>'active'; v_bench:=v_player->>'bench'; v_enemy:=v_state->'enemy';
@@ -296,7 +301,8 @@ begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
   if not found or v_room.host_id<>auth.uid() or v_room.status<>'playing' then raise exception 'Host only'; end if;
   v_state:=v_room.game_state; v_stage:=coalesce((v_state->>'stage')::integer,0); v_enemy:=v_state->'enemy';
-  if v_state->>'lost'='true' then raise exception 'Party defeated'; end if;
+  if coalesce((v_state->>'lost')::boolean,false) then raise exception 'Party defeated'; end if;
+  if coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition already completed'; end if;
   if v_stage=0 then
     if coalesce((v_state->>'clues')::integer,0)<2 or not coalesce((v_state->'flags'->>'explored_stage_0')::boolean,false) then raise exception 'Piazza: explore and gather two clues'; end if;
   elsif v_stage in (1,2) then
