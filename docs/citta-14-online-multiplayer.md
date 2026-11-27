@@ -51,3 +51,43 @@ The migration received a source audit that corrected malformed dollar-quote deli
 
 - Multiplayer uses simplified shared cooperative combat and progression; it is separate from the existing local 1–5-player simulator.
 - Avatar images are camera-facing textured planes (2.5D) in the current Lumequieto renderer, not rigged character models.
+
+
+## Three-action mobile-first loop (incremental implementation)
+
+- During zone preparation, the three selectable actions are Explore, a single-player minor fight, and Talk. Each consumes one of the player's three actions; arbitrary combinations are valid.
+- Explore contributes shared zone progress and clues; Talk contributes a clue and 5 shared coins; minor fights resolve as a single action, apply an enemy retaliation if the character cannot defeat the minor monster, and grant personal XP plus shared coins on victory.
+- The action panel displays each player's action count/readiness. When all room members have used three actions, the room state switches to an explicit enemy phase. The host client automatically calls the idempotent cityxiv_enemy_turn RPC; it resolves the computer enemy, resets action counters and advances the round. Manual phase-advance controls are removed from the action UI.
+- Party Team opens a mobile-friendly panel showing all party members, active Sognatori, HP, level, XP, action count and recruited bench character. The panel hides movement joystick and Interagisci.
+- Recruitment is not a default action; the RPC rejects unilateral recruitment until a party-offer/decision flow is implemented.
+- The renderer caps mobile pixel ratio and reduces shadow-map resolution for performance, while using higher shadow resolution on larger screens.
+
+## Additional release checks for this increment
+
+| Check | Expected result |
+| --- | --- |
+| Three actions selected by each member | Only then does the state switch to enemy phase |
+| Host sees enemy phase | Host automatically calls enemy-turn RPC; duplicate calls are idempotent |
+| Enemy turn resolves | HP/guard update, actions reset and round increments |
+| Explore, Talk and minor fight | All consume one action and grant their respective progress/reward |
+| Party Team panel | Shows party data and hides overworld controls while open |
+| Non-host client | Cannot execute enemy turn or bypass phase lock |
+
+This increment is source-reviewed but not yet runtime-verified against a live Supabase database. The migration remains a release prerequisite; do not merge/deploy the online loop until the migration and multi-device test matrix above pass.
+
+- Shared exploration treasure: the server records a once-per-zone treasure flag and grants the party 20 coins when the exploration threshold is reached; the treasure counter and flag are synchronized in the room state.
+
+
+## Mandatory graphics release gate
+
+The required visual target is a curated, real 3D RPG standard—not placeholder cubes or generic avatars: recognizable original Sognatore models, detailed and distinct zones, vegetation/structures, atmosphere, materials, lighting, shadows and effects, coherent presentation across overworld, battles and UI, with mobile performance maintained. The selected Sognatore must be its actual 3D model for both local and remote party members.
+
+This increment only improves renderer performance settings and shadow quality. The current multiplayer avatars remain camera-facing 2.5D artwork planes; a repository code search did not surface a GLTF/GLB model-loader or rigged model pipeline. The graphics gate is therefore **not met** and must not be represented as complete until rigged original assets and visual review are available.
+
+
+## Anti-farming guard for the three-action loop
+
+- Exploration treasure progress now counts separately within each stage. Two exploration actions in that specific zone unlock its shared treasure; previous-zone exploration does not carry into the next zone's threshold.
+- Talk and minor-fight reward claims are limited to once per player per zone, stored server-side in room flags. Repeat attempts are rejected, and the mobile action buttons reflect the player's already-claimed status.
+- The HUD now shows exploration progress for the current zone rather than dumping internal flag keys.
+- This is a source-level change only. Vercel rate-limit failure means the latest branch commit has no verified fresh preview build; Supabase and multi-device tests remain pending.

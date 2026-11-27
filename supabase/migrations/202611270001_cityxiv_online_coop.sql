@@ -7,7 +7,7 @@ create table if not exists public.cityxiv_rooms (
   host_id uuid not null references auth.users(id) on delete cascade,
   max_players int not null check (max_players between 2 and 5),
   status text not null default 'waiting' check (status in ('waiting','playing','finished')),
-  game_state jsonb not null default '{"stage":0,"round":1,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb,
+  game_state jsonb not null default '{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"treasure_count":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   expires_at timestamptz not null default now() + interval '24 hours'
@@ -60,7 +60,7 @@ begin
   if public.cityxiv_character_stats(p_character_id) is null then raise exception 'Invalid Sognatore'; end if;
   if p_max_players not between 2 and 5 then raise exception 'Room size must be 2–5'; end if;
   v_name:=left(coalesce(nullif(trim(p_player_name),''),'Player'),32);
-  v_state:='{"stage":0,"round":1,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb;
+  v_state:='{"stage":0,"round":1,"phase":"players","zone_progress":0,"minor_fights":0,"treasure_count":0,"clues":0,"explores":0,"coins":0,"enemy":null,"flags":{},"log":[],"won":false,"lost":false,"players":{}}'::jsonb;
   for i in 1..10 loop
     v_code:=upper(substr(replace(gen_random_uuid()::text,'-',''),1,6));
     begin
@@ -165,14 +165,17 @@ declare
   v_user uuid:=auth.uid(); v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_player jsonb;
   v_active text; v_bench text; v_stats jsonb; v_enemy jsonb; v_damage integer; v_hp integer;
   v_stage integer; v_used integer; v_count integer; v_all_done boolean; v_key text; v_member jsonb;
-  v_raw integer; v_def integer; v_guard boolean; v_newhp integer; v_log jsonb; v_flag text;
+  v_raw integer; v_def integer; v_guard boolean; v_newhp integer; v_log jsonb; v_flag text; v_phase text; v_minor_hp integer; v_minor_damage integer; v_minor_reward integer;
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
-  if p_action not in ('explore','talk','attack','attack_area','protect','recover','recruit','switch') then raise exception 'Invalid action'; end if;
+  if p_action not in ('explore','talk','fight_minor','attack','attack_area','protect','recover','recruit','switch') then raise exception 'Invalid action'; end if;
+  if p_action='recruit' then raise exception 'Recruitment must be offered and decided by the party'; end if;
   if p_action='recruit' and public.cityxiv_character_stats(p_character_id) is null then raise exception 'Invalid Sognatore'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then raise exception 'Not a playing member'; end if;
   v_state:=v_room.game_state;
+  v_phase:=coalesce(v_state->>'phase','players');
+  if v_phase<>'players' then raise exception 'Players phase is closed'; end if;
   if coalesce((v_state->>'lost')::boolean,false) or coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition is over'; end if;
   v_players:=v_state->'players'; v_player:=v_players->v_user::text;
   if v_player is null then raise exception 'Player state missing'; end if;
@@ -183,10 +186,26 @@ begin
   end if;
   v_used:=coalesce((v_player->>'actions_used')::integer,0); if v_used>=3 then raise exception 'No actions left this round'; end if;
   v_stage:=coalesce((v_state->>'stage')::integer,0); v_active:=v_player->>'active'; v_bench:=v_player->>'bench'; v_enemy:=v_state->'enemy';
+  if v_enemy is not null and coalesce((v_enemy->>'hp')::integer,0)>0 then
+    if p_action not in ('attack','attack_area','protect','recover','switch') then raise exception 'Combat actions are required while the zone enemy is active'; end if;
+  elsif p_action not in ('explore','talk','fight_minor','recover','switch') then
+    raise exception 'Choose Explore, a minor fight, or Talk during zone preparation';
+  end if;
   if p_action='explore' then
     v_state:=jsonb_set(v_state,'{explores}',to_jsonb(coalesce((v_state->>'explores')::integer,0)+1),true);
+    -- Count exploration independently in each zone; do not carry a previous zone's
+    -- discoveries into the next zone's shared treasure threshold.
+    v_flag:='explores_stage_'||v_stage;
+    v_count:=coalesce((v_state->'flags'->>v_flag)::integer,0)+1;
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(v_count),true);
     v_flag:='explored_stage_'||v_stage;
     v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
+    v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+1),true);
+    if v_count>=2 and not coalesce((v_state->'flags'->>('shared_treasure_stage_'||v_stage))::boolean,false) then
+      v_state:=jsonb_set(v_state,array['flags','shared_treasure_stage_'||v_stage],to_jsonb(true),true);
+      v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+20),true);
+      v_state:=jsonb_set(v_state,'{treasure_count}',to_jsonb(coalesce((v_state->>'treasure_count')::integer,0)+1),true);
+    end if;
     if v_stage=0 then
       v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
     elsif v_stage in (1,2) and (v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0) and not coalesce((v_state->'flags'->>('enemy_spawned_stage_'||v_stage))::boolean,false) then
@@ -197,7 +216,27 @@ begin
       v_state:=jsonb_set(v_state,array['flags','enemy_spawned_stage_'||v_stage],to_jsonb(true),true);
     end if;
   elsif p_action='talk' then
+    v_flag:='talk_reward_'||v_user::text||'_stage_'||v_stage;
+    if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'Talk reward already claimed in this zone'; end if;
     v_state:=jsonb_set(v_state,'{clues}',to_jsonb(coalesce((v_state->>'clues')::integer,0)+1),true);
+    v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+1),true);
+    v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+5),true);
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
+  elsif p_action='fight_minor' then
+    v_flag:='minor_fight_'||v_user::text||'_stage_'||v_stage;
+    if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'Minor fight already completed in this zone'; end if;
+    v_stats:=public.cityxiv_character_stats(v_active); if v_stats is null then raise exception 'Invalid active character'; end if;
+    v_minor_hp:=8+v_stage*4;
+    v_damage:=greatest(3,round((coalesce((v_stats->>'att')::numeric,1)*.75+coalesce((v_stats->>'vel')::numeric,1)*.15)::numeric)::integer);
+    v_hp:=greatest(0,v_minor_hp-v_damage);
+    v_minor_damage:=case when v_hp>0 then greatest(1,4+v_stage*2-floor(coalesce((v_stats->>'dif')::integer,1)/5)::integer) else 0 end;
+    v_player:=jsonb_set(v_player,'{hp}',to_jsonb(greatest(0,coalesce((v_player->>'hp')::integer,20)-v_minor_damage)),true);
+    v_minor_reward:=case when v_hp=0 then 15+v_stage*5 else 5 end;
+    v_state:=jsonb_set(v_state,array['flags',v_flag],to_jsonb(true),true);
+    v_player:=jsonb_set(v_player,'{xp}',to_jsonb(coalesce((v_player->>'xp')::integer,0)+v_minor_reward),true);
+    v_state:=jsonb_set(v_state,'{minor_fights}',to_jsonb(coalesce((v_state->>'minor_fights')::integer,0)+1),true);
+    v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(coalesce((v_state->>'zone_progress')::integer,0)+2),true);
+    if v_hp=0 then v_state:=jsonb_set(v_state,'{coins}',to_jsonb(coalesce((v_state->>'coins')::integer,0)+5+v_stage*2),true); end if;
   elsif p_action='attack' or p_action='attack_area' then
     if v_enemy is null or coalesce((v_enemy->>'hp')::integer,0)<=0 then raise exception 'No active enemy'; end if;
     v_stats:=public.cityxiv_character_stats(v_active); if v_stats is null then raise exception 'Invalid active character'; end if;
@@ -246,39 +285,51 @@ begin
   for v_key,v_member in select key,value from jsonb_each(v_players) loop
     if coalesce((v_member->>'actions_used')::integer,0)<3 then v_all_done:=false; exit; end if;
   end loop;
-  if v_all_done and v_count>0 then
-    v_enemy:=v_state->'enemy';
-    if v_enemy is not null and coalesce((v_enemy->>'hp')::integer,0)>0 then
-      v_raw:=case when v_stage=3 and coalesce((v_enemy->>'phase')::integer,1)=2 then 8+floor(v_count*2)::integer else 5+floor(v_count*1.5)::integer end;
-      for v_key,v_member in select key,value from jsonb_each(v_players) loop
-        v_stats:=public.cityxiv_character_stats(v_member->>'active');
-        v_def:=coalesce((v_stats->>'dif')::integer,1);
-        v_damage:=greatest(1,v_raw-floor(v_def/5)::integer);
-        if coalesce((v_member->>'guard')::boolean,false) then v_damage:=ceil(v_damage/2.0)::integer; end if;
-        v_newhp:=greatest(0,coalesce((v_member->>'hp')::integer,20)-v_damage);
-        v_member:=jsonb_set(v_member,'{hp}',to_jsonb(v_newhp),true);
-        v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
-        v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true);
-        v_players:=jsonb_set(v_players,array[v_key],v_member,true);
-      end loop;
-      v_state:=jsonb_set(v_state,'{players}',v_players,true);
-      if v_stage=3 and coalesce((v_enemy->>'hp')::integer,0)<=coalesce((v_enemy->>'max')::integer,1)/2 and coalesce((v_enemy->>'phase')::integer,1)=1 then
-        v_enemy:=jsonb_set(v_enemy,'{phase}',to_jsonb(2),true); v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
-      end if;
-      v_all_done:=true;
-      for v_key,v_member in select key,value from jsonb_each(v_players) loop
-        if coalesce((v_member->>'hp')::integer,0)>0 or (v_member->>'bench') is not null and coalesce((v_member->>'bench_hp')::integer,0)>0 then v_all_done:=false; exit; end if;
-      end loop;
-      if v_all_done then v_state:=jsonb_set(v_state,'{lost}',to_jsonb(true),true); end if;
-    else
-      for v_key,v_member in select key,value from jsonb_each(v_players) loop
-        v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true); v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
-        v_players:=jsonb_set(v_players,array[v_key],v_member,true);
-      end loop;
-      v_state:=jsonb_set(v_state,'{players}',v_players,true);
+  if v_all_done and v_count>0 then v_state:=jsonb_set(v_state,'{phase}',to_jsonb('enemy'),true); end if;
+  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  return v_state;
+end $$;
+
+create or replace function public.cityxiv_enemy_turn(p_room_id uuid)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+declare v_room public.cityxiv_rooms; v_state jsonb; v_players jsonb; v_enemy jsonb; v_stage integer; v_count integer; v_key text; v_member jsonb; v_stats jsonb; v_raw integer; v_def integer; v_damage integer; v_newhp integer; v_all_done boolean;
+begin
+  select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
+  if not found or v_room.host_id<>auth.uid() then raise exception 'Host only'; end if;
+  v_state:=v_room.game_state;
+  if coalesce(v_state->>'phase','players')<>'enemy' then return v_state; end if;
+  v_players:=v_state->'players'; v_enemy:=v_state->'enemy'; v_stage:=coalesce((v_state->>'stage')::integer,0);
+  select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id;
+  if v_enemy is not null and coalesce((v_enemy->>'hp')::integer,0)>0 then
+    v_raw:=case when v_stage=3 and coalesce((v_enemy->>'phase')::integer,1)=2 then 8+floor(v_count*2)::integer else 5+floor(v_count*1.5)::integer end;
+    for v_key,v_member in select key,value from jsonb_each(v_players) loop
+      v_stats:=public.cityxiv_character_stats(v_member->>'active'); v_def:=coalesce((v_stats->>'dif')::integer,1);
+      v_damage:=greatest(1,v_raw-floor(v_def/5)::integer);
+      if coalesce((v_member->>'guard')::boolean,false) then v_damage:=ceil(v_damage/2.0)::integer; end if;
+      v_newhp:=greatest(0,coalesce((v_member->>'hp')::integer,20)-v_damage);
+      v_member:=jsonb_set(v_member,'{hp}',to_jsonb(v_newhp),true);
+      v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
+      v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true);
+      v_players:=jsonb_set(v_players,array[v_key],v_member,true);
+    end loop;
+    v_state:=jsonb_set(v_state,'{players}',v_players,true);
+    if v_stage=3 and coalesce((v_enemy->>'hp')::integer,0)<=coalesce((v_enemy->>'max')::integer,1)/2 and coalesce((v_enemy->>'phase')::integer,1)=1 then
+      v_enemy:=jsonb_set(v_enemy,'{phase}',to_jsonb(2),true); v_state:=jsonb_set(v_state,'{enemy}',v_enemy,true);
     end if;
-    v_state:=jsonb_set(v_state,'{round}',to_jsonb(coalesce((v_state->>'round')::integer,1)+1),true);
+    v_all_done:=true;
+    for v_key,v_member in select key,value from jsonb_each(v_players) loop
+      if coalesce((v_member->>'hp')::integer,0)>0 or (v_member->>'bench') is not null and coalesce((v_member->>'bench_hp')::integer,0)>0 then v_all_done:=false; exit; end if;
+    end loop;
+    if v_all_done then v_state:=jsonb_set(v_state,'{lost}',to_jsonb(true),true); end if;
+  else
+    for v_key,v_member in select key,value from jsonb_each(v_players) loop
+      v_member:=jsonb_set(v_member,'{actions_used}',to_jsonb(0),true); v_member:=jsonb_set(v_member,'{guard}',to_jsonb(false),true);
+      v_players:=jsonb_set(v_players,array[v_key],v_member,true);
+    end loop;
+    v_state:=jsonb_set(v_state,'{players}',v_players,true);
   end if;
+  v_state:=jsonb_set(v_state,'{phase}',to_jsonb('players'),true);
+  v_state:=jsonb_set(v_state,'{round}',to_jsonb(coalesce((v_state->>'round')::integer,1)+1),true);
   update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
   return v_state;
 end $$;
@@ -290,6 +341,10 @@ begin
   select * into v_room from public.cityxiv_rooms where id=p_room_id for update;
   if not found or v_room.host_id<>auth.uid() or v_room.status<>'playing' then raise exception 'Host only'; end if;
   v_state:=v_room.game_state; v_stage:=coalesce((v_state->>'stage')::integer,0); v_enemy:=v_state->'enemy';
+  if coalesce(v_state->>'phase','players')<>'players' then raise exception 'Wait for the enemy phase to resolve'; end if;
+  for v_key,v_member in select key,value from jsonb_each(coalesce(v_state->'players','{}'::jsonb)) loop
+    if coalesce((v_member->>'actions_used')::integer,0)<>0 then raise exception 'Finish the round before advancing zones'; end if;
+  end loop;
   if coalesce((v_state->>'lost')::boolean,false) then raise exception 'Party defeated'; end if;
   if coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition already completed'; end if;
   if v_stage=0 then
@@ -311,6 +366,8 @@ begin
   end if;
   v_next:=v_stage+1;
   v_state:=jsonb_set(v_state,'{stage}',to_jsonb(v_next),true);
+  v_state:=jsonb_set(v_state,'{phase}',to_jsonb('players'),true);
+  v_state:=jsonb_set(v_state,'{zone_progress}',to_jsonb(0),true);
   v_state:=jsonb_set(v_state,'{enemy}','null'::jsonb,true);
   if v_next=3 then
     select count(*) into v_count from public.cityxiv_room_players where room_id=v_room.id;
@@ -349,8 +406,9 @@ revoke all on function public.cityxiv_ping(uuid) from public;
 revoke all on function public.cityxiv_resume_room() from public;
 revoke all on function public.cityxiv_leave_room(uuid) from public;
 revoke all on function public.cityxiv_action(uuid,text,text) from public;
+revoke all on function public.cityxiv_enemy_turn(uuid) from public;
 revoke all on function public.cityxiv_advance(uuid) from public;
-grant execute on function public.cityxiv_create_room(text,text,integer),public.cityxiv_join_room(text,text,text),public.cityxiv_set_ready(uuid,boolean),public.cityxiv_start_room(uuid),public.cityxiv_update_position(uuid,double precision,double precision),public.cityxiv_ping(uuid),public.cityxiv_resume_room(),public.cityxiv_leave_room(uuid),public.cityxiv_action(uuid,text,text),public.cityxiv_advance(uuid) to authenticated;
+grant execute on function public.cityxiv_create_room(text,text,integer),public.cityxiv_join_room(text,text,text),public.cityxiv_set_ready(uuid,boolean),public.cityxiv_start_room(uuid),public.cityxiv_update_position(uuid,double precision,double precision),public.cityxiv_ping(uuid),public.cityxiv_resume_room(),public.cityxiv_leave_room(uuid),public.cityxiv_action(uuid,text,text),public.cityxiv_enemy_turn(uuid),public.cityxiv_advance(uuid) to authenticated;
 
 do $$ begin
   if exists(select 1 from pg_publication where pubname='supabase_realtime') then
