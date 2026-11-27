@@ -549,7 +549,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible
         >
 
           {/* In Avventura le tracce sono fisse per città e porta: niente selezione manuale. */}
-          {musicMode !== "adventure" && (
+          {(insideAdventureMenu || musicMode !== "adventure") && (
             <button onClick={previousTrack} className="w-7 h-7 flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center text-xs text-slate-300 transition" aria-label="Brano precedente">
               ⏮
             </button>
