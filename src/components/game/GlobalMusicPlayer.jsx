@@ -78,7 +78,7 @@ export function setMusicMode(mode) {
   );
 }
 
-export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) {
+export default function GlobalMusicPlayer({ insideAdventureMenu = false, visible = true } = {}) {
   const location = useLocation();
 
   const [musicMode, setMusicModeState] = useState("main");
@@ -183,6 +183,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
    * CREA AUDIO
    */
   useEffect(() => {
+    if (location.pathname === "/avventura-coop" && !insideAdventureMenu) return;
     // Un solo elemento audio condiviso: la musica sopravvive
     // ai cambi pagina e agli eventuali remount del player.
     if (!sharedMusicAudio) {
@@ -222,7 +223,7 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackIdx, musicMode, entryDirection]);
+  }, [trackIdx, musicMode, entryDirection, location.pathname, insideAdventureMenu]);
 
   /*
    * VOLUME
@@ -373,6 +374,8 @@ export default function GlobalMusicPlayer({ insideAdventureMenu = false } = {}) 
   // Player nascosto soltanto nelle due mappe 3D dedicate; il resto dell'esperienza resta invariato.
   if (location.pathname === "/amargenta-3d") return null;
   if (location.pathname === "/avventura" && !insideAdventureMenu) return null;
+  if (location.pathname === "/avventura-coop" && !insideAdventureMenu) return null;
+  if (insideAdventureMenu && !visible) return null;
 
   return (
     <div className={insideAdventureMenu ? "w-full flex justify-start px-0 py-3" : "w-full flex justify-center px-4 py-4"}>
