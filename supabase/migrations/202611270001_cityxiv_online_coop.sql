@@ -176,6 +176,11 @@ begin
   if coalesce((v_state->>'lost')::boolean,false) or coalesce((v_state->>'won')::boolean,false) then raise exception 'Expedition is over'; end if;
   v_players:=v_state->'players'; v_player:=v_players->v_user::text;
   if v_player is null then raise exception 'Player state missing'; end if;
+  v_active:=v_player->>'active'; v_bench:=v_player->>'bench';
+  if coalesce((v_player->>'hp')::integer,0)<=0 then
+    if v_bench is null or coalesce((v_player->>'bench_hp')::integer,0)<=0 then raise exception 'No living Sognatore'; end if;
+    if p_action not in ('switch','recover') then raise exception 'Switch or recover before acting'; end if;
+  end if;
   v_used:=coalesce((v_player->>'actions_used')::integer,0); if v_used>=3 then raise exception 'No actions left this round'; end if;
   v_stage:=coalesce((v_state->>'stage')::integer,0); v_active:=v_player->>'active'; v_bench:=v_player->>'bench'; v_enemy:=v_state->'enemy';
   if p_action='explore' then
