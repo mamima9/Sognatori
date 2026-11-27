@@ -1,0 +1,95 @@
+import React,{useCallback,useEffect,useMemo,useRef,useState} from "react";
+import {supabase} from "@/lib/supabase";
+import {ROSTER} from "@/lib/sognatoriData";
+import Lumequieto3D from "@/components/Lumequieto3D";
+
+const STARTERS=ROSTER.slice(0,29);
+const BG="#17241f",PANEL="#26372e",GOLD="#d6b77a",TEXT="#f4ead8",MUTED="#b8c4b5";
+const box={background:PANEL,border:"1px solid #536859",borderRadius:16,padding:14};
+const button=(color=GOLD)=>({background:color,color:BG,border:0,borderRadius:10,padding:"10px 13px",fontWeight:800,cursor:"pointer"});
+const nameOf=(user)=>user?.user_metadata?.username||user?.user_metadata?.full_name||user?.email?.split("@")[0]||"Player";
+export default function CityXIVOnline({onBack=()=>{}}){
+ const [user,setUser]=useState(null),[screen,setScreen]=useState("menu"),[roomId,setRoomId]=useState(null),[room,setRoom]=useState(null),[players,setPlayers]=useState([]),[gameState,setGameState]=useState(null);
+ const [selected,setSelected]=useState(STARTERS[0]?.id||""),[maxPlayers,setMaxPlayers]=useState(5),[code,setCode]=useState(""),[recruitId,setRecruitId]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[position,setPosition]=useState({x:0,z:3});
+ const lastPositionRef=useRef(0),roomIdRef=useRef(null),roomRef=useRef(null);
+ useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user||null))},[]);
+ const refreshRoom=useCallback(async(id)=>{
+   if(!id)return;
+   const [r,p]=await Promise.all([supabase.from("cityxiv_rooms").select("*").eq("id",id).single(),supabase.from("cityxiv_room_players").select("*").eq("room_id",id).order("joined_at")]);
+   if(r.error||p.error){setError(r.error?.message||p.error?.message||"Aggiornamento stanza non riuscito.");return}
+   setRoom(r.data);roomRef.current=r.data;setPlayers(p.data||[]);setGameState(r.data.game_state);
+   if(r.data.status==="waiting")setScreen("lobby");else setScreen("game");
+ },[]);
+ useEffect(()=>{roomIdRef.current=roomId},[roomId]);
+ useEffect(()=>{
+   if(!roomId)return;
+   refreshRoom(roomId);
+   const channel=supabase.channel("cityxiv-online-"+roomId)
+     .on("postgres_changes",{event:"*",schema:"public",table:"cityxiv_rooms",filter:"id=eq."+roomId},()=>refreshRoom(roomId))
+     .on("postgres_changes",{event:"*",schema:"public",table:"cityxiv_room_players",filter:"room_id=eq."+roomId},()=>refreshRoom(roomId))
+     .subscribe();
+   const heartbeat=setInterval(()=>supabase.rpc("cityxiv_ping",{p_room_id:roomId}),20000);
+   return()=>{clearInterval(heartbeat);supabase.removeChannel(channel)};
+ },[roomId,refreshRoom]);
+ useEffect(()=>{
+   if(!user||roomId)return;
+   supabase.rpc("cityxiv_resume_room").then(({data,error:e})=>{if(!e&&data){setRoomId(data);setScreen("lobby")}});
+ },[user,roomId]);
+ const actRpc=async(name,args)=>{
+   setError("");setBusy(true);
+   try{const {data,error:e}=await supabase.rpc(name,args);if(e)throw e;if(roomId)await refreshRoom(roomId);return data}
+   catch(e){setError(e?.message||"Operazione non riuscita.");return null}
+   finally{setBusy(false)}
+ };
+ const create=async()=>{
+   if(!user)return setError("Accedi prima di creare una stanza.");
+   const id=await actRpc("cityxiv_create_room",{p_player_name:nameOf(user),p_character_id:selected,p_max_players:maxPlayers});
+   if(id){setRoomId(id);setCode("");setScreen("lobby")}
+ };
+ const join=async()=>{
+   if(!user)return setError("Accedi prima di entrare in una stanza.");
+   const id=await actRpc("cityxiv_join_room",{p_room_code:code,p_player_name:nameOf(user),p_character_id:selected});
+   if(id){setRoomId(id);setScreen("lobby")}
+ };
+ const leave=async()=>{
+   const id=roomIdRef.current;
+   if(id){await supabase.rpc("cityxiv_leave_room",{p_room_id:id});supabase.removeChannel("cityxiv-online-"+id)}
+   setRoomId(null);setRoom(null);setPlayers([]);setGameState(null);setScreen("menu");onBack();
+ };
+ const ready=async()=>{const me=players.find(p=>p.user_id===user?.id);await actRpc("cityxiv_set_ready",{p_room_id:roomId,p_ready:!me?.ready})};
+ const start=async()=>await actRpc("cityxiv_start_room",{p_room_id:roomId});
+ const advance=async()=>await actRpc("cityxiv_advance",{p_room_id:roomId});
+ const sendAction=async(a,characterId=null)=>await actRpc("cityxiv_action",{p_room_id:roomId,p_action:a,p_character_id:characterId});
+ const move=useCallback(({x,z})=>{
+   setPosition({x,z});if(!roomIdRef.current||Date.now()-lastPositionRef.current<400)return;
+   lastPositionRef.current=Date.now();supabase.rpc("cityxiv_update_position",{p_room_id:roomIdRef.current,p_x:x,p_z:z});
+ },[]);
+ const current=gameState?.players?.[user?.id];
+ const active=useMemo(()=>STARTERS.find(s=>s.id===current?.active)||STARTERS.find(s=>s.id===selected)||STARTERS[0],[current?.active,selected]);
+ const remote=useMemo(()=>players.filter(p=>p.user_id!==user?.id).map(p=>({id:p.user_id,name:p.player_name,character_id:p.character_id,img:STARTERS.find(s=>s.id===p.character_id)?.img,position:p.position||{x:0,z:3}})),[players,user?.id]);
+ const available=useMemo(()=>STARTERS.filter(s=>s.id!==current?.active&&s.id!==current?.bench&&!players.some(p=>p.user_id!==user?.id&&p.character_id===s.id&&gameState?.players?.[p.user_id]?.active===s.id)),[current,players,user?.id,gameState]);
+ const stage=gameState?.stage||0;
+ const stageNames=["Piazza delle Lanterne","Bosco dei Sussurri","Archivio Sommerso","Sala del Sigillo"];
+ const me=players.find(p=>p.user_id===user?.id);
+ const hp=current?.hp??20,used=current?.actions_used??0;
+ const showGame=room?.status==="playing"||room?.status==="finished";
+ if(!user)return <main style={{position:"fixed",inset:0,overflow:"auto",background:BG,color:TEXT,padding:20,display:"grid",placeItems:"center"}}><section style={{...box,maxWidth:480,textAlign:"center"}}><h1>City XIV · Multiplayer online</h1><p>Accedi per creare o unirti a una stanza cooperativa da 2 a 5 giocatori.</p><a href="/login?returnTo=%2Favventura-coop" style={button()}>Accedi</a><button style={{...button("#9eb5e4"),marginLeft:8}} onClick={onBack}>Indietro</button></section></main>;
+ if(showGame&&gameState&&!gameState.won&&!gameState.lost&&room?.status!=="finished"){
+   return <main style={{position:"fixed",inset:0,overflow:"hidden",background:BG,color:TEXT}}>
+    <div style={{position:"absolute",inset:0}}><Lumequieto3D stage={stage} restorePosition={position} avatarCharacter={active} remotePlayers={remote} onPositionChange={move}/></div>
+    <header style={{position:"absolute",top:8,left:8,right:8,display:"flex",gap:8,alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",pointerEvents:"none"}}>
+      <div style={{...box,pointerEvents:"auto",padding:"9px 12px"}}><b>🌐 CITY XIV · {stageNames[stage]||"Lumequieto"}</b><div style={{fontSize:12}}>Stanza {room?.room_code} · Round {gameState.round} · {players.length}/5</div></div>
+      <div style={{...box,pointerEvents:"auto",padding:8,display:"flex",gap:6,alignItems:"center"}}><img src={active?.img} alt="" width="42" height="42" style={{objectFit:"contain"}}/><span><b>{me?.player_name}</b><div>HP {hp}/20 · {3-used} azioni</div><small>XP {current?.xp||0} · Monete {gameState.coins||0}</small></span></div>
+    </header>
+    <div style={{position:"absolute",top:92,left:8,display:"flex",gap:6,flexWrap:"wrap",maxWidth:"min(70vw,680px)"}}>{remote.map(p=><div key={p.id} style={{background:"#17241fe8",border:"1px solid #d6b77a",borderRadius:12,padding:7,display:"flex",gap:6,alignItems:"center"}}><img src={p.img} alt="" width="38" height="38" style={{objectFit:"contain"}}/><span style={{fontSize:12}}><b>{p.name}</b><div>{p.character_id}</div><div>{Math.round(p.position.x)}, {Math.round(p.position.z)}</div></span></div>)}</div>
+    <div style={{position:"absolute",bottom:10,left:10,right:10,display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}><button style={button("#fc9854")} disabled={busy||used>=3} onClick={()=>sendAction("explore")}>🧭 Esplora</button><button style={button("#9eb5e4")} disabled={busy||used>=3} onClick={()=>sendAction("talk")}>💬 Parla</button><button style={button(GOLD)} disabled={busy||used>=3||!gameState.enemy||gameState.enemy.hp<=0} onClick={()=>sendAction("attack")}>⚔️ Attacca</button><button style={button("#91c99c")} disabled={busy||used>=3} onClick={()=>sendAction("protect")}>🛡️ Proteggi</button><button style={button("#91c99c")} disabled={busy||used>=3||hp>=20} onClick={()=>sendAction("recover")}>💚 Recupera</button><button style={button("#9eb5e4")} disabled={busy||used>=3||!current?.bench} onClick={()=>sendAction("switch")}>🔄 Switch</button><select value={recruitId} onChange={e=>setRecruitId(e.target.value)} style={{padding:8,borderRadius:10}}><option value="">Recluta...</option>{available.map(s=><option key={s.id} value={s.id}>{s.nome}</option>)}</select><button style={button("#91c99c")} disabled={busy||used>=3||!!current?.bench||!recruitId} onClick={()=>sendAction("recruit",recruitId)}>🤝 Recluta</button>{room?.host_id===user.id&&<button style={button(GOLD)} disabled={busy} onClick={advance}>{stage===3?"Concludi":"Avanza zona"}</button>}<button style={button("#b5c7c2")} onClick={leave}>Esci</button></div>
+    <div style={{position:"absolute",top:"50%",left:8,transform:"translateY(-50%)",maxWidth:280,background:"#17241fe8",border:"1px solid #d6b77a",borderRadius:14,padding:10}}><b>{gameState.enemy?.name||"Esplorazione"}</b>{gameState.enemy&&<div>HP {gameState.enemy.hp}/{gameState.enemy.max} · Fase {gameState.enemy.phase||1</div>}<div style={{fontSize:12}}>Indizi {gameState.clues||0} · Esplorazioni {gameState.explores||0}</div><div style={{fontSize:12}}>Flag: {Object.keys(gameState.flags||{}).filter(k=>gameState.flags[k]).join(", ")||"nessuna"}</div><small>3 azioni per giocatore; il round si risolve automaticamente quando tutti le consumano.</small></div>
+    {error&&<div style={{position:"absolute",top:"70%",left:8,right:8,background:"#522d2d",borderRadius:12,padding:8}}>{error}</div>}
+   </main>;
+ }
+ if(showGame&&gameState&&(gameState.won||gameState.lost||room?.status==="finished")){
+   return <main style={{position:"fixed",inset:0,background:BG,color:TEXT,overflow:"auto",padding:20}}><section style={{...box,maxWidth:800,margin:"0 auto",textAlign:"center"}}><h1>{gameState.won?"🏆 Lumequieto è salva!":"💫 Spedizione fallita"}</h1><p>{gameState.won?"Il Sigillo Vivente è stato sconfitto dalla squadra.":"La squadra è esausta. La stanza conserva la spedizione."}</p><p>Monete condivise: {gameState.coins}</p><button style={button()} onClick={leave}>Esci</button></section></main>;
+ }
+ if(screen==="lobby"&&room)return <main style={{position:"fixed",inset:0,overflow:"auto",background:BG,color:TEXT,padding:18}}><section style={{maxWidth:1000,margin:"0 auto"}}><header style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}><div><small style={{letterSpacing:4,color:GOLD}}>SOGNATORI · CITY XIV ONLINE</small><h1 style={{margin:"6px 0"}}>Stanza {room.room_code}</h1><p>Cooperativa online · {players.length}/{room.max_players} giocatori</p></div><button style={button("#9eb5e4")} onClick={leave}>Esci</button></header><section style={{...box,marginTop:14}}><div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}><b>Codice invito: {room.room_code}</b><button style={button(GOLD)} onClick={()=>navigator.clipboard?.writeText(room.room_code)}>Copia codice</button><span>Host: {players.find(p=>p.user_id===room.host_id)?.player_name||"—"}</span></div><p>Il leader avvia quando 2–5 giocatori sono presenti e tutti sono pronti.</p><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginTop:12}}>{players.map(p=><div key={p.user_id} style={{background:BG,border:"1px solid #536859",borderRadius:12,padding:12}}><div style={{display:"flex",alignItems:"center",gap:8}}><img src={STARTERS.find(s=>s.id===p.character_id)?.img} alt="" width="64" height="64" style={{objectFit:"contain"}}/><div><b>{p.player_name}</b><div>{p.user_id===room.host_id?"👑 Host":""}</div><div style={{color:p.ready?"#a8e0ac":MUTED}}>{p.ready?"Pronto":"Non pronto"}</div></div></div></div>)}</div><div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:14}}><button style={button("#91c99c")} disabled={busy} onClick={ready}>{me?.ready?"Annulla ready":"Sono pronto"}</button>{room.host_id===user.id&&<button style={button(GOLD)} disabled={busy||players.length<2||players.length>room.max_players||!players.every(p=>p.ready)} onClick={start}>Avvia avventura</button>}<button style={button("#9eb5e4")} onClick={()=>refreshRoom(roomId)}>Aggiorna</button></div></section>{error&&<p style={{color:"#f5a3a3"}}>{error}</p>}<section style={{...box,marginTop:14}}><p>La stanza e la progressione sono salvate nel database. Se un host perde la connessione, il ruolo passa a un membro attivo dopo il timeout.</p></section></section></main>;
+ return <main style={{position:"fixed",inset:0,overflow:"auto",background:BG,color:TEXT,padding:18}}><section style={{maxWidth:1200,margin:"0 auto"}}><header style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}><div><small style={{letterSpacing:4,color:GOLD}}>SOGNATORI · CITY XIV ONLINE</small><h1 style={{margin:"6px 0"}}>Lumequieto cooperativa</h1><p>Stanze private online da 2 a 5 giocatori · progressione condivisa · reconnect.</p></div><button style={button("#9eb5e4")} onClick={onBack}>Indietro</button></header><section style={{...box,marginTop:14}}><label style={{display:"block",marginBottom:10}}>Sognatore <select value={selected} onChange={e=>setSelected(e.target.value)} style={{padding:10,borderRadius:10,marginLeft:8}}>{STARTERS.map(s=><option key={s.id} value={s.id}>{s.nome}</option>)}</select></label><div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}><img src={STARTERS.find(s=>s.id===selected)?.img} alt="" width="100" height="100" style={{objectFit:"contain"}}/><div><b>Personaggio iniziale</b><p>Ogni partecipante sceglie il proprio Sognatore e lo vede nel mondo.</p></div></div><div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginTop:14}}><label>Numero massimo <select value={maxPlayers} onChange={e=>setMaxPlayers(+e.target.value)} style={{padding:9,borderRadius:10}}>{[2,3,4,5].map(n=><option key={n} value={n}>{n}</option>)}</select></label><button style={button(GOLD)} disabled={busy} onClick={create}>Crea stanza</button><input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="CODICE" maxLength={6} style={{padding:10,borderRadius:10,letterSpacing:2}}/><button style={button("#91c99c")} disabled={busy||code.trim().length!==6} onClick={join}>Entra</button></div></section>{error&&<div style={{background:"#522d2d",borderRadius:12,padding:10,marginTop:10}}>{error}</div>}<section style={{...box,marginTop:14}}><h2>Cooperativa online</h2><ul><li>Stanza con codice invito e lobby readiness.</li><li>Posizioni e avatar dei compagni sincronizzati via realtime.</li><li>3 azioni per giocatore, combattimenti condivisi, progressione, XP e monete.</li><li>Salvataggio server, reconnect e trasferimento host.</li></ul></section></section></main>;
+}
