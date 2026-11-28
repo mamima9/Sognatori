@@ -228,3 +228,11 @@ Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv
 - This avoids transaction-start `now()` drift when an RPC waits on a room lock: members who become stale during the wait are evaluated against the actual time after serialization.
 - Regression case: hold the room lock long enough for a member's heartbeat to age past 90 seconds, then invoke offer/vote; the stale member should not count toward the active roster, while the caller's refreshed presence should count.
 - Source-only; lock-wait timing and PostgreSQL behavior remain untested.
+
+
+## Recruitment side-decision action-count correction — 28 Nov 2026
+
+- Removed the `actions_used < 3` restriction from the recruitment-offer RPC and client eligibility. Recruitment is a side decision, does not consume a gameplay action, and remains available while the shared `players` phase is still open—even if the proposer has already locked all three actions and teammates are still finishing.
+- The server still enforces stages 0–2, the players phase, no live zone enemy, empty bench, one offer per proposer per zone, fresh active roster, and unanimous explicit vote. The automatic phase transition remains the gate that closes the window.
+- Regression cases: proposer at 0, 1, 2, or 3 actions may offer while phase remains `players`; the offer must not change action counters; proposal must reject after phase changes to `enemy` or `prep`; active roster and duplicate candidate checks remain unchanged.
+- Source-only correction. PostgreSQL, Supabase, and multi-client tests remain outstanding.
