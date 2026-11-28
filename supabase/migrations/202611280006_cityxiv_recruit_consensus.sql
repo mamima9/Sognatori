@@ -67,7 +67,7 @@ begin
     'candidate',p_character_id,
     'proposer',v_user,
     'stage',v_stage,
-    'votes',jsonb_build_object(v_user::text,true),
+    'votes',jsonb_build_object(),
     'created_at',clock_timestamp()
   );
   v_state:=jsonb_set(v_state,'{recruit_offer}',v_offer,true);
