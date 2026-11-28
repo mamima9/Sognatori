@@ -190,7 +190,7 @@ Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv
 - Each member may propose once per zone. Offers are side decisions and do not consume a gameplay action.
 - The proposer must explicitly vote yes; all fresh active members (90-second heartbeat window) must vote yes before the server assigns the candidate to the proposer's bench.
 - Any no vote vetoes the offer. Candidate IDs are checked against all persisted active/bench state on offer and again at unanimous acceptance.
-- The room lock serializes offer/vote changes and shared-state assignment. The RPCs are authenticated and direct client table writes remain revoked.
+- The room lock serializes offer/vote changes and shared-state assignment. Stale or stage-mismatched offers are cleared on a new proposal. The RPCs are authenticated and direct client table writes remain revoked.
 - The UI hides movement controls while the proposal/vote panel is open and displays the current active-party vote count.
 
 ### Source checks performed
