@@ -207,3 +207,10 @@ Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv
 - No live Supabase migration or rollback has been executed.
 - The Vercel preview build for the client patch is pending at audit time.
 
+
+
+## Stale recruitment offer visibility fix
+
+- The online UI now checks whether the offer proposer is inside the 90-second fresh roster before showing the vote overlay.
+- If a proposer becomes stale, the offer overlay is hidden and another eligible member can initiate a replacement offer; the server RPC clears the stale offer under the room lock before storing the new one.
+- This is a source-level UI/backend-consistency fix. It has not been browser-tested with Supabase presence or multi-client reconnects.
