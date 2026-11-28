@@ -74,3 +74,25 @@ These remain source-level changes and test cases; no PostgreSQL execution or mul
 These are source-review/test-plan additions only; PostgreSQL and multi-client validation remain pending.
 
 - Overworld joystick and Interagisci controls are also hidden during the automatic enemy phase, preventing movement/interactions while the party turn is locked.
+
+
+## Stale-member phase stall and heartbeat reconciliation (28 Nov)
+
+### Finding
+
+The action RPC checks phase completion immediately after an action, but the roster is defined by a 90-second heartbeat window. If one member disconnects after using only one or two actions while the other active members have already used all three, the phase could remain `players`: no remaining action could trigger the action RPC's completion check. Heartbeats were updating presence and host handoff, but did not reconcile the phase.
+
+### Fix
+
+Incremental migration `202611280002_cityxiv_ping_phase_reconcile.sql` replaces `cityxiv_ping(uuid)`. After room-first locking and refreshing the caller's presence, the heartbeat checks the active roster during a live `players` phase. If every fresh member has `actions_used >= 3`, it atomically switches the shared state to `enemy`. The check uses the same 90-second roster window, preserves the existing stale-host takeover, and excludes finished/lost expeditions. The host's client then resolves the enemy phase through the existing idempotent RPC.
+
+### Regression matrix
+
+- 2-player room: player A locks 3 actions; player B disconnects at 1 action. After B becomes stale, A's heartbeat moves the phase to `enemy` without another action.
+- 5-player room: four members lock 3 actions; the fifth disconnects at 2 actions. Once stale, a heartbeat from a fresh member moves the phase to `enemy`.
+- Stale member still fresh (<90s): phase must remain `players` until that member locks 3 actions or becomes stale.
+- Reconnect before the stale cutoff: refreshed member remains active and must complete the 3-action lock.
+- Reconnect after `enemy` phase begins: no late action is accepted; the enemy phase/reset remains authoritative.
+- Concurrent heartbeats: room lock serializes reconciliation; only a phase transition, not a duplicate enemy turn, is stored.
+
+This migration is source-only at this point. It has not been executed against PostgreSQL, rollback-tested, or tested with multiple clients. Apply after migrations `202611270001` and `202611280001` in an authorized Supabase environment, then record the above results before merge.
