@@ -115,6 +115,7 @@ export default function CityXIVOnline({onBack=()=>{}}){
  const recruitOfferVisible=!!recruitOffer&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0);
  const recruitAttemptDone=!!gameState?.flags?.["recruit_offer_attempt_"+user?.id+"_stage_"+stage];
  const canOfferRecruit=stage<3&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0)&&!current?.bench&&!recruitAttemptDone&&!recruitOffer&&recruitOptions.length>0&&used<3;
+ useEffect(()=>{if(recruitPanelOpen&&!canOfferRecruit)setRecruitPanelOpen(false)},[recruitPanelOpen,canOfferRecruit]);
  const recruitVotesYes=onlinePlayers.filter(p=>recruitOffer?.votes?.[p.user_id]===true).length;
   const enemyRetryToken=roomId+":"+(gameState?.round||0)+":"+user?.id,enemyRetryExhausted=phase==="enemy"&&room?.host_id===user?.id&&(phaseAttemptRef.current[enemyRetryToken]||0)>=5;
  const showGame=room?.status==="playing"||room?.status==="finished";
