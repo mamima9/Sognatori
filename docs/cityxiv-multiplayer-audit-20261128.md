@@ -37,3 +37,18 @@ Apply the original migration `202611270001_cityxiv_online_coop.sql` first, then 
 ## Verification state
 
 The incremental SQL is source-reviewed only. It has not been executed or syntax-tested by PostgreSQL, migration applied, rollback tested, or multi-client runtime-tested. Vercel build/deployment for the new commit is not yet verified.
+
+## Additional source fixes (automation audit)
+
+- The base online-co-op migration now permits the authenticated member to use the `recover` action when their active Sognatore is KO and their bench is absent or also KO. This revives the active Sognatore by the existing recovery rule (5 HP), consumes one action, and prevents the KO condition from permanently blocking the mandatory three-action phase.
+- Boss preparation/activation now requires at least one fresh active member (still capped at five), rather than two. The room itself is still initially launched by the existing 2–5 player lobby rule; this change permits a remaining member to continue if the others become stale/disconnected after launch.
+
+### Additional test cases
+
+- Active Sognatore KO with no bench: `recover` succeeds, restores HP, and consumes exactly one action.
+- Active and bench both KO: `recover` succeeds for the active slot; switching remains blocked if the bench is KO.
+- Boss prep with one fresh member after a room started with two or more: that member can confirm and server-authoritative boss start succeeds; stale members are ignored for readiness.
+- Boss prep with zero active members: boss start must reject.
+- Boss prep with two to five active members: every fresh member must be ready before boss activation.
+
+These remain source-level changes and test cases; no PostgreSQL execution or multi-client runtime validation has been performed.
