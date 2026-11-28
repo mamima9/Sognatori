@@ -41,7 +41,6 @@ begin
   v_players:=coalesce(v_state->'players','{}'::jsonb);
   v_player:=v_players->v_user::text;
   if v_player is null or v_player->>'bench' is not null then raise exception 'Your bench is already occupied'; end if;
-  if coalesce((v_player->>'actions_used')::integer,0)>=3 then raise exception 'No actions left this round'; end if;
 
   v_flag:='recruit_offer_attempt_'||v_user::text||'_stage_'||v_stage;
   if coalesce((v_state->'flags'->>v_flag)::boolean,false) then raise exception 'You already proposed recruitment this zone'; end if;
