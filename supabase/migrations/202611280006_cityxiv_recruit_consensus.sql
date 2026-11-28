@@ -108,6 +108,7 @@ declare
   v_proposer_active boolean;
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
+  if p_accept is null then raise exception 'Vote must be explicit'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found then raise exception 'Room not active'; end if;
   update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
