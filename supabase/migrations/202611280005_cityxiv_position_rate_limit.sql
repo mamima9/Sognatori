@@ -36,15 +36,15 @@ begin
   if not found then raise exception 'Not a room member'; end if;
 
   -- 250ms server-side minimum interval (the UI sends at roughly 400ms).
-  if v_last>now()-interval '250 milliseconds' then return false; end if;
+  if v_last>clock_timestamp()-interval '250 milliseconds' then return false; end if;
 
   update public.cityxiv_room_players
   set position=jsonb_build_object(
         'x',greatest(-18,least(18,p_x)),
         'z',greatest(-39,least(2,p_z))
       ),
-      position_updated_at=now(),
-      last_seen=now()
+      position_updated_at=clock_timestamp(),
+      last_seen=clock_timestamp()
   where room_id=p_room_id and user_id=v_user;
 
   return true;
