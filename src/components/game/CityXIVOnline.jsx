@@ -112,9 +112,10 @@ export default function CityXIVOnline({onBack=()=>{}}){
  const ownedRecruitIds=useMemo(()=>Object.values(gameState?.players||{}).flatMap(p=>[p?.active,p?.bench].filter(Boolean)),[gameState?.players]);
  const recruitOptions=useMemo(()=>STARTERS.filter(s=>!ownedRecruitIds.includes(s.id)),[ownedRecruitIds]);
  const recruitOffer=gameState?.recruit_offer?.candidate&&gameState.recruit_offer.stage===stage?gameState.recruit_offer:null;
- const recruitOfferVisible=!!recruitOffer&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0);
+ const recruitProposerOnline=!!recruitOffer&&onlinePlayers.some(p=>p.user_id===recruitOffer.proposer);
+ const recruitOfferVisible=!!recruitOffer&&recruitProposerOnline&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0);
  const recruitAttemptDone=!!gameState?.flags?.["recruit_offer_attempt_"+user?.id+"_stage_"+stage];
- const canOfferRecruit=stage<3&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0)&&!current?.bench&&!recruitAttemptDone&&!recruitOffer&&recruitOptions.length>0&&used<3;
+ const canOfferRecruit=stage<3&&phase==="players"&&(!gameState.enemy||gameState.enemy.hp<=0)&&!current?.bench&&!recruitAttemptDone&&(!recruitOffer||!recruitProposerOnline)&&recruitOptions.length>0&&used<3;
  useEffect(()=>{if(recruitPanelOpen&&!canOfferRecruit)setRecruitPanelOpen(false)},[recruitPanelOpen,canOfferRecruit]);
  const recruitVotesYes=onlinePlayers.filter(p=>recruitOffer?.votes?.[p.user_id]===true).length;
   const enemyRetryToken=roomId+":"+(gameState?.round||0)+":"+user?.id,enemyRetryExhausted=phase==="enemy"&&room?.host_id===user?.id&&(phaseAttemptRef.current[enemyRetryToken]||0)>=5;
