@@ -104,3 +104,5 @@ This migration is source-only at this point. It has not been executed against Po
 - Fixed it by declaring `const [phaseRetry,setPhaseRetry]=useState(0)` in the component.
 - Commit `bc6f889762311d09f072c165127ddcb276ce76b3`.
 - This source fix is not yet covered by a fresh Vercel build or live browser/runtime test; it must be checked before release.
+
+- A second bare assignment in the same hook declaration line also left `phaseAttemptRef` and `phaseRetryTimerRef` undeclared. Fixed with explicit `const` declarations in commit `6dac2f47eab5788f33fa74cb269ed229c89d67f1`. Both hook state and retry refs are now declared; still pending a fresh build/runtime check.
