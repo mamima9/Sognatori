@@ -157,3 +157,26 @@ Migration `202611280004_cityxiv_leave_host_handoff.sql` replaces the leave RPC:
 - Concurrent leave/action/heartbeat: room lock serializes shared state and host changes.
 
 Source-reviewed only; PostgreSQL, concurrent RPC and multi-device runtime validation remain release gates.
+
+
+## Server-side position rate limit (28 Nov)
+
+### Finding
+Position updates were throttled only in the client (about 400 ms). A modified client could bypass that throttle, repeatedly write position rows, and refresh presence through movement requests.
+
+### Fix
+Incremental migration `202611280005_cityxiv_position_rate_limit.sql` adds `position_updated_at` and replaces `cityxiv_update_position(uuid,double precision,double precision)`:
+- Validates authenticated membership and an active room.
+- Rejects non-finite coordinates and clamps finite coordinates to the existing world bounds.
+- Uses a room share-lock followed by a member-row lock, matching the room-first order used by state-changing RPCs.
+- Enforces a 250 ms server-side minimum interval; calls inside the interval return `false` without writing.
+- Keeps the existing RPC-only authenticated grant.
+
+### Regression cases
+- Calls at intervals >=250 ms are accepted; calls inside the interval are rejected without position or heartbeat write.
+- Concurrent calls for the same player serialize on the member row and cannot bypass the throttle.
+- NaN/Infinity and null coordinates reject; finite out-of-bounds coordinates clamp to the world bounds.
+- A non-member and a member in a waiting/finished room cannot update position.
+- Room-status transitions serialize with accepted updates.
+
+Source-reviewed only; PostgreSQL syntax/runtime, concurrent calls, and multi-client position sync are not tested. Apply migration `202611280005` after the base migration and incrementals `202611280001`–`202611280004` in the documented order, with a snapshot and rollback plan.
