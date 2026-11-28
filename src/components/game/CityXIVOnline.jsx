@@ -94,7 +94,7 @@ export default function CityXIVOnline({onBack=()=>{}}){
  const prepReadyToggle=async()=>await actRpc("cityxiv_boss_prep_ready",{p_room_id:roomId,p_ready:!prepReady});
  const startBoss=async()=>await actRpc("cityxiv_boss_start",{p_room_id:roomId});
  const sendAction=async(a,characterId=null)=>await actRpc("cityxiv_action",{p_room_id:roomId,p_action:a,p_character_id:characterId});
- const offerRecruit=async(candidate)=>await actRpc("cityxiv_recruit_offer",{p_room_id:roomId,p_character_id:candidate});
+ const offerRecruit=async(candidate)=>{const result=await actRpc("cityxiv_recruit_offer",{p_room_id:roomId,p_character_id:candidate});if(result){setRecruitPanelOpen(false);setRecruitCandidate("");}return result;};
  const voteRecruit=async(accept)=>await actRpc("cityxiv_recruit_vote",{p_room_id:roomId,p_accept:accept});
  const move=useCallback(({x,z})=>{
    setPosition({x,z});if(!roomIdRef.current||Date.now()-lastPositionRef.current<400)return;
