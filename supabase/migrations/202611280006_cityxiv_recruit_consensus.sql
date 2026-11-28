@@ -163,6 +163,7 @@ begin
           return v_state;
         end if;
       end loop;
+      v_member:=v_players->v_proposer::text;
       v_member:=jsonb_set(v_member,'{bench}',to_jsonb(v_candidate),true);
       v_member:=jsonb_set(v_member,'{bench_hp}',to_jsonb(20),true);
       v_players:=jsonb_set(v_players,array[v_proposer::text],v_member,true);
