@@ -36,7 +36,7 @@ Apply the original migration `202611270001_cityxiv_online_coop.sql` first, then 
 
 ## Verification state
 
-The incremental SQL is source-reviewed only. It has not been executed or syntax-tested by PostgreSQL, migration applied, rollback tested, or multi-client runtime-tested. Vercel build/deployment for the new commit is not yet verified.
+The incremental SQL is source-reviewed only. It has not been executed or syntax-tested by PostgreSQL, migration applied, rollback tested, or multi-client runtime-tested. The frontend build is READY for code commit `c238ac0aea160457f934d569ac92c8dd7822125f` at https://sognatori-opwu9jeih-manu-de-miccio.vercel.app. The latest branch head at the time of this note is a documentation-only commit, with its deployment queued; the READY build covers the code changes.
 
 ## Additional source fixes (automation audit)
 
