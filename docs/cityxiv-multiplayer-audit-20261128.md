@@ -52,3 +52,9 @@ The incremental SQL is source-reviewed only. It has not been executed or syntax-
 - Boss prep with two to five active members: every fresh member must be ready before boss activation.
 
 These remain source-level changes and test cases; no PostgreSQL execution or multi-client runtime validation has been performed.
+
+
+## UI/backend consistency fix (28 Nov)
+
+- The online boss-preparation UI no longer imposes a two-online-player minimum. Once an expedition has started, one fresh member may continue after others disconnect, matching the server-side `cityxiv_boss_start` rule; the initial lobby still requires 2–5 players.
+- Source-only patch on the branch; runtime validation still requires Supabase migration and multi-client tests.
