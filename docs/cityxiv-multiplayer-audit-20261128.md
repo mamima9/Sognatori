@@ -133,3 +133,27 @@ Migration `202611280003_cityxiv_waiting_room_cleanup.sql` replaces the join RPC 
 - Concurrent join attempts: room row lock serializes cleanup and capacity checks; room must never exceed `max_players`.
 
 This is source-reviewed only. The migration has not been executed or PostgreSQL-tested; realtime behavior, concurrent joins, and reconnect runtime remain unverified.
+
+
+## Fresh host selection on explicit leave (28 Nov)
+
+### Finding
+The base `cityxiv_leave_room(uuid)` transferred host to the earliest joined reservation without checking heartbeat freshness. If that member had disconnected recently, the party could temporarily lose host-authoritative enemy-turn/advance/boss-start actions until the 90-second freshness cutoff.
+
+### Incremental fix
+Migration `202611280004_cityxiv_leave_host_handoff.sql` replaces the leave RPC:
+- Room-first lock, authenticated member check and member deletion remain serialized.
+- When the host leaves, or the stored host is absent/stale, the freshest remaining member is preferred for host transfer.
+- If no fresh member remains, the oldest persisted member is used as a fallback so the room can still resume.
+- Removes the leaving member's shared player-state and boss-preparation readiness keys.
+- Keeps RPC execution restricted to authenticated users.
+
+### Regression cases
+- Host leaves while two or more fresh members remain: the freshest remaining member becomes host.
+- Host leaves with no fresh remaining member: fallback member is selected and may take over after reconnect/freshness handling.
+- Non-host leaves while the stored host is fresh: host remains unchanged.
+- Non-host leaves while stored host is stale/absent: fresh host is elected.
+- Leave during boss prep: leaving member is removed from prep readiness; unanimous readiness is evaluated only against the fresh roster.
+- Concurrent leave/action/heartbeat: room lock serializes shared state and host changes.
+
+Source-reviewed only; PostgreSQL, concurrent RPC and multi-device runtime validation remain release gates.
