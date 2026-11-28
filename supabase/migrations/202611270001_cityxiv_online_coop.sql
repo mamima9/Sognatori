@@ -189,8 +189,15 @@ begin
   if v_player is null then raise exception 'Player state missing'; end if;
   v_active:=v_player->>'active'; v_bench:=v_player->>'bench';
   if coalesce((v_player->>'hp')::integer,0)<=0 then
-    if v_bench is null or coalesce((v_player->>'bench_hp')::integer,0)<=0 then raise exception 'No living Sognatore'; end if;
-    if p_action not in ('switch','recover') then raise exception 'Switch or recover before acting'; end if;
+    -- Recover is allowed to revive a player whose active and bench are both KO,
+    -- preventing an incapacitated member from permanently stalling the 3-action phase.
+    if p_action='recover' then
+      null;
+    elsif v_bench is null or coalesce((v_player->>'bench_hp')::integer,0)<=0 then
+      raise exception 'No living Sognatore';
+    elsif p_action<>'switch' then
+      raise exception 'Switch or recover before acting';
+    end if;
   end if;
   v_used:=coalesce((v_player->>'actions_used')::integer,0); if v_used>=3 then raise exception 'No actions left this round'; end if;
   v_stage:=coalesce((v_state->>'stage')::integer,0); v_active:=v_player->>'active'; v_bench:=v_player->>'bench'; v_enemy:=v_state->'enemy';
@@ -478,7 +485,9 @@ begin
   v_state:=v_room.game_state;
   if coalesce((v_state->>'stage')::integer,0)<>3 or coalesce(v_state->>'phase','')<>'prep' or coalesce(v_state->'enemy','null'::jsonb)<>'null'::jsonb then raise exception 'Boss preparation is closed'; end if;
   select count(*) into v_count from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds';
-  if v_count<2 or v_count>5 then raise exception '2–5 active players required to start the boss'; end if;
+  -- A room is created with at least two players, but a single fresh member
+  -- may continue after others disconnect; stale members do not block boss entry.
+  if v_count<1 or v_count>5 then raise exception 'At least one active player required to start the boss'; end if;
   for v_key in select user_id::text from public.cityxiv_room_players where room_id=p_room_id and last_seen>now()-interval '90 seconds' loop
     if not (v_state->'players' ? v_key) then raise exception 'Player state missing'; end if;
     if coalesce((v_state->'prep_ready'->>v_key)::boolean,false) is not true then raise exception 'Every active party member must be ready'; end if;
