@@ -49,6 +49,7 @@ Run this only after the migration is applied, using separate authenticated accou
 | Recruit vote with 2–5 active players | Each fresh active member must explicitly vote yes; a single no cancels; offline members are excluded after the 90-second freshness window |
 | Solo continuation recruit vote | The sole fresh member must explicitly vote yes; no implicit proposer vote is counted |
 | Candidate already active/benched | Server rejects the proposal/acceptance and no duplicate is added |
+| Proposer disconnects or offer crosses a zone boundary | Stale offer is cleared before a new proposal can be opened |
 | Stage advance | Host-only; objective requirements enforced by RPC |
 | Direct table write attempt | Authenticated client INSERT/UPDATE/DELETE is denied |
 | Non-member room read/action | Denied or returns no room data |
