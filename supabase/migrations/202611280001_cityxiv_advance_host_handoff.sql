@@ -68,6 +68,11 @@ begin
   end loop;
 
   if v_stage=0 then
+    -- The Piazza cannot be skipped after the objectives are met early:
+    -- require the first full 3-action round and its automatic enemy phase.
+    if coalesce((v_state->>'round')::integer,1)<2 then
+      raise exception 'Complete the first three-action round before advancing';
+    end if;
     if coalesce((v_state->>'clues')::integer,0)<2
        or not coalesce((v_state->'flags'->>'explored_stage_0')::boolean,false) then
       raise exception 'Piazza: explore and gather two clues';
