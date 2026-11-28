@@ -220,3 +220,11 @@ Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv
 
 - `cityxiv_recruit_vote` now rejects a SQL NULL `p_accept` value instead of treating three-valued boolean logic as an implicit affirmative.
 - Added to the required RPC validation matrix: null vote must raise and leave offer/vote state unchanged. Source-level fix only; PostgreSQL runtime test remains outstanding.
+
+
+## Recruitment RPC wall-clock freshness refinement — 28 Nov 2026
+
+- The recruitment RPCs now use PostgreSQL `clock_timestamp()` for last-seen refreshes, the 90-second active-roster cutoff, and room/log timestamps after the room lock is acquired.
+- This avoids transaction-start `now()` drift when an RPC waits on a room lock: members who become stale during the wait are evaluated against the actual time after serialization.
+- Regression case: hold the room lock long enough for a member's heartbeat to age past 90 seconds, then invoke offer/vote; the stale member should not count toward the active roster, while the caller's refreshed presence should count.
+- Source-only; lock-wait timing and PostgreSQL behavior remain untested.
