@@ -48,7 +48,13 @@ begin
 
   v_offer:=v_state->'recruit_offer';
   if v_offer is not null and v_offer<>'null'::jsonb then
-    if coalesce((v_offer->>'stage')::integer,-1)=v_stage then raise exception 'A recruitment offer is already pending'; end if;
+    if coalesce((v_offer->>'stage')::integer,-1)=v_stage
+       and exists(select 1 from public.cityxiv_room_players
+         where room_id=p_room_id and user_id=(v_offer->>'proposer')::uuid
+           and last_seen>now()-interval '90 seconds') then
+      raise exception 'A recruitment offer is already pending';
+    end if;
+    -- Clear an offer whose proposer has gone stale or whose stage has changed.
     v_state:=jsonb_set(v_state,'{recruit_offer}','null'::jsonb,true);
   end if;
 
