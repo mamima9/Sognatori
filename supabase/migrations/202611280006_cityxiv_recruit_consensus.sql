@@ -28,7 +28,7 @@ begin
   if not found or not exists(select 1 from public.cityxiv_room_players where room_id=p_room_id and user_id=v_user) then
     raise exception 'Not a playing member';
   end if;
-  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
+  update public.cityxiv_room_players set last_seen=clock_timestamp() where room_id=p_room_id and user_id=v_user;
 
   v_state:=v_room.game_state;
   v_stage:=coalesce((v_state->>'stage')::integer,0);
@@ -51,7 +51,7 @@ begin
     if coalesce((v_offer->>'stage')::integer,-1)=v_stage
        and exists(select 1 from public.cityxiv_room_players
          where room_id=p_room_id and user_id=(v_offer->>'proposer')::uuid
-           and last_seen>now()-interval '90 seconds') then
+           and last_seen>clock_timestamp()-interval '90 seconds') then
       raise exception 'A recruitment offer is already pending';
     end if;
     -- Clear an offer whose proposer has gone stale or whose stage has changed.
@@ -65,7 +65,7 @@ begin
   end loop;
 
   select count(*) into v_active_count from public.cityxiv_room_players
-    where room_id=p_room_id and last_seen>now()-interval '90 seconds';
+    where room_id=p_room_id and last_seen>clock_timestamp()-interval '90 seconds';
   if v_active_count<1 then raise exception 'No active party members'; end if;
 
   v_state:=jsonb_set(v_state,'{flags}',coalesce(v_state->'flags','{}'::jsonb)||jsonb_build_object(v_flag,true),true);
@@ -78,7 +78,7 @@ begin
   );
   v_state:=jsonb_set(v_state,'{recruit_offer}',v_offer,true);
   v_state:=jsonb_set(v_state,'{log}',coalesce(v_state->'log','[]'::jsonb)||jsonb_build_array(jsonb_build_object('action','recruit_offer','user_id',v_user,'candidate',p_character_id,'at',clock_timestamp())),true);
-  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  update public.cityxiv_rooms set game_state=v_state,updated_at=clock_timestamp() where id=p_room_id;
   return v_state;
 end
 $cityxiv_recruit_offer$;
@@ -111,7 +111,7 @@ begin
   if p_accept is null then raise exception 'Vote must be explicit'; end if;
   select * into v_room from public.cityxiv_rooms where id=p_room_id and status='playing' for update;
   if not found then raise exception 'Room not active'; end if;
-  update public.cityxiv_room_players set last_seen=now() where room_id=p_room_id and user_id=v_user;
+  update public.cityxiv_room_players set last_seen=clock_timestamp() where room_id=p_room_id and user_id=v_user;
   if not found then raise exception 'Not a room member'; end if;
 
   v_state:=v_room.game_state;
@@ -133,7 +133,7 @@ begin
     v_flag:='recruit_offer_attempt_'||v_proposer::text||'_stage_'||v_stage;
     v_state:=jsonb_set(v_state,'{recruit_offer}','null'::jsonb,true);
     v_state:=jsonb_set(v_state,'{log}',coalesce(v_state->'log','[]'::jsonb)||jsonb_build_array(jsonb_build_object('action','recruit_veto','user_id',v_user,'candidate',v_candidate,'at',clock_timestamp())),true);
-    update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+    update public.cityxiv_rooms set game_state=v_state,updated_at=clock_timestamp() where id=p_room_id;
     return v_state;
   end if;
 
@@ -143,12 +143,12 @@ begin
   v_state:=jsonb_set(v_state,'{recruit_offer}',v_offer,true);
 
   select count(*) into v_active_count from public.cityxiv_room_players
-    where room_id=p_room_id and last_seen>now()-interval '90 seconds';
+    where room_id=p_room_id and last_seen>clock_timestamp()-interval '90 seconds';
   v_all_yes:=v_active_count>0;
   v_yes_count:=0;
   v_proposer_active:=false;
   for v_key in select user_id::text from public.cityxiv_room_players
-    where room_id=p_room_id and last_seen>now()-interval '90 seconds'
+    where room_id=p_room_id and last_seen>clock_timestamp()-interval '90 seconds'
   loop
     if v_key=v_proposer::text then v_proposer_active:=true; end if;
     if coalesce((v_votes->>v_key)::boolean,false) then v_yes_count:=v_yes_count+1; else v_all_yes:=false; end if;
@@ -166,7 +166,7 @@ begin
         if v_member->>'active'=v_candidate or v_member->>'bench'=v_candidate then
           v_state:=jsonb_set(v_state,'{recruit_offer}','null'::jsonb,true);
           v_state:=jsonb_set(v_state,'{log}',coalesce(v_state->'log','[]'::jsonb)||jsonb_build_array(jsonb_build_object('action','recruit_cancelled_duplicate','candidate',v_candidate,'at',clock_timestamp())),true);
-          update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+          update public.cityxiv_rooms set game_state=v_state,updated_at=clock_timestamp() where id=p_room_id;
           return v_state;
         end if;
       end loop;
@@ -180,7 +180,7 @@ begin
     end if;
   end if;
 
-  update public.cityxiv_rooms set game_state=v_state,updated_at=now() where id=p_room_id;
+  update public.cityxiv_rooms set game_state=v_state,updated_at=clock_timestamp() where id=p_room_id;
   return v_state;
 end
 $cityxiv_recruit_vote$;
