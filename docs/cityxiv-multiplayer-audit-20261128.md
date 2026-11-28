@@ -169,7 +169,7 @@ Incremental migration `202611280005_cityxiv_position_rate_limit.sql` adds `posit
 - Validates authenticated membership and an active room.
 - Rejects non-finite coordinates and clamps finite coordinates to the existing world bounds.
 - Uses a room share-lock followed by a member-row lock, matching the room-first order used by state-changing RPCs.
-- Enforces a 250 ms server-side minimum interval; calls inside the interval return `false` without writing.
+- Enforces a 250 ms server-side minimum interval using `clock_timestamp()` after the row lock (avoiding transaction-start timestamp drift during lock waits); calls inside the interval return `false` without writing.
 - Keeps the existing RPC-only authenticated grant.
 
 ### Regression cases
