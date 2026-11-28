@@ -58,3 +58,17 @@ These remain source-level changes and test cases; no PostgreSQL execution or mul
 
 - The online boss-preparation UI no longer imposes a two-online-player minimum. Once an expedition has started, one fresh member may continue after others disconnect, matching the server-side `cityxiv_boss_start` rule; the initial lobby still requires 2–5 players.
 - Source-only patch on the branch; runtime validation still requires Supabase migration and multi-client tests.
+
+
+## Additional blockers fixed in this audit
+
+- Piazza (stage 0) advancement now requires the first complete three-action round to finish and the automatic enemy-phase RPC to reset actions (round >= 2), in addition to the existing clue/exploration objective. The client button mirrors this gate; the RPC is authoritative.
+- The client automatic enemy-turn RPC retries transient failures up to five attempts with capped backoff, then exposes a manual retry control for the host. The retry is keyed by room/round/user and cleared when the phase changes. This is a client source change; it has not been runtime-tested.
+
+### Test cases
+
+- Stage 0 objective met during round 1: advancement must be rejected and the UI button disabled.
+- After all active players lock three actions, the no-enemy phase resolves automatically, round increments, and zone advance is allowed if objectives are satisfied.
+- Enemy-turn RPC transient error: retries; after five failures, the host can explicitly retry without duplicate round resolution.
+
+These are source-review/test-plan additions only; PostgreSQL and multi-client validation remain pending.
