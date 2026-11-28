@@ -13,10 +13,11 @@ This feature adds a Supabase-backed online room flow for 2–5 players to City X
 4. `supabase/migrations/202611280003_cityxiv_waiting_room_cleanup.sql` — remove stale waiting-lobby reservations only.
 5. `supabase/migrations/202611280004_cityxiv_leave_host_handoff.sql` — host handoff on leave/staleness.
 6. `supabase/migrations/202611280005_cityxiv_position_rate_limit.sql` — server-enforced position rate limit and finite-coordinate checks.
+7. `supabase/migrations/202611280006_cityxiv_recruit_consensus.sql` — contextual recruitment offers and unanimous voting by the fresh active roster.
 
 Use the Supabase project's authorized migration workflow, in this order, after recording the current schema and migration history. Review each result before proceeding. Do not apply the incrementals ahead of the base migration. If any migration fails, stop, inspect transaction/schema state, and use a reviewed rollback/recovery migration; do not delete migration-history entries.
 
-No service-role key is used in the frontend. The migration exposes authenticated RPC functions for room creation/joining, readiness, starting, position updates, heartbeat/host handoff, action processing, advancement, resume and leave. Table writes are revoked from client roles; room/player reads are restricted to room members. Realtime publication is enabled for the room and player tables.
+No service-role key is used in the frontend. The migration stack exposes authenticated RPC functions for room creation/joining, readiness, starting, position updates, heartbeat/host handoff, action processing, advancement, resume, leave and unanimous recruitment. The recruitment migration locks the room, checks candidate uniqueness server-side, tracks votes in shared room state and assigns the candidate only after unanimity. Table writes are revoked from client roles; room/player reads are restricted to room members. Realtime publication is enabled for the room and player tables.
 
 ## Flow
 
@@ -24,7 +25,7 @@ No service-role key is used in the frontend. The migration exposes authenticated
 - Players choose one of the first 29 Sognatori, join and mark ready.
 - The host starts when at least two players are present and all are ready.
 - Players move in the Lumequieto 3D scene. Their chosen artwork is used for their avatar and remote-player billboards; positions and lobby state are synchronized through Supabase Realtime.
-- Each player has three actions per round. Explore, talk, attack, area attack, protect, recover, recruit and switch are processed by an RPC with membership/action validation. Encounter HP, XP, coins, clues, stage progression and ending state are shared.
+- Each player has exactly three gameplay actions per round. Explore, talk, attack, area attack, protect, recover and switch are processed by an RPC with membership/action validation. Recruitment is a contextual, once-per-zone proposal side decision: the proposer and every fresh active member must explicitly vote yes; any no vetoes it. A successful recruit becomes the proposer’s bench Sognatore and does not consume one of the three gameplay actions. Encounter HP, XP, coins, clues, stage progression and ending state are shared.
 - Reconnect uses the authenticated user's room lookup and restores the last persisted position on initial room hydration. Heartbeats refresh presence; a member is considered active after a heartbeat within the last 90 seconds. Host handoff is triggered by heartbeat, and the enemy-turn/boss-start RPC can take over if the host is stale beyond that window. Leaving also transfers the host. Heartbeat now locks the room before the player row, matching the room RPC lock order to reduce deadlock risk. Ready-state changes are restricted to the waiting lobby, and server actions reject ended expeditions.
 - The room's shared state persists in the database.
 
@@ -44,6 +45,10 @@ Run this only after the migration is applied, using separate authenticated accou
 | Reconnect after refresh | Same room/state and persisted X/Z position restore |
 | Actions over a round | Three actions per player; actions serialize and the enemy turn/reset happens once |
 | Enemy defeat | Shared coins and XP are awarded once, even with concurrent actions |
+| Contextual recruit offer | Only an eligible member with an empty bench may propose an unused candidate; one proposal per proposer per zone |
+| Recruit vote with 2–5 active players | Each fresh active member must explicitly vote yes; a single no cancels; offline members are excluded after the 90-second freshness window |
+| Solo continuation recruit vote | The sole fresh member must explicitly vote yes; no implicit proposer vote is counted |
+| Candidate already active/benched | Server rejects the proposal/acceptance and no duplicate is added |
 | Stage advance | Host-only; objective requirements enforced by RPC |
 | Direct table write attempt | Authenticated client INSERT/UPDATE/DELETE is denied |
 | Non-member room read/action | Denied or returns no room data |
