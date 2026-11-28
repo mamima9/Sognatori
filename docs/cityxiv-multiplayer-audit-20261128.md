@@ -96,3 +96,11 @@ Incremental migration `202611280002_cityxiv_ping_phase_reconcile.sql` replaces `
 - Concurrent heartbeats: room lock serializes reconciliation; only a phase transition, not a duplicate enemy turn, is stored.
 
 This migration is source-only at this point. It has not been executed against PostgreSQL, rollback-tested, or tested with multiple clients. Apply after migrations `202611270001` and `202611280001` in an authorized Supabase environment, then record the above results before merge.
+
+
+## UI runtime audit — phase retry hook declaration (28 Nov)
+
+- Found a module-strict-mode runtime error in `CityXIVOnline.jsx`: the `phaseRetry`/`setPhaseRetry` hook was assigned using a bare destructuring assignment after a semicolon, without a `const` declaration. This could throw a `ReferenceError` when the online component renders even though Vite compilation succeeds.
+- Fixed it by declaring `const [phaseRetry,setPhaseRetry]=useState(0)` in the component.
+- Commit `bc6f889762311d09f072c165127ddcb276ce76b3`.
+- This source fix is not yet covered by a fresh Vercel build or live browser/runtime test; it must be checked before release.
