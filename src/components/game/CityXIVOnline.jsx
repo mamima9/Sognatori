@@ -10,7 +10,7 @@ const button=(color=GOLD)=>({background:color,color:BG,border:0,borderRadius:10,
 const nameOf=(user)=>user?.user_metadata?.username||user?.user_metadata?.full_name||user?.email?.split("@")[0]||"Player";
 export default function CityXIVOnline({onBack=()=>{}}){
  const [user,setUser]=useState(null),[screen,setScreen]=useState("menu"),[roomId,setRoomId]=useState(null),[room,setRoom]=useState(null),[players,setPlayers]=useState([]),[gameState,setGameState]=useState(null);
- const [selected,setSelected]=useState(STARTERS[0]?.id||""),[maxPlayers,setMaxPlayers]=useState(5),[code,setCode]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[position,setPosition]=useState({x:0,z:3}),[restoreKey,setRestoreKey]=useState(0),[partyPanelOpen,setPartyPanelOpen]=useState(false),[presenceNow,setPresenceNow]=useState(Date.now());[phaseRetry,setPhaseRetry]=useState(0);
+ const [selected,setSelected]=useState(STARTERS[0]?.id||""),[maxPlayers,setMaxPlayers]=useState(5),[code,setCode]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[position,setPosition]=useState({x:0,z:3}),[restoreKey,setRestoreKey]=useState(0),[partyPanelOpen,setPartyPanelOpen]=useState(false),[presenceNow,setPresenceNow]=useState(Date.now());const [phaseRetry,setPhaseRetry]=useState(0);
  const lastPositionRef=useRef(0),roomIdRef=useRef(null),roomRef=useRef(null),hydratedRoomRef=useRef(null),phaseResolveRef=useRef(null);phaseAttemptRef=useRef({}),phaseRetryTimerRef=useRef(null);
  useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user||null))},[]);
  useEffect(()=>{const t=setInterval(()=>setPresenceNow(Date.now()),15000);return()=>clearInterval(t)},[]);
