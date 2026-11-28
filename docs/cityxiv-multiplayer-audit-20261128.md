@@ -214,3 +214,9 @@ Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv
 - The online UI now checks whether the offer proposer is inside the 90-second fresh roster before showing the vote overlay.
 - If a proposer becomes stale, the offer overlay is hidden and another eligible member can initiate a replacement offer; the server RPC clears the stale offer under the room lock before storing the new one.
 - This is a source-level UI/backend-consistency fix. It has not been browser-tested with Supabase presence or multi-client reconnects.
+
+
+## Explicit vote-input guard — 28 Nov 2026
+
+- `cityxiv_recruit_vote` now rejects a SQL NULL `p_accept` value instead of treating three-valued boolean logic as an implicit affirmative.
+- Added to the required RPC validation matrix: null vote must raise and leave offer/vote state unchanged. Source-level fix only; PostgreSQL runtime test remains outstanding.
