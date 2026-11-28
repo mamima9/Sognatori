@@ -106,3 +106,30 @@ This migration is source-only at this point. It has not been executed against Po
 - This source fix is not yet covered by a fresh Vercel build or live browser/runtime test; it must be checked before release.
 
 - A second bare assignment in the same hook declaration line also left `phaseAttemptRef` and `phaseRetryTimerRef` undeclared. Fixed with explicit `const` declarations in commit `6dac2f47eab5788f33fa74cb269ed229c89d67f1`. Both hook state and retry refs are now declared; still pending a fresh build/runtime check.
+
+
+## Waiting-lobby stale reservation cleanup (28 Nov)
+
+### Source finding
+`cityxiv_join_room` previously counted every persisted lobby row toward room capacity. A member who closed the app without leaving could occupy a slot indefinitely, even after the 90-second heartbeat freshness cutoff. Host reservations could also remain stale.
+
+### Incremental fix
+Migration `202611280003_cityxiv_waiting_room_cleanup.sql` replaces the join RPC with a room-locked waiting-room cleanup:
+- Refreshes the returning caller before pruning so that their own reservation is preserved.
+- Prunes only other reservations whose heartbeat is at least 90 seconds stale, and removes their matching entries from the waiting-room `game_state.players`.
+- Re-elects the freshest remaining active member when the waiting-room host is stale/absent; if nobody remains, the incoming member becomes host.
+- Enforces capacity against fresh members after the cleanup and creates a fresh member state for a new joiner.
+- Leaves `playing` room member rows and state untouched, preserving reconnect after disconnect during an expedition.
+- Reapplies authenticated-only RPC execution.
+
+### Regression cases to run
+- 2-slot lobby: one stale reservation and one active member; a new player can join and the stale member's player-state key is removed.
+- 5-slot lobby: several stale reservations are pruned without exceeding the configured capacity.
+- Fresh reservations (<90 seconds) are never pruned; a full fresh lobby still rejects new joiners.
+- Stale host with active members: host is transferred to the freshest remaining member.
+- Stale host with no remaining members: the incoming joiner becomes host.
+- Existing member reconnects: their reservation is refreshed and preserved, including ready state.
+- A `playing` room: the join RPC rejects and no stale player rows/state are deleted; reconnect remains through the existing resume/heartbeat flow.
+- Concurrent join attempts: room row lock serializes cleanup and capacity checks; room must never exceed `max_players`.
+
+This is source-reviewed only. The migration has not been executed or PostgreSQL-tested; realtime behavior, concurrent joins, and reconnect runtime remain unverified.
