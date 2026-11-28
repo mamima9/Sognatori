@@ -72,3 +72,5 @@ These remain source-level changes and test cases; no PostgreSQL execution or mul
 - Enemy-turn RPC transient error: retries; after five failures, the host can explicitly retry without duplicate round resolution.
 
 These are source-review/test-plan additions only; PostgreSQL and multi-client validation remain pending.
+
+- Overworld joystick and Interagisci controls are also hidden during the automatic enemy phase, preventing movement/interactions while the party turn is locked.
