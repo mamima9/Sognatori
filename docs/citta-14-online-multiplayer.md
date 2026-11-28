@@ -4,7 +4,17 @@ This feature adds a Supabase-backed online room flow for 2–5 players to City X
 
 ## Setup required
 
-**The migration is not applied to the live Supabase project.** Apply `supabase/migrations/202611270001_cityxiv_online_coop.sql` in the Supabase SQL Editor or through the project's approved migration workflow before testing online rooms.
+**The City XIV co-op source is now in `main` and a Vercel Production deployment is READY, but the Supabase migration stack is still unapplied/unverified. A READY frontend deployment does not make the multiplayer database-backed flow operational.**
+
+### Required SQL deployment order (do not skip incrementals)
+1. `supabase/migrations/202611270001_cityxiv_online_coop.sql` — base tables, RLS, RPCs, realtime publication.
+2. `supabase/migrations/202611280001_cityxiv_advance_host_handoff.sql` — stale-host takeover and active-roster-safe zone advancement.
+3. `supabase/migrations/202611280002_cityxiv_ping_phase_reconcile.sql` — heartbeat phase reconciliation when members become stale.
+4. `supabase/migrations/202611280003_cityxiv_waiting_room_cleanup.sql` — remove stale waiting-lobby reservations only.
+5. `supabase/migrations/202611280004_cityxiv_leave_host_handoff.sql` — host handoff on leave/staleness.
+6. `supabase/migrations/202611280005_cityxiv_position_rate_limit.sql` — server-enforced position rate limit and finite-coordinate checks.
+
+Use the Supabase project's authorized migration workflow, in this order, after recording the current schema and migration history. Review each result before proceeding. Do not apply the incrementals ahead of the base migration. If any migration fails, stop, inspect transaction/schema state, and use a reviewed rollback/recovery migration; do not delete migration-history entries.
 
 No service-role key is used in the frontend. The migration exposes authenticated RPC functions for room creation/joining, readiness, starting, position updates, heartbeat/host handoff, action processing, advancement, resume and leave. Table writes are revoked from client roles; room/player reads are restricted to room members. Realtime publication is enabled for the room and player tables.
 
@@ -44,11 +54,11 @@ Run this only after the migration is applied, using separate authenticated accou
 | 5-player room | Lobby, position synchronization, shared round and action processing work at 5 players |
 | Boss victory | Shared state marks expedition finished; subsequent actions/advance are rejected |
 
-Record the Supabase migration version, the test account count, pass/fail results, and any RPC error before merging.
+Record the Supabase migration versions, the test account count, pass/fail results, and any RPC error. These tests are still release gates; the Production frontend deployment alone does not satisfy them.
 
 ## Current verification
 
-The migration received a source audit that corrected malformed dollar-quote delimiters in the readiness and heartbeat RPCs, removed a redundant leave-RPC definition, and added a guard so a downed player cannot act unless switching or recovering with a living bench character. The migration is statically checked for balanced dollar-quoted blocks and duplicate RPC definitions; it has **not** been executed against PostgreSQL/Supabase in this environment. The active roster uses a 90-second heartbeat window; stale members are skipped for turn completion and enemy damage, round actions are reset, and offline HP/state is preserved. A non-host can take over the enemy phase or boss start when the previous host has stale presence. The latest PR preview build is pending/subject to Vercel status checks. The live database integration cannot be verified until the migration is applied. Interactive gameplay and multi-device testing are unavailable in the current browser sandbox, so this test matrix is a release gate, not a claim that these tests have passed.
+The migration received a source audit that corrected malformed dollar-quote delimiters in the readiness and heartbeat RPCs, removed a redundant leave-RPC definition, and added a guard so a downed player cannot act unless switching or recovering with a living bench character. The migration is statically checked for balanced dollar-quoted blocks and duplicate RPC definitions; it has **not** been executed against PostgreSQL/Supabase in this environment. The active roster uses a 90-second heartbeat window; stale members are skipped for turn completion and enemy damage, round actions are reset, and offline HP/state is preserved. A non-host can take over the enemy phase or boss start when the previous host has stale presence. The Production deployment for merge commit 7752fa947a081d781ed3647e4ef41671716767b4 is READY on Vercel; this confirms frontend deployment only. The live database integration cannot be verified until the migration is applied. Interactive gameplay and multi-device testing are unavailable in the current browser sandbox, so this test matrix is a release gate, not a claim that these tests have passed.
 
 ## Notes
 
