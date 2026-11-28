@@ -180,3 +180,59 @@ Incremental migration `202611280005_cityxiv_position_rate_limit.sql` adds `posit
 - Room-status transitions serialize with accepted updates.
 
 Source-reviewed only; PostgreSQL syntax/runtime, concurrent calls, and multi-client position sync are not tested. Apply migration `202611280005` after the base migration and incrementals `202611280001`–`202611280004` in the documented order, with a snapshot and rollback plan.
+
+
+## Contextual recruitment consensus — 28 Nov 2026
+
+Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv_recruit_offer(uuid,text)` and `cityxiv_recruit_vote(uuid,boolean)` and the mobile vote UI.
+
+- Recruitment is contextual: only during stages 0–2, in the players phase, with no live zone enemy, and for a member whose bench is empty.
+- Each member may propose once per zone. Offers are side decisions and do not consume a gameplay action.
+- The proposer must explicitly vote yes; all fresh active members (90-second heartbeat window) must vote yes before the server assigns the candidate to the proposer's bench.
+- Any no vote vetoes the offer. Candidate IDs are checked against all persisted active/bench state on offer and again at unanimous acceptance.
+- The room lock serializes offer/vote changes and shared-state assignment. Stale or stage-mismatched offers are cleared on a new proposal. The RPCs are authenticated and direct client table writes remain revoked.
+- The UI hides movement controls while the proposal/vote panel is open and displays the current active-party vote count.
+
+### Source checks performed
+
+- Two RPC definitions found; named dollar delimiters balanced.
+- Candidate uniqueness check and proposer/active-roster checks present.
+- Client calls both RPCs and exposes proposal and vote UI.
+- Static checks passed; these are source checks, not PostgreSQL tests.
+
+### Release gates still outstanding
+
+- Migration 280006 is not applied or PostgreSQL syntax/runtime-tested.
+- No 2–5-device voting, stale-member, veto, duplicate candidate or reconnect tests have run.
+- No live Supabase migration or rollback has been executed.
+- The Vercel preview build for the client patch is pending at audit time.
+
+
+
+## Stale recruitment offer visibility fix
+
+- The online UI now checks whether the offer proposer is inside the 90-second fresh roster before showing the vote overlay.
+- If a proposer becomes stale, the offer overlay is hidden and another eligible member can initiate a replacement offer; the server RPC clears the stale offer under the room lock before storing the new one.
+- This is a source-level UI/backend-consistency fix. It has not been browser-tested with Supabase presence or multi-client reconnects.
+
+
+## Explicit vote-input guard — 28 Nov 2026
+
+- `cityxiv_recruit_vote` now rejects a SQL NULL `p_accept` value instead of treating three-valued boolean logic as an implicit affirmative.
+- Added to the required RPC validation matrix: null vote must raise and leave offer/vote state unchanged. Source-level fix only; PostgreSQL runtime test remains outstanding.
+
+
+## Recruitment RPC wall-clock freshness refinement — 28 Nov 2026
+
+- The recruitment RPCs now use PostgreSQL `clock_timestamp()` for last-seen refreshes, the 90-second active-roster cutoff, and room/log timestamps after the room lock is acquired.
+- This avoids transaction-start `now()` drift when an RPC waits on a room lock: members who become stale during the wait are evaluated against the actual time after serialization.
+- Regression case: hold the room lock long enough for a member's heartbeat to age past 90 seconds, then invoke offer/vote; the stale member should not count toward the active roster, while the caller's refreshed presence should count.
+- Source-only; lock-wait timing and PostgreSQL behavior remain untested.
+
+
+## Recruitment side-decision action-count correction — 28 Nov 2026
+
+- Removed the `actions_used < 3` restriction from the recruitment-offer RPC and client eligibility. Recruitment is a side decision, does not consume a gameplay action, and remains available while the shared `players` phase is still open—even if the proposer has already locked all three actions and teammates are still finishing.
+- The server still enforces stages 0–2, the players phase, no live zone enemy, empty bench, one offer per proposer per zone, fresh active roster, and unanimous explicit vote. The automatic phase transition remains the gate that closes the window.
+- Regression cases: proposer at 0, 1, 2, or 3 actions may offer while phase remains `players`; the offer must not change action counters; proposal must reject after phase changes to `enemy` or `prep`; active roster and duplicate candidate checks remain unchanged.
+- Source-only correction. PostgreSQL, Supabase, and multi-client tests remain outstanding.
