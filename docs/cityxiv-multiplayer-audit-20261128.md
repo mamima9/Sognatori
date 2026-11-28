@@ -180,3 +180,30 @@ Incremental migration `202611280005_cityxiv_position_rate_limit.sql` adds `posit
 - Room-status transitions serialize with accepted updates.
 
 Source-reviewed only; PostgreSQL syntax/runtime, concurrent calls, and multi-client position sync are not tested. Apply migration `202611280005` after the base migration and incrementals `202611280001`–`202611280004` in the documented order, with a snapshot and rollback plan.
+
+
+## Contextual recruitment consensus — 28 Nov 2026
+
+Incremental migration `202611280006_cityxiv_recruit_consensus.sql` adds `cityxiv_recruit_offer(uuid,text)` and `cityxiv_recruit_vote(uuid,boolean)` and the mobile vote UI.
+
+- Recruitment is contextual: only during stages 0–2, in the players phase, with no live zone enemy, and for a member whose bench is empty.
+- Each member may propose once per zone. Offers are side decisions and do not consume a gameplay action.
+- The proposer must explicitly vote yes; all fresh active members (90-second heartbeat window) must vote yes before the server assigns the candidate to the proposer's bench.
+- Any no vote vetoes the offer. Candidate IDs are checked against all persisted active/bench state on offer and again at unanimous acceptance.
+- The room lock serializes offer/vote changes and shared-state assignment. The RPCs are authenticated and direct client table writes remain revoked.
+- The UI hides movement controls while the proposal/vote panel is open and displays the current active-party vote count.
+
+### Source checks performed
+
+- Two RPC definitions found; named dollar delimiters balanced.
+- Candidate uniqueness check and proposer/active-roster checks present.
+- Client calls both RPCs and exposes proposal and vote UI.
+- Static checks passed; these are source checks, not PostgreSQL tests.
+
+### Release gates still outstanding
+
+- Migration 280006 is not applied or PostgreSQL syntax/runtime-tested.
+- No 2–5-device voting, stale-member, veto, duplicate candidate or reconnect tests have run.
+- No live Supabase migration or rollback has been executed.
+- The Vercel preview build for the client patch is pending at audit time.
+
